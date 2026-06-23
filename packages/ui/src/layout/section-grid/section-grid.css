@@ -1,0 +1,14 @@
+/*
+ * auto-fill keeps the track count stable for the container width, so a card is
+ * the same width whether the grid shows one item or fills a row — the item count
+ * never resizes the cards. Empty trailing tracks stay reserved (a lone item sits
+ * at one track width instead of stretching across the row, which is what auto-fit
+ * would do). `min(100%, 280px)` lets a column shrink below 280px on containers
+ * narrower than that (mobile / high zoom) instead of overflowing. Sizing follows
+ * the grid's own width, so it responds to its container, not only the viewport.
+ */
+.ui-section-grid__inner {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+}

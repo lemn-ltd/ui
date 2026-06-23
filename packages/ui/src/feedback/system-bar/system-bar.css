@@ -1,0 +1,51 @@
+.ui-system-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-2) var(--space-4);
+  font-family: var(--font-sans);
+}
+
+.ui-system-bar__icon {
+  flex: none;
+}
+
+.ui-system-bar__message {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--text);
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-small);
+}
+
+.ui-system-bar__action {
+  flex: none;
+}
+
+.ui-system-bar__dismiss {
+  flex: none;
+  width: 28px;
+  height: 28px;
+}
+
+.ui-system-bar[data-tone="info"] {
+  background: var(--info-soft);
+}
+.ui-system-bar[data-tone="info"] .ui-system-bar__icon {
+  color: var(--info);
+}
+
+.ui-system-bar[data-tone="warn"] {
+  background: var(--warn-soft);
+}
+.ui-system-bar[data-tone="warn"] .ui-system-bar__icon {
+  color: var(--warn);
+}
+
+.ui-system-bar[data-tone="danger"] {
+  background: var(--danger-soft);
+}
+.ui-system-bar[data-tone="danger"] .ui-system-bar__icon {
+  color: var(--danger);
+}

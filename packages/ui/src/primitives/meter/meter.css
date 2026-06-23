@@ -1,0 +1,59 @@
+.ui-meter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  inline-size: 100%;
+}
+
+.ui-meter__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.ui-meter__label {
+  color: var(--text-muted);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-medium);
+}
+
+.ui-meter__value {
+  color: var(--text);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-medium);
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-meter__track {
+  block-size: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--surface2);
+  overflow: hidden;
+}
+
+.ui-meter__fill {
+  block-size: 6px;
+  min-inline-size: 2px;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  transition: width var(--duration-normal) var(--easing-standard);
+}
+
+.ui-meter[data-tone="success"] .ui-meter__fill {
+  background: var(--success);
+}
+
+.ui-meter[data-tone="warn"] .ui-meter__fill {
+  background: var(--warn);
+}
+
+.ui-meter[data-tone="danger"] .ui-meter__fill {
+  background: var(--danger);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-meter__fill {
+    transition: none;
+  }
+}

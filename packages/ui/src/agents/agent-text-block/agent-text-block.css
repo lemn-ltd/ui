@@ -1,0 +1,15 @@
+.ui-agent-text-block {
+  display: grid;
+  gap: var(--space-2);
+  width: 100%;
+  color: var(--text);
+  font-size: var(--font-size-small);
+}
+
+.ui-agent-text-block__entry {
+  font-size: inherit;
+}
+
+.ui-agent-text-block__entry ul {
+  padding-left: var(--space-8);
+}

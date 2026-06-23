@@ -1,0 +1,109 @@
+.ui-accordion {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.ui-accordion__item + .ui-accordion__item {
+  border-top: 1px solid var(--border);
+}
+
+.ui-accordion__header {
+  margin: 0;
+}
+
+.ui-accordion__trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: 14px var(--space-4);
+  background: var(--surface);
+  border: 0;
+  color: var(--text);
+  font-family: var(--font-sans);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--easing-standard);
+}
+
+.ui-accordion__trigger:not(:disabled):hover {
+  background: var(--surface2);
+}
+
+.ui-accordion__trigger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ui-accordion__heading {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ui-accordion__label {
+  color: var(--text);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-body);
+}
+
+.ui-accordion__caption {
+  color: var(--text-muted);
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
+}
+
+.ui-accordion__chevron {
+  flex: none;
+  color: var(--text-muted);
+  transition: transform var(--duration-fast) var(--easing-standard);
+  transform-origin: center;
+}
+
+.ui-accordion__trigger[data-state="open"] .ui-accordion__chevron {
+  transform: rotate(180deg);
+}
+
+.ui-accordion__content {
+  overflow: hidden;
+}
+
+.ui-accordion__content[data-state="open"] {
+  animation: ui-accordion-expand var(--duration-normal) var(--easing-standard);
+}
+
+.ui-accordion__content[data-state="closed"] {
+  animation: ui-accordion-collapse var(--duration-normal) var(--easing-standard);
+}
+
+.ui-accordion__body {
+  padding: 0 var(--space-4) var(--space-4);
+  color: var(--text-muted);
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-small);
+}
+
+@keyframes ui-accordion-expand {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+
+@keyframes ui-accordion-collapse {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
+}

@@ -1,0 +1,104 @@
+.ui-input-search {
+  display: inline-flex;
+  align-items: center;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  color: var(--text);
+  overflow: hidden;
+  vertical-align: middle;
+  transition:
+    width var(--duration-slow) var(--easing-emphasized),
+    border-color var(--duration-normal) var(--easing-standard);
+}
+
+/* Height stays constant across states — only width and border-color animate, so
+ * expanding never reflows the surrounding row. */
+.ui-input-search[data-expanded="expanded"] {
+  width: 280px;
+  border-color: var(--border);
+}
+
+.ui-input-search[data-expanded="expanded"]:focus-within {
+  border-color: var(--accent);
+}
+
+.ui-input-search__trigger {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 100%;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--easing-standard);
+}
+
+.ui-input-search__trigger:hover {
+  color: var(--text);
+}
+
+.ui-input-search[data-expanded="expanded"] .ui-input-search__trigger {
+  width: auto;
+  justify-content: flex-start;
+  padding-left: var(--space-3);
+  pointer-events: none;
+  cursor: default;
+}
+
+.ui-input-search__input {
+  flex: 1;
+  width: 0;
+  min-width: 0;
+  padding: 0;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-small);
+  opacity: 0;
+  pointer-events: none;
+  outline: none;
+  transition: opacity var(--duration-normal) var(--easing-standard);
+}
+
+.ui-input-search[data-expanded="expanded"] .ui-input-search__input {
+  padding-left: var(--space-2);
+  padding-right: var(--space-2);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.ui-input-search__input::-webkit-search-cancel-button,
+.ui-input-search__input::-webkit-search-decoration {
+  appearance: none;
+  display: none;
+}
+
+.ui-input-search__clear {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-right: var(--space-3);
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.ui-input-search__clear:hover {
+  background: var(--surface2);
+  color: var(--text);
+}

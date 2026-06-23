@@ -1,0 +1,10 @@
+/**
+ * The single stylesheet entry consumers import as `@appranks/ui/styles.css`.
+ * Import order matters: tokens first (the cascade source), then reset, then
+ * globals, then motion primitives.
+ */
+
+@import "./foundations/tokens.css";
+@import "./foundations/reset.css";
+@import "./foundations/globals.css";
+@import "./foundations/motion.css";

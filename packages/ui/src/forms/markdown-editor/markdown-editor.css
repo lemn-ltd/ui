@@ -1,0 +1,61 @@
+.ui-markdown-editor {
+  position: relative;
+  width: 100%;
+  scrollbar-gutter: stable;
+}
+
+.ui-markdown-editor__toggle {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  color: var(--accent);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color var(--duration-fast) var(--easing-standard);
+}
+
+.ui-markdown-editor__toggle:hover {
+  border-color: var(--accent);
+}
+
+.ui-markdown-editor__toggle:disabled {
+  color: var(--text-dim);
+  cursor: not-allowed;
+}
+
+.ui-markdown-editor__textarea.ui-textarea,
+.ui-markdown-editor__preview {
+  min-height: var(--ui-markdown-editor-block-size, 14rem);
+}
+
+/* Keep the first line clear of the floating corner toggle. */
+.ui-markdown-editor__textarea.ui-textarea {
+  height: var(--ui-markdown-editor-block-size, 14rem);
+  overflow-y: auto;
+  padding-right: 42px;
+  scrollbar-gutter: stable;
+}
+
+/* Typography inside the preview is owned by the Markdown renderer it hosts. */
+.ui-markdown-editor__preview {
+  height: auto;
+  overflow: visible;
+  padding: var(--space-3) 42px var(--space-3) var(--space-3);
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.ui-markdown-editor__empty {
+  color: var(--text-muted);
+}

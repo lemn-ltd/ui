@@ -1,0 +1,58 @@
+.ui-screen-shell {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  height: 100vh;
+  min-height: 0;
+  /* Shell shares the content surface so the page reads as one plane — --bg and
+   * --surface are identical in light, this aligns them in dark too. */
+  background: var(--surface);
+  color: var(--text);
+}
+
+.ui-screen-shell__sidebar {
+  min-height: 0;
+}
+
+.ui-screen-shell__main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.ui-screen-shell__topbar {
+  flex-shrink: 0;
+}
+
+.ui-screen-shell__content {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* With a right dock the split owns scrolling; the content clips and anchors the
+ * floating "show panel" control. */
+.ui-screen-shell__content[data-dock="true"] {
+  position: relative;
+  overflow: hidden;
+}
+
+.ui-screen-shell__dock-open {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  z-index: var(--z-chrome);
+}
+
+/*
+ * Mobile drawer scrim: sits between the content and the overlay sidebar; a tap
+ * (or Enter on the focused button) dismisses the drawer. Only rendered while the
+ * drawer is open on a mobile viewport.
+ */
+.ui-screen-shell__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-scrim);
+  background: var(--overlay);
+  cursor: pointer;
+}

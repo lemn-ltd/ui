@@ -1,0 +1,52 @@
+/* The row keeps the edit-mode control height in both modes, so toggling edit
+ * never reflows the surrounding layout. */
+.ui-inline-edit {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 40px;
+}
+
+/* Mirrors the Input box metrics (40px control, padding, 1px border) with
+ * transparent chrome, so entering edit draws the border in around glyphs that
+ * never move instead of swapping in a larger box. */
+.ui-inline-edit__value {
+  display: inline-flex;
+  align-items: center;
+  align-self: stretch;
+  padding: 0 var(--space-3);
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-small);
+}
+
+/* Cross-fade the display/edit swap. */
+.ui-inline-edit__value,
+.ui-inline-edit__input,
+.ui-inline-edit__select,
+.ui-inline-edit .ui-icon-button {
+  animation: fade var(--duration-fast) var(--easing-standard);
+}
+
+.ui-inline-edit__input {
+  width: 112px;
+}
+
+/* Hide the native number spinner — the value is committed through the save control. */
+.ui-inline-edit__input::-webkit-outer-spin-button,
+.ui-inline-edit__input::-webkit-inner-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.ui-inline-edit__input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* The select reuses the canonical InputSelect; only its inline width is set here. */
+.ui-inline-edit__select {
+  width: 200px;
+}

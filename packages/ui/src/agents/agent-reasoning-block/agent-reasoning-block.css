@@ -1,0 +1,81 @@
+.ui-agent-reasoning-block {
+  width: 100%;
+  color: var(--text-muted);
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
+}
+
+.ui-agent-reasoning-block__accordion.ui-accordion {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  overflow: visible;
+}
+
+.ui-agent-reasoning-block__accordion .ui-accordion__trigger {
+  justify-content: flex-start;
+  gap: 5px;
+  padding: var(--space-3) var(--space-3) var(--space-3) 0;
+  background: transparent;
+}
+
+.ui-agent-reasoning-block__accordion .ui-accordion__trigger:not(:disabled):hover {
+  background: transparent;
+}
+
+.ui-agent-reasoning-block__accordion .ui-accordion__label {
+  color: var(--text);
+  font-size: calc(var(--font-size-small) - 2px);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-small);
+  transition: color var(--duration-fast) var(--easing-standard);
+}
+
+.ui-agent-reasoning-block__accordion
+  .ui-accordion__trigger:not(:disabled):hover
+  .ui-accordion__label {
+  color: var(--accent);
+}
+
+.ui-agent-reasoning-block__accordion .ui-accordion__chevron {
+  order: -1;
+  width: 16px;
+  height: 16px;
+  transform-origin: center;
+  transform: rotate(-90deg);
+  transition:
+    color var(--duration-fast) var(--easing-standard),
+    transform 500ms var(--easing-standard);
+}
+
+.ui-agent-reasoning-block__accordion
+  .ui-accordion__trigger:not(:disabled):hover
+  .ui-accordion__chevron {
+  color: var(--accent);
+}
+
+.ui-agent-reasoning-block__accordion
+  .ui-accordion__trigger[data-state="open"]
+  .ui-accordion__chevron {
+  transform: rotate(0deg);
+}
+
+.ui-agent-reasoning-block__accordion .ui-accordion__body {
+  padding: 0;
+}
+
+.ui-agent-reasoning-block__body {
+  display: grid;
+  gap: var(--space-2);
+  color: var(--text-muted);
+  font-size: calc(var(--font-size-small) - 2px);
+  font-style: italic;
+  line-height: var(--line-height-small);
+}
+
+.ui-agent-reasoning-block__entry {
+  color: inherit;
+  font-size: inherit;
+  font-style: inherit;
+  line-height: inherit;
+}

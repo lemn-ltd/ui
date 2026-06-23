@@ -1,0 +1,38 @@
+.ui-textarea {
+  width: 100%;
+  min-height: 96px;
+  padding: var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-body);
+  resize: vertical;
+  /* A textarea wraps, so it never needs horizontal scroll; suppress the phantom
+     one that fractional browser zoom produces (sub-pixel scrollWidth > clientWidth),
+     and break long tokens so they wrap instead of being clipped by overflow-x. */
+  overflow-wrap: break-word;
+  overflow-x: hidden;
+  transition: border-color var(--duration-fast) var(--easing-standard);
+}
+
+.ui-textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.ui-textarea:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.ui-textarea[data-invalid="true"],
+.ui-textarea[data-invalid="true"]:focus {
+  border-color: var(--danger);
+}
+
+.ui-textarea:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

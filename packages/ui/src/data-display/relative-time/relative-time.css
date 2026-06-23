@@ -1,0 +1,7 @@
+.ui-relative-time {
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
+  white-space: nowrap;
+}

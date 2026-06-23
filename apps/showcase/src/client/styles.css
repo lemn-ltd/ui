@@ -1,0 +1,215 @@
+/*
+ * Showcase host chrome. Tokens, reset, and globals come from
+ * `@appranks/ui/styles.css`; this file styles only the docs-site host.
+ */
+
+#root {
+  min-height: 100vh;
+}
+
+/* Sidebar brand mark (the OrgSwitcher slot in the dogfooded shell). */
+/* TopBar actions */
+.showcase-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.showcase-overview-empty {
+  color: var(--text-muted);
+  font-size: var(--font-size-body);
+}
+
+.showcase-overview-card {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Not-found */
+.showcase-not-found {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-12) 0;
+}
+
+.showcase-not-found__code {
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-display);
+  font-weight: var(--font-weight-semibold);
+}
+
+.showcase-not-found__title {
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-semibold);
+}
+
+.showcase-not-found__detail {
+  color: var(--text-muted);
+}
+
+/* Foundation pages */
+.showcase-swatch-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--space-3);
+}
+
+.showcase-swatch {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.showcase-swatch__chip {
+  height: 56px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.showcase-swatch__label {
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-medium);
+}
+
+.showcase-swatch__var {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-caption);
+}
+
+.showcase-type-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-4);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.showcase-type-meta {
+  flex-shrink: 0;
+  width: 140px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-caption);
+}
+
+.showcase-space-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-1) 0;
+}
+
+.showcase-space-label {
+  flex-shrink: 0;
+  width: 120px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-caption);
+}
+
+.showcase-space-bar {
+  height: 16px;
+  background: var(--accent);
+  border-radius: var(--radius-sm);
+}
+
+.showcase-radii-grid,
+.showcase-elevation-grid,
+.showcase-motion-loops {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+  align-items: center;
+}
+
+.showcase-radii-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.showcase-radii-chip {
+  width: 56px;
+  height: 56px;
+  background: var(--surface2);
+  border: 1px solid var(--border-strong);
+}
+
+.showcase-elevation-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 160px;
+  height: 96px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-caption);
+}
+
+.showcase-token-row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.showcase-token-name {
+  font-weight: var(--font-weight-medium);
+}
+
+.showcase-token-value {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-caption);
+}
+
+.showcase-icon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: var(--space-2);
+}
+
+.showcase-icon-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text);
+}
+
+.showcase-icon-label {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-caption);
+}
+
+/* Execution map is a canvas-first component and needs the full docs viewport. */
+.execution-map-showcase-page .ui-content-layout {
+  max-width: none;
+}
+
+.execution-map-showcase-page,
+.execution-map-showcase-page .showcase-page,
+.execution-map-showcase-page .showcase-stack,
+.execution-map-showcase-page .showcase-example {
+  width: 100%;
+  min-width: 0;
+}
+
+.execution-map-showcase-page .showcase-example__preview {
+  display: block;
+  padding: var(--space-4);
+}

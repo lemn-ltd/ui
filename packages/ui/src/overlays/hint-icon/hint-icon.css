@@ -1,0 +1,40 @@
+.ui-hint-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: help;
+}
+
+.ui-hint-icon:hover {
+  color: var(--text);
+}
+
+.ui-hint-icon:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.ui-hint-icon[data-tone="info"],
+.ui-hint-icon[data-tone="info"]:hover {
+  color: var(--info);
+}
+
+.ui-hint-icon[data-tone="warn"],
+.ui-hint-icon[data-tone="warn"]:hover {
+  color: var(--warn);
+}
+
+.ui-hint-icon[data-tone="danger"],
+.ui-hint-icon[data-tone="danger"]:hover {
+  color: var(--danger);
+}
+
+.ui-hint-icon[data-tone="success"],
+.ui-hint-icon[data-tone="success"]:hover {
+  color: var(--success);
+}

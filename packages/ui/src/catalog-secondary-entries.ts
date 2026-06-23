@@ -1,0 +1,330 @@
+import type { ComponentCatalogEntry } from './catalog-types.js';
+
+export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = [
+  // Navigation
+  {
+    slug: 'sidebar',
+    title: 'Sidebar',
+    group: 'Navigation',
+    status: 'stable',
+    intent:
+      'The application rail in expanded, rail, and hidden collapse modes plus a drill-in variant, composing org, nav, user, and version slots.',
+  },
+  {
+    slug: 'top-bar',
+    title: 'Top bar',
+    group: 'Navigation',
+    status: 'stable',
+    intent: 'The screen header: sidebar toggle and breadcrumb, optional center tabs, and actions.',
+  },
+  {
+    slug: 'entity-toolbar',
+    title: 'Entity toolbar',
+    group: 'Navigation',
+    status: 'stable',
+    intent:
+      'A per-entity header with tabs, identity, and actions that collapses when all slots are empty.',
+  },
+  {
+    slug: 'breadcrumb',
+    title: 'Breadcrumb',
+    group: 'Navigation',
+    status: 'stable',
+    intent: 'A slash-separated navigation trail with link, button, and current-page segments.',
+  },
+  {
+    slug: 'tabs',
+    title: 'Tabs',
+    group: 'Navigation',
+    status: 'stable',
+    intent: 'A controlled row of triggers with optional count badges.',
+  },
+  {
+    slug: 'stepper',
+    title: 'Stepper',
+    group: 'Navigation',
+    status: 'stable',
+    intent: 'A horizontal progress indicator with completed, active, and upcoming steps.',
+  },
+  {
+    slug: 'org-switcher',
+    title: 'Org switcher',
+    group: 'Navigation',
+    status: 'stable',
+    intent: 'A menu-backed organization picker in expanded and rail variants.',
+  },
+  {
+    slug: 'pagination',
+    title: 'Pagination',
+    group: 'Navigation',
+    status: 'stable',
+    intent: 'Page navigation in numbered-pages and load-more variants.',
+  },
+  {
+    slug: 'dock-panel',
+    title: 'Dock panel',
+    group: 'Navigation',
+    status: 'stable',
+    intent: 'A right-docked workspace panel with tabbed content and maximize/hide controls.',
+  },
+
+  // Data display
+  {
+    slug: 'card',
+    title: 'Card',
+    group: 'Data display',
+    status: 'stable',
+    intent:
+      'Surface container with optional title, body, and footer slots that collapse when absent.',
+  },
+  {
+    slug: 'settings-row',
+    title: 'Settings row',
+    group: 'Data display',
+    status: 'stable',
+    intent:
+      'A labelled settings row: title and optional description on the left, a value or control on the right. Stack inside a Card.',
+  },
+  {
+    slug: 'description-list',
+    title: 'Description list',
+    group: 'Data display',
+    status: 'stable',
+    intent:
+      'Label/value detail rows with first-line baseline alignment that inline controls cannot break. For detail panels and dialogs.',
+  },
+  {
+    slug: 'data-table',
+    title: 'Data table',
+    group: 'Data display',
+    status: 'stable',
+    intent:
+      'Prop-driven table: sort, selection, bulk + row actions, row click, column visibility, density, loading, and numbered/controlled pagination.',
+  },
+  {
+    slug: 'stat-card',
+    title: 'Stat card',
+    group: 'Data display',
+    status: 'stable',
+    intent: 'A single metric tile: muted label, display-sized value, and an optional signed delta.',
+  },
+  {
+    slug: 'stats-strip',
+    title: 'Stats strip',
+    group: 'Data display',
+    status: 'stable',
+    intent: 'Edge-to-edge horizontal row of stat cards separated by thin border dividers.',
+  },
+  {
+    slug: 'code-block',
+    title: 'Code block',
+    group: 'Data display',
+    status: 'stable',
+    intent:
+      'Monospace value with a copy control; command, token, and inline variants write data-variant.',
+  },
+  {
+    slug: 'syntax-code-block',
+    title: 'Syntax code block',
+    group: 'Data display',
+    status: 'beta',
+    intent:
+      'Copyable multi-line code snippet with lazy dual-theme syntax highlighting and optional wrapping.',
+  },
+  {
+    slug: 'json-viewer',
+    title: 'JSON viewer',
+    group: 'Data display',
+    status: 'stable',
+    intent: 'Monospace JSON tree with per-node collapse and key/string/number/punctuation tones.',
+  },
+  {
+    slug: 'markdown',
+    title: 'Markdown',
+    group: 'Data display',
+    status: 'beta',
+    intent: 'Read-only GFM renderer with dual-theme code highlighting and copyable fenced blocks.',
+  },
+  {
+    slug: 'sparkline',
+    title: 'Sparkline',
+    group: 'Data display',
+    status: 'stable',
+    intent: 'Compact inline bar chart: thin accent bars scaled to the series maximum.',
+  },
+  {
+    slug: 'relative-time',
+    title: 'Relative time',
+    group: 'Data display',
+    status: 'stable',
+    intent: 'Renders an absolute timestamp as a muted relative label, anchored by the now prop.',
+  },
+  {
+    slug: 'list-shell',
+    title: 'List shell',
+    group: 'Data display',
+    status: 'stable',
+    intent: 'Outer content section giving every list or grid the same padding and vertical rhythm.',
+  },
+  {
+    slug: 'list-filters-bar',
+    title: 'List filters bar',
+    group: 'Data display',
+    status: 'stable',
+    intent: 'Layout-only filter row: a pills slot, a per-view search input, and a trailing slot.',
+  },
+  {
+    slug: 'filter',
+    title: 'Filter',
+    group: 'Data display',
+    status: 'stable',
+    intent:
+      'One type-driven column filter: enum menu (single/multi), text, number-range, date-range, or boolean.',
+  },
+  {
+    slug: 'filter-chip',
+    title: 'Filter chip',
+    group: 'Data display',
+    status: 'stable',
+    intent:
+      'Applied-filter pill with a remove control; ActiveFiltersRow wraps a set with Clear all.',
+  },
+  {
+    slug: 'empty-state',
+    title: 'Empty state',
+    group: 'Data display',
+    status: 'stable',
+    intent:
+      'Centered placeholder; first-run invites a first action, no-results is the filtered surface.',
+  },
+  {
+    slug: 'recent-chips',
+    title: 'Recent chips',
+    group: 'Data display',
+    status: 'stable',
+    intent: 'A leading label followed by a row of muted Tag chips for recent items.',
+  },
+  {
+    slug: 'preset-selector',
+    title: 'Preset selector',
+    group: 'Data display',
+    status: 'stable',
+    intent:
+      'Compact segmented control for picking a saved preset, plus an optional manage affordance.',
+  },
+
+  // Feedback
+  {
+    slug: 'toast',
+    title: 'Toast',
+    group: 'Feedback',
+    status: 'stable',
+    intent: 'Presentational status row; tone drives the icon and accent.',
+  },
+  {
+    slug: 'toaster',
+    title: 'Toaster',
+    group: 'Feedback',
+    status: 'stable',
+    intent: 'The mounted toast stack region that owns the viewport, queue, and auto-dismiss.',
+  },
+  {
+    slug: 'info-banner',
+    title: 'Info banner',
+    group: 'Feedback',
+    status: 'stable',
+    intent: 'In-content tinted banner with a tone left border across four variants.',
+  },
+  {
+    slug: 'system-bar',
+    title: 'System bar',
+    group: 'Feedback',
+    status: 'stable',
+    intent: 'Full-width page-level notice above the top bar, with optional action and dismiss.',
+  },
+  {
+    slug: 'skeleton',
+    title: 'Skeleton',
+    group: 'Feedback',
+    status: 'stable',
+    intent:
+      'Loading placeholders — base shapes, text, card, and table rows — static under reduced motion.',
+  },
+  {
+    slug: 'spinner',
+    title: 'Spinner',
+    group: 'Feedback',
+    status: 'stable',
+    intent: 'Indeterminate circular spinner in three sizes; static under reduced motion.',
+  },
+  {
+    slug: 'progress-bar',
+    title: 'Progress bar',
+    group: 'Feedback',
+    status: 'stable',
+    intent: 'Linear progress with determinate, indeterminate, and route loops.',
+  },
+
+  // Layout
+  {
+    slug: 'screen-shell',
+    title: 'Screen shell',
+    group: 'Layout',
+    status: 'stable',
+    intent:
+      'The app frame: a fixed sidebar beside a main column with an optional top bar over scrolling content.',
+  },
+  {
+    slug: 'content-layout',
+    title: 'Content layout',
+    group: 'Layout',
+    status: 'stable',
+    intent:
+      'The reading-width column, capped at var(--content-max) with page padding; bleed spans full width.',
+  },
+  {
+    slug: 'page-section',
+    title: 'Page section',
+    group: 'Layout',
+    status: 'stable',
+    intent: 'A titled region with an optional title, caption, and actions header above its body.',
+  },
+  {
+    slug: 'section-grid',
+    title: 'Section grid',
+    group: 'Layout',
+    status: 'stable',
+    intent: 'An auto-fitting card grid that reflows 4 → 3 → 2 → 1 against its own container width.',
+  },
+  {
+    slug: 'two-column',
+    title: 'Two column',
+    group: 'Layout',
+    status: 'stable',
+    intent: 'A main-and-aside split that sits side by side at lg and up, then stacks below.',
+  },
+  {
+    slug: 'settings-shell',
+    title: 'Settings shell',
+    group: 'Layout',
+    status: 'stable',
+    intent:
+      'A master-detail settings surface: a grouped, searchable section nav that can be fully collapsed beside an independently scrolling detail pane.',
+  },
+  {
+    slug: 'sign-in-screen',
+    title: 'Sign-in screen',
+    group: 'Layout',
+    status: 'stable',
+    intent:
+      'The centered single-card auth screen: app mark/name identity, title/subtitle header, and a full-width form the caller fills.',
+  },
+  {
+    slug: 'version-tag',
+    title: 'Version tag',
+    group: 'Layout',
+    status: 'stable',
+    intent:
+      'The sidebar footer build marker: a version string with an optional env badge, or a collapsed dot.',
+  },
+];

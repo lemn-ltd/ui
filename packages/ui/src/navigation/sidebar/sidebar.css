@@ -1,0 +1,207 @@
+.ui-sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  /* Clip content so it does not spill while the rail width animates. */
+  overflow: hidden;
+  /* Width transition is owned here so the shell grid column follows it. */
+  transition: width var(--duration-slow) var(--easing-emphasized);
+}
+
+.ui-sidebar[data-mode="rail"] {
+  width: 64px;
+}
+
+.ui-sidebar[data-mode="expanded"] {
+  width: 264px;
+}
+
+/* Hidden on desktop: the column collapses to nothing. The width transition
+ * animates it; the component sets `inert` so it leaves the tab order. */
+.ui-sidebar[data-mode="hidden"] {
+  width: 0;
+  border-right: 0;
+}
+
+.ui-sidebar__top {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3);
+}
+
+/* The search trigger spans the rail when docked in the sidebar header. */
+.ui-sidebar__search {
+  display: flex;
+}
+
+.ui-sidebar__search .ui-search-command {
+  width: 100%;
+}
+
+.ui-sidebar__drill {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.ui-sidebar__back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+}
+
+.ui-sidebar__back:hover {
+  color: var(--text);
+}
+
+.ui-sidebar__title {
+  color: var(--text);
+  font-size: var(--font-size-title);
+  font-weight: var(--font-weight-semibold);
+}
+
+.ui-sidebar__hint {
+  color: var(--text-muted);
+  font-size: var(--font-size-caption);
+}
+
+.ui-sidebar__nav {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-height: 0;
+  padding: var(--space-2);
+  overflow-y: auto;
+}
+
+.ui-sidebar__group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ui-sidebar__group-header {
+  padding: 6px var(--space-3);
+  color: var(--text-dim);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.ui-sidebar__divider {
+  height: 1px;
+  margin: var(--space-1) var(--space-2);
+  background: var(--border);
+}
+
+.ui-sidebar__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 40px;
+  /* 12px left = 10px gutter + the 2px the active bar occupies. */
+  padding: 0 10px 0 12px;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-small);
+  cursor: pointer;
+}
+
+.ui-sidebar[data-mode="rail"] .ui-sidebar__item {
+  justify-content: center;
+  padding: 0;
+}
+
+.ui-sidebar__item:hover {
+  background: var(--surface2);
+  color: var(--text);
+}
+
+/* Inset bar, not border-left — an asymmetric border on a rounded box leaks
+ * stray corner pixels; the inset shadow clips cleanly to the radius. */
+.ui-sidebar__item[data-active="true"] {
+  box-shadow: inset 2px 0 0 var(--accent);
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+.ui-sidebar__item-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-sidebar__footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-top: 1px solid var(--border);
+}
+
+/* Drawer close affordance — only shown on mobile, anchored to the fixed drawer. */
+.ui-sidebar__close {
+  display: none;
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+}
+
+.ui-sidebar__close:hover {
+  background: var(--surface2);
+  color: var(--text);
+}
+
+/*
+ * Mobile: the sidebar becomes an off-canvas overlay drawer. Expanded slides in
+ * over the content; hidden slides fully off-canvas (the rail is desktop-only).
+ * The ScreenShell renders the dismiss scrim and the drawer shows the close button.
+ */
+@media (max-width: 768px) {
+  .ui-sidebar[data-shell="true"] {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: var(--z-drawer);
+    width: 264px;
+    box-shadow: var(--elev-3);
+    transition: transform var(--duration-normal) var(--easing-emphasized);
+  }
+
+  .ui-sidebar[data-shell="true"][data-mode="hidden"] {
+    width: 264px;
+    box-shadow: none;
+    transform: translateX(-100%);
+  }
+
+  .ui-sidebar[data-shell="true"][data-mode="expanded"] {
+    transform: translateX(0);
+  }
+
+  .ui-sidebar[data-shell="true"] .ui-sidebar__close {
+    display: inline-flex;
+  }
+}

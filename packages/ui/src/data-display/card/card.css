@@ -1,0 +1,54 @@
+.ui-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  color: var(--text);
+  font-family: var(--font-sans);
+}
+
+.ui-card[data-elevated="true"] {
+  box-shadow: var(--elev-1);
+}
+
+/* Hover lift is opt-in via `interactive` — static surfaces (the default) do not move.
+   Interactive cards are clickable, so they take the pointer cursor; the keyboard
+   focus ring comes from the global :focus-visible rule in foundations/globals.css. */
+.ui-card[data-interactive="true"] {
+  cursor: pointer;
+  transition:
+    transform var(--duration-fast) var(--easing-standard),
+    box-shadow var(--duration-fast) var(--easing-standard);
+}
+
+.ui-card[data-interactive="true"]:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--elev-2);
+}
+
+.ui-card[data-interactive="true"][data-elevated="true"]:hover {
+  box-shadow: var(--elev-3);
+}
+
+.ui-card__title {
+  color: var(--text);
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-heading);
+}
+
+.ui-card__body {
+  color: var(--text-muted);
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-small);
+}
+
+.ui-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}

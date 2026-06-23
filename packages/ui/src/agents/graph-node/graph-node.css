@@ -1,0 +1,82 @@
+.ui-graph-node {
+  display: inline-flex;
+  width: 100%;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1.5px solid var(--gn-color, var(--border-strong));
+  border-radius: var(--radius-md);
+  background: var(--surface2);
+  color: var(--text);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    box-shadow var(--duration-fast) var(--easing-standard),
+    border-color var(--duration-fast) var(--easing-standard);
+}
+
+.ui-graph-node:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.ui-graph-node[data-selected="true"] {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.ui-graph-node__dot {
+  width: 9px;
+  height: 9px;
+  flex: none;
+  border-radius: var(--radius-pill);
+  background: var(--gn-color, var(--text-muted));
+}
+
+.ui-graph-node__label {
+  overflow: hidden;
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-caption);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-graph-node__kind {
+  color: var(--text);
+}
+
+.ui-graph-node__name {
+  color: var(--text);
+}
+
+.ui-graph-node[data-state="idle"] {
+  --gn-color: var(--border-strong);
+}
+
+.ui-graph-node[data-state="running"] {
+  --gn-color: var(--info);
+}
+
+.ui-graph-node[data-state="waiting"] {
+  --gn-color: var(--warn);
+}
+
+.ui-graph-node[data-state="completed"] {
+  --gn-color: var(--success);
+}
+
+.ui-graph-node[data-state="failed"] {
+  --gn-color: var(--danger);
+}
+
+.ui-graph-node[data-state="skipped"] {
+  --gn-color: var(--text-dim);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-graph-node {
+    transition: none;
+  }
+}

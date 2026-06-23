@@ -1,0 +1,119 @@
+.ui-drawer__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-scrim);
+  background: var(--overlay);
+}
+
+/*
+ * Floating right-side panel. Inset margins detach it from viewport edges; the
+ * open animation translates `transform`, so no positioning transform is used here.
+ */
+.ui-drawer {
+  position: fixed;
+  inset: var(--space-4) var(--space-4) var(--space-4) auto;
+  z-index: var(--z-drawer);
+  display: flex;
+  flex-direction: column;
+  width: 92vw;
+  max-width: 460px;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elev-3);
+  color: var(--text);
+  font-family: var(--font-sans);
+}
+
+/*
+ * Width scale gated above the bottom-sheet breakpoint so the mobile full-width
+ * sheet always wins on specificity.
+ */
+@media (min-width: 641px) {
+  .ui-drawer[data-width="sm"] {
+    max-width: 380px;
+  }
+
+  .ui-drawer[data-width="md"] {
+    max-width: 460px;
+  }
+
+  .ui-drawer[data-width="lg"] {
+    max-width: 600px;
+  }
+}
+
+.ui-drawer__overlay[data-state="open"] {
+  animation: fade var(--duration-fast) var(--easing-standard);
+}
+
+.ui-drawer[data-state="open"] {
+  animation: slide-right var(--duration-normal) var(--easing-emphasized);
+}
+
+/* Mobile: floating bottom sheet; inset margins keep it detached. */
+@media (max-width: 640px) {
+  .ui-drawer {
+    inset: auto var(--space-3) var(--space-3) var(--space-3);
+    width: auto;
+    max-width: none;
+    max-height: 85vh;
+  }
+
+  .ui-drawer[data-state="open"] {
+    animation: slide-bottom var(--duration-normal) var(--easing-emphasized);
+  }
+}
+
+.ui-drawer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--border);
+}
+
+.ui-drawer__title {
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-heading);
+}
+
+.ui-drawer__body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+  gap: var(--space-3);
+  overflow: auto;
+  padding: var(--space-4) var(--space-5);
+}
+
+.ui-drawer__description {
+  color: var(--text-muted);
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-small);
+}
+
+.ui-drawer__content {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+}
+
+.ui-drawer__divider {
+  height: 1px;
+  background: var(--border);
+}
+
+.ui-drawer__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-5);
+}

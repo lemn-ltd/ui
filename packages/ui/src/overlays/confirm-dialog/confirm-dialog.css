@@ -1,0 +1,88 @@
+.ui-confirm-dialog__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  background: var(--overlay);
+}
+
+/*
+ * Centered with auto margins, not translate(-50%, -50%): the open animation
+ * animates `transform`, which would override a positioning transform and snap
+ * the dialog sideways when the animation ends.
+ */
+.ui-confirm-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  flex-direction: column;
+  width: 92vw;
+  max-width: 400px;
+  height: fit-content;
+  max-height: 85vh;
+  margin: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elev-3);
+  color: var(--text);
+  font-family: var(--font-sans);
+}
+
+.ui-confirm-dialog__overlay[data-state="open"] {
+  animation: fade var(--duration-fast) var(--easing-standard);
+}
+
+.ui-confirm-dialog[data-state="open"] {
+  animation: scale-in var(--duration-fast) var(--easing-emphasized);
+}
+
+/* Mobile: bottom sheet — full-width, bottom-anchored, slides up from the edge. */
+@media (max-width: 640px) {
+  .ui-confirm-dialog {
+    inset: auto 0 0 0;
+    width: 100%;
+    max-width: none;
+    height: auto;
+    max-height: 90vh;
+    margin: 0;
+    border-bottom: 0;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+
+  .ui-confirm-dialog[data-state="open"] {
+    animation: slide-bottom var(--duration-normal) var(--easing-emphasized);
+  }
+}
+
+.ui-confirm-dialog__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-5) var(--space-5) var(--space-4);
+}
+
+.ui-confirm-dialog__title {
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-heading);
+}
+
+.ui-confirm-dialog__description {
+  color: var(--text-muted);
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-small);
+}
+
+.ui-confirm-dialog__divider {
+  height: 1px;
+  background: var(--border);
+}
+
+.ui-confirm-dialog__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-5);
+}

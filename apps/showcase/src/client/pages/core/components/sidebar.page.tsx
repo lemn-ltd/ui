@@ -1,0 +1,190 @@
+import { ComponentPage, ExampleBlock, PropsTable } from '@appranks/showcase-kit';
+import {
+  MenuItem,
+  MenuSeparator,
+  OrgSwitcher,
+  Sidebar,
+  SidebarUserRow,
+  VersionTag,
+} from '@appranks/ui';
+import { type CSSProperties, type ReactElement, type ReactNode, useState } from 'react';
+import { currentOrgId, drillNavGroups, navGroups, orgs } from '../../../fixtures';
+
+// Each mode renders inside a fixed-height bordered frame so the shell-scale
+// component reads as a preview rather than taking over the page.
+function Frame({
+  width,
+  children,
+}: {
+  readonly width: number;
+  readonly children: ReactNode;
+}): ReactElement {
+  const style: CSSProperties = {
+    width,
+    height: 420,
+    border: '1px solid var(--border)',
+    borderRadius: 'var(--radius-lg)',
+    overflow: 'hidden',
+    display: 'flex',
+  };
+  return <div style={style}>{children}</div>;
+}
+
+function userRow(collapsed: boolean): ReactElement {
+  return (
+    <SidebarUserRow
+      avatarColor="teal"
+      collapsed={collapsed}
+      email="avery@example.com"
+      initials="AV"
+      name="Avery Quinn"
+    >
+      <MenuItem icon="user-check">Profile</MenuItem>
+      <MenuItem icon="settings">Settings</MenuItem>
+      <MenuSeparator />
+      <MenuItem icon="log-out" tone="danger">
+        Sign out
+      </MenuItem>
+    </SidebarUserRow>
+  );
+}
+
+function SidebarPage(): ReactElement {
+  // The drill-in variant owns a back affordance; track which surface is shown so
+  // the example mirrors a real drill-in / drill-out interaction.
+  const [drillOpen, setDrillOpen] = useState(true);
+
+  return (
+    <ComponentPage
+      status="stable"
+      summary="The application rail. Collapse modes — rail (64px), expanded (264px), and hidden — plus a drill-in variant (264px), each composing the org switcher, nav groups, user row, and version tag slots."
+      title="Sidebar"
+    >
+      <ExampleBlock
+        code={`<Sidebar
+  mode="expanded"
+  groups={navGroups}
+  orgSwitcher={<OrgSwitcher orgs={orgs} currentOrgId={currentOrgId} />}
+  userRow={<SidebarUserRow initials="AV" name="Avery Quinn" email="avery@example.com">…</SidebarUserRow>}
+  versionTag={<VersionTag version="v1.4.0" env="local" />}
+/>`}
+        render={() => (
+          <Frame width={264}>
+            <Sidebar
+              groups={navGroups}
+              mode="expanded"
+              orgSwitcher={
+                <OrgSwitcher currentOrgId={currentOrgId} orgs={orgs} variant="expanded" />
+              }
+              userRow={userRow(false)}
+              versionTag={<VersionTag env="local" version="v1.4.0" />}
+            />
+          </Frame>
+        )}
+      />
+
+      <ExampleBlock
+        code={`<Sidebar
+  mode="rail"
+  groups={navGroups}
+  orgSwitcher={<OrgSwitcher orgs={orgs} currentOrgId={currentOrgId} variant="rail" />}
+  userRow={<SidebarUserRow collapsed initials="AV" name="Avery Quinn">…</SidebarUserRow>}
+  versionTag={<VersionTag collapsed version="v1.4.0" />}
+/>`}
+        render={() => (
+          <Frame width={64}>
+            <Sidebar
+              groups={navGroups}
+              mode="rail"
+              orgSwitcher={<OrgSwitcher currentOrgId={currentOrgId} orgs={orgs} variant="rail" />}
+              userRow={userRow(true)}
+              versionTag={<VersionTag collapsed version="v1.4.0" />}
+            />
+          </Frame>
+        )}
+      />
+
+      <ExampleBlock
+        code={`<Sidebar
+  variant="drill-in"
+  groups={drillNavGroups}
+  back="Workspace"
+  onBack={() => {}}
+  title="Settings"
+  hint="Project configuration"
+/>`}
+        render={() => (
+          <Frame width={264}>
+            <Sidebar
+              back="Workspace"
+              groups={drillNavGroups}
+              hint={drillOpen ? 'Project configuration' : 'Reopened'}
+              onBack={() => setDrillOpen((open) => !open)}
+              title="Settings"
+              variant="drill-in"
+            />
+          </Frame>
+        )}
+      />
+
+      <PropsTable
+        rows={[
+          {
+            name: 'mode',
+            type: "'expanded' | 'rail' | 'hidden'",
+            description:
+              'Collapse mode. Rail shows icons only; expanded shows labels; hidden collapses it away. Inside a ScreenShell it follows the shell when unset.',
+          },
+          {
+            name: 'variant',
+            type: "'primary' | 'drill-in'",
+            description:
+              'Content variant. Primary is the app rail; drill-in is a settings/section rail with a back affordance, title, and hint. Both collapse with the shell.',
+          },
+          {
+            name: 'groups',
+            type: 'readonly SidebarNavGroup[]',
+            description: 'Nav groups, each with an optional header and a list of items.',
+          },
+          {
+            name: 'orgSwitcher',
+            type: 'ReactNode',
+            description: 'Top slot, typically an OrgSwitcher.',
+          },
+          {
+            name: 'userRow',
+            type: 'ReactNode',
+            description: 'Footer slot, typically a SidebarUserRow.',
+          },
+          {
+            name: 'versionTag',
+            type: 'ReactNode',
+            description: 'Footer slot, typically a VersionTag.',
+          },
+          {
+            name: 'back',
+            type: 'ReactNode',
+            description: 'Drill-in back label, rendered beside the back arrow.',
+          },
+          {
+            name: 'onBack',
+            type: '() => void',
+            description: 'Drill-in back handler; the back control renders only when set.',
+          },
+          {
+            name: 'title',
+            type: 'ReactNode',
+            description: 'Drill-in title.',
+          },
+          {
+            name: 'hint',
+            type: 'ReactNode',
+            description: 'Drill-in subtitle below the title.',
+          },
+        ]}
+      />
+    </ComponentPage>
+  );
+}
+
+export default SidebarPage;

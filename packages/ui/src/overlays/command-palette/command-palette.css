@@ -1,0 +1,154 @@
+.ui-command-palette__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  background: var(--overlay);
+}
+
+/*
+ * Centered with auto margins, not translateX(-50%): the open animation animates
+ * `transform`, which would override a positioning transform and snap the panel
+ * sideways when the animation ends.
+ */
+.ui-command-palette__panel {
+  position: fixed;
+  z-index: var(--z-modal);
+  top: 96px;
+  left: 0;
+  right: 0;
+  width: 92vw;
+  max-width: 560px;
+  margin-inline: auto;
+}
+
+.ui-command-palette__overlay[data-state="open"] {
+  animation: fade var(--duration-fast) var(--easing-standard);
+}
+
+.ui-command-palette__panel[data-state="open"] {
+  animation: scale-in var(--duration-fast) var(--easing-emphasized);
+}
+
+.ui-command-palette {
+  display: flex;
+  flex-direction: column;
+  max-height: 60vh;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elev-3);
+  color: var(--text);
+  font-family: var(--font-sans);
+  overflow: hidden;
+}
+
+.ui-command-palette__title,
+.ui-command-palette__description {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  border: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.ui-command-palette__search {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  height: 56px;
+  padding: 0 var(--space-4);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+.ui-command-palette__input {
+  flex: 1;
+  height: 100%;
+  background: transparent;
+  border: 0;
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-body);
+  outline: none;
+}
+
+.ui-command-palette__input::placeholder {
+  color: var(--text-muted);
+}
+
+.ui-command-palette__list {
+  flex: 1;
+  padding: var(--space-2);
+  overflow-y: auto;
+}
+
+.ui-command-palette__group [cmdk-group-items] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.ui-command-palette__empty {
+  padding: var(--space-6) var(--space-4);
+  color: var(--text-muted);
+  font-size: var(--font-size-body);
+  text-align: center;
+}
+
+.ui-command-palette__group {
+  margin-bottom: var(--space-1);
+}
+
+.ui-command-palette__group [cmdk-group-heading] {
+  padding: 6px 10px;
+  color: var(--text-dim);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.ui-command-palette__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 44px;
+  /* 12px left = 10px gutter + the 2px the selected bar occupies. */
+  padding: 0 10px 0 12px;
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+}
+
+/* Inset bar, not border-left — an asymmetric border on a rounded box leaks
+ * stray corner pixels; the inset shadow clips cleanly to the radius. */
+.ui-command-palette__item[data-selected="true"] {
+  background: var(--accent-soft);
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+
+.ui-command-palette__item-label {
+  flex: 1;
+}
+
+.ui-command-palette__footer {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: var(--font-size-caption);
+}
+
+.ui-command-palette__hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}

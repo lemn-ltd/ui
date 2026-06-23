@@ -1,0 +1,35 @@
+.ui-settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+/* The standard separation between stacked rows. Explicit so it stays constant
+ * regardless of each row's content height — taller controls (a code block, an
+ * avatar) no longer collapse the gap the way min-height centering did. */
+.ui-settings-row + .ui-settings-row {
+  margin-top: var(--space-4);
+}
+
+.ui-settings-row__body {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.ui-settings-row__label {
+  color: var(--text);
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-medium);
+}
+
+.ui-settings-row__description {
+  color: var(--text-muted);
+  font-size: var(--font-size-caption);
+}
+
+.ui-settings-row__control {
+  flex-shrink: 0;
+}

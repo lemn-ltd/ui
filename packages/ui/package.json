@@ -1,0 +1,72 @@
+{
+  "name": "@appranks/ui",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./tokens": {
+      "types": "./dist/tokens.d.ts",
+      "default": "./dist/tokens.js"
+    },
+    "./catalog": {
+      "types": "./dist/catalog.d.ts",
+      "default": "./dist/catalog.js"
+    },
+    "./styles.css": "./dist/styles.css"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "restricted"
+  },
+  "scripts": {
+    "build": "rm -rf dist && tsc && cp src/styles.css dist/styles.css",
+    "dev": "tsc --watch",
+    "check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "peerDependencies": {
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "dependencies": {
+    "@codemirror/lang-json": "6.0.2",
+    "@codemirror/language": "6.12.3",
+    "@codemirror/lint": "6.9.7",
+    "@codemirror/state": "6.6.0",
+    "@codemirror/view": "6.43.1",
+    "@lezer/highlight": "1.2.3",
+    "@shikijs/langs": "4.2.0",
+    "@shikijs/themes": "4.2.0",
+    "@uiw/react-codemirror": "4.25.10",
+    "@xyflow/react": "12.11.0",
+    "cmdk": "catalog:",
+    "hast-util-to-jsx-runtime": "2.3.6",
+    "lucide-react": "catalog:",
+    "radix-ui": "catalog:",
+    "react-markdown": "10.1.0",
+    "remark-gfm": "4.0.1",
+    "shiki": "4.2.0",
+    "sonner": "catalog:"
+  },
+  "devDependencies": {
+    "@testing-library/react": "16.3.2",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "6.0.1",
+    "@vitest/coverage-v8": "catalog:",
+    "happy-dom": "20.9.0",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

@@ -1,0 +1,10 @@
+node_modules
+dist
+.turbo
+.wrangler
+coverage
+playwright-report
+test-results
+.DS_Store
+.dev.vars
+.env

@@ -1,0 +1,28 @@
+{
+  "name": "appranks-ui-workspace",
+  "private": true,
+  "packageManager": "pnpm@11.8.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "check": "turbo run check",
+    "test": "turbo run test",
+    "dev:showcase": "pnpm --filter @appranks/ui-showcase run dev",
+    "kill:showcase": "pnpm --filter @appranks/ui-showcase run kill",
+    "deploy:showcase": "pnpm --filter @appranks/ui-showcase run deploy:production",
+    "publish:ui": "pnpm --filter @appranks/ui publish --access restricted --no-git-checks"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@playwright/test": "catalog:",
+    "@vitejs/plugin-react": "6.0.1",
+    "@vitest/coverage-v8": "catalog:",
+    "happy-dom": "20.9.0",
+    "turbo": "catalog:",
+    "typescript": "catalog:",
+    "vite": "8.0.16",
+    "vitest": "catalog:"
+  }
+}

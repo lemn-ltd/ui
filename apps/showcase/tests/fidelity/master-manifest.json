@@ -1,0 +1,368 @@
+{
+  "penFile": "packages/ui/design/ui.pen",
+  "penHash": "618788bed8c49d96fd26d85e65b7a2ac902703b9cc4977a0425e459c55f49ccd",
+  "capturedAgainstPatchedPen": false,
+  "note": "Masters must be captured against the canonical packages/ui/design/ui.pen. masterNodeId is filled for masters whose canvas id is known; the rest are resolved at capture time. responsive masters add 375/768/1280 artboards.",
+  "masters": [
+    {
+      "slug": "button",
+      "group": "Primitives",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "icon-button",
+      "group": "Primitives",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "input",
+      "group": "Primitives",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "textarea",
+      "group": "Primitives",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "select",
+      "group": "Primitives",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "search",
+      "group": "Primitives",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "checkbox",
+      "group": "Primitives",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "radio",
+      "group": "Primitives",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "toggle",
+      "group": "Primitives",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "badge",
+      "group": "Primitives",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "tag",
+      "group": "Primitives",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "avatar",
+      "group": "Primitives",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "kbd",
+      "group": "Primitives",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "filter-pill",
+      "group": "Primitives",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "scope-pill",
+      "group": "Primitives",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "field",
+      "group": "Forms",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "segmented-control",
+      "group": "Forms",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "combobox",
+      "group": "Forms",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "accordion",
+      "group": "Forms",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "dialog",
+      "group": "Overlays",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "confirm-dialog",
+      "group": "Overlays",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "menu",
+      "group": "Overlays",
+      "masterNodeId": "aulo4",
+      "responsive": false
+    },
+    {
+      "slug": "popover",
+      "group": "Overlays",
+      "masterNodeId": "Ypore",
+      "responsive": false
+    },
+    {
+      "slug": "tooltip",
+      "group": "Overlays",
+      "masterNodeId": "Tz6T9",
+      "responsive": false
+    },
+    {
+      "slug": "command-palette",
+      "group": "Overlays",
+      "masterNodeId": "raCbS",
+      "responsive": false
+    },
+    {
+      "slug": "sidebar",
+      "group": "Navigation",
+      "masterNodeId": null,
+      "responsive": true
+    },
+    {
+      "slug": "top-bar",
+      "group": "Navigation",
+      "masterNodeId": null,
+      "responsive": true
+    },
+    {
+      "slug": "entity-toolbar",
+      "group": "Navigation",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "breadcrumb",
+      "group": "Navigation",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "tabs",
+      "group": "Navigation",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "stepper",
+      "group": "Navigation",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "org-switcher",
+      "group": "Navigation",
+      "masterNodeId": "oLZGG",
+      "responsive": false
+    },
+    {
+      "slug": "pagination",
+      "group": "Navigation",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "card",
+      "group": "Data display",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "data-table",
+      "group": "Data display",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "stat-card",
+      "group": "Data display",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "stats-strip",
+      "group": "Data display",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "code-block",
+      "group": "Data display",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "json-viewer",
+      "group": "Data display",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "sparkline",
+      "group": "Data display",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "relative-time",
+      "group": "Data display",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "list-shell",
+      "group": "Data display",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "list-filters-bar",
+      "group": "Data display",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "filter",
+      "group": "Data display",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "filter-chip",
+      "group": "Data display",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "empty-state",
+      "group": "Data display",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "recent-chips",
+      "group": "Data display",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "preset-selector",
+      "group": "Data display",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "toaster",
+      "group": "Feedback",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "info-banner",
+      "group": "Feedback",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "system-bar",
+      "group": "Feedback",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "skeleton",
+      "group": "Feedback",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "spinner",
+      "group": "Feedback",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "progress-bar",
+      "group": "Feedback",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "screen-shell",
+      "group": "Layout",
+      "masterNodeId": null,
+      "responsive": true
+    },
+    {
+      "slug": "content-layout",
+      "group": "Layout",
+      "masterNodeId": null,
+      "responsive": true
+    },
+    {
+      "slug": "page-section",
+      "group": "Layout",
+      "masterNodeId": null,
+      "responsive": false
+    },
+    {
+      "slug": "section-grid",
+      "group": "Layout",
+      "masterNodeId": null,
+      "responsive": true
+    },
+    {
+      "slug": "two-column",
+      "group": "Layout",
+      "masterNodeId": null,
+      "responsive": true
+    },
+    {
+      "slug": "version-tag",
+      "group": "Layout",
+      "masterNodeId": "nJ6hW",
+      "responsive": false
+    }
+  ]
+}

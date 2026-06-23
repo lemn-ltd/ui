@@ -1,0 +1,211 @@
+.ui-data-table {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  font-family: var(--font-sans);
+}
+
+.ui-data-table__scroll {
+  overflow: auto;
+  max-height: 480px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.ui-data-table__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-small);
+}
+
+.ui-data-table__head {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-raised);
+}
+
+.ui-data-table__th {
+  position: sticky;
+  top: 0;
+  height: 44px;
+  padding: 0 var(--space-3);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-small);
+  text-align: left;
+}
+
+.ui-data-table__th--select {
+  width: 48px;
+  text-align: center;
+}
+
+.ui-data-table__th--actions {
+  width: 60px;
+}
+
+.ui-data-table__th[data-align="center"],
+.ui-data-table__td[data-align="center"] {
+  text-align: center;
+}
+
+.ui-data-table__th[data-align="end"],
+.ui-data-table__td[data-align="end"] {
+  text-align: right;
+}
+
+.ui-data-table__sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.ui-data-table__th--sortable[data-align="end"] .ui-data-table__sort {
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.ui-data-table__th--sortable[data-align="center"] .ui-data-table__sort {
+  justify-content: center;
+  width: 100%;
+}
+
+.ui-data-table__sort:hover {
+  color: var(--text);
+}
+
+.ui-data-table__sort-icon {
+  color: var(--text-dim);
+}
+
+.ui-data-table__sort[data-sort="asc"] .ui-data-table__sort-icon,
+.ui-data-table__sort[data-sort="desc"] .ui-data-table__sort-icon {
+  color: var(--accent);
+}
+
+.ui-data-table__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+.ui-data-table__row {
+  transition: background-color var(--duration-fast) var(--easing-standard);
+}
+
+.ui-data-table__row[data-clickable="true"] {
+  cursor: pointer;
+}
+
+.ui-data-table__row:hover {
+  background: var(--surface2);
+}
+
+.ui-data-table__row[data-selected="true"] {
+  background: var(--accent-soft);
+}
+
+.ui-data-table__td {
+  padding: var(--space-4) var(--space-3);
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  vertical-align: middle;
+}
+
+.ui-data-table__td--select {
+  width: 48px;
+  text-align: center;
+}
+
+.ui-data-table__td--actions {
+  width: 60px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.ui-data-table[data-density="compact"] .ui-data-table__td {
+  padding-top: var(--space-2);
+  padding-bottom: var(--space-2);
+}
+
+.ui-data-table__empty {
+  height: 220px;
+  padding: 0;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.ui-data-table__bulk {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: 0 var(--space-4);
+  min-height: 52px;
+  background: var(--surface2);
+  border-radius: var(--radius-md);
+  box-shadow: var(--elev-1);
+}
+
+.ui-data-table__bulk-selected {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.ui-data-table__bulk-check {
+  color: var(--accent);
+}
+
+.ui-data-table__bulk-count {
+  color: var(--text);
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-small);
+}
+
+.ui-data-table__bulk-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.ui-data-table__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/*
+ * Mobile: the table stays a real table inside its own horizontal-scroll
+ * container (the page itself never scrolls sideways). A min-width keeps columns
+ * legible instead of crushing them; the sticky header and row hover still apply.
+ * A stacked label:value card treatment is intentionally NOT used here because it
+ * would require a per-cell `data-label`, which only the table markup can supply.
+ */
+@media (max-width: 768px) {
+  .ui-data-table__scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .ui-data-table__table {
+    min-width: 560px;
+  }
+
+  .ui-data-table__footer {
+    flex-wrap: wrap;
+  }
+}

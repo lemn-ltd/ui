@@ -1,0 +1,77 @@
+/**
+ * Document-level globals that bind the page to the token cascade. No component
+ * styling lives here.
+ */
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* Text fields carry their own focus border (the component's accent border), so the
+   global focus-visible outline would double up into a second ring inside it. */
+input:focus-visible,
+textarea:focus-visible {
+  outline: none;
+}
+
+/*
+ * Themed scrollbars everywhere: every scrollable surface (content, sidebar,
+ * inputs, menus, tables) gets the same thin, token-bound bar in light and dark.
+ */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+::-webkit-scrollbar {
+  width: var(--scrollbar-size);
+  height: var(--scrollbar-size);
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border: 2px solid var(--scrollbar-track);
+  border-radius: var(--radius-pill);
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+  border-color: var(--scrollbar-track);
+  background-clip: padding-box;
+}
+
+/*
+ * Mobile: interactive controls meet the 44px minimum touch-target height. This
+ * is a global accessibility floor over the public component class contract; it
+ * only raises heights below the small breakpoint and leaves desktop untouched.
+ */
+@media (max-width: 768px) {
+  .ui-button,
+  .ui-icon-button,
+  .ui-sidebar__item,
+  .ui-sidebar__close,
+  .ui-menu__item,
+  .ui-tabs__tab,
+  .ui-filter-pill {
+    min-height: 44px;
+  }
+
+  .ui-icon-button,
+  .ui-sidebar__close {
+    min-width: 44px;
+  }
+}

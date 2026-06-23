@@ -1,0 +1,68 @@
+.ui-dock-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
+  background: var(--bg);
+  border-left: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.ui-dock-panel__header {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  height: 40px;
+  padding: 0 var(--space-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.ui-dock-panel__tabs {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.ui-dock-panel__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+}
+
+.ui-dock-panel__tab:hover {
+  background: var(--surface2);
+  color: var(--text);
+}
+
+.ui-dock-panel__tab[data-active="true"],
+.ui-dock-panel__tab[data-active="true"]:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.ui-dock-panel__controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.ui-dock-panel__controls .ui-icon-button {
+  width: 28px;
+  height: 28px;
+}
+
+.ui-dock-panel__body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}

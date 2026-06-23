@@ -1,0 +1,26 @@
+.ui-spinner {
+  display: inline-block;
+  border-style: solid;
+  border-color: var(--text-muted);
+  border-top-color: transparent;
+  border-radius: var(--radius-pill);
+  animation: spin calc(var(--duration-slow) * 2) var(--easing-linear) infinite;
+}
+
+.ui-spinner[data-size="sm"] {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
+}
+
+.ui-spinner[data-size="md"] {
+  width: 24px;
+  height: 24px;
+  border-width: 2px;
+}
+
+.ui-spinner[data-size="lg"] {
+  width: 32px;
+  height: 32px;
+  border-width: 3px;
+}

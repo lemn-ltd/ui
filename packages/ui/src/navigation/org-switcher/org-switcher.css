@@ -1,0 +1,143 @@
+.ui-org-switcher {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2);
+  background: var(--surface2);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-small);
+  cursor: pointer;
+}
+
+.ui-org-switcher[data-variant="rail"] {
+  width: 40px;
+  height: 40px;
+  justify-content: center;
+  padding: 6px;
+}
+
+/* Size the dropdown to the trigger so both components share the same width. */
+.ui-org-switcher__menu {
+  width: var(--radix-dropdown-menu-trigger-width);
+}
+
+/*
+ * Align the dropdown row marks under the trigger mark: the trigger insets its
+ * mark by --space-2, so the menu rows drop the default item left padding to
+ * line up (the dropdown left edge already matches the trigger via align=start).
+ */
+.ui-org-switcher__menu .ui-menu__item {
+  padding-left: var(--space-1);
+}
+
+/*
+ * The selected org row carries the tinted `--accent-soft` background (the same
+ * selected token the sidebar uses), wrapping the mark, name, and active-org
+ * action as one unit. Selection is the background, not a trailing check glyph.
+ */
+.ui-org-switcher__active-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding-right: var(--space-1);
+  background: var(--accent-soft);
+  border-radius: var(--radius-sm);
+}
+
+/* The row owns the background, so the item inside stays transparent — even when
+ * highlighted — to read as a single cohesive selected row. */
+.ui-org-switcher__active-row .ui-menu__item,
+.ui-org-switcher__active-row .ui-menu__item[data-highlighted] {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+}
+
+/*
+ * The ring is the pointer/focus indicator on every org row, not just the
+ * selected one. A bare row carries the ring on its item; the selected row lifts
+ * the ring to its wrapper (and clears the child's own ring) so it spans the
+ * active-org action too, matching the tinted background.
+ */
+.ui-org-switcher__menu .ui-menu__item[data-highlighted],
+.ui-org-switcher__menu .ui-menu__item:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
+}
+
+.ui-org-switcher__active-row:has(.ui-menu__item[data-highlighted]),
+.ui-org-switcher__active-row:has(.ui-menu__item:focus-visible) {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
+}
+
+.ui-org-switcher__active-row .ui-menu__item[data-highlighted],
+.ui-org-switcher__active-row .ui-menu__item:focus-visible {
+  outline: none;
+}
+
+.ui-org-switcher__active-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.ui-org-switcher__active-action:hover,
+.ui-org-switcher__active-action:focus-visible {
+  background: var(--surface);
+  color: var(--accent);
+  outline: none;
+}
+
+.ui-org-switcher__mark,
+.ui-org-switcher__row-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  background: var(--accent-soft);
+  border-radius: var(--radius-sm);
+  color: var(--accent);
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* On the tinted row the mark goes solid so it does not blend into its own soft tint.
+ * Declared after the base mark rule so specificity ascends in source order. */
+.ui-org-switcher__active-row .ui-org-switcher__row-mark {
+  background: var(--accent);
+  color: var(--surface);
+}
+
+.ui-org-switcher__name {
+  flex: 1;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: var(--font-weight-semibold);
+}
+
+.ui-org-switcher__chevron {
+  flex-shrink: 0;
+  color: var(--text-muted);
+  transform-origin: center;
+  transition: transform 1s var(--easing-standard);
+}
+
+.ui-org-switcher[data-open="true"] .ui-org-switcher__chevron {
+  transform: rotate(180deg);
+}

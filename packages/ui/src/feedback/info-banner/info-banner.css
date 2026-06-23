@@ -1,0 +1,106 @@
+/* Inset tone bar, not border-left — an asymmetric border on a rounded box leaks
+ * stray corner pixels; the inset shadow clips cleanly to the radius. The extra
+ * 3px of left padding stands in for the removed border width. */
+.ui-info-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-4) var(--space-4) calc(var(--space-4) + 3px);
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+}
+
+/* Floating mode: in flex-backed content regions, margin-top consumes short-page
+ * slack; sticky keeps the banner pinned when the region scrolls. */
+.ui-info-banner[data-floating="true"] {
+  position: sticky;
+  z-index: var(--z-chrome);
+  flex-shrink: 0;
+  bottom: calc(var(--space-3) + env(safe-area-inset-bottom, 0px));
+  margin-top: auto;
+  box-shadow: var(--elev-2);
+  animation: slide-bottom var(--duration-fast) var(--easing-standard);
+}
+
+.ui-info-banner__icon {
+  flex: none;
+  margin-top: 1px;
+}
+
+.ui-info-banner__body {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--text);
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-small);
+}
+
+.ui-info-banner[data-variant="info"] {
+  background: var(--info-soft);
+  box-shadow: inset 3px 0 0 var(--info);
+}
+.ui-info-banner[data-variant="info"] .ui-info-banner__icon {
+  color: var(--info);
+}
+
+.ui-info-banner[data-variant="warn"] {
+  background: var(--warn-soft);
+  box-shadow: inset 3px 0 0 var(--warn);
+}
+.ui-info-banner[data-variant="warn"] .ui-info-banner__icon {
+  color: var(--warn);
+}
+
+.ui-info-banner[data-variant="danger"] {
+  background: var(--danger-soft);
+  box-shadow: inset 3px 0 0 var(--danger);
+}
+.ui-info-banner[data-variant="danger"] .ui-info-banner__icon {
+  color: var(--danger);
+}
+
+.ui-info-banner[data-variant="success"] {
+  background: var(--success-soft);
+  box-shadow: inset 3px 0 0 var(--success);
+}
+.ui-info-banner[data-variant="success"] .ui-info-banner__icon {
+  color: var(--success);
+}
+
+.ui-info-banner[data-density="compact"] {
+  box-sizing: border-box;
+  width: fit-content;
+  max-width: 100%;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2) var(--space-1) calc(var(--space-2) + 2px);
+  border-radius: var(--radius-sm);
+}
+
+.ui-info-banner[data-density="compact"] .ui-info-banner__icon {
+  width: 12px;
+  height: 12px;
+  margin-top: 0;
+}
+
+.ui-info-banner[data-density="compact"] .ui-info-banner__body {
+  overflow-wrap: anywhere;
+  font-size: 11px;
+  line-height: 14px;
+}
+
+.ui-info-banner[data-density="compact"][data-variant="info"] {
+  box-shadow: inset 2px 0 0 var(--info);
+}
+
+.ui-info-banner[data-density="compact"][data-variant="warn"] {
+  box-shadow: inset 2px 0 0 var(--warn);
+}
+
+.ui-info-banner[data-density="compact"][data-variant="danger"] {
+  box-shadow: inset 2px 0 0 var(--danger);
+}
+
+.ui-info-banner[data-density="compact"][data-variant="success"] {
+  box-shadow: inset 2px 0 0 var(--success);
+}

@@ -1,0 +1,157 @@
+name: CI/CD
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: appranks-ui-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'push' }}
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://npm.pkg.github.com
+          scope: "@appranks"
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare "$(node -p "require('./package.json').packageManager")" --activate
+
+      - name: Resolve pnpm store
+        run: echo "PNPM_STORE_PATH=$(pnpm store path --silent)" >> "$GITHUB_ENV"
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.PNPM_STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check
+        run: pnpm check
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+  publish-and-deploy:
+    name: Publish Package And Deploy Showcase
+    needs: validate
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://npm.pkg.github.com
+          scope: "@appranks"
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare "$(node -p "require('./package.json').packageManager")" --activate
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build packages
+        run: |
+          pnpm --filter @appranks/ui run build
+          pnpm --filter @appranks/showcase-kit run build
+
+      - name: Publish @appranks/ui if needed
+        run: |
+          version="$(node -p "require('./packages/ui/package.json').version")"
+          if npm view "@appranks/ui@${version}" version >/dev/null 2>&1; then
+            echo "@appranks/ui@${version} already published"
+            exit 0
+          fi
+          pnpm --filter @appranks/ui publish --access restricted --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute build metadata
+        id: build
+        run: |
+          short_sha="${GITHUB_SHA:0:7}"
+          echo "version=${short_sha}" >> "$GITHUB_OUTPUT"
+          echo "sha=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+          echo "time=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+
+      - name: Build showcase
+        run: pnpm --filter @appranks/ui-showcase run cf:build
+        env:
+          CLOUDFLARE_ENV: production
+
+      - name: Deploy showcase
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: apps/showcase
+          environment: production
+          secrets: |
+            STATUS_TOKEN
+          command: deploy --env production --var BUILD_VERSION:${{ steps.build.outputs.version }} --var BUILD_GIT_SHA:${{ steps.build.outputs.sha }} --var BUILD_TIME:${{ steps.build.outputs.time }}
+        env:
+          STATUS_TOKEN: ${{ secrets.STATUS_TOKEN }}
+
+      - name: Smoke public endpoints
+        run: |
+          for url in \
+            "https://ui.appranks.com/health" \
+            "https://ui.appranks.com/catalog.json" \
+            "https://ui.appranks.com/llms.txt"; do
+            for attempt in $(seq 1 30); do
+              if curl --fail --silent --max-time 5 "$url" > /dev/null; then
+                echo "OK $url"
+                break
+              fi
+              if [ "$attempt" -eq 30 ]; then
+                echo "Failed after 60s: $url" >&2
+                exit 1
+              fi
+              sleep 2
+            done
+          done
+
+      - name: Summary
+        run: |
+          {
+            echo "### Appranks UI"
+            echo ""
+            echo "- Package: \`@appranks/ui\`"
+            echo "- Showcase: https://ui.appranks.com"
+            echo "- Catalog: https://ui.appranks.com/catalog.json"
+            echo "- Agent guide: https://ui.appranks.com/llms.txt"
+            echo "- Commit: \`${GITHUB_SHA}\`"
+          } >> "$GITHUB_STEP_SUMMARY"

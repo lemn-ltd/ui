@@ -1,0 +1,49 @@
+.ui-segmented-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: var(--space-1);
+  background: var(--surface2);
+  border-radius: var(--radius-md);
+}
+
+.ui-segmented-control__segment {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  padding: 6px var(--space-3);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-small);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--easing-standard),
+    color var(--duration-fast) var(--easing-standard),
+    box-shadow var(--duration-fast) var(--easing-standard);
+}
+
+.ui-segmented-control__segment:not(:disabled):hover {
+  color: var(--text);
+}
+
+.ui-segmented-control__segment[data-state="on"] {
+  background: var(--surface);
+  box-shadow: var(--elev-1);
+  color: var(--text);
+}
+
+.ui-segmented-control__segment:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ui-segmented-control__label {
+  display: inline-flex;
+}

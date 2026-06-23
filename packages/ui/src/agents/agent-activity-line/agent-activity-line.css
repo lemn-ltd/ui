@@ -1,0 +1,96 @@
+.ui-agent-activity-line {
+  display: inline-flex;
+  max-width: 100%;
+  min-width: 0;
+  height: 28px;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text);
+  font-size: var(--font-size-small);
+  line-height: 1;
+}
+
+.ui-agent-activity-line__visual {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+}
+
+.ui-agent-activity-line__visual svg {
+  display: block;
+}
+
+.ui-agent-activity-line[data-pulse="true"] .ui-agent-activity-line__visual {
+  animation: ui-agent-activity-line-pulse 1.5s var(--easing-standard) infinite;
+}
+
+.ui-agent-activity-line__name {
+  overflow: hidden;
+  flex: none;
+  max-width: 24ch;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0;
+  line-height: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-agent-activity-line__action {
+  overflow: hidden;
+  min-width: 0;
+  color: var(--text-muted);
+  font-style: italic;
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ui-agent-activity-line[data-tone="accent"] .ui-agent-activity-line__action {
+  color: var(--accent);
+}
+
+.ui-agent-activity-line[data-tone="info"] .ui-agent-activity-line__action {
+  color: var(--info);
+}
+
+.ui-agent-activity-line[data-tone="warn"] .ui-agent-activity-line__action {
+  color: var(--warn);
+}
+
+.ui-agent-activity-line[data-tone="danger"] .ui-agent-activity-line__action {
+  color: var(--danger);
+}
+
+.ui-agent-activity-line[data-tone="success"] .ui-agent-activity-line__action {
+  color: var(--success);
+}
+
+.ui-agent-activity-line__tool {
+  flex: none;
+}
+
+@keyframes ui-agent-activity-line-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.58;
+    transform: scale(0.92);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-agent-activity-line[data-pulse="true"] .ui-agent-activity-line__visual {
+    animation: none;
+  }
+}

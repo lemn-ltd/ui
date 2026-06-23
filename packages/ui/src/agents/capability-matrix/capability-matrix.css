@@ -1,0 +1,188 @@
+.ui-capability-matrix {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  font-family: var(--font-sans);
+}
+
+.ui-capability-matrix__scroll {
+  overflow: auto;
+  max-height: 480px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.ui-capability-matrix__table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-small);
+}
+
+.ui-capability-matrix__head {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-raised);
+}
+
+.ui-capability-matrix__th {
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-small);
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+.ui-capability-matrix__th--capability {
+  position: sticky;
+  left: 0;
+  z-index: var(--z-raised);
+  min-width: 240px;
+  text-align: left;
+}
+
+.ui-capability-matrix__target-label {
+  display: block;
+  color: var(--text);
+}
+
+.ui-capability-matrix__target-kind {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--text-dim);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.ui-capability-matrix__td {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  vertical-align: middle;
+  transition: background-color var(--duration-fast) var(--easing-standard);
+}
+
+.ui-capability-matrix__row:hover .ui-capability-matrix__td {
+  background: var(--surface2);
+}
+
+.ui-capability-matrix__row:last-child .ui-capability-matrix__td {
+  border-bottom: none;
+}
+
+.ui-capability-matrix__td--capability {
+  position: sticky;
+  left: 0;
+  z-index: var(--z-base);
+  display: table-cell;
+  min-width: 240px;
+  border-right: 1px solid var(--border);
+  text-align: left;
+  font-weight: var(--font-weight-regular);
+}
+
+.ui-capability-matrix__td--cell {
+  text-align: center;
+  width: 1%;
+  white-space: nowrap;
+}
+
+.ui-capability-matrix__td[data-clickable] {
+  cursor: pointer;
+}
+
+.ui-capability-matrix__td[data-clickable]:hover {
+  background: var(--accent-soft);
+}
+
+.ui-capability-matrix__capability-name {
+  display: block;
+  color: var(--text);
+  font-weight: var(--font-weight-semibold);
+}
+
+.ui-capability-matrix__capability-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
+}
+
+.ui-capability-matrix__capability-ref {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-mono);
+  line-height: var(--line-height-mono);
+}
+
+.ui-capability-matrix__mark-icon {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.ui-capability-matrix__td--cell[data-state="granted"] .ui-capability-matrix__mark-icon {
+  color: var(--accent);
+}
+
+.ui-capability-matrix__td--cell[data-state="assigned"] .ui-capability-matrix__mark-icon {
+  color: var(--success);
+}
+
+.ui-capability-matrix__dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--info);
+  vertical-align: middle;
+}
+
+.ui-capability-matrix__dash {
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-capability-matrix__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ui-capability-matrix__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--text-dim);
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
+}
+
+.ui-capability-matrix__legend-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+}
+
+.ui-capability-matrix__legend-item[data-state="granted"] .ui-capability-matrix__mark-icon {
+  color: var(--accent);
+}
+
+.ui-capability-matrix__legend-item[data-state="assigned"] .ui-capability-matrix__mark-icon {
+  color: var(--success);
+}

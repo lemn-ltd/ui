@@ -1,0 +1,118 @@
+.ui-tabs {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-1);
+}
+
+/* Mobile: the tab row scrolls horizontally instead of overflowing the page. */
+@media (max-width: 640px) {
+  .ui-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .ui-tabs__tab {
+    white-space: nowrap;
+  }
+}
+
+.ui-tabs__tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 36px;
+  padding: 0 var(--space-3);
+  background: none;
+  border: 0;
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-small);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--easing-standard),
+    color var(--duration-fast) var(--easing-standard),
+    font-weight var(--duration-fast) var(--easing-standard);
+}
+
+.ui-tabs__tab::after {
+  position: absolute;
+  right: var(--space-2);
+  bottom: 0;
+  left: var(--space-2);
+  height: 3px;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  content: "";
+  transition: background-color var(--duration-fast) var(--easing-standard);
+}
+
+.ui-tabs__tab:hover {
+  background: color-mix(in srgb, var(--surface2) 64%, transparent);
+  color: var(--text);
+}
+
+.ui-tabs__tab[data-state="active"] {
+  color: var(--text);
+  font-weight: var(--font-weight-semibold);
+}
+
+.ui-tabs__tab[data-state="active"]::after {
+  background: var(--accent);
+}
+
+.ui-tabs__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 16px;
+  padding: 0 6px;
+  background: var(--surface2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  color: var(--text-muted);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-caption);
+}
+
+.ui-tabs__tab[data-state="active"] .ui-tabs__count {
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 24%, transparent);
+  color: var(--accent);
+}
+
+/* Vertical orientation — a sidebar rail. Items stack full-width and the active
+ * one is marked by a left accent bar + soft accent fill, not an underline. */
+.ui-tabs[data-orientation="vertical"] {
+  align-items: stretch;
+  flex-direction: column;
+  gap: var(--space-1);
+  border-bottom: 0;
+}
+
+.ui-tabs__tab[data-orientation="vertical"] {
+  width: 100%;
+  justify-content: flex-start;
+  /* The extra 2px of left padding stands in for the removed border width. */
+  padding: var(--space-2) var(--space-3) var(--space-2) calc(var(--space-3) + 2px);
+  border-radius: var(--radius-md);
+  box-shadow: none;
+}
+
+.ui-tabs__tab[data-orientation="vertical"]::after {
+  display: none;
+}
+
+.ui-tabs__tab[data-orientation="vertical"]:hover {
+  background: var(--surface2);
+}
+
+/* Inset bar, not border-left — an asymmetric border on a rounded box leaks
+ * stray corner pixels; the inset shadow clips cleanly to the radius. */
+.ui-tabs__tab[data-orientation="vertical"][data-state="active"] {
+  box-shadow: inset 2px 0 0 var(--accent);
+  background: var(--accent-soft);
+}

@@ -1,0 +1,12 @@
+.ui-retry-chip {
+  text-transform: none;
+}
+
+.ui-retry-chip__count {
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-retry-chip__note {
+  color: var(--text-muted);
+  font-weight: var(--font-weight-regular);
+}

@@ -1,0 +1,136 @@
+/**
+ * Foundation motion primitives.
+ *
+ * Loop keyframes (shimmer, spin, indeterminate) are authored to run with
+ * `--easing-linear` so their cadence stays constant; entrance motion uses
+ * `--easing-emphasized`. Consumers apply these via the `animation` shorthand in
+ * their own styles; component-specific transitions live in their owning slice.
+ *
+ * The reduced-motion guard neutralizes movement and freezes loops globally.
+ */
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes shimmer {
+  from {
+    background-position: -200% 0;
+  }
+  to {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(400%);
+  }
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Opacity-only entrance (Tooltip, content swap). */
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Overlay entrance: opacity + a subtle scale settle (Dialog/Menu/Popover/cmdk). */
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Mobile bottom sheet entrance (Dialog on small viewports). */
+@keyframes slide-bottom {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Off-canvas drawer entrance from the left edge (Sidebar drawer). */
+@keyframes slide-left {
+  from {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Off-canvas slide-over entrance from the right edge (Drawer). */
+@keyframes slide-right {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Toast entrance from the right edge (sonner stack). */
+@keyframes slide-right-in {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/*
+ * Movement off, opacity preserved. A near-zero duration (not 0) keeps movement
+ * imperceptible while still firing `animationend`/`transitionend`, so functional
+ * flows that wait on those events stay correct. Loops collapse to a single
+ * static frame.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    /* biome-ignore lint/complexity/noImportantStyles: reduced-motion overrides must win across all component animations. */
+    animation-duration: 0.00001s !important;
+    /* biome-ignore lint/complexity/noImportantStyles: reduced-motion overrides must win across all component animations. */
+    animation-iteration-count: 1 !important;
+    /* biome-ignore lint/complexity/noImportantStyles: reduced-motion overrides must win across all component transitions. */
+    transition-duration: 0.00001s !important;
+    /* biome-ignore lint/complexity/noImportantStyles: reduced-motion overrides must win across all scroll behavior. */
+    scroll-behavior: auto !important;
+  }
+}

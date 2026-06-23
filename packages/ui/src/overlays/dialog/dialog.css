@@ -1,0 +1,154 @@
+.ui-dialog__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  background: var(--overlay);
+}
+
+/*
+ * Centered with auto margins, not translate(-50%, -50%): the open animation
+ * animates `transform`, which would override a positioning transform and snap
+ * the dialog sideways when the animation ends.
+ */
+.ui-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  flex-direction: column;
+  width: 92vw;
+  max-width: 440px;
+  height: fit-content;
+  max-height: 85vh;
+  margin: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elev-3);
+  color: var(--text);
+  font-family: var(--font-sans);
+}
+
+/*
+ * Size scale gated above the bottom-sheet breakpoint so the mobile full-width
+ * sheet always wins — an unscoped [data-size] selector outranks the media
+ * override on specificity and would re-narrow the panel on small screens.
+ */
+@media (min-width: 641px) {
+  .ui-dialog[data-size="md"] {
+    max-width: 560px;
+  }
+
+  .ui-dialog[data-size="lg"] {
+    max-width: 720px;
+  }
+
+  .ui-dialog[data-size="xl"] {
+    max-width: 960px;
+  }
+}
+
+.ui-dialog__overlay[data-state="open"] {
+  animation: fade var(--duration-fast) var(--easing-standard);
+}
+
+.ui-dialog[data-state="open"] {
+  animation: scale-in var(--duration-fast) var(--easing-emphasized);
+}
+
+/* Mobile: bottom sheet — full-width, bottom-anchored, slides up from the edge. */
+@media (max-width: 640px) {
+  .ui-dialog {
+    inset: auto 0 0 0;
+    width: 100%;
+    max-width: none;
+    height: auto;
+    max-height: 90vh;
+    margin: 0;
+    border-bottom: 0;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+
+  .ui-dialog[data-state="open"] {
+    animation: slide-bottom var(--duration-normal) var(--easing-emphasized);
+  }
+}
+
+.ui-dialog__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-5);
+}
+
+/* Master→detail back affordance: sits where the title would, left-aligned. */
+.ui-dialog__back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  margin-left: calc(var(--space-2) * -1);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+}
+
+.ui-dialog__back:hover {
+  background: var(--surface2);
+}
+
+/* Title kept for assistive tech while the Back control replaces it visually. */
+.ui-dialog__sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  white-space: nowrap;
+  border: 0;
+  clip: rect(0 0 0 0);
+}
+
+.ui-dialog__title {
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-heading);
+}
+
+.ui-dialog__content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  overflow: auto;
+  padding: 0 var(--space-5) var(--space-4);
+}
+
+.ui-dialog__description {
+  color: var(--text-muted);
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-small);
+}
+
+.ui-dialog__body {
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+}
+
+.ui-dialog__divider {
+  height: 1px;
+  background: var(--border);
+}
+
+.ui-dialog__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-5);
+}

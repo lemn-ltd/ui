@@ -1,0 +1,97 @@
+.ui-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 22px;
+  padding: 0 10px;
+  background: var(--surface2);
+  border-radius: var(--radius-pill);
+  color: var(--badge-color, var(--text-muted));
+  font-family: var(--font-sans);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-caption);
+}
+
+.ui-badge[data-size="sm"] {
+  height: 20px;
+  padding: 0 var(--space-2);
+  font-size: 11px;
+}
+
+.ui-badge[data-size="md"] {
+  height: 22px;
+}
+
+.ui-badge__icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+}
+
+/* Each tone maps to its strong color and its soft surface; every variant reads
+   these two custom properties, so adding a tone is one entry and never repeats. */
+.ui-badge[data-tone="neutral"] {
+  --badge-color: var(--text-muted);
+  --badge-soft: var(--surface2);
+}
+.ui-badge[data-tone="dim"] {
+  --badge-color: var(--text-dim);
+  --badge-soft: var(--surface2);
+}
+.ui-badge[data-tone="success"] {
+  --badge-color: var(--success);
+  --badge-soft: var(--success-soft);
+}
+.ui-badge[data-tone="warn"] {
+  --badge-color: var(--warn);
+  --badge-soft: var(--warn-soft);
+}
+.ui-badge[data-tone="danger"] {
+  --badge-color: var(--danger);
+  --badge-soft: var(--danger-soft);
+}
+.ui-badge[data-tone="info"] {
+  --badge-color: var(--info);
+  --badge-soft: var(--info-soft);
+}
+.ui-badge[data-tone="accent"] {
+  --badge-color: var(--accent);
+  --badge-soft: var(--accent-soft);
+}
+.ui-badge[data-tone="accent2"] {
+  --badge-color: var(--accent2);
+  --badge-soft: var(--accent2-soft);
+}
+
+/* Soft fills the pill with the tone's soft surface and its strong color. */
+.ui-badge[data-variant="soft"] {
+  background: var(--badge-soft);
+  color: var(--badge-color);
+}
+
+.ui-badge[data-variant="light"] {
+  background: var(--badge-soft);
+  color: var(--badge-color);
+}
+
+.ui-badge[data-variant="solid"] {
+  background: var(--badge-color);
+  color: var(--surface);
+}
+
+/* Accent tones keep their soft surface in the default subtle variant. */
+.ui-badge[data-variant="subtle"][data-tone="accent"],
+.ui-badge[data-variant="subtle"][data-tone="accent2"] {
+  background: var(--badge-soft);
+}
+
+/* The dot inherits the tone color. */
+.ui-badge[data-dot="on"]::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: currentColor;
+}

@@ -1,0 +1,38 @@
+.ui-description-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: 0;
+}
+
+/*
+ * `first baseline` keeps the label on the value's first text line no matter
+ * how tall the value cell grows — an inline 36px IconButton or a wrapped badge
+ * row never pushes the value text out of line with its label.
+ */
+.ui-description-list__row {
+  display: grid;
+  grid-template-columns: var(--description-list-label-width, 140px) 1fr;
+  column-gap: var(--space-3);
+  align-items: first baseline;
+}
+
+.ui-description-list__label {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-small);
+  font-weight: var(--font-weight-regular);
+}
+
+.ui-description-list__value {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  min-width: 0;
+  color: var(--text);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+}

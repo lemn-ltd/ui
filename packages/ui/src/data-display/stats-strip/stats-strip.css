@@ -1,0 +1,28 @@
+.ui-stats-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.ui-stats-strip__cell {
+  flex: 1 1 180px;
+  padding: var(--space-4);
+}
+
+.ui-stats-strip__cell + .ui-stats-strip__cell {
+  position: relative;
+}
+
+.ui-stats-strip__cell + .ui-stats-strip__cell::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 1px;
+  height: 52px;
+  background: var(--border);
+  transform: translateY(-50%);
+  content: "";
+}

@@ -1,0 +1,103 @@
+/*
+ * Floating non-modal window: fixed to the right edge with a page margin, no
+ * scrim, on the window layer, above in-app chrome and below modal scrims.
+ */
+.ui-floating-window {
+  position: fixed;
+  top: var(--space-4);
+  right: var(--space-4);
+  bottom: var(--space-4);
+  z-index: var(--z-window);
+  display: flex;
+  flex-direction: column;
+  width: 92vw;
+  max-width: 460px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elev-3);
+  color: var(--text);
+  font-family: var(--font-sans);
+  overflow: hidden;
+}
+
+@media (min-width: 641px) {
+  .ui-floating-window[data-width="sm"] {
+    max-width: 380px;
+  }
+
+  .ui-floating-window[data-width="md"] {
+    max-width: 460px;
+  }
+
+  .ui-floating-window[data-width="lg"] {
+    max-width: 600px;
+  }
+}
+
+.ui-floating-window[data-expanded="true"] {
+  left: var(--space-4);
+  width: auto;
+  max-width: none;
+}
+
+.ui-floating-window[data-state="open"] {
+  animation: scale-in var(--duration-fast) var(--easing-standard);
+}
+
+@media (max-width: 640px) {
+  .ui-floating-window {
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-width: none;
+    max-height: 70vh;
+    border-right: 0;
+    border-bottom: 0;
+    border-left: 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+
+  .ui-floating-window[data-state="open"] {
+    animation: slide-bottom var(--duration-normal) var(--easing-emphasized);
+  }
+
+  .ui-floating-window[data-expanded="true"] {
+    top: var(--space-4);
+    left: 0;
+    width: 100%;
+    max-height: none;
+  }
+}
+
+.ui-floating-window__header {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--border);
+}
+
+.ui-floating-window__title {
+  min-width: 0;
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-heading);
+}
+
+.ui-floating-window__actions {
+  display: flex;
+  flex: none;
+  gap: var(--space-1);
+  align-items: center;
+}
+
+.ui-floating-window__body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}

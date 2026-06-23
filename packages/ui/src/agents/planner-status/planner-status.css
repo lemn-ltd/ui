@@ -1,0 +1,26 @@
+.ui-planner-status {
+  text-transform: none;
+}
+
+.ui-planner-status[data-pulse="true"]::before {
+  animation: ui-planner-status-pulse 1.4s var(--easing-standard) infinite;
+}
+
+@keyframes ui-planner-status-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.45;
+    transform: scale(0.78);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-planner-status[data-pulse="true"]::before {
+    animation: none;
+  }
+}

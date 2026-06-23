@@ -1,0 +1,12 @@
+.ui-sparkline {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 28px;
+}
+
+.ui-sparkline__bar {
+  width: 3px;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+}

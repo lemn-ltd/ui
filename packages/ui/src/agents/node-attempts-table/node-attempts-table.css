@@ -1,0 +1,10 @@
+.ui-node-attempts-table__mono {
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-small);
+}
+
+.ui-node-attempts-table__muted {
+  color: var(--text-muted);
+  font-size: var(--font-size-small);
+}

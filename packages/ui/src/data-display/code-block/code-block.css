@@ -1,0 +1,97 @@
+.ui-code-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-family: var(--font-sans);
+}
+
+.ui-code-block__label {
+  color: var(--text-dim);
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.ui-code-block__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-1) 6px var(--space-1) var(--space-3);
+  background: var(--surface2);
+  border-radius: var(--radius-md);
+}
+
+.ui-code-block__value {
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-mono);
+  line-height: var(--line-height-mono);
+  white-space: pre;
+}
+
+.ui-code-block__copy {
+  flex-shrink: 0;
+}
+
+.ui-code-block__row[data-copied="true"] .ui-code-block__copy {
+  color: var(--success);
+}
+
+/* Neutral resting chrome — the accent border read as a permanently active field. */
+.ui-code-block[data-variant="token"] .ui-code-block__row {
+  padding: 6px var(--space-2) 6px 14px;
+  border: 1px solid var(--border);
+}
+
+.ui-code-block[data-variant="token"] .ui-code-block__value {
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-medium);
+}
+
+.ui-code-block[data-variant="token"] .ui-code-block__value::-webkit-scrollbar {
+  height: 1px;
+}
+
+.ui-code-block[data-variant="token"] .ui-code-block__value::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ui-code-block[data-variant="token"] .ui-code-block__value::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: var(--radius-pill);
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  .ui-code-block[data-variant="token"] .ui-code-block__value {
+    scrollbar-color: var(--border-strong) transparent;
+    scrollbar-width: thin;
+  }
+}
+
+.ui-code-block[data-variant="inline"] {
+  display: inline-flex;
+}
+
+.ui-code-block[data-variant="inline"] .ui-code-block__row {
+  gap: var(--space-2);
+  padding: 0;
+  background: none;
+  border-radius: 0;
+}
+
+.ui-code-block[data-variant="inline"] .ui-code-block__value {
+  overflow-x: visible;
+  font: inherit;
+  white-space: normal;
+}
+
+.ui-code-block[data-variant="inline"] .ui-code-block__copy {
+  width: auto;
+  height: auto;
+  padding: 2px;
+  border-radius: var(--radius-sm);
+}

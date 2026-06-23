@@ -1,0 +1,38 @@
+.ui-entity-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 52px;
+  padding: 0 var(--space-4);
+  border-bottom: 1px solid var(--border);
+}
+
+.ui-entity-toolbar__identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-muted);
+}
+
+.ui-entity-toolbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Mobile: identity and actions wrap onto their own rows. */
+@media (max-width: 768px) {
+  .ui-entity-toolbar {
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .ui-entity-toolbar__identity {
+    flex: 1 1 100%;
+  }
+
+  .ui-entity-toolbar__actions {
+    margin-left: auto;
+  }
+}

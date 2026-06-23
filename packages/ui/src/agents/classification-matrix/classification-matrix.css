@@ -1,0 +1,75 @@
+.ui-classification-matrix {
+  display: grid;
+  gap: var(--space-4);
+  color: var(--text);
+  font-size: var(--font-size-small);
+}
+
+.ui-classification-matrix__top {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-3);
+}
+
+.ui-classification-matrix__section {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.ui-classification-matrix__heading {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.ui-classification-matrix__table {
+  display: grid;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.ui-classification-matrix__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(180px, 220px);
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+}
+
+.ui-classification-matrix__row + .ui-classification-matrix__row {
+  border-top: 1px solid var(--border);
+}
+
+.ui-classification-matrix__row[data-head="true"] {
+  background: var(--surface2);
+  color: var(--text-muted);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.ui-classification-matrix__field {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+}
+
+.ui-classification-matrix__empty {
+  margin: 0;
+  padding: var(--space-3);
+  color: var(--text-muted);
+  font-size: var(--font-size-caption);
+}
+
+.ui-classification-matrix__sinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}

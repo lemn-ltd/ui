@@ -1,0 +1,26 @@
+.ui-version-tag {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: 0 var(--space-2);
+  color: var(--text-dim);
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
+}
+
+.ui-version-tag[data-collapsed="true"] {
+  justify-content: center;
+  gap: var(--space-1);
+}
+
+.ui-version-tag__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--text-dim);
+}
+
+.ui-version-tag__version {
+  font-family: var(--font-mono);
+}

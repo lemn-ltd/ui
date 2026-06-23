@@ -1,0 +1,66 @@
+.ui-tooltip {
+  z-index: var(--z-popover);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* min-height keeps single-line hints at 28px; multi-line content (e.g. a
+     disclaimer) wraps and grows instead of clipping. */
+  min-height: 28px;
+  max-width: 240px;
+  padding: var(--space-1) var(--space-2);
+  text-align: left;
+  background: var(--surface2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--elev-2);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-caption);
+}
+
+.ui-tooltip[data-state="delayed-open"],
+.ui-tooltip[data-state="instant-open"] {
+  animation: fade var(--duration-fast) var(--easing-standard);
+}
+
+.ui-tooltip__arrow {
+  fill: var(--surface2);
+}
+
+.ui-tooltip[data-tone="info"] {
+  background: var(--info-soft);
+  border-color: var(--info);
+}
+
+.ui-tooltip[data-tone="info"] .ui-tooltip__arrow {
+  fill: var(--info);
+}
+
+.ui-tooltip[data-tone="warn"] {
+  background: var(--warn-soft);
+  border-color: var(--warn);
+}
+
+.ui-tooltip[data-tone="warn"] .ui-tooltip__arrow {
+  fill: var(--warn);
+}
+
+.ui-tooltip[data-tone="danger"] {
+  background: var(--danger-soft);
+  border-color: var(--danger);
+}
+
+.ui-tooltip[data-tone="danger"] .ui-tooltip__arrow {
+  fill: var(--danger);
+}
+
+.ui-tooltip[data-tone="success"] {
+  background: var(--success-soft);
+  border-color: var(--success);
+}
+
+.ui-tooltip[data-tone="success"] .ui-tooltip__arrow {
+  fill: var(--success);
+}

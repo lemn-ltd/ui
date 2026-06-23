@@ -1,0 +1,47 @@
+.ui-node-state-chip {
+  text-transform: none;
+}
+
+.ui-node-state-chip[data-appearance="inline"] {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
+}
+
+.ui-node-state-chip__dot {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: var(--radius-pill);
+  background: var(--node-state-color);
+}
+
+.ui-node-state-chip__label {
+  color: var(--text-muted);
+}
+
+.ui-node-state-chip[data-node-state="idle"] {
+  --node-state-color: var(--text-muted);
+}
+
+.ui-node-state-chip[data-node-state="running"] {
+  --node-state-color: var(--info);
+}
+
+.ui-node-state-chip[data-node-state="waiting"] {
+  --node-state-color: var(--warn);
+}
+
+.ui-node-state-chip[data-node-state="completed"] {
+  --node-state-color: var(--success);
+}
+
+.ui-node-state-chip[data-node-state="failed"] {
+  --node-state-color: var(--danger);
+}
+
+.ui-node-state-chip[data-node-state="skipped"] {
+  --node-state-color: var(--text-dim);
+}

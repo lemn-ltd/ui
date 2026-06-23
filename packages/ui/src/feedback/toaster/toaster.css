@@ -1,0 +1,61 @@
+/*
+ * Maps sonner's per-toast tone (data-type) onto the canonical Toast *Soft
+ * tone styling so there is a single tone implementation. Theme follows the
+ * package data-theme tokens; sonner is never given a fixed light/dark theme.
+ */
+
+.ui-toaster[data-sonner-toaster] {
+  z-index: var(--z-toast);
+}
+
+.ui-toaster [data-sonner-toast] {
+  /* Enter/exit slide+fade uses the emphasized curve. */
+  transition-timing-function: var(--easing-emphasized);
+}
+
+/*
+ * Text colors live here, not only in toast.css: a consumer that mounts just
+ * <Toaster> never loads toast.css (its import is type-only), and sonner ships a
+ * light-theme text color unreadable on the dark tonal surface. Sonner styles
+ * its title as `inherit` and its description at (0,3,0), so we set the toast
+ * color (the title inherits it) and raise the description to (0,4,0) — winning
+ * by specificity instead of `!important`.
+ */
+.ui-toaster [data-sonner-toast].ui-toast {
+  color: var(--text);
+}
+.ui-toaster [data-sonner-toast].ui-toast .ui-toast__detail {
+  color: var(--text-muted);
+}
+
+.ui-toaster [data-sonner-toast][data-type="success"] {
+  background: var(--success-soft);
+  border-color: var(--success);
+}
+.ui-toaster [data-sonner-toast][data-type="success"] .ui-toast__icon {
+  color: var(--success);
+}
+
+.ui-toaster [data-sonner-toast][data-type="info"] {
+  background: var(--info-soft);
+  border-color: var(--info);
+}
+.ui-toaster [data-sonner-toast][data-type="info"] .ui-toast__icon {
+  color: var(--info);
+}
+
+.ui-toaster [data-sonner-toast][data-type="warning"] {
+  background: var(--warn-soft);
+  border-color: var(--warn);
+}
+.ui-toaster [data-sonner-toast][data-type="warning"] .ui-toast__icon {
+  color: var(--warn);
+}
+
+.ui-toaster [data-sonner-toast][data-type="error"] {
+  background: var(--danger-soft);
+  border-color: var(--danger);
+}
+.ui-toaster [data-sonner-toast][data-type="error"] .ui-toast__icon {
+  color: var(--danger);
+}

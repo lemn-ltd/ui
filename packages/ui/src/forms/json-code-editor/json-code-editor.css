@@ -1,0 +1,42 @@
+.ui-json-code-editor {
+  min-height: var(--ui-json-code-editor-min-height);
+  max-height: var(--ui-json-code-editor-max-height, none);
+  overflow: hidden;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  transition: border-color var(--duration-fast) var(--easing-standard);
+}
+
+.ui-json-code-editor:focus-within {
+  border-color: var(--accent);
+}
+
+.ui-json-code-editor[data-invalid="true"],
+.ui-json-code-editor[data-invalid="true"]:focus-within {
+  border-color: var(--danger);
+}
+
+.ui-json-code-editor[data-disabled="true"] {
+  opacity: 0.62;
+}
+
+.ui-json-code-editor .cm-editor {
+  min-height: var(--ui-json-code-editor-min-height);
+  max-height: var(--ui-json-code-editor-max-height, none);
+  background: transparent;
+}
+
+.ui-json-code-editor .cm-tooltip {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+}
+
+.ui-json-code-editor .cm-tooltip-lint {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-small);
+}
