@@ -16,6 +16,9 @@
       "/health",
       "/health/ready",
       "/health/deep",
+      "/catalog.json",
+      "/llms.txt",
+      "/llms-full.txt",
     ],
   },
   "observability": {
@@ -27,7 +30,6 @@
     "BUILD_VERSION": "0.0.0",
     "BUILD_GIT_SHA": "local",
     "BUILD_TIME": "local",
-    "STATUS_TOKEN": "",
   },
   "dev": {
     "port": 6500,
@@ -51,7 +53,6 @@
         "BUILD_VERSION": "0.0.0",
         "BUILD_GIT_SHA": "local",
         "BUILD_TIME": "local",
-        "STATUS_TOKEN": "",
       },
     },
   },

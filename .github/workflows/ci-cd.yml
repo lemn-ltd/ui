@@ -119,30 +119,36 @@ jobs:
           accountId: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: apps/showcase
           environment: production
-          secrets: |
-            STATUS_TOKEN
           command: deploy --env production --var BUILD_VERSION:${{ steps.build.outputs.version }} --var BUILD_GIT_SHA:${{ steps.build.outputs.sha }} --var BUILD_TIME:${{ steps.build.outputs.time }}
+
+      - name: Set runtime secrets
+        run: printf '%s' "$STATUS_TOKEN" | pnpm --dir apps/showcase exec wrangler secret put STATUS_TOKEN --env production
         env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           STATUS_TOKEN: ${{ secrets.STATUS_TOKEN }}
 
       - name: Smoke public endpoints
         run: |
-          for url in \
-            "https://ui.appranks.com/health" \
-            "https://ui.appranks.com/catalog.json" \
-            "https://ui.appranks.com/llms.txt"; do
+          retry() {
+            label="$1"
+            shift
             for attempt in $(seq 1 30); do
-              if curl --fail --silent --max-time 5 "$url" > /dev/null; then
-                echo "OK $url"
-                break
-              fi
-              if [ "$attempt" -eq 30 ]; then
-                echo "Failed after 60s: $url" >&2
-                exit 1
+              if "$@"; then
+                echo "OK ${label}"
+                return 0
               fi
               sleep 2
             done
-          done
+            echo "Failed after 60s: ${label}" >&2
+            return 1
+          }
+
+          retry health sh -c 'curl --fail --silent --max-time 5 https://ui.appranks.com/health | jq -e ".ok == true" >/dev/null'
+          retry ready sh -c 'curl --fail --silent --max-time 5 https://ui.appranks.com/health/ready | jq -e ".ok == true" >/dev/null'
+          retry catalog sh -c 'curl --fail --silent --max-time 5 https://ui.appranks.com/catalog.json | jq -e ".package == \"@appranks/ui\" and (.components | length) > 0" >/dev/null'
+          retry llms sh -c 'curl --fail --silent --max-time 5 https://ui.appranks.com/llms.txt | grep -q "@appranks/ui"'
+          retry llms-full sh -c 'curl --fail --silent --max-time 5 https://ui.appranks.com/llms-full.txt | grep -q "Appranks UI Component Catalog"'
 
       - name: Summary
         run: |
