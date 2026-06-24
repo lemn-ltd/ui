@@ -15,10 +15,15 @@ CI validates pull requests with typecheck, tests, build, release metadata, and
 changeset status. Pushes to `main` run the release workflow:
 
 1. If changesets are pending, create a release metadata commit with the SemVer bump and changelog.
-2. Publish any unpublished `@appranks/ui` version.
+2. Publish any unpublished `@appranks/ui` version when the registry owner/token can publish the package scope.
 3. Deploy docs to `ui.appranks.com`.
 4. Deploy showcase to `showcase.ui.appranks.com`.
 5. Smoke public docs and showcase endpoints.
+
+With GitHub Packages, `GITHUB_TOKEN` can publish package scopes owned by the
+repository owner. If the package scope is owned elsewhere, CI records a publish
+warning and continues the docs/showcase deployment; configure a dedicated
+registry token or align the package scope before publishing.
 
 Required secrets and variables:
 

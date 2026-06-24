@@ -24,7 +24,7 @@
     "publish:ui": "pnpm --filter @appranks/ui publish --access restricted --no-git-checks",
     "changeset": "changeset",
     "version:packages": "changeset version && pnpm sync:docs-changelog",
-    "release": "pnpm build && changeset publish"
+    "release": "pnpm build && pnpm publish:ui"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.7",

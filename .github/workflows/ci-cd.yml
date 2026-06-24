@@ -142,9 +142,26 @@ jobs:
       - name: Publish package if needed
         run: |
           version="$(node -p "require('./packages/ui/package.json').version")"
+          package_name="$(node -p "require('./packages/ui/package.json').name")"
+          package_scope="${package_name%%/*}"
+          package_scope="${package_scope#@}"
+          package_basename="${package_name##*/}"
           owner_scope="$(printf '%s' "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')"
-          if npm view "@appranks/ui@${version}" version >/dev/null 2>&1 || npm view "@${owner_scope}/ui@${version}" version >/dev/null 2>&1; then
-            echo "@appranks/ui@${version} already published"
+          owner_package="@${owner_scope}/${package_basename}"
+          if npm view "${package_name}@${version}" version >/dev/null 2>&1 || npm view "${owner_package}@${version}" version >/dev/null 2>&1; then
+            echo "${package_name}@${version} already published"
+            exit 0
+          fi
+          if [ "${package_scope}" != "${owner_scope}" ]; then
+            echo "::warning title=Package publish skipped::${package_name}@${version} cannot be published to GitHub Packages with GITHUB_TOKEN from ${GITHUB_REPOSITORY}. The package scope must match repository owner ${owner_scope}, or a dedicated registry token for ${package_scope} must be configured."
+            {
+              echo "### Package publish skipped"
+              echo ""
+              echo "- Package: \`${package_name}@${version}\`"
+              echo "- Repository owner: \`${owner_scope}\`"
+              echo "- Package scope: \`${package_scope}\`"
+              echo "- Action: align the package scope with the repo owner, or configure a dedicated registry token for the package scope."
+            } >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
           pnpm publish:ui

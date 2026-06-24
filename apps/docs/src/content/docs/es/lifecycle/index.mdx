@@ -19,8 +19,10 @@ release. La automatizacion convierte los changesets mergeados en un commit de
 metadata de release que actualiza `packages/ui/package.json` y
 `packages/ui/CHANGELOG.md`.
 
-CI publica el paquete cuando la version generada todavia no existe en GitHub
-Packages, y despues despliega docs mas showcase.
+CI publica el paquete cuando la version generada todavia no existe y el
+owner/token del registry puede publicar el package scope. Si GitHub Packages no
+esta alineado con el scope del paquete, CI registra un warning y aun asi
+despliega docs mas showcase.
 
 ## Comandos
 

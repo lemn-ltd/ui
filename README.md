@@ -108,7 +108,10 @@ pnpm validate:boundaries
    that updates `packages/ui/package.json`, `packages/ui/CHANGELOG.md`, and the
    docs changelog.
 5. CI publishes `@appranks/ui` only when the package version is not already
-   available in GitHub Packages.
+   available and the registry owner/token can publish the package scope. With
+   GitHub Packages, a repo-owned `GITHUB_TOKEN` can publish scopes owned by the
+   repo owner; otherwise CI records a publish warning and still deploys docs and
+   showcase.
 6. Update each consuming repo to the newly published version and regenerate its
    lockfile.
 

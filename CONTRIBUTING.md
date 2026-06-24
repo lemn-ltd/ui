@@ -90,7 +90,9 @@ pnpm dev:showcase
 - Commit and push only reviewed source changes. Avoid mixing unrelated worktree
   changes into the release commit.
 - The CI workflow publishes `@appranks/ui` when the pushed version is not already
-  present in GitHub Packages.
+  present and the registry owner/token can publish the package scope. If the
+  package scope and GitHub repo owner are not aligned, CI records a warning and
+  continues the docs/showcase deploy.
 - The CI workflow deploys docs to `ui.appranks.com` and the interactive showcase
   to `showcase.ui.appranks.com` after the release automation has run.
 - After publish, update consuming repos to the new version and regenerate their
