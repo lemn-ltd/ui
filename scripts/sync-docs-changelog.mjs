@@ -34,21 +34,8 @@ function writeIfChanged(relativePath, content) {
 }
 
 const uiPackage = readJson('packages/ui/package.json');
-const docsPackagePath = 'apps/docs/package.json';
-const docsPackage = readJson(docsPackagePath);
 
 assert(semver.test(uiPackage.version), `packages/ui/package.json version is not SemVer: ${uiPackage.version}`);
-if (docsPackage.version !== uiPackage.version) {
-  if (checkOnly) {
-    throw new Error(
-      `apps/docs/package.json version (${docsPackage.version}) must match @appranks/ui (${uiPackage.version})`,
-    );
-  }
-
-  docsPackage.version = uiPackage.version;
-  fs.writeFileSync(path.join(root, docsPackagePath), `${JSON.stringify(docsPackage, null, 2)}\n`);
-  console.log(`Synced ${docsPackagePath} to ${uiPackage.version}.`);
-}
 
 const changelogPath = path.join(root, 'packages/ui/CHANGELOG.md');
 assert(fs.existsSync(changelogPath), 'packages/ui/CHANGELOG.md is missing');
