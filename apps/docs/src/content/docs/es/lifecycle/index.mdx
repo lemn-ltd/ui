@@ -1,6 +1,6 @@
 ---
 title: Lifecycle
-description: SemVer, changelog, release PRs y ownership de publicacion.
+description: SemVer, changelog, commits de release y ownership de publicacion.
 sidebar:
   label: Lifecycle
   order: 5
@@ -15,11 +15,12 @@ sidebar:
 ## Ownership de release
 
 El autor del feature o el agente agrega un changeset con la intencion de
-release. La automatizacion convierte los changesets mergeados en un version PR
-que actualiza `packages/ui/package.json` y `packages/ui/CHANGELOG.md`.
+release. La automatizacion convierte los changesets mergeados en un commit de
+metadata de release que actualiza `packages/ui/package.json` y
+`packages/ui/CHANGELOG.md`.
 
-Un maintainer mergea el version PR despues de revisar SemVer y changelog. CI
-publica el paquete y despliega docs mas showcase.
+CI publica el paquete cuando la version generada todavia no existe en GitHub
+Packages, y despues despliega docs mas showcase.
 
 ## Comandos
 

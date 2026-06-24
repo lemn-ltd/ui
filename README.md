@@ -104,10 +104,10 @@ pnpm validate:boundaries
    `pnpm --filter @appranks/ui run check`, `pnpm --filter @appranks/ui run test`,
    and `pnpm --filter @appranks/ui run build`.
 4. Add a changeset with `pnpm changeset` for every publishable package change.
-   The release workflow turns merged changesets into a version PR that updates
-   `packages/ui/package.json`, `packages/ui/CHANGELOG.md`, and the docs changelog.
-5. Merge the version PR after reviewing the SemVer level and changelog text.
-   CI publishes `@appranks/ui` only when the package version is not already
+   The release workflow turns merged changesets into a release metadata commit
+   that updates `packages/ui/package.json`, `packages/ui/CHANGELOG.md`, and the
+   docs changelog.
+5. CI publishes `@appranks/ui` only when the package version is not already
    available in GitHub Packages.
 6. Update each consuming repo to the newly published version and regenerate its
    lockfile.

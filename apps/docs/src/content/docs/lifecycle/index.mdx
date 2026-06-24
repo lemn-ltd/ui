@@ -1,6 +1,6 @@
 ---
 title: Lifecycle
-description: SemVer, changelog, release PRs, and publishing ownership.
+description: SemVer, changelog, release commits, and publishing ownership.
 sidebar:
   label: Lifecycle
   order: 5
@@ -15,11 +15,11 @@ sidebar:
 ## Release ownership
 
 Feature authors or agents add a changeset to describe the release intent. The
-release automation turns merged changesets into a version PR that updates
-`packages/ui/package.json` and `packages/ui/CHANGELOG.md`.
+release automation turns merged changesets into a release metadata commit that
+updates `packages/ui/package.json` and `packages/ui/CHANGELOG.md`.
 
-Maintainers merge the version PR after checking the SemVer level and changelog
-text. CI then publishes the package and deploys docs plus showcase.
+CI publishes the package when the generated version is not already present in
+GitHub Packages, then deploys docs plus showcase.
 
 ## Commands
 

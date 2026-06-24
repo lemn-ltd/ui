@@ -110,17 +110,35 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create release PR or publish package
+      - name: Detect pending changesets
         id: changesets
-        uses: changesets/action@v1
-        with:
-          version: pnpm version:packages
-          publish: pnpm release
-          title: "chore: release packages"
-          commit: "chore: release packages"
-          createGithubReleases: true
+        run: |
+          if find .changeset -maxdepth 1 -type f -name '*.md' ! -name README.md | grep -q .; then
+            echo "has_pending=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_pending=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Version packages from changesets
+        if: steps.changesets.outputs.has_pending == 'true'
+        run: pnpm version:packages
+
+      - name: Commit release metadata
+        if: steps.changesets.outputs.has_pending == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .changeset packages/ui/package.json packages/ui/CHANGELOG.md apps/docs/src/content/docs/changelog/index.mdx apps/docs/src/content/docs/es/changelog/index.mdx
+          if git diff --cached --quiet; then
+            echo "No release metadata changed."
+          else
+            git commit -m "chore: release packages [skip ci]"
+            git push origin HEAD:main
+          fi
+
+      - name: Publish package
+        run: pnpm release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -129,7 +147,7 @@ jobs:
         run: |
           package_version="$(node -p "require('./packages/ui/package.json').version")"
           echo "version=${package_version}" >> "$GITHUB_OUTPUT"
-          echo "sha=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           echo "time=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
 
       - name: Build docs
