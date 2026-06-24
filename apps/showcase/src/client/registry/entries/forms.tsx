@@ -3,6 +3,7 @@ import { componentEntry } from '../component-entry.js';
 import type { ShowcaseEntry } from '../showcase-types.js';
 
 const FieldPage = lazy(() => import('../../pages/core/components/field.page.js'));
+const CalendarPage = lazy(() => import('../../pages/core/components/calendar.page.js'));
 const InlineEditPage = lazy(() => import('../../pages/core/components/inline-edit.page.js'));
 const SegmentedControlPage = lazy(
   () => import('../../pages/core/components/segmented-control.page.js'),
@@ -27,6 +28,7 @@ const MarkdownEditorPage = lazy(
 
 export const formsEntries: ShowcaseEntry[] = [
   componentEntry('field', () => <FieldPage />),
+  componentEntry('calendar', () => <CalendarPage />),
   componentEntry('inline-edit', () => <InlineEditPage />),
   componentEntry('segmented-control', () => <SegmentedControlPage />),
   componentEntry('combobox', () => <ComboboxPage />),

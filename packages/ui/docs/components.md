@@ -405,6 +405,25 @@ The canonical form row: label, required asterisk, hint, and error, wired to any 
 
 **In patterns** Settings form
 
+### Calendar
+
+`/core/components/calendar` · beta
+
+A month-grid date picker with selected/today states, prev/next and quick-year navigation, and min/max/future/past validation that disables out-of-range days.
+
+**Use when**
+
+- Picking a single date from a visible month grid, with today marked and the selection filled in the accent.
+- Enforcing a selectable range: pass minDate/maxDate, disableFuture, disablePast, or shouldDisableDate and out-of-range days render disabled and unselectable.
+- You want controlled or uncontrolled selection plus controlled or uncontrolled visible-month navigation.
+
+**Avoid**
+
+- Don't use for free-typed or masked date entry in a row; wrap a text control in a field instead. → use [`field`](#field)
+- Don't use to pick a time of day; the calendar only owns dates. → use [`field`](#field)
+
+**Pairs with** [`field`](#field), [`input`](#input), [`button`](#button), [`icon-button`](#icon-button)
+
 ### Inline edit
 
 `/core/components/inline-edit` · stable

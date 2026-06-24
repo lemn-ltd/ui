@@ -8,3 +8,7 @@ test-results
 .DS_Store
 .dev.vars
 .env
+
+# codedb (local code index artifacts, not source)
+codedb.*
+.codedb/

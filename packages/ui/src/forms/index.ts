@@ -5,6 +5,7 @@ export {
   type AccordionProps,
   type AccordionSingleProps,
 } from './accordion/accordion.js';
+export { Calendar, type CalendarProps, type CalendarView } from './calendar/calendar.js';
 export {
   Combobox,
   type ComboboxMode,

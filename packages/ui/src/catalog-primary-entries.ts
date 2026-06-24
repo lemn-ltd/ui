@@ -134,6 +134,14 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
       'The canonical form row: label, required asterisk, hint, and error, wired to any control via a render contract.',
   },
   {
+    slug: 'calendar',
+    title: 'Calendar',
+    group: 'Forms',
+    status: 'beta',
+    intent:
+      'A month-grid date picker with selected/today states, prev/next and quick-year navigation, and min/max/future/past validation that disables out-of-range days.',
+  },
+  {
     slug: 'inline-edit',
     title: 'Inline edit',
     group: 'Forms',
