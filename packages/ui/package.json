@@ -1,9 +1,14 @@
 {
   "name": "@appranks/ui",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "docs",
+    "README.md"
+  ],
   "sideEffects": [
     "**/*.css"
   ],
@@ -27,10 +32,12 @@
     "access": "restricted"
   },
   "scripts": {
-    "build": "rm -rf dist && tsc && cp src/styles.css dist/styles.css",
+    "build": "rm -rf dist && tsc && node scripts/copy-css.mjs",
     "dev": "tsc --watch",
     "check": "tsc --noEmit",
     "test": "vitest run",
+    "validate:brand-neutrality": "node ../../scripts/check-brand-neutrality.mjs src",
+    "validate:boundaries": "node ../../scripts/check-ui-boundaries.mjs",
     "test:coverage": "vitest run --coverage"
   },
   "peerDependencies": {

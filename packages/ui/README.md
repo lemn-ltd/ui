@@ -9,16 +9,15 @@ Light default + Dark + system theming, responsive reflow, and motion.
 - This package owns tokens, theme runtime, motion primitives, and the
   presentational component taxonomy (`primitives`, `forms`, `overlays`,
   `navigation`, `layout`, `data-display`, `feedback`, `agents`).
-- It is a **leaf**: it must not import any `@appranks/*` or `@appranks/*` sibling, any
-  `@cloudflare/*` / `agents` runtime, or Node core APIs. Allowed externals are
-  `react`, `react-dom`, the headless component libraries (`radix-ui`,
+- It is a **leaf**: runtime source must not import any `@appranks/*` sibling,
+  any `@cloudflare/*` / `agents` runtime, or Node core APIs. Tests may use Node
+  APIs for fixtures and CSS assertions. Allowed runtime externals are `react`,
+  `react-dom`, the headless component libraries (`radix-ui`,
   `cmdk`, `sonner`, `lucide-react`), the canvas/view graph runtime
   (`@xyflow/react`), and the Markdown rendering stack
   (`react-markdown`, `remark-gfm`, `shiki` with the fine-grained
   `@shikijs/langs` / `@shikijs/themes` bundles, `hast-util-to-jsx-runtime`).
-  Enforced by the `ui-is-leaf`,
-  `ui-has-no-cloudflare-sdk`, and `ui-has-no-node-core` rules in
-  `scripts/readiness/dependency-cruiser.cjs`.
+  Enforced by `pnpm validate:boundaries`.
 - It is **brand-neutral**: no product name appears anywhere under `src`.
   Enforced by `pnpm validate:brand-neutrality`.
 - Agent-compatible shared components live in `src/agents`. They stay
@@ -35,8 +34,7 @@ proven `tsc`-to-`dist` build (no bundler), with three documented deviations:
 
 1. **`./styles.css` string export.** `package.json` `exports` maps
    `"./styles.css"` to the literal `"./dist/styles.css"` string (not a
-   conditions object). `build` runs `tsc` then copies `src/styles.css` to
-   `dist/styles.css`. Consumers import the stylesheet once, at their app root:
+   conditions object). Consumers import the stylesheet once, at their app root:
    `import "@appranks/ui/styles.css"`.
 2. **`sideEffects: ["**/\*.css"]`.\*\* This stops bundlers from tree-shaking the
    stylesheet away. Every other export is side-effect-free.
@@ -45,6 +43,24 @@ proven `tsc`-to-`dist` build (no bundler), with three documented deviations:
    node env) so component and theme specs can touch the DOM. `@testing-library/react`
    and `happy-dom` are pinned per-package (not catalogued) to match the exact
    pair used by `apps/app` and `apps/showcase`.
+
+## Build artifact contract
+
+The TypeScript output keeps component-local CSS imports such as
+`import "./button.css"` in the emitted `dist/**/*.js` files. The package build
+therefore must copy every `src/**/*.css` file into the same relative path under
+`dist`, not just the aggregate stylesheet.
+
+`scripts/copy-css.mjs` is part of the package contract:
+
+- it copies `src/styles.css` to `dist/styles.css`;
+- it copies every colocated component stylesheet to `dist/<taxonomy>/<component>/`;
+- it keeps the published package compatible with bundlers that resolve CSS from
+  emitted JavaScript.
+
+If a consumer reports a missing CSS module from `@appranks/ui/dist`, fix this
+package and publish a new version. Do not make a permanent consumer-side
+`node_modules` patch.
 
 ## Exports
 
@@ -72,6 +88,22 @@ The agent-facing "when to use" guide lives in `docs/`:
 `src/tests/catalog.spec.ts` is the drift guard: it fails if a catalogued
 component is missing from `docs/components.md`.
 
+## Consumer contract
+
+Consumer applications must:
+
+- install `@appranks/ui` from the GitHub Packages `@appranks` registry;
+- provide compatible `react` and `react-dom` peer dependencies;
+- import `@appranks/ui/styles.css` once at the app root;
+- import components only from `@appranks/ui`, `@appranks/ui/tokens`, or
+  `@appranks/ui/catalog`;
+- keep product data mapping, API clients, runtime DTOs, and feature-specific
+  composition outside this package.
+
+This package must stay neutral: no product names, tenant examples, customer
+names, product-specific icons, app-local layouts, backend bindings, or data
+adapters under `src`.
+
 ## Theme runtime
 
 `applyTheme` / `setTheme` / `getTheme` / `getResolvedTheme` drive three modes.
@@ -89,7 +121,9 @@ key.
 ## Commands
 
 ```bash
-pnpm --filter @appranks/ui run build   # rm -rf dist && tsc && copy styles.css
+pnpm --filter @appranks/ui run build   # rm -rf dist && tsc && copy src/**/*.css
 pnpm --filter @appranks/ui run check   # tsc --noEmit
 pnpm --filter @appranks/ui run test    # vitest run (happy-dom)
+pnpm validate:brand-neutrality         # scan shared UI source for product names
+pnpm validate:boundaries               # scan shared UI runtime imports
 ```

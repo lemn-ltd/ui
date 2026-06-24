@@ -32,7 +32,7 @@ function SignInScreenPage(): ReactElement {
     >
       <ExampleBlock
         code={`<SignInScreen
-  appName="Runtime Console"
+  appName="Control Center"
   appAccent="#7c3aed"
   appMarkSvg={renderServiceMark("#7c3aed")}
   onSubmit={handleSubmit}
@@ -51,7 +51,7 @@ function SignInScreenPage(): ReactElement {
             <SignInScreen
               appAccent={EXAMPLE_ACCENT}
               appMarkSvg={renderServiceMark(EXAMPLE_ACCENT)}
-              appName="Runtime Console"
+              appName="Control Center"
               style={INSET}
               onSubmit={(event) => event.preventDefault()}
             >

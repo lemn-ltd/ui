@@ -9,6 +9,8 @@
     "build": "turbo run build",
     "check": "turbo run check",
     "test": "turbo run test",
+    "validate:brand-neutrality": "node scripts/check-brand-neutrality.mjs",
+    "validate:boundaries": "node scripts/check-ui-boundaries.mjs",
     "dev:showcase": "pnpm --filter @appranks/ui-showcase run dev",
     "kill:showcase": "pnpm --filter @appranks/ui-showcase run kill",
     "deploy:showcase": "pnpm --filter @appranks/ui-showcase run deploy:production",

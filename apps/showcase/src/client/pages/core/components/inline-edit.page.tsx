@@ -38,10 +38,10 @@ function InlineEditPage(): ReactElement {
             label: 'kind · text',
             render: () => (
               <InlineEdit
-                displayValue="Local Organization A"
+                displayValue="Example workspace"
                 kind="text"
                 onSave={noop}
-                value="Local Organization A"
+                value="Example workspace"
               />
             ),
           },

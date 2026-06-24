@@ -1,12 +1,64 @@
 # Appranks UI
 
-Company design system for Appranks projects.
+Shared, brand-neutral UI system for Appranks projects. The repository owns the
+published `@appranks/ui` React package, its public component catalog, and the
+showcase site at `https://ui.appranks.com`.
+
+`@appranks/ui` is the source of truth for shared styles. If a consuming product
+needs a reusable component, token, layout, or style migration, make that change
+in this repository first, publish a new package version, then update the
+consumer. Do not patch `node_modules` or copy shared component CSS into product
+apps as a permanent fix.
 
 ## Packages
 
 - `@appranks/ui` - public component and token package, published to GitHub Packages.
 - `@appranks/showcase-kit` - internal workspace package for showcase page chrome.
 - `@appranks/ui-showcase` - Cloudflare Worker SPA deployed to `https://ui.appranks.com`.
+
+## Requirements
+
+- Node.js `>=22`.
+- pnpm `11.8.0` through Corepack.
+- Access to GitHub Packages for the `@appranks` scope.
+- A GitHub token with package read access for local installs. Publishing requires
+  package write access.
+
+```bash
+corepack enable
+corepack prepare pnpm@11.8.0 --activate
+pnpm install
+```
+
+## Install In A Consumer Repo
+
+Add the package registry to the consuming repository:
+
+```ini
+# .npmrc
+@appranks:registry=https://npm.pkg.github.com
+```
+
+Authenticate locally with a package-readable GitHub token:
+
+```bash
+export NODE_AUTH_TOKEN=<github-token>
+pnpm add @appranks/ui@<published-version>
+```
+
+Consumers need compatible React peer dependencies. This workspace currently
+catalogs React and React DOM at `19.2.4`.
+
+Import the package from its public surface only:
+
+```tsx
+import { Button, Card, componentCatalog } from "@appranks/ui";
+import "@appranks/ui/styles.css";
+```
+
+Import `@appranks/ui/styles.css` once at the application root. Do not deep-import
+from `@appranks/ui/dist`, `@appranks/ui/src`, Radix, `cmdk`, or `sonner` in
+product apps.
 
 ## Agent Access
 
@@ -31,3 +83,33 @@ pnpm dev:showcase
 ```
 
 The showcase runs at `http://localhost:6500`.
+
+Useful package commands:
+
+```bash
+pnpm --filter @appranks/ui run build
+pnpm --filter @appranks/ui run check
+pnpm --filter @appranks/ui run test
+pnpm validate:brand-neutrality
+pnpm validate:boundaries
+```
+
+## Release Flow
+
+1. Make shared UI changes in `packages/ui/src`.
+2. Update package docs and showcase coverage when the public surface changes.
+3. Run `pnpm validate:brand-neutrality`, `pnpm validate:boundaries`,
+   `pnpm --filter @appranks/ui run check`, `pnpm --filter @appranks/ui run test`,
+   and `pnpm --filter @appranks/ui run build`.
+4. Bump `packages/ui/package.json`. Published GitHub Package versions are treated
+   as immutable, so do not reuse an already published version.
+5. Commit and push. The CI workflow publishes `@appranks/ui` only when the
+   package version is not already available in GitHub Packages.
+6. Update each consuming repo to the newly published version and regenerate its
+   lockfile.
+
+## Documentation
+
+- [Package usage guide](packages/ui/README.md)
+- [Agent-facing component guide](packages/ui/docs/README.md)
+- [Contribution rules](CONTRIBUTING.md)

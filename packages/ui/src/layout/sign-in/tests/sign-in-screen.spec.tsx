@@ -57,7 +57,7 @@ describe('SignInScreen', () => {
       <SignInScreen
         appAccent="#7c3aed"
         appMarkSvg="<rect width='32' height='32' rx='7' fill='#7c3aed' />"
-        appName="Runtime Console"
+        appName="Control Center"
         brand={<span>Legacy brand</span>}
       >
         <button type="submit">Sign In</button>
@@ -69,7 +69,7 @@ describe('SignInScreen', () => {
     expect(container.querySelector('.ui-signin__app-identity')?.getAttribute('style')).toContain(
       '--ui-signin-app-accent: #7c3aed',
     );
-    expect(getByText('Runtime Console').tagName).toBe('H1');
+    expect(getByText('Control Center').tagName).toBe('H1');
     expect(container.querySelector('.ui-signin__header')).toBeNull();
   });
 

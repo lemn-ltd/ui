@@ -58,8 +58,8 @@ function renderSection(id: string): ReactNode {
                 defaultValue="en"
                 options={[
                   { value: 'en', label: 'English' },
-                  { value: 'es', label: 'Español' },
-                  { value: 'fr', label: 'Français' },
+                  { value: 'es', label: 'Spanish' },
+                  { value: 'fr', label: 'French' },
                 ]}
               />
             </SettingsRow>
@@ -74,7 +74,7 @@ function renderSection(id: string): ReactNode {
               />
             </SettingsRow>
             <SettingsRow description="Shown on shared sessions and exports." label="Display name">
-              <Input aria-label="Display name" defaultValue="Angel Loor" style={{ width: 200 }} />
+              <Input aria-label="Display name" defaultValue="Example User" style={{ width: 200 }} />
             </SettingsRow>
           </Card>
         </PageSection>

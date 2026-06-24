@@ -33,19 +33,19 @@ describe('InlineEdit', () => {
     const onSave = vi.fn(async () => undefined);
     render(
       <InlineEdit
-        displayValue="Local Organization A"
+        displayValue="Example workspace"
         kind="text"
         onSave={onSave}
         testIds={IDS}
-        value="Local Organization A"
+        value="Example workspace"
       />,
     );
 
     fireEvent.click(screen.getByTestId('e'));
-    fireEvent.change(screen.getByTestId('i'), { target: { value: 'Renamed Org' } });
+    fireEvent.change(screen.getByTestId('i'), { target: { value: 'Renamed workspace' } });
     fireEvent.click(screen.getByTestId('s'));
 
-    await waitFor(() => expect(onSave).toHaveBeenCalledWith('Renamed Org'));
+    await waitFor(() => expect(onSave).toHaveBeenCalledWith('Renamed workspace'));
   });
 
   it('renders the canonical InputSelect on edit for a single-selection value', () => {

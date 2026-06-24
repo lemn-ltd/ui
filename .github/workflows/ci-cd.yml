@@ -49,7 +49,10 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check
-        run: pnpm check
+        run: |
+          pnpm validate:brand-neutrality
+          pnpm validate:boundaries
+          pnpm check
 
       - name: Test
         run: pnpm test

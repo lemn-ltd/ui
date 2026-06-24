@@ -1,0 +1,21 @@
+# Technical Sources
+
+- Cloudflare Workers best practices: https://developers.cloudflare.com/changelog/post/2026-02-15-workers-best-practices/
+- Cloudflare Vite plugin: https://developers.cloudflare.com/changelog/post/2025-04-08-vite-plugin/
+- Cloudflare full-stack frameworks on Workers: https://developers.cloudflare.com/changelog/post/2025-04-08-fullstack-on-workers/
+- Cloudflare Workers Static Assets: https://developers.cloudflare.com/workers/static-assets/migration-guides/migrate-from-pages/
+- Cloudflare Workers observability: https://developers.cloudflare.com/changelog/post/2026-02-06-observability-ui-refresh/
+- Web.dev Core Web Vitals: https://web.dev/articles/vitals
+- Web.dev measuring Web Vitals: https://web.dev/articles/vitals-measurement-getting-started
+- Web.dev field measurement best practices: https://web.dev/articles/vitals-field-measurement-best-practices
+- Web.dev SPA Web Vitals FAQ: https://web.dev/articles/vitals-spa-faq
+- MDN Web Performance: https://developer.mozilla.org/en-US/docs/Web/Performance
+- MDN JavaScript performance: https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Performance/JavaScript
+- React lazy: https://react.dev/reference/react/lazy
+- React Suspense: https://react.dev/reference/react/Suspense
+- React useTransition: https://react.dev/reference/react/useTransition
+- React Router modes: https://github.com/remix-run/react-router/blob/main/docs/start/modes.md
+- Astro Cloudflare adapter: https://github.com/withastro/docs/blob/main/src/content/docs/en/guides/integrations-guide/cloudflare.mdx
+- Astro islands architecture: https://github.com/withastro/docs/blob/main/src/content/docs/en/concepts/islands.mdx
+- Vite build guide: https://github.com/vitejs/vite/blob/main/vite/docs/guide/build.md
+- Vite build options: https://github.com/vitejs/vite/blob/main/vite/docs/config/build-options.md

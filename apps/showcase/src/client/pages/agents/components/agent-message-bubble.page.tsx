@@ -20,11 +20,11 @@ function AgentMessageBubblePage(): ReactElement {
         render={() => (
           <AgentMessageBubble
             content={[
-              'Pregunta correcta: merece verificacion contra el esquema real.',
+              'Good question: it deserves verification against the real schema.',
               '',
-              '- Revise el owner del runtime',
-              '- Mantengo el cambio en el paquete UI',
-              '- El producto solo consume el componente',
+              '- I reviewed the runtime owner',
+              '- I kept the shared change in the UI package',
+              '- The product only consumes the component',
             ].join('\n')}
             createdAt={CREATED_AT}
             now={NOW}
