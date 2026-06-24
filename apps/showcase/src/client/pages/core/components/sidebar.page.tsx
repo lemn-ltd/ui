@@ -8,7 +8,7 @@ import {
   VersionTag,
 } from '@appranks/ui';
 import { type CSSProperties, type ReactElement, type ReactNode, useState } from 'react';
-import { currentOrgId, drillNavGroups, navGroups, orgs } from '../../../fixtures';
+import { currentOrgId, drillNavGroups, navGroups, nestedNavGroups, orgs } from '../../../fixtures';
 
 // Each mode renders inside a fixed-height bordered frame so the shell-scale
 // component reads as a preview rather than taking over the page.
@@ -57,7 +57,7 @@ function SidebarPage(): ReactElement {
   return (
     <ComponentPage
       status="stable"
-      summary="The application rail. Collapse modes — rail (64px), expanded (264px), and hidden — plus a drill-in variant (264px), each composing the org switcher, nav groups, user row, and version tag slots."
+      summary="The application rail. Collapse modes — rail (64px), expanded (264px), and hidden — plus a drill-in variant (264px), each composing the org switcher, nav groups, user row, and version tag slots. Nav items accept children, rendering an accessible multi-level tree with keyboard navigation and a rail flyout."
       title="Sidebar"
     >
       <ExampleBlock
@@ -84,6 +84,24 @@ function SidebarPage(): ReactElement {
       />
 
       <ExampleBlock
+        code={`// Items with \`children\` render as an expandable tree (WAI-ARIA tree view).
+// The active item's ancestors auto-expand; arrow keys move, →/← expand/collapse.
+<Sidebar mode="expanded" groups={nestedNavGroups} />`}
+        render={() => (
+          <Frame width={264}>
+            <Sidebar
+              groups={nestedNavGroups}
+              mode="expanded"
+              orgSwitcher={
+                <OrgSwitcher currentOrgId={currentOrgId} orgs={orgs} variant="expanded" />
+              }
+              userRow={userRow(false)}
+            />
+          </Frame>
+        )}
+      />
+
+      <ExampleBlock
         code={`<Sidebar
   mode="rail"
   groups={navGroups}
@@ -99,6 +117,22 @@ function SidebarPage(): ReactElement {
               orgSwitcher={<OrgSwitcher currentOrgId={currentOrgId} orgs={orgs} variant="rail" />}
               userRow={userRow(true)}
               versionTag={<VersionTag collapsed version="v1.4.0" />}
+            />
+          </Frame>
+        )}
+      />
+
+      <ExampleBlock
+        code={`// In rail mode, a nested parent opens its subtree in a Popover flyout.
+<Sidebar mode="rail" groups={nestedNavGroups} railExpand="flyout" />`}
+        render={() => (
+          <Frame width={64}>
+            <Sidebar
+              groups={nestedNavGroups}
+              mode="rail"
+              orgSwitcher={<OrgSwitcher currentOrgId={currentOrgId} orgs={orgs} variant="rail" />}
+              railExpand="flyout"
+              userRow={userRow(true)}
             />
           </Frame>
         )}
@@ -144,7 +178,32 @@ function SidebarPage(): ReactElement {
           {
             name: 'groups',
             type: 'readonly SidebarNavGroup[]',
-            description: 'Nav groups, each with an optional header and a list of items.',
+            description:
+              'Nav groups, each with an optional header and a list of items. An item with a children array becomes an expandable tree node; nest up to ~2 levels and use the drill-in variant for deeper sections.',
+          },
+          {
+            name: 'expandedIds / defaultExpandedIds',
+            type: 'readonly string[]',
+            description:
+              'Controlled / uncontrolled set of expanded item ids (multi-open). The active item’s ancestors expand regardless so the current page stays visible.',
+          },
+          {
+            name: 'onExpandedChange',
+            type: '(ids: readonly string[]) => void',
+            description: 'Fires with the next expanded-id set whenever a node is toggled.',
+          },
+          {
+            name: 'railExpand',
+            type: "'flyout' | 'hidden'",
+            defaultValue: "'flyout'",
+            description:
+              'How nested groups behave in rail mode: open children in a Popover flyout, or show top-level icons only.',
+          },
+          {
+            name: 'maxInlineDepth',
+            type: 'number',
+            defaultValue: '3',
+            description: 'Indentation is clamped to this depth so deep trees never run out of width.',
           },
           {
             name: 'orgSwitcher',

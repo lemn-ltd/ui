@@ -10,14 +10,28 @@ import {
 import { type SidebarMode, useShell } from '../../layout/screen-shell/shell-context.js';
 import { Icon, type IconName } from '../../primitives/index.js';
 import { SidebarChromeProvider } from './sidebar-chrome-context.js';
+import {
+  hasNesting,
+  SidebarRailNav,
+  SidebarTree,
+  type SidebarTreeState,
+  useSidebarTree,
+} from './sidebar-tree.js';
 import './sidebar.css';
 
 export interface SidebarNavItem {
   readonly id: string;
   readonly label: string;
-  readonly icon: IconName;
+  /** Optional: nested children are often label-only, so the icon is not required. */
+  readonly icon?: IconName;
   readonly active?: boolean;
   readonly onSelect?: () => void;
+  /** Child items. Any item with children renders as an expandable tree node. */
+  readonly children?: readonly SidebarNavItem[];
+  /** Trailing content, typically a count chip. */
+  readonly badge?: ReactNode;
+  /** Start expanded in uncontrolled mode. */
+  readonly defaultExpanded?: boolean;
 }
 
 export interface SidebarNavGroup {
@@ -40,6 +54,32 @@ export interface SidebarProps {
   readonly onBack?: () => void;
   readonly title?: ReactNode;
   readonly hint?: ReactNode;
+  /** Controlled set of expanded nav item ids (nested groups). */
+  readonly expandedIds?: readonly string[];
+  /** Uncontrolled initial expanded ids. The active item's trail expands anyway. */
+  readonly defaultExpandedIds?: readonly string[];
+  readonly onExpandedChange?: (ids: readonly string[]) => void;
+  /** Rail behaviour for nested groups: open children in a flyout, or hide them. */
+  readonly railExpand?: 'flyout' | 'hidden';
+  /** Indentation is clamped to this depth so deep trees never run out of width. */
+  readonly maxInlineDepth?: number;
+}
+
+/** First active item id anywhere in the (possibly nested) groups. */
+function findActiveId(groups: readonly SidebarNavGroup[]): string | undefined {
+  let found: string | undefined;
+  const walk = (items: readonly SidebarNavItem[]): void => {
+    for (const item of items) {
+      if (found) return;
+      if (item.active) {
+        found = item.id;
+        return;
+      }
+      if (item.children) walk(item.children);
+    }
+  };
+  for (const group of groups) walk(group.items);
+  return found;
 }
 
 export function Sidebar({
@@ -55,8 +95,15 @@ export function Sidebar({
   onBack,
   title,
   hint,
+  expandedIds,
+  defaultExpandedIds,
+  onExpandedChange,
+  railExpand = 'flyout',
+  maxInlineDepth = 3,
 }: SidebarProps): ReactElement {
   const shell = useShell();
+  // Shared expand-state for every nested group; flat groups never touch it.
+  const tree = useSidebarTree({ groups, expandedIds, defaultExpandedIds, onExpandedChange });
   // An explicit mode wins; otherwise the sidebar follows the enclosing shell's
   // collapse state, defaulting to expanded when used standalone. The drill-in
   // variant is content only — it collapses with the shell just like the primary
@@ -69,9 +116,9 @@ export function Sidebar({
   const chrome = useMemo(() => ({ rail }), [rail]);
 
   // Keep the active item in view when navigation changes it from elsewhere
-  // (e.g. a user-menu Settings entry that lives deep in the list).
-  const activeId = groups.flatMap((group) => group.items).find((item) => item.active)?.id;
-  const activeRef = useRef<HTMLButtonElement>(null);
+  // (e.g. a user-menu Settings entry that lives deep in the list or tree).
+  const activeId = useMemo(() => findActiveId(groups), [groups]);
+  const activeRef = useRef<HTMLElement>(null);
   useEffect(() => {
     activeRef.current?.scrollIntoView?.({ block: 'nearest' });
   }, [activeId]);
@@ -131,7 +178,10 @@ export function Sidebar({
               group={group}
               index={index}
               key={index}
+              maxInlineDepth={maxInlineDepth}
               rail={rail}
+              railExpand={railExpand}
+              tree={tree}
             />
           ))}
         </nav>
@@ -183,12 +233,21 @@ function SidebarNavGroupView({
   group,
   index,
   rail,
+  railExpand,
+  tree,
+  maxInlineDepth,
 }: {
-  readonly activeRef: RefObject<HTMLButtonElement | null>;
+  readonly activeRef: RefObject<HTMLElement | null>;
   readonly group: SidebarNavGroup;
   readonly index: number;
   readonly rail: boolean;
+  readonly railExpand: 'flyout' | 'hidden';
+  readonly tree: SidebarTreeState;
+  readonly maxInlineDepth: number;
 }): ReactElement {
+  // Tree semantics only where the group actually nests; flat groups stay flat so
+  // existing single-level rails keep their per-item tab stops and markup.
+  const nested = hasNesting(group.items);
   return (
     <Fragment>
       {index > 0 && rail ? <div className="ui-sidebar__divider" /> : null}
@@ -196,9 +255,28 @@ function SidebarNavGroupView({
         {!rail && group.header != null ? (
           <div className="ui-sidebar__group-header">{group.header}</div>
         ) : null}
-        {group.items.map((item) => (
-          <SidebarNavButton activeRef={activeRef} item={item} key={item.id} rail={rail} />
-        ))}
+        {nested ? (
+          rail ? (
+            <SidebarRailNav
+              activeRef={activeRef}
+              items={group.items}
+              railExpand={railExpand}
+              state={tree}
+            />
+          ) : (
+            <SidebarTree
+              activeRef={activeRef}
+              ariaLabel={typeof group.header === 'string' ? group.header : undefined}
+              items={group.items}
+              maxInlineDepth={maxInlineDepth}
+              state={tree}
+            />
+          )
+        ) : (
+          group.items.map((item) => (
+            <SidebarNavButton activeRef={activeRef} item={item} key={item.id} rail={rail} />
+          ))
+        )}
       </div>
     </Fragment>
   );
@@ -209,7 +287,7 @@ function SidebarNavButton({
   item,
   rail,
 }: {
-  readonly activeRef: RefObject<HTMLButtonElement | null>;
+  readonly activeRef: RefObject<HTMLElement | null>;
   readonly item: SidebarNavItem;
   readonly rail: boolean;
 }): ReactElement {
@@ -218,11 +296,11 @@ function SidebarNavButton({
       className="ui-sidebar__item"
       data-active={item.active ? 'true' : 'false'}
       onClick={item.onSelect}
-      ref={item.active ? activeRef : undefined}
+      ref={item.active ? (activeRef as RefObject<HTMLButtonElement>) : undefined}
       title={rail ? item.label : undefined}
       type="button"
     >
-      <Icon name={item.icon} size={18} />
+      {item.icon ? <Icon name={item.icon} size={18} /> : null}
       {rail ? null : <span className="ui-sidebar__item-label">{item.label}</span>}
     </button>
   );

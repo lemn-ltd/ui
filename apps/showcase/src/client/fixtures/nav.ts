@@ -34,6 +34,57 @@ export const navGroups: readonly SidebarNavGroup[] = [
   },
 ];
 
+/**
+ * Nested primary nav (tree). One section group with multi-level items; the
+ * active item ("Pinned") sits two levels deep so the active trail auto-expands.
+ */
+export const nestedNavGroups: readonly SidebarNavGroup[] = [
+  {
+    header: 'Platform',
+    items: [
+      {
+        id: 'nest-playground',
+        label: 'Playground',
+        icon: 'square-pen',
+        children: [
+          { id: 'nest-history', label: 'History' },
+          {
+            id: 'nest-starred',
+            label: 'Starred',
+            children: [
+              { id: 'nest-recent', label: 'Recent' },
+              { id: 'nest-pinned', label: 'Pinned', active: true },
+            ],
+          },
+          { id: 'nest-pg-settings', label: 'Settings' },
+        ],
+      },
+      {
+        id: 'nest-models',
+        label: 'Models',
+        icon: 'layout-grid',
+        badge: '12',
+        children: [
+          { id: 'nest-genesis', label: 'Genesis' },
+          { id: 'nest-explorer', label: 'Explorer' },
+          { id: 'nest-quantum', label: 'Quantum' },
+        ],
+      },
+      {
+        id: 'nest-docs',
+        label: 'Documentation',
+        icon: 'file-text',
+        children: [
+          { id: 'nest-intro', label: 'Introduction' },
+          { id: 'nest-getstarted', label: 'Get Started' },
+          { id: 'nest-tutorials', label: 'Tutorials' },
+        ],
+      },
+      { id: 'nest-settings', label: 'Settings', icon: 'settings' },
+    ],
+  },
+];
+
 /** Secondary drill-in nav: 5 items shown inside a section's detail rail. */
 export const drillNavGroups: readonly SidebarNavGroup[] = [
   {

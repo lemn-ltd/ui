@@ -1369,18 +1369,20 @@ A ⌘K search dialog over grouped commands, with live filtering and an empty sta
 
 `/core/components/sidebar` · stable
 
-The application rail in expanded, rail, and hidden collapse modes plus a drill-in variant, composing org, nav, user, and version slots.
+The application rail in expanded, rail, and hidden collapse modes plus a drill-in variant, composing org, nav, user, and version slots. Nav items accept `children` for accessible multi-level nesting.
 
 **Use when**
 
 - You need the app's primary navigation rail composing org switcher, nav groups, user row, and version tag.
 - Navigation must support a rail (64px icons-only), expanded (264px labeled), and hidden state from one component. The enclosing `ScreenShell` owns the collapse: its `collapseBehavior` (`expand-hide` | `expand-rail` | `cycle`) decides what the toggle and Cmd/Ctrl+B walk through, and the brand, search, org switcher, and user row inherit the rail form automatically.
+- Navigation has hierarchy: give an item a `children` array and it renders an expandable tree (WAI-ARIA tree view) with roving-tabindex keyboard support; the active item's ancestors auto-expand and, in rail mode, children open in a Popover flyout.
 - A settings/section drill-in needs the `drill-in` variant with a back affordance, title, and hint. It follows the same shell collapse (toggle and Cmd/Ctrl+B) as the primary rail.
 
 **Avoid**
 
 - Don't use it for the horizontal screen header; that's the top bar. → use [`top-bar`](#top-bar)
 - Don't use it to switch between peer views within a screen; use tabs. → use [`tabs`](#tabs)
+- Don't nest items more than ~2 levels deep inline; route deeper sections to the `drill-in` variant so the rail stays readable. → use the `drill-in` variant
 - For just the org picker without the whole rail, use the org switcher directly. → use [`org-switcher`](#org-switcher)
 
 **Pairs with** [`org-switcher`](#org-switcher), [`menu`](#menu), [`version-tag`](#version-tag), [`screen-shell`](#screen-shell), [`top-bar`](#top-bar)

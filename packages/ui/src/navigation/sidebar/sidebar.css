@@ -111,14 +111,18 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  width: 100%;
   height: 40px;
-  /* 12px left = 10px gutter + the 2px the active bar occupies. */
-  padding: 0 10px 0 12px;
+  /* 12px left = 10px gutter + the 2px the active bar occupies; nested rows add
+   * one indent step per --sidebar-depth (0 for flat items, so unchanged). */
+  padding: 0 10px 0 calc(12px + var(--sidebar-depth, 0) * 16px);
+  border: 0;
   border-radius: var(--radius-md);
   background: transparent;
   color: var(--text-muted);
   font-family: var(--font-sans);
   font-size: var(--font-size-small);
+  text-align: left;
   cursor: pointer;
 }
 
@@ -145,6 +149,124 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* ---- Nested navigation (WAI-ARIA tree) ---------------------------------- */
+
+.ui-sidebar__tree,
+.ui-sidebar__subtree {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ui-sidebar__treeitem {
+  display: block;
+  outline: none;
+}
+
+/* Focus the row, not the bare <li>, so the ring hugs the rounded surface. */
+.ui-sidebar__treeitem:focus-visible > .ui-sidebar__item {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
+}
+
+/* Guide rail under a parent, aligned just inside its label start. */
+.ui-sidebar__subtree {
+  position: relative;
+  margin-top: 2px;
+}
+
+.ui-sidebar__subtree::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 2px;
+  left: calc(12px + var(--sidebar-depth, 0) * 16px + 18px);
+  width: 1px;
+  background: var(--border);
+}
+
+.ui-sidebar__chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin-left: auto;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+.ui-sidebar__chevron:hover {
+  background: var(--surface2);
+  color: var(--text);
+}
+
+.ui-sidebar__chevron .ui-icon {
+  transition: transform var(--duration-fast) var(--easing-standard);
+}
+
+.ui-sidebar__chevron[data-expanded] .ui-icon {
+  transform: rotate(90deg);
+}
+
+.ui-sidebar__badge {
+  flex: none;
+  margin-left: auto;
+  padding: 0 6px;
+  border-radius: var(--radius-pill);
+  background: var(--surface2);
+  color: var(--text-muted);
+  font-size: var(--font-size-caption);
+  line-height: 18px;
+}
+
+/* A badge sitting next to a chevron should not also claim the auto margin. */
+.ui-sidebar__badge + .ui-sidebar__chevron {
+  margin-left: var(--space-1);
+}
+
+/* ---- Rail flyout -------------------------------------------------------- */
+
+.ui-sidebar__rail-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ui-sidebar__rail-mark {
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+}
+
+.ui-sidebar__flyout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 200px;
+}
+
+.ui-sidebar__flyout-title {
+  padding: 6px var(--space-3);
+  color: var(--text-dim);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-sidebar__chevron .ui-icon {
+    transition: none;
+  }
 }
 
 .ui-sidebar__footer {
