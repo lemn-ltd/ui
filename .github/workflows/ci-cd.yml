@@ -8,7 +8,6 @@ on:
 
 permissions:
   contents: read
-  packages: write
 
 concurrency:
   group: appranks-ui-${{ github.ref }}
@@ -18,9 +17,11 @@ jobs:
   validate:
     name: Validate
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -48,11 +49,15 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Require changesets for package changes
+        if: github.event_name == 'pull_request' && !startsWith(github.head_ref, 'changeset-release/')
+        run: pnpm changeset status --since=origin/main
+
+      - name: Validate repo policy and release metadata
+        run: pnpm validate
+
       - name: Check
-        run: |
-          pnpm validate:brand-neutrality
-          pnpm validate:boundaries
-          pnpm check
+        run: pnpm check
 
       - name: Test
         run: pnpm test
@@ -60,15 +65,24 @@ jobs:
       - name: Build
         run: pnpm build
 
-  publish-and-deploy:
-    name: Publish Package And Deploy Showcase
+      - name: Verify generated files are committed
+        run: git diff --exit-code
+
+  release-and-deploy:
+    name: Release And Deploy
     needs: validate
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 35
     environment: production
+    permissions:
+      contents: write
+      packages: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -81,34 +95,53 @@ jobs:
           corepack enable
           corepack prepare "$(node -p "require('./package.json').packageManager")" --activate
 
+      - name: Resolve pnpm store
+        run: echo "PNPM_STORE_PATH=$(pnpm store path --silent)" >> "$GITHUB_ENV"
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.PNPM_STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build packages
-        run: |
-          pnpm --filter @appranks/ui run build
-          pnpm --filter @appranks/showcase-kit run build
-
-      - name: Publish @appranks/ui if needed
-        run: |
-          version="$(node -p "require('./packages/ui/package.json').version")"
-          if npm view "@appranks/ui@${version}" version >/dev/null 2>&1; then
-            echo "@appranks/ui@${version} already published"
-            exit 0
-          fi
-          pnpm --filter @appranks/ui publish --access restricted --no-git-checks
+      - name: Create release PR or publish package
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          version: pnpm version:packages
+          publish: pnpm release
+          title: "chore: release packages"
+          commit: "chore: release packages"
+          createGithubReleases: true
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Compute build metadata
         id: build
         run: |
-          short_sha="${GITHUB_SHA:0:7}"
-          echo "version=${short_sha}" >> "$GITHUB_OUTPUT"
+          package_version="$(node -p "require('./packages/ui/package.json').version")"
+          echo "version=${package_version}" >> "$GITHUB_OUTPUT"
           echo "sha=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
           echo "time=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+
+      - name: Build docs
+        run: pnpm --filter @appranks/ui-docs run build
+
+      - name: Deploy docs
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: apps/docs
+          command: deploy
 
       - name: Build showcase
         run: pnpm --filter @appranks/ui-showcase run cf:build
@@ -124,7 +157,7 @@ jobs:
           environment: production
           command: deploy --env production --var BUILD_VERSION:${{ steps.build.outputs.version }} --var BUILD_GIT_SHA:${{ steps.build.outputs.sha }} --var BUILD_TIME:${{ steps.build.outputs.time }}
 
-      - name: Set runtime secrets
+      - name: Set showcase runtime secret
         run: printf '%s' "$STATUS_TOKEN" | pnpm --dir apps/showcase exec wrangler secret put STATUS_TOKEN --env production
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -147,20 +180,23 @@ jobs:
             return 1
           }
 
-          retry health sh -c 'curl --fail --silent --max-time 5 https://ui.appranks.com/health | jq -e ".ok == true" >/dev/null'
-          retry ready sh -c 'curl --fail --silent --max-time 5 https://ui.appranks.com/health/ready | jq -e ".ok == true" >/dev/null'
-          retry catalog sh -c 'curl --fail --silent --max-time 5 https://ui.appranks.com/catalog.json | jq -e ".package == \"@appranks/ui\" and (.components | length) > 0" >/dev/null'
-          retry llms sh -c 'curl --fail --silent --max-time 5 https://ui.appranks.com/llms.txt | grep -q "@appranks/ui"'
-          retry llms-full sh -c 'curl --fail --silent --max-time 5 https://ui.appranks.com/llms-full.txt | grep -q "Appranks UI Component Catalog"'
+          retry docs-home sh -c 'curl --fail --silent --max-time 5 https://ui.appranks.com/ | grep -q "Docs - UI"'
+          retry docs-changelog sh -c 'curl --fail --silent --max-time 5 https://ui.appranks.com/changelog/ | grep -q "Current package version"'
+          retry showcase-health sh -c 'curl --fail --silent --max-time 5 https://showcase.ui.appranks.com/health | jq -e ".ok == true" >/dev/null'
+          retry showcase-ready sh -c 'curl --fail --silent --max-time 5 https://showcase.ui.appranks.com/health/ready | jq -e ".ok == true" >/dev/null'
+          retry showcase-catalog sh -c 'curl --fail --silent --max-time 5 https://showcase.ui.appranks.com/catalog.json | jq -e ".package == \"@appranks/ui\" and (.components | length) > 0" >/dev/null'
+          retry showcase-llms sh -c 'curl --fail --silent --max-time 5 https://showcase.ui.appranks.com/llms.txt | grep -q "@appranks/ui"'
+          retry showcase-llms-full sh -c 'curl --fail --silent --max-time 5 https://showcase.ui.appranks.com/llms-full.txt | grep -q "Appranks UI Component Catalog"'
 
       - name: Summary
         run: |
           {
-            echo "### Appranks UI"
+            echo "### Docs - UI"
             echo ""
-            echo "- Package: \`@appranks/ui\`"
-            echo "- Showcase: https://ui.appranks.com"
-            echo "- Catalog: https://ui.appranks.com/catalog.json"
-            echo "- Agent guide: https://ui.appranks.com/llms.txt"
+            echo "- Package: \`@appranks/ui@${{ steps.build.outputs.version }}\`"
+            echo "- Docs: https://ui.appranks.com"
+            echo "- Showcase: https://showcase.ui.appranks.com"
+            echo "- Catalog: https://showcase.ui.appranks.com/catalog.json"
+            echo "- Agent guide: https://showcase.ui.appranks.com/llms.txt"
             echo "- Commit: \`${GITHUB_SHA}\`"
           } >> "$GITHUB_STEP_SUMMARY"

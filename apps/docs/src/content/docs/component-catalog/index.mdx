@@ -1,0 +1,27 @@
+---
+title: Component catalog
+description: Where to inspect and consume the @appranks/ui component catalog.
+sidebar:
+  label: Component catalog
+  order: 3
+---
+
+The component catalog is data-first and lives in `packages/ui/src/catalog*.ts`.
+It drives the showcase navigation, the agent-facing docs, and catalog drift
+checks.
+
+## Runtime catalog
+
+- JSON: [showcase.ui.appranks.com/catalog.json](https://showcase.ui.appranks.com/catalog.json)
+- Agent summary: [showcase.ui.appranks.com/llms.txt](https://showcase.ui.appranks.com/llms.txt)
+- Full agent guide: [showcase.ui.appranks.com/llms-full.txt](https://showcase.ui.appranks.com/llms-full.txt)
+
+## Local sources
+
+- Catalog source: `packages/ui/src/catalog.ts`
+- Component guide: `packages/ui/docs/components.md`
+- Pattern guide: `packages/ui/docs/patterns.md`
+- Showcase pages: `apps/showcase/src/client/pages`
+
+When adding or changing a component, update the catalog, docs, showcase page,
+exports, and tests in the same change.

@@ -40,7 +40,7 @@
       "name": "appranks-ui",
       "routes": [
         {
-          "pattern": "ui.appranks.com",
+          "pattern": "showcase.ui.appranks.com",
           "custom_domain": true,
         },
       ],

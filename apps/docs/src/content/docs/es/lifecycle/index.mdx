@@ -1,0 +1,32 @@
+---
+title: Lifecycle
+description: SemVer, changelog, release PRs y ownership de publicacion.
+sidebar:
+  label: Lifecycle
+  order: 5
+---
+
+`@appranks/ui` usa SemVer para el paquete publicado.
+
+- `PATCH`: bug fixes, fixes internos, correcciones de docs y polish visual no breaking.
+- `MINOR`: nuevos componentes, nuevos exports, variantes, props aditivas y comportamiento no breaking.
+- `MAJOR`: exports removidos, props renombradas, cambio de semantica o cambios que requieren migracion.
+
+## Ownership de release
+
+El autor del feature o el agente agrega un changeset con la intencion de
+release. La automatizacion convierte los changesets mergeados en un version PR
+que actualiza `packages/ui/package.json` y `packages/ui/CHANGELOG.md`.
+
+Un maintainer mergea el version PR despues de revisar SemVer y changelog. CI
+publica el paquete y despliega docs mas showcase.
+
+## Comandos
+
+```bash
+pnpm changeset
+pnpm version:packages
+pnpm release
+```
+
+Usa prereleases solo para rollouts staged explicitos.

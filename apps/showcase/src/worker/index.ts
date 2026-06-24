@@ -10,7 +10,7 @@ export default class UiShowcaseWorker extends WorkerEntrypoint<UiShowcaseEnv> {
 
     if (pathname === '/health') return healthResponse(env);
     if (pathname === '/health/ready') return readyResponse(env);
-    if (pathname === '/catalog.json') return catalogResponse();
+    if (pathname === '/catalog.json') return catalogResponse(env);
     if (pathname === '/llms.txt') return llmsResponse();
     if (pathname === '/llms-full.txt') return llmsFullResponse();
 
@@ -76,10 +76,10 @@ function isAuthorized(request: Request, env: UiShowcaseEnv): boolean {
   return new URL(request.url).searchParams.get('token') === env.STATUS_TOKEN;
 }
 
-function catalogResponse(): Response {
+function catalogResponse(env: UiShowcaseEnv): Response {
   return Response.json({
     package: '@appranks/ui',
-    version: '0.1.0',
+    version: env.BUILD_VERSION ?? '0.0.0',
     source: 'https://github.com/appranks/ui',
     components: componentCatalog,
   });
@@ -94,8 +94,8 @@ function llmsResponse(): Response {
       'Import components only from the public package surface.',
       '',
       'Catalog:',
-      '- JSON: https://ui.appranks.com/catalog.json',
-      '- Full agent guide: https://ui.appranks.com/llms-full.txt',
+      '- JSON: https://showcase.ui.appranks.com/catalog.json',
+      '- Full agent guide: https://showcase.ui.appranks.com/llms-full.txt',
       '',
       'Rules:',
       '- Prefer existing catalog components before creating UI.',

@@ -1,0 +1,26 @@
+---
+title: Catalogo de componentes
+description: Donde inspeccionar y consumir el catalogo de @appranks/ui.
+sidebar:
+  label: Catalogo
+  order: 3
+---
+
+El catalogo de componentes vive en `packages/ui/src/catalog*.ts`. Alimenta la
+navegacion del showcase, docs para agentes y checks contra drift.
+
+## Catalogo runtime
+
+- JSON: [showcase.ui.appranks.com/catalog.json](https://showcase.ui.appranks.com/catalog.json)
+- Resumen para agentes: [showcase.ui.appranks.com/llms.txt](https://showcase.ui.appranks.com/llms.txt)
+- Guia completa: [showcase.ui.appranks.com/llms-full.txt](https://showcase.ui.appranks.com/llms-full.txt)
+
+## Fuentes locales
+
+- Catalogo: `packages/ui/src/catalog.ts`
+- Guia de componentes: `packages/ui/docs/components.md`
+- Guia de patrones: `packages/ui/docs/patterns.md`
+- Paginas del showcase: `apps/showcase/src/client/pages`
+
+Cuando agregues o cambies un componente, actualiza catalogo, docs, showcase,
+exports y tests en el mismo cambio.

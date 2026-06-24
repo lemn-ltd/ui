@@ -1,8 +1,9 @@
 # Appranks UI
 
 Shared, brand-neutral UI system for Appranks projects. The repository owns the
-published `@appranks/ui` React package, its public component catalog, and the
-showcase site at `https://ui.appranks.com`.
+published `@appranks/ui` React package, its public component catalog, the docs
+site at `https://ui.appranks.com`, and the showcase site at
+`https://showcase.ui.appranks.com`.
 
 `@appranks/ui` is the source of truth for shared styles. If a consuming product
 needs a reusable component, token, layout, or style migration, make that change
@@ -14,7 +15,8 @@ apps as a permanent fix.
 
 - `@appranks/ui` - public component and token package, published to GitHub Packages.
 - `@appranks/showcase-kit` - internal workspace package for showcase page chrome.
-- `@appranks/ui-showcase` - Cloudflare Worker SPA deployed to `https://ui.appranks.com`.
+- `@appranks/ui-docs` - Astro Starlight docs deployed to `https://ui.appranks.com`.
+- `@appranks/ui-showcase` - Cloudflare Worker SPA deployed to `https://showcase.ui.appranks.com`.
 
 ## Requirements
 
@@ -64,9 +66,9 @@ product apps.
 
 Agents should discover available components through:
 
-- `https://ui.appranks.com/catalog.json`
-- `https://ui.appranks.com/llms.txt`
-- `https://ui.appranks.com/llms-full.txt`
+- `https://showcase.ui.appranks.com/catalog.json`
+- `https://showcase.ui.appranks.com/llms.txt`
+- `https://showcase.ui.appranks.com/llms-full.txt`
 
 Rules:
 
@@ -101,10 +103,12 @@ pnpm validate:boundaries
 3. Run `pnpm validate:brand-neutrality`, `pnpm validate:boundaries`,
    `pnpm --filter @appranks/ui run check`, `pnpm --filter @appranks/ui run test`,
    and `pnpm --filter @appranks/ui run build`.
-4. Bump `packages/ui/package.json`. Published GitHub Package versions are treated
-   as immutable, so do not reuse an already published version.
-5. Commit and push. The CI workflow publishes `@appranks/ui` only when the
-   package version is not already available in GitHub Packages.
+4. Add a changeset with `pnpm changeset` for every publishable package change.
+   The release workflow turns merged changesets into a version PR that updates
+   `packages/ui/package.json`, `packages/ui/CHANGELOG.md`, and the docs changelog.
+5. Merge the version PR after reviewing the SemVer level and changelog text.
+   CI publishes `@appranks/ui` only when the package version is not already
+   available in GitHub Packages.
 6. Update each consuming repo to the newly published version and regenerate its
    lockfile.
 
@@ -113,3 +117,5 @@ pnpm validate:boundaries
 - [Package usage guide](packages/ui/README.md)
 - [Agent-facing component guide](packages/ui/docs/README.md)
 - [Contribution rules](CONTRIBUTING.md)
+- [Human docs](https://ui.appranks.com)
+- [Interactive showcase](https://showcase.ui.appranks.com)

@@ -1,0 +1,32 @@
+---
+title: Instalar y usar
+description: Instalar @appranks/ui en un producto consumidor.
+sidebar:
+  label: Instalar y usar
+  order: 2
+---
+
+Configura GitHub Packages para el scope `@appranks`:
+
+```ini
+@appranks:registry=https://npm.pkg.github.com
+```
+
+```bash
+pnpm add @appranks/ui@<published-version>
+```
+
+Importa componentes solo desde la superficie publica e importa el stylesheet una
+vez en la raiz de la app:
+
+```tsx
+import { Button, Card, componentCatalog } from "@appranks/ui";
+import "@appranks/ui/styles.css";
+```
+
+## Reglas
+
+- No hagas deep imports desde `@appranks/ui/src`, `@appranks/ui/dist` o internals.
+- No importes Radix, `cmdk` o `sonner` directamente en productos para UI compartida.
+- Agrega UI reutilizable aqui primero, publica una nueva version y actualiza consumidores.
+- Usa [el showcase](https://showcase.ui.appranks.com) para verificar comportamiento.

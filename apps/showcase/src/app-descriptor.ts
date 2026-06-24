@@ -6,6 +6,6 @@ export interface AppDescriptor {
 
 export const uiShowcaseAppDescriptor: AppDescriptor = {
   name: 'ui-showcase',
-  displayName: 'UI Showcase',
+  displayName: 'Showcase - UI',
   accent: '#db2777',
 };

@@ -1,0 +1,28 @@
+---
+title: Deploy
+description: CI/CD deployment surfaces for docs, showcase, and the package.
+sidebar:
+  label: Deploy
+  order: 7
+---
+
+The production deployment has two public domains:
+
+- `ui.appranks.com` serves this Starlight docs site.
+- `showcase.ui.appranks.com` serves the interactive showcase Worker SPA.
+
+CI validates pull requests with typecheck, tests, build, release metadata, and
+changeset status. Pushes to `main` run the release workflow:
+
+1. If changesets are pending, update or create the release PR.
+2. If no changesets are pending, publish any unpublished `@appranks/ui` version.
+3. Deploy docs to `ui.appranks.com`.
+4. Deploy showcase to `showcase.ui.appranks.com`.
+5. Smoke public docs and showcase endpoints.
+
+Required secrets and variables:
+
+- `CLOUDFLARE_API_TOKEN`
+- `CLOUDFLARE_ACCOUNT_ID`
+- `STATUS_TOKEN`
+- `GITHUB_TOKEN` from GitHub Actions

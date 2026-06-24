@@ -46,7 +46,7 @@ export function buildStatusReport(env: UiShowcaseEnv) {
     descriptor: uiShowcaseServiceDescriptor,
     build: {
       environment: env.DEPLOYMENT_ENVIRONMENT ?? 'local',
-      version: env.BUILD_VERSION ?? '0.1.0',
+      version: env.BUILD_VERSION ?? '0.0.0',
       gitSha: env.BUILD_GIT_SHA ?? 'local',
       time: env.BUILD_TIME ?? 'local',
     },

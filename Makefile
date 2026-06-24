@@ -3,15 +3,16 @@ SHELL := /bin/bash
 
 PNPM ?= pnpm
 
-.PHONY: help install dev validate-brand-neutrality validate-boundaries validate check test build pack-ui release-preflight clean
+.PHONY: help install dev dev-docs validate-brand-neutrality validate-boundaries validate check test build pack-ui release-preflight clean
 
 help:
 	@printf 'Useful targets:\n'
 	@printf '  make install                  Install workspace dependencies with the lockfile frozen.\n'
 	@printf '  make dev                      Restart the local UI Showcase at http://localhost:6500.\n'
+	@printf '  make dev-docs                 Start the local docs site at http://localhost:6600.\n'
 	@printf '  make validate-brand-neutrality Scan shared UI and showcase source for product-specific names.\n'
 	@printf '  make validate-boundaries      Scan @appranks/ui runtime imports for boundary violations.\n'
-	@printf '  make validate                 Run all repository validation scripts.\n'
+	@printf '  make validate                 Run all repository validation scripts, including release metadata.\n'
 	@printf '  make check                    Typecheck all workspace packages.\n'
 	@printf '  make test                     Run all workspace test suites.\n'
 	@printf '  make build                    Build all workspace packages and the showcase.\n'
@@ -26,13 +27,17 @@ dev:
 	$(PNPM) kill:showcase
 	$(PNPM) dev:showcase
 
+dev-docs:
+	$(PNPM) dev:docs
+
 validate-brand-neutrality:
 	$(PNPM) validate:brand-neutrality
 
 validate-boundaries:
 	$(PNPM) validate:boundaries
 
-validate: validate-brand-neutrality validate-boundaries
+validate:
+	$(PNPM) validate
 
 check:
 	$(PNPM) check
