@@ -1,8 +1,13 @@
 # Screen composition recipes
 
 > How to assemble whole screens from `@appranks/ui` components. Each recipe
-> mirrors a live pattern page in the showcase (`/core/patterns/<slug>`). Component
-> names link to their selection guidance in [components.md](components.md).
+> mirrors a live pattern page in the showcase (`/<module>/patterns/<slug>`).
+> Component names link to their selection guidance in [components.md](components.md).
+
+## Module routes
+
+- Core patterns live under `/core/patterns/*`.
+- Agent workflow patterns live under `/agents/patterns/*`.
 
 ## List + table
 
@@ -83,3 +88,27 @@ The end-to-end CRUD screen. Frame with Sidebar + TopBar + ListShell; a PageHeade
 - **Search first, two filters max.** Search is always present and matches one field (name). At most the two most relevant column `Filter` pills sit beside it; their applied values appear as `ActiveFiltersRow` chips. Add more filters only when search plus two is not enough.
 - **No table toolbar.** No column is `hideable` and `onDensityChange` is unset, so the density toggle and column-visibility menu (the header toolbar) stay hidden. Enable them on dense or very wide tables.
 - **Always-on, zero-cost affordances:** column sort, numbered pagination (only past one page), the no-results EmptyState, and the Toaster — none add idle chrome.
+
+## Agent session
+
+`/agents/patterns/agent-session`
+
+**Composes** [`sidebar`](components.md#sidebar), [`top-bar`](components.md#top-bar), [`list-shell`](components.md#list-shell), [`page-header`](components.md#page-header), [`agent-activity-line`](components.md#agent-activity-line), [`user-message-bubble`](components.md#user-message-bubble), [`agent-message-bubble`](components.md#agent-message-bubble), [`agent-reasoning-block`](components.md#agent-reasoning-block), [`agent-tool-call-list`](components.md#agent-tool-call-list), [`composer`](components.md#composer), [`card`](components.md#card), [`badge`](components.md#badge)
+
+Frame the session with Sidebar + TopBar + ListShell. The main column owns the message thread: an AgentActivityLine for current runtime status, UserMessageBubble and AgentMessageBubble rows for the transcript, AgentReasoningBlock for inspectable thought summaries, and AgentToolCallList for execution evidence. Keep a compact context column beside the thread with Cards and Badges for run ids, graph hashes, and policy state. Pin Composer at the bottom of the thread area; the host owns message submission and streaming state.
+
+## Automation builder
+
+`/agents/patterns/automation-builder`
+
+**Composes** [`sidebar`](components.md#sidebar), [`top-bar`](components.md#top-bar), [`list-shell`](components.md#list-shell), [`page-header`](components.md#page-header), [`trigger-composer`](components.md#trigger-composer), [`automation-graph`](components.md#automation-graph), [`node-inspector`](components.md#node-inspector), NodePalette, [`planner-status`](components.md#planner-status), [`proposal-preview`](components.md#proposal-preview)
+
+Use TriggerComposer as the controlled entry-point editor, then place the graph canvas beside it so the operator sees the planned topology immediately. Below the canvas, combine NodePalette, NodeInspector, and ProposalPreview: the palette offers node kinds, the inspector shows the selected node's config/policy/knowledge fields, and the proposal preview gates acceptance on a clean compile. PageHeader carries PlannerStatus so planning/streaming state is visible without adding another status panel.
+
+## Run monitor
+
+`/agents/patterns/run-monitor`
+
+**Composes** [`sidebar`](components.md#sidebar), [`top-bar`](components.md#top-bar), [`list-shell`](components.md#list-shell), [`page-header`](components.md#page-header), [`automation-status-badge`](components.md#automation-status-badge), [`stats-strip`](components.md#stats-strip), [`card`](components.md#card), [`run-timeline`](components.md#run-timeline), [`node-attempts-table`](components.md#node-attempts-table), [`runtime-refs-panel`](components.md#runtime-refs-panel), [`approval-panel`](components.md#approval-panel)
+
+Open with a PageHeader plus AutomationStatusBadge and a StatsStrip for duration, attempts, approvals, and cost. The primary column holds Timeline evidence and Node attempts inside Cards; the side column holds RuntimeRefsPanel plus ApprovalPanel. This keeps run evidence, execution refs, and human approval context on the same screen without turning the lower-level components into product-specific composites.

@@ -1,5 +1,6 @@
 import { buildNavGroups, pathFor } from '@appranks/showcase-kit';
 import { agentsEntries } from './entries/agents.js';
+import { agentPatternsEntries } from './entries/agent-patterns.js';
 import { dataDisplayEntries } from './entries/data-display.js';
 import { feedbackEntries } from './entries/feedback.js';
 import { formsEntries } from './entries/forms.js';
@@ -31,6 +32,7 @@ export const SHOWCASE_REGISTRY: UiShowcaseEntry[] = [
   ...layoutEntries,
   ...agentsEntries,
   ...patternsEntries,
+  ...agentPatternsEntries,
 ];
 
 /** Registry grouped into the canonical nav order, dropping empty groups. */

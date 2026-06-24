@@ -22,7 +22,14 @@ import {
 import { type CSSProperties, type ReactElement, useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { uiShowcaseAppDescriptor } from '../../app-descriptor';
-import { currentOrgId, orgs } from '../fixtures';
+import {
+  DEFAULT_SHOWCASE_MODULE_ID,
+  entriesForModule,
+  moduleForId,
+  moduleIdForPathname,
+  SHOWCASE_MODULES,
+  type ShowcaseModuleId,
+} from '../registry/showcase-modules';
 import {
   navGroups,
   pathFor,
@@ -123,14 +130,22 @@ export function ShowcaseShell(): ReactElement {
   const location = useLocation();
   const navigate = useNavigate();
   const [paletteOpen, setPaletteOpen] = useState(false);
-  const [orgId, setOrgId] = useState(currentOrgId);
+  const [moduleId, setModuleId] = useState<ShowcaseModuleId>(() =>
+    moduleIdForPathname(location.pathname),
+  );
 
   // Restore the persisted theme choice to the document on first mount.
   useEffect(() => {
     applyTheme(getTheme());
   }, []);
 
-  const sections = navGroups();
+  useEffect(() => {
+    if (location.pathname !== '/') setModuleId(moduleIdForPathname(location.pathname));
+  }, [location.pathname]);
+
+  const moduleEntries = entriesForModule(SHOWCASE_REGISTRY, moduleId);
+  const sections = navGroups(moduleEntries);
+  const activeModule = moduleForId(moduleId) ?? moduleForId(DEFAULT_SHOWCASE_MODULE_ID);
 
   const sidebarGroups: SidebarNavGroup[] = sections.map((section) => ({
     header: section.group,
@@ -143,12 +158,22 @@ export function ShowcaseShell(): ReactElement {
     })),
   }));
 
+  const selectModule = (nextId: string): void => {
+    const nextModule = moduleForId(nextId);
+    if (!nextModule) return;
+    const nextEntries = entriesForModule(SHOWCASE_REGISTRY, nextModule.id);
+    const nextPath = nextEntries[0] ? pathFor(nextEntries[0]) : '/';
+
+    setModuleId(nextModule.id);
+    if (location.pathname !== nextPath) navigate(nextPath);
+  };
+
   const paletteGroups: CommandPaletteGroup[] = sections.map((section) => ({
     label: section.group,
     items: section.entries.map((entry) => ({
       id: entry.slug,
       label: entry.title,
-      keywords: [entry.summary, entry.group],
+      keywords: [entry.summary, entry.group, activeModule?.name ?? ''],
       onSelect: () => navigate(pathFor(entry)),
     })),
   }));
@@ -162,10 +187,13 @@ export function ShowcaseShell(): ReactElement {
       groups={sidebarGroups}
       orgSwitcher={
         <OrgSwitcher
-          currentOrgId={orgId}
-          footer={<MenuItem icon="settings">Manage organizations</MenuItem>}
-          onSelectOrg={setOrgId}
-          orgs={orgs}
+          currentOrgId={moduleId}
+          onSelectOrg={selectModule}
+          orgs={SHOWCASE_MODULES.map((module) => ({
+            id: module.id,
+            mark: module.mark,
+            name: module.name,
+          }))}
         />
       }
       search={<SearchCommand onSelect={() => setPaletteOpen(true)} />}
@@ -202,6 +230,7 @@ export function ShowcaseShell(): ReactElement {
         <Breadcrumb
           items={[
             { label: uiShowcaseAppDescriptor.displayName },
+            { label: activeModule?.name ?? 'Core' },
             { label: activeEntry?.group ?? 'Overview' },
           ]}
         />
