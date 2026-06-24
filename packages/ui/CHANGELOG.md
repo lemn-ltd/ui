@@ -1,5 +1,11 @@
 # @appranks/ui
 
+## 0.1.2
+
+### Patch Changes
+
+- 089bff0: Add documentation, changelog, and release automation for the UI design system.
+
 ## 0.1.1
 
 - Publish the current shared component catalog, docs, CSS assets, and public package surface.
