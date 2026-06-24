@@ -136,10 +136,19 @@ jobs:
             git push origin HEAD:main
           fi
 
-      - name: Publish package
-        run: pnpm release
+      - name: Build package
+        run: pnpm --filter @appranks/ui run build
+
+      - name: Publish package if needed
+        run: |
+          version="$(node -p "require('./packages/ui/package.json').version")"
+          owner_scope="$(printf '%s' "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')"
+          if npm view "@appranks/ui@${version}" version >/dev/null 2>&1 || npm view "@${owner_scope}/ui@${version}" version >/dev/null 2>&1; then
+            echo "@appranks/ui@${version} already published"
+            exit 0
+          fi
+          pnpm publish:ui
         env:
-          NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Compute build metadata
