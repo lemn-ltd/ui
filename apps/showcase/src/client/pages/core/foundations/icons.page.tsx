@@ -1,13 +1,13 @@
-import { ContentLayout, Icon, iconNames, PageSection } from '@appranks/ui';
+import { FoundationPage } from '@appranks/showcase-kit';
+import { Icon, iconNames } from '@appranks/ui';
 import type { ReactElement } from 'react';
 
 function IconsPage(): ReactElement {
   return (
-    <ContentLayout>
-      <PageSection
-        caption="The product-neutral base glyph set the package re-exports. Domain icons stay in product apps."
-        title="Icons"
-      >
+    <FoundationPage
+      caption="The product-neutral base glyph set the package re-exports. Domain icons stay in product apps."
+      title="Icons"
+    >
         <div className="showcase-icon-grid">
           {iconNames.map((name) => (
             <div className="showcase-icon-cell" key={name}>
@@ -16,8 +16,7 @@ function IconsPage(): ReactElement {
             </div>
           ))}
         </div>
-      </PageSection>
-    </ContentLayout>
+    </FoundationPage>
   );
 }
 

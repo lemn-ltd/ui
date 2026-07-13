@@ -66,16 +66,17 @@ function ResponsivePage(): ReactElement {
       summary="How the shell reflows across breakpoints. The same composition reads as a desktop layout at 1280px, condenses at 768px, and collapses to a single column at 375px — driven entirely by the package CSS."
       title="Responsive"
     >
-      <div style={NOTE}>
-        <span style={NOTE_TITLE}>Target widths</span>
-        <span>
-          At 1280px the section grid runs three across and the table shows every column. At 768px
-          the grid drops to two columns and the filter row scrolls horizontally. At 375px the grid
-          becomes a single column and the table reflows to stacked cards.
-        </span>
-      </div>
+      <>
+        <div style={NOTE}>
+          <span style={NOTE_TITLE}>Target widths</span>
+          <span>
+            At 1280px the section grid runs three across and the table shows every column. At 768px
+            the grid drops to two columns and the filter row scrolls horizontally. At 375px the grid
+            becomes a single column and the table reflows to stacked cards.
+          </span>
+        </div>
 
-      <div style={FRAME}>
+        <div style={FRAME}>
         <Sidebar groups={navGroups} mode="expanded" />
         <div style={MAIN}>
           <TopBar />
@@ -116,7 +117,8 @@ function ResponsivePage(): ReactElement {
             </ListShell>
           </div>
         </div>
-      </div>
+        </div>
+      </>
     </ComponentPage>
   );
 }

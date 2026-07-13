@@ -1,4 +1,5 @@
-import { ContentLayout, PageSection, ProgressBar, Skeleton, Spinner } from '@appranks/ui';
+import { FoundationPage } from '@appranks/showcase-kit';
+import { PageSection, ProgressBar, Skeleton, Spinner } from '@appranks/ui';
 import type { ReactElement } from 'react';
 
 const DURATIONS = [
@@ -16,11 +17,10 @@ const EASINGS = [
 
 function MotionPage(): ReactElement {
   return (
-    <ContentLayout>
-      <PageSection
-        caption="Four durations and three easings, with loops that go static under prefers-reduced-motion."
-        title="Motion"
-      >
+    <FoundationPage
+      caption="Four durations and three easings, with loops that go static under prefers-reduced-motion."
+      title="Motion"
+    >
         <PageSection title="Durations">
           {DURATIONS.map((duration) => (
             <div className="showcase-token-row" key={duration.label}>
@@ -46,8 +46,7 @@ function MotionPage(): ReactElement {
             <ProgressBar variant="indeterminate" />
           </div>
         </PageSection>
-      </PageSection>
-    </ContentLayout>
+    </FoundationPage>
   );
 }
 

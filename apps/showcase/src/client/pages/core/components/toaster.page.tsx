@@ -1,4 +1,10 @@
-import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
+import {
+  ComponentPage,
+  ExampleBlock,
+  PropsTable,
+  useShowcaseRenderMode,
+  VariantsGallery,
+} from '@appranks/showcase-kit';
 import { Button, dismissToasts, notify, Toast, Toaster, type ToasterPosition } from '@appranks/ui';
 import type { ReactElement } from 'react';
 import { toastStack, toasts } from '../../../fixtures';
@@ -19,6 +25,27 @@ function fireStack(): void {
   }
 }
 
+function ToasterDemo(): ReactElement {
+  const mode = useShowcaseRenderMode();
+
+  return (
+    <>
+      {mode === 'playground' ? <Toaster /> : null}
+      <div style={ROW_STYLE}>
+        <Button onClick={fireAll} variant="primary">
+          Fire 8 toasts
+        </Button>
+        <Button onClick={fireStack} variant="secondary">
+          Stack 3 tones
+        </Button>
+        <Button onClick={() => dismissToasts()} variant="ghost">
+          Dismiss all
+        </Button>
+      </div>
+    </>
+  );
+}
+
 function ToasterPage(): ReactElement {
   return (
     <ComponentPage
@@ -33,19 +60,7 @@ function ToasterPage(): ReactElement {
 <Toaster position="top-right" />
 
 notify('success', 'Changes saved', { detail: 'Your edits are now live.' });`}
-        render={() => (
-          <div style={ROW_STYLE}>
-            <Button onClick={fireAll} variant="primary">
-              Fire 8 toasts
-            </Button>
-            <Button onClick={fireStack} variant="secondary">
-              Stack 3 tones
-            </Button>
-            <Button onClick={() => dismissToasts()} variant="ghost">
-              Dismiss all
-            </Button>
-          </div>
-        )}
+        render={() => <ToasterDemo />}
       />
 
       <ExampleBlock

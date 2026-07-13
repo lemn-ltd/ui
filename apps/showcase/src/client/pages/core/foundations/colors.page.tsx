@@ -1,4 +1,5 @@
-import { ContentLayout, PageSection } from '@appranks/ui';
+import { FoundationPage } from '@appranks/showcase-kit';
+import { PageSection } from '@appranks/ui';
 import type { ReactElement } from 'react';
 
 interface Swatch {
@@ -64,11 +65,10 @@ const GROUPS: { title: string; swatches: Swatch[] }[] = [
 
 function ColorsPage(): ReactElement {
   return (
-    <ContentLayout>
-      <PageSection
-        caption="Every color token resolves per data-theme. Soft status tokens ship in both modes."
-        title="Colors"
-      >
+    <FoundationPage
+      caption="Every color token resolves per data-theme. Soft status tokens ship in both modes."
+      title="Colors"
+    >
         {GROUPS.map((group) => (
           <PageSection key={group.title} title={group.title}>
             <div className="showcase-swatch-grid">
@@ -85,8 +85,7 @@ function ColorsPage(): ReactElement {
             </div>
           </PageSection>
         ))}
-      </PageSection>
-    </ContentLayout>
+    </FoundationPage>
   );
 }
 

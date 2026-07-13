@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 2,
+  "schema": "https://agentops.le-mn.com/schemas/workspace-manifest.v2.json",
+  "managedBy": "agentops",
+  "organization": {
+    "id": "lemn",
+    "name": "Lemn"
+  },
+  "workspace": {
+    "id": "appranks-ui-7fd2335b",
+    "name": "appranks-ui",
+    "slug": "appranks-ui",
+    "kind": "coding",
+    "readiness": {
+      "level": "explore"
+    }
+  },
+  "local": {
+    "pathFingerprint": "sha256:453e57058b1124b9420d684ced255cba463502f87a01aeef36d7f27b47a79700",
+    "git": {
+      "remote": "https://github.com/lemn-ltd/ui"
+    }
+  },
+  "workspaceEnvironments": {
+    "default": "development",
+    "items": [
+      {
+        "name": "development"
+      }
+    ]
+  },
+  "defaultHarness": {
+    "name": "Interactive coding session",
+    "slug": "interactive-coding-session",
+    "executionMode": "local_session",
+    "runtimeTarget": "codex_cli_local"
+  },
+  "mcp": {
+    "url": "https://agentops.le-mn.com/mcp",
+    "tokenEnvVar": "AGENTOPS_MCP_TOKEN",
+    "protocolVersion": "2025-11-25"
+  },
+  "promptFiles": {
+    "mode": "remote",
+    "cache": {
+      "ttlSeconds": 900,
+      "dir": ".agentops/cache/prompt-files/files"
+    },
+    "files": [
+      {
+        "targetPath": "AGENTS.md",
+        "checksum": "sha256:b36c288a9c6f7cd86d45a58614061de49fef43ebd8d8b253abe7ef73f926f075",
+        "revisions": {
+          "organization": 12
+        },
+        "strategy": "combine",
+        "gitIgnored": false,
+        "cacheFile": ".agentops/cache/prompt-files/files/AGENTS.md"
+      },
+      {
+        "targetPath": "patterns/pattern-system.md",
+        "checksum": "sha256:f6ee17f1cef7b9316e215d58ccc5653ca9ef7f96ab85154b869a0e66a4d09dae",
+        "revisions": {
+          "organization": 2
+        },
+        "strategy": "combine",
+        "gitIgnored": false,
+        "cacheFile": ".agentops/cache/prompt-files/files/patterns/pattern-system.md"
+      },
+      {
+        "targetPath": "patterns/patterns.md",
+        "checksum": "sha256:8707fed9778f070c4dd821a7e6c276bc3bf4ed88ac02505fde8a0872061c4b69",
+        "revisions": {
+          "organization": 11
+        },
+        "strategy": "combine",
+        "gitIgnored": false,
+        "cacheFile": ".agentops/cache/prompt-files/files/patterns/patterns.md"
+      }
+    ]
+  },
+  "tooling": {
+    "agents": [],
+    "mcpServers": [],
+    "clis": []
+  }
+}

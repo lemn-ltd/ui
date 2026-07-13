@@ -6,7 +6,7 @@ test('no critical accessibility violations across every registry page', async ({
 
   await gotoStable(page, '/');
   const hrefs = await page
-    .locator('a.showcase-overview-card')
+    .locator('article.showcase-overview-card h3 a')
     .evaluateAll((els) =>
       els
         .map((el) => (el as HTMLAnchorElement).getAttribute('href'))
@@ -26,4 +26,19 @@ test('no critical accessibility violations across every registry page', async ({
   }
 
   expect(offenders, offenders.join(' | ')).toEqual([]);
+});
+
+test('the live playground has no critical accessibility violations', async ({ page }) => {
+  await gotoStable(page, '/?preview=%2Fcore%2Fcomponents%2Fpopover');
+  await expect(page.getByRole('dialog', { name: 'Popover playground' })).toBeVisible();
+  await expect(
+    page.frameLocator('iframe.showcase-playground__frame').locator('[data-showcase-preview-content]'),
+  ).toBeVisible();
+
+  const results = await new AxeBuilder({ page }).analyze();
+  const critical = results.violations.filter((violation) => violation.impact === 'critical');
+  expect(
+    critical.map((violation) => violation.id),
+    critical.map((violation) => `${violation.id}: ${violation.help}`).join(' | '),
+  ).toEqual([]);
 });

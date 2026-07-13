@@ -6,6 +6,7 @@ system.
 
 ## Documents
 
+- [Showcase component documentation migration spec](./showcase-component-documentation-migration/SPEC.md)
 - [Frontend Performance On Cloudflare Workers](./frontend-performance/README.md)
 
 ## Structure
@@ -13,6 +14,8 @@ system.
 ```text
 docs/
   README.md
+  showcase-component-documentation-migration/
+    SPEC.md
   frontend-performance/
     README.md
     common-patterns.md

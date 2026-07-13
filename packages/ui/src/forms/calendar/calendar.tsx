@@ -398,11 +398,15 @@ export function Calendar({
                   const isToday = isSameDay(day, today);
                   const isFocusTarget = isSameDay(day, focusDate);
                   return (
-                    <span className="ui-calendar__cell" key={toKey(day)} role="gridcell">
+                    <span
+                      aria-selected={isSelected}
+                      className="ui-calendar__cell"
+                      key={toKey(day)}
+                      role="gridcell"
+                    >
                       <button
                         aria-current={isToday ? 'date' : undefined}
                         aria-disabled={disabled || undefined}
-                        aria-selected={isSelected}
                         className="ui-calendar__day"
                         data-date={toKey(day)}
                         data-disabled={disabled || undefined}

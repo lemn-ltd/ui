@@ -5,6 +5,7 @@ const root = process.cwd();
 const targets = process.argv.slice(2);
 const scanRoots = targets.length > 0 ? targets : ['packages/ui/src', 'apps/showcase/src'];
 
+const publicBrandPattern = /\blemn\b/i;
 const forbiddenPatterns = [
   /brainsforce/i,
   /brainstask/i,
@@ -13,7 +14,12 @@ const forbiddenPatterns = [
   /code[- ]state/i,
   /local organization/i,
   /angel loor/i,
-  /\blemn\b/i,
+  publicBrandPattern,
+];
+
+const publicBrandSurfacePrefixes = [
+  'apps/showcase/src/client/pages/',
+  'apps/showcase/src/worker/',
 ];
 
 const textExtensions = new Set([
@@ -56,6 +62,7 @@ for (const scanRoot of scanRoots) {
   const files = await collectFiles(join(root, scanRoot));
 
   for (const file of files) {
+    const relativeFile = relative(root, file);
     const content = await readFile(file, 'utf8');
     const lines = content.split(/\r?\n/);
 
@@ -63,7 +70,14 @@ for (const scanRoot of scanRoots) {
       const match = forbiddenPatterns.find((pattern) => pattern.test(line));
       if (!match) return;
 
-      failures.push(`${relative(root, file)}:${index + 1}: ${line.trim()}`);
+      if (
+        match === publicBrandPattern &&
+        publicBrandSurfacePrefixes.some((prefix) => relativeFile.startsWith(prefix))
+      ) {
+        return;
+      }
+
+      failures.push(`${relativeFile}:${index + 1}: ${line.trim()}`);
     });
   }
 }

@@ -1,5 +1,10 @@
 import { Badge, ContentLayout } from '@appranks/ui';
-import type { ReactElement, ReactNode } from 'react';
+import { Children, isValidElement, type ReactElement, type ReactNode } from 'react';
+import { ExampleBlock } from '../example/example-block.js';
+import {
+  ShowcasePreviewCanvas,
+  useShowcaseRenderMode,
+} from '../preview/render-mode.js';
 
 export interface ComponentPageProps {
   readonly title: string;
@@ -19,6 +24,21 @@ export function ComponentPage({
   status,
   children,
 }: ComponentPageProps): ReactElement {
+  const mode = useShowcaseRenderMode();
+
+  if (mode !== 'page') {
+    const pageChildren = Children.toArray(children);
+    const canonicalExample = pageChildren.find(
+      (child) => isValidElement(child) && child.type === ExampleBlock,
+    );
+
+    if (canonicalExample && isValidElement(canonicalExample)) {
+      return canonicalExample;
+    }
+
+    return <ShowcasePreviewCanvas>{pageChildren[0]}</ShowcasePreviewCanvas>;
+  }
+
   return (
     <ContentLayout>
       <div className="showcase-page">

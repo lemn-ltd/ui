@@ -1,0 +1,6 @@
+# Managed by AgentOps. Credentials are referenced through environment variables.
+
+[mcp_servers.agentops]
+url = "https://agentops.le-mn.com/mcp"
+bearer_token_env_var = "AGENTOPS_MCP_TOKEN"
+http_headers = { "MCP-Protocol-Version" = "2025-11-25" }

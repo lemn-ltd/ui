@@ -1,4 +1,5 @@
-import { ContentLayout, PageSection } from '@appranks/ui';
+import { FoundationPage } from '@appranks/showcase-kit';
+import { PageSection } from '@appranks/ui';
 import type { CSSProperties, ReactElement } from 'react';
 
 interface Specimen {
@@ -55,11 +56,10 @@ const WEIGHTS = [
 
 function TypographyPage(): ReactElement {
   return (
-    <ContentLayout>
-      <PageSection
-        caption="Sizes pair with unitless line-height ratios; the type families are Inter (sans) and a mono stack."
-        title="Typography"
-      >
+    <FoundationPage
+      caption="Sizes pair with unitless line-height ratios; the type families are Inter (sans) and a mono stack."
+      title="Typography"
+    >
         <PageSection title="Scale">
           {SCALE.map((specimen) => (
             <div className="showcase-type-row" key={specimen.label}>
@@ -96,8 +96,7 @@ function TypographyPage(): ReactElement {
             </span>
           </div>
         </PageSection>
-      </PageSection>
-    </ContentLayout>
+    </FoundationPage>
   );
 }
 

@@ -1,4 +1,5 @@
-import { ContentLayout, PageSection } from '@appranks/ui';
+import { FoundationPage } from '@appranks/showcase-kit';
+import { PageSection } from '@appranks/ui';
 import type { ReactElement } from 'react';
 
 const STEPS: { step: number; px: number }[] = [
@@ -24,11 +25,10 @@ const RADII = [
 
 function SpacingPage(): ReactElement {
   return (
-    <ContentLayout>
-      <PageSection
-        caption="A non-contiguous spacing scale (7, 9, 11, 13–15 are intentionally absent) and four radii."
-        title="Spacing & radii"
-      >
+    <FoundationPage
+      caption="A non-contiguous spacing scale (7, 9, 11, 13–15 are intentionally absent) and four radii."
+      title="Spacing & radii"
+    >
         <PageSection title="Space">
           {STEPS.map((entry) => (
             <div className="showcase-space-row" key={entry.step}>
@@ -56,8 +56,7 @@ function SpacingPage(): ReactElement {
             ))}
           </div>
         </PageSection>
-      </PageSection>
-    </ContentLayout>
+    </FoundationPage>
   );
 }
 

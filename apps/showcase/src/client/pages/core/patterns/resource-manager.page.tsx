@@ -1,4 +1,4 @@
-import { ComponentPage } from '@appranks/showcase-kit';
+import { ComponentPage, useShowcaseRenderMode } from '@appranks/showcase-kit';
 import {
   ActiveFiltersRow,
   Button,
@@ -68,6 +68,7 @@ const appliedChips = filters
   .map((filter) => ({ label: `${filter.label}: ${filter.selected.length}`, onRemove: () => {} }));
 
 function ResourceManagerPage(): ReactElement {
+  const renderMode = useShowcaseRenderMode();
   const [rows, setRows] = useState<readonly Row[]>(seedRows);
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<readonly string[]>([]);
@@ -116,7 +117,8 @@ function ResourceManagerPage(): ReactElement {
       summary="The end-to-end CRUD screen, tuned to a non-invasive default: New or the row kebab (Edit · Delete) opens the create/edit FormDialog; rows are selectable for a bulk delete; up to two key filters sit beside a name search. Row-click-to-edit, density, column visibility and bulk export stay off until a surface needs them."
       title="Resource manager"
     >
-      <div style={FRAME}>
+      <>
+        <div style={FRAME}>
         <Sidebar groups={navGroups} mode="expanded" />
         <div style={MAIN}>
           <TopBar />
@@ -186,9 +188,9 @@ function ResourceManagerPage(): ReactElement {
             </ListShell>
           </div>
         </div>
-      </div>
+        </div>
 
-      <FormDialog
+        <FormDialog
         onCancel={() => setFormOpen(false)}
         onOpenChange={setFormOpen}
         onSubmit={submit}
@@ -226,9 +228,9 @@ function ResourceManagerPage(): ReactElement {
             />
           )}
         </Field>
-      </FormDialog>
+        </FormDialog>
 
-      <ConfirmDialog
+        <ConfirmDialog
         confirmLabel={`Delete ${pendingDelete.length}`}
         description="This permanently removes the selected items. This action cannot be undone."
         onConfirm={confirmDelete}
@@ -236,9 +238,10 @@ function ResourceManagerPage(): ReactElement {
         open={confirmOpen}
         title="Delete items?"
         variant="danger"
-      />
+        />
 
-      <Toaster />
+        {renderMode === 'card' ? null : <Toaster />}
+      </>
     </ComponentPage>
   );
 }

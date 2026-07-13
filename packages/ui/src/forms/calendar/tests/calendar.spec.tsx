@@ -24,7 +24,10 @@ describe('Calendar', () => {
     const days = document.querySelectorAll('.ui-calendar__day');
     expect(days.length).toBe(30); // June has 30 days
     expect(day('2026-06-12')?.getAttribute('data-selected')).toBe('true');
-    expect(day('2026-06-12')?.getAttribute('aria-selected')).toBe('true');
+    expect(day('2026-06-12')?.closest('[role="gridcell"]')?.getAttribute('aria-selected')).toBe(
+      'true',
+    );
+    expect(day('2026-06-12')?.getAttribute('aria-selected')).toBeNull();
     expect(day('2026-06-24')?.getAttribute('data-today')).toBe('true');
     expect(day('2026-06-24')?.getAttribute('aria-current')).toBe('date');
   });

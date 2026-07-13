@@ -18,16 +18,16 @@
   color-scheme: light dark;
 
   /* Surfaces & lines */
-  --bg: light-dark(#ffffff, #06080c);
-  --surface: light-dark(#ffffff, #0e1218);
-  --surface2: light-dark(#f3f5f8, #141923);
-  --border: light-dark(#e3e8ef, #1b2230);
-  --border-strong: light-dark(#cbd3df, #2b3548);
+  --bg: light-dark(#ffffff, oklch(0.13 0.028 261.692));
+  --surface: light-dark(#ffffff, oklch(0.13 0.028 261.692));
+  --surface2: light-dark(#f3f5f8, #090e1a);
+  --border: light-dark(#e3e8ef, oklch(0.278 0.033 256.848));
+  --border-strong: light-dark(#cbd3df, oklch(0.373 0.034 259.733));
 
   /* Text */
-  --text: light-dark(#0e141b, #e2ecf5);
-  --text-muted: light-dark(#5a6b82, #7585a0);
-  --text-dim: light-dark(#8a98ad, #4f5c75);
+  --text: light-dark(#0e141b, oklch(0.985 0.002 247.839));
+  --text-muted: light-dark(#5a6b82, oklch(0.707 0.022 261.325));
+  --text-dim: light-dark(#8a98ad, oklch(0.551 0.027 264.364));
 
   /* Accents */
   --accent: light-dark(#0d9488, #5eead4);

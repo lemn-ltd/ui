@@ -1,4 +1,4 @@
-import { ContentLayout, PageSection } from '@appranks/ui';
+import { FoundationPage } from '@appranks/showcase-kit';
 import type { ReactElement } from 'react';
 
 const LEVELS = [
@@ -9,11 +9,10 @@ const LEVELS = [
 
 function ElevationPage(): ReactElement {
   return (
-    <ContentLayout>
-      <PageSection
-        caption="Elevation leans on shadow in Light and softens toward borders in Dark."
-        title="Elevation"
-      >
+    <FoundationPage
+      caption="Elevation leans on shadow in Light and softens toward borders in Dark."
+      title="Elevation"
+    >
         <div className="showcase-elevation-grid">
           {LEVELS.map((level) => (
             <div
@@ -25,8 +24,7 @@ function ElevationPage(): ReactElement {
             </div>
           ))}
         </div>
-      </PageSection>
-    </ContentLayout>
+    </FoundationPage>
   );
 }
 

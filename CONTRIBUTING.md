@@ -57,6 +57,13 @@ small, neutral, documented, and releasable.
   composition.
 - Add or update a showcase page when a component or important variant changes.
 - Keep showcase examples neutral and deterministic.
+- Put the canonical, deterministic interaction in the first `ExampleBlock` of
+  every component or pattern page. The overview reuses that real rendered example
+  as its lazy preview, and the shared playground makes it interactive.
+- Foundation pages must use `FoundationPage`; its first child is the canonical
+  live preview. Do not add checked-in screenshots or a separate thumbnail demo.
+- Keep preview examples self-contained: they must not depend on production data,
+  remote requests, authentication, or mutable time.
 
 ## Validation
 
