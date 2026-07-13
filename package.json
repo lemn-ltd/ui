@@ -22,6 +22,7 @@
     "check:docs": "pnpm --filter @appranks/ui-docs run check",
     "deploy:docs": "pnpm --filter @appranks/ui-docs run deploy:production",
     "deploy:showcase": "pnpm --filter @appranks/ui-showcase run deploy:production",
+    "pack:ui": "pnpm validate:package-identity && node scripts/smoke-package-tarball.mjs",
     "publish:ui": "pnpm validate:package-identity && pnpm --filter @lemn-ltd/ui publish --access restricted --no-git-checks",
     "changeset": "changeset",
     "version:packages": "changeset version && pnpm sync:docs-changelog",

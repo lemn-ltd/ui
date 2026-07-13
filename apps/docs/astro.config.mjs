@@ -30,7 +30,7 @@ export default defineConfig({
         {
           icon: 'github',
           label: 'GitHub',
-          href: 'https://github.com/appranks/ui',
+          href: 'https://github.com/lemn-ltd/ui',
         },
       ],
       sidebar: [

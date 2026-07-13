@@ -17,8 +17,8 @@ help:
 	@printf '  make check                    Typecheck all workspace packages.\n'
 	@printf '  make test                     Run all workspace test suites.\n'
 	@printf '  make build                    Build all workspace packages and the showcase.\n'
-	@printf '  make pack-ui                  Dry-run the @lemn-ltd/ui package contents.\n'
-	@printf '  make release-preflight        Run validation, check, test, build, and package dry-run.\n'
+	@printf '  make pack-ui                  Pack and smoke-test @lemn-ltd/ui with a clean npm consumer.\n'
+	@printf '  make release-preflight        Run validation, check, test, build, and package smoke.\n'
 	@printf '  make clean                    Remove generated local build/test artifacts.\n'
 
 install:
@@ -53,7 +53,7 @@ build:
 	$(PNPM) build
 
 pack-ui:
-	@npm pack --dry-run --json ./packages/ui | node -e 'let input = ""; process.stdin.on("data", (chunk) => { input += chunk; }); process.stdin.on("end", () => { const pkg = JSON.parse(input)[0]; const css = pkg.files.filter((file) => file.path.endsWith(".css")).length; const src = pkg.files.filter((file) => file.path.startsWith("src/")).length; console.log(JSON.stringify({ id: pkg.id, entryCount: pkg.entryCount, css, src }, null, 2)); });'
+	$(PNPM) pack:ui
 
 release-preflight: validate check test build pack-ui
 

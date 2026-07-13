@@ -6,8 +6,15 @@ import { fileURLToPath } from 'node:url';
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const canonicalPackageName = '@lemn-ltd/ui';
 const canonicalRegistry = 'https://npm.pkg.github.com';
+const canonicalRepositoryUrl = 'https://github.com/lemn-ltd/ui';
 const legacyPackageName = ['@appranks', 'ui'].join('/');
 const legacyPackagePattern = new RegExp(`${legacyPackageName}(?![-A-Za-z0-9])`, 'u');
+const legacyRepositoryPattern = /https:\/\/github\.com\/appranks\/ui(?![-A-Za-z0-9])/iu;
+const canonicalRepositoryFiles = [
+  'apps/docs/astro.config.mjs',
+  'apps/docs/src/content/docs/index.mdx',
+  'apps/docs/src/content/docs/es/index.mdx',
+];
 
 const ignoredDirectories = new Set([
   '.git',
@@ -79,6 +86,7 @@ const showcaseKitPackage = await readJson('packages/showcase-kit/package.json');
 const changesetConfig = await readJson('.changeset/config.json');
 const npmrc = await readFile(join(root, '.npmrc'), 'utf8');
 const workflow = await readFile(join(root, '.github/workflows/ci-cd.yml'), 'utf8');
+const makefile = await readFile(join(root, 'Makefile'), 'utf8');
 
 assert(
   uiPackage.name === canonicalPackageName,
@@ -94,9 +102,18 @@ assert(
   'UI package must run the package identity contract before publish',
 );
 assert(
+  rootPackage.scripts?.['pack:ui'] ===
+    'pnpm validate:package-identity && node scripts/smoke-package-tarball.mjs',
+  'pack:ui must validate identity and smoke-test the canonical pnpm tarball',
+);
+assert(
   rootPackage.scripts?.['publish:ui'] ===
     'pnpm validate:package-identity && pnpm --filter @lemn-ltd/ui publish --access restricted --no-git-checks',
   'publish:ui must validate and publish the canonical package name',
+);
+assert(
+  makefile.includes('pack-ui:\n\t$(PNPM) pack:ui'),
+  'Makefile pack-ui must use the canonical pnpm package smoke',
 );
 assert(
   npmrc.split(/\r?\n/u).includes(`@lemn-ltd:registry=${canonicalRegistry}`),
@@ -119,15 +136,25 @@ assert(
   `${canonicalPackageName} must remain versioned by Changesets`,
 );
 
+for (const relativePath of canonicalRepositoryFiles) {
+  const content = await readFile(join(root, relativePath), 'utf8');
+  assert(
+    content.includes(canonicalRepositoryUrl),
+    `${relativePath} must link to ${canonicalRepositoryUrl}`,
+  );
+}
+
 const staleReferences = [];
 for (const file of await collectTextFiles(root)) {
   const content = await readFile(file, 'utf8');
-  if (legacyPackagePattern.test(content)) staleReferences.push(relative(root, file));
+  if (legacyPackagePattern.test(content) || legacyRepositoryPattern.test(content)) {
+    staleReferences.push(relative(root, file));
+  }
 }
 
 assert(
   staleReferences.length === 0,
-  `Legacy package identity remains in: ${staleReferences.join(', ')}`,
+  `Legacy package or repository identity remains in: ${staleReferences.join(', ')}`,
 );
 
 console.log(`Package identity check passed: ${canonicalPackageName}@${uiPackage.version}`);
