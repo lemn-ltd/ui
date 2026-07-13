@@ -1,14 +1,16 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, realpath, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readdir, readFile, realpath, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, relative, resolve } from 'node:path';
+import { isDeepStrictEqual } from 'node:util';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const canonicalPackageName = '@lemn-ltd/ui';
 const pnpmCommand = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
 const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+const requiredPublicExports = new Set(['.', './tokens', './catalog', './styles.css']);
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -32,6 +34,39 @@ function run(command, args, cwd = root) {
   }
 
   return result.stdout.trim();
+}
+
+async function collectCssFiles(directory, sourceRoot = directory) {
+  const entries = await readdir(directory, { withFileTypes: true });
+  const files = [];
+
+  for (const entry of entries) {
+    const child = join(directory, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...(await collectCssFiles(child, sourceRoot)));
+      continue;
+    }
+
+    if (entry.isFile() && entry.name.endsWith('.css')) {
+      files.push(`dist/${relative(sourceRoot, child).replaceAll('\\', '/')}`);
+    }
+  }
+
+  return files;
+}
+
+function collectExportTargets(definition) {
+  if (typeof definition === 'string') return [definition];
+  if (Array.isArray(definition)) return definition.flatMap(collectExportTargets);
+  if (definition && typeof definition === 'object') {
+    return Object.values(definition).flatMap(collectExportTargets);
+  }
+  return [];
+}
+
+function defaultExportTarget(definition) {
+  if (typeof definition === 'string') return definition;
+  return definition?.default;
 }
 
 const uiPackage = JSON.parse(await readFile(join(root, 'packages/ui/package.json'), 'utf8'));
@@ -62,6 +97,31 @@ try {
   assert(packResult.name === canonicalPackageName, `Packed name must be ${canonicalPackageName}`);
   assert(packResult.version === uiPackage.version, 'Packed version must match packages/ui/package.json');
 
+  const files = packResult.files ?? [];
+  const packedPaths = new Set(files.map((file) => file.path));
+  const publicExportKeys = Object.keys(uiPackage.exports ?? {});
+  for (const exportKey of requiredPublicExports) {
+    assert(publicExportKeys.includes(exportKey), `Package manifest must expose ${exportKey}`);
+  }
+  for (const exportKey of publicExportKeys) {
+    for (const target of collectExportTargets(uiPackage.exports[exportKey])) {
+      assert(target.startsWith('./'), `Export ${exportKey} target must be package-relative: ${target}`);
+      assert(packedPaths.has(target.slice(2)), `Tarball is missing export ${exportKey} target ${target}`);
+    }
+  }
+
+  const expectedCssPaths = (await collectCssFiles(join(root, 'packages/ui/src'))).sort();
+  const packedCssPaths = files
+    .filter((file) => file.path.startsWith('dist/') && file.path.endsWith('.css'))
+    .map((file) => file.path)
+    .sort();
+  const missingCss = expectedCssPaths.filter((path) => !packedPaths.has(path));
+  const unexpectedCss = packedCssPaths.filter((path) => !expectedCssPaths.includes(path));
+  assert(
+    isDeepStrictEqual(packedCssPaths, expectedCssPaths),
+    `Tarball CSS differs from packages/ui/src (missing: ${missingCss.join(', ') || 'none'}; unexpected: ${unexpectedCss.join(', ') || 'none'})`,
+  );
+
   run(npmCommand, ['install', '--ignore-scripts', '--no-audit', '--no-fund', tarballPath], consumerDirectory);
 
   const installedPackage = JSON.parse(
@@ -69,6 +129,10 @@ try {
   );
   assert(installedPackage.name === canonicalPackageName, 'Installed package must retain its canonical name');
   assert(installedPackage.version === uiPackage.version, 'Installed package version must match the tarball');
+  assert(
+    isDeepStrictEqual(installedPackage.exports, uiPackage.exports),
+    'Installed package must retain the public exports contract',
+  );
 
   const dependencyGroups = ['dependencies', 'optionalDependencies', 'peerDependencies'];
   const unresolvedCatalogEntries = dependencyGroups.flatMap((group) =>
@@ -87,27 +151,42 @@ try {
   assert(!listedPackage.invalid, 'npm must not classify the canonical package as invalid');
   assert(!npmList.problems?.length, `npm reported package problems: ${npmList.problems?.join(', ')}`);
 
-  const resolvedUrl = run(
-    process.execPath,
-    ['--input-type=module', '--eval', `console.log(import.meta.resolve('${canonicalPackageName}'))`],
-    consumerDirectory,
+  const publicSpecifiers = publicExportKeys.map((exportKey) =>
+    exportKey === '.' ? canonicalPackageName : `${canonicalPackageName}${exportKey.slice(1)}`,
   );
-  const resolvedPath = fileURLToPath(resolvedUrl);
-  const expectedEntry = join(consumerDirectory, 'node_modules/@lemn-ltd/ui/dist/index.js');
-  assert(
-    (await realpath(resolvedPath)) === (await realpath(expectedEntry)),
-    `${canonicalPackageName} resolved to ${resolvedPath}`,
+  const resolvedUrls = JSON.parse(
+    run(
+      process.execPath,
+      [
+        '--input-type=module',
+        '--eval',
+        `const specifiers = ${JSON.stringify(publicSpecifiers)}; console.log(JSON.stringify(Object.fromEntries(specifiers.map((specifier) => [specifier, import.meta.resolve(specifier)]))));`,
+      ],
+      consumerDirectory,
+    ),
   );
+  const resolvedExports = {};
+  for (const exportKey of publicExportKeys) {
+    const specifier = exportKey === '.' ? canonicalPackageName : `${canonicalPackageName}${exportKey.slice(1)}`;
+    const target = defaultExportTarget(uiPackage.exports[exportKey]);
+    assert(target, `Export ${exportKey} must provide a default runtime target`);
+    const expectedEntry = join(consumerDirectory, 'node_modules/@lemn-ltd/ui', target);
+    const resolvedPath = fileURLToPath(resolvedUrls[specifier]);
+    assert(
+      (await realpath(resolvedPath)) === (await realpath(expectedEntry)),
+      `${specifier} resolved to ${resolvedPath}`,
+    );
+    resolvedExports[specifier] = relative(consumerDirectory, expectedEntry);
+  }
 
-  const files = packResult.files ?? [];
   console.log(
     JSON.stringify(
       {
         package: `${canonicalPackageName}@${uiPackage.version}`,
         entryCount: files.length,
-        css: files.filter((file) => file.path.endsWith('.css')).length,
+        css: packedCssPaths.length,
         src: files.filter((file) => file.path.startsWith('src/')).length,
-        resolved: relative(consumerDirectory, expectedEntry),
+        exports: resolvedExports,
       },
       null,
       2,

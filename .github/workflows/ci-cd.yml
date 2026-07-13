@@ -65,6 +65,9 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Pack and install package smoke
+        run: pnpm pack:ui
+
       - name: Verify generated files are committed
         run: git diff --exit-code
 
