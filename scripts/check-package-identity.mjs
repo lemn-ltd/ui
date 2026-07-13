@@ -100,6 +100,10 @@ const docsAstroConfig = await readFile(join(root, 'apps/docs/astro.config.mjs'),
 const docsWrangler = await readFile(join(root, 'apps/docs/wrangler.jsonc'), 'utf8');
 const showcaseWrangler = await readFile(join(root, 'apps/showcase/wrangler.jsonc'), 'utf8');
 const showcaseWorker = await readFile(join(root, 'apps/showcase/src/worker/index.ts'), 'utf8');
+const deploymentSmoke = await readFile(
+  join(root, 'scripts/release/deployment-smoke.ts'),
+  'utf8',
+);
 const packageIdentitySpec = await readFile(
   join(root, 'docs/showcase-component-documentation-migration/SPEC.md'),
   'utf8',
@@ -157,9 +161,9 @@ assert(
   `Showcase agent catalog must use the title ${canonicalCatalogTitle}`,
 );
 assert(
-  workflow.includes(`https://${canonicalDocsHost}/`) &&
-    workflow.includes(`https://${canonicalShowcaseHost}/health`) &&
-    workflow.includes(`grep -q "${canonicalCatalogTitle}"`),
+  deploymentSmoke.includes(`https://${canonicalDocsHost}`) &&
+    deploymentSmoke.includes(`https://${canonicalShowcaseHost}`) &&
+    deploymentSmoke.includes(canonicalCatalogTitle),
   'Release smoke checks must use the canonical LEMN hosts and catalog title',
 );
 assert(

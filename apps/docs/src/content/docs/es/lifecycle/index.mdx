@@ -19,6 +19,10 @@ release. La automatizacion convierte los changesets mergeados en un commit de
 metadata de release que actualiza `packages/ui/package.json` y
 `packages/ui/CHANGELOG.md`.
 
+El workflow de produccion completa el preflight no mutante de la Global API Key
+de Cloudflare antes de que Changesets pueda versionar, pushear o publicar. Luego
+captura el SHA del commit de release y despliega ese SHA y version exactos.
+
 CI publica el paquete cuando la version generada todavia no existe y el
 owner/token del registry puede publicar el package scope. Si GitHub Packages no
 esta alineado con el scope del paquete, CI registra un warning y aun asi

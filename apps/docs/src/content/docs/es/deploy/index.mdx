@@ -14,11 +14,12 @@ Produccion tiene dos dominios publicos:
 CI valida pull requests con typecheck, tests, build, metadata de release y
 changeset status. Los pushes a `main` ejecutan el release workflow:
 
-1. Si hay changesets pendientes, crea un commit de metadata de release con el bump SemVer y changelog.
-2. Publica cualquier version no publicada de `@lemn-ltd/ui` cuando el owner/token del registry puede publicar ese package scope.
-3. Despliega docs a `ui.lemn.ai`.
-4. Despliega showcase a `showcase.ui.lemn.ai`.
-5. Hace smoke test de endpoints publicos.
+1. Valida sin mutar Cloudflare el owner de la Global API Key, la membresia, los permisos de escritura, el acceso a la zona y que no existan mapeos de dominio conflictivos.
+2. Si hay changesets pendientes, crea y pushea un unico commit de metadata con el bump SemVer y changelog.
+3. Captura la version y Git SHA de ese commit de release.
+4. Publica cualquier version no publicada de `@lemn-ltd/ui` cuando el owner/token del registry puede publicar ese package scope.
+5. Despliega docs y showcase con la identidad de build capturada.
+6. Hace smoke de ambas superficies y rechaza metadata stale de version o Git SHA.
 
 Con GitHub Packages, `GITHUB_TOKEN` puede publicar scopes de paquetes que
 pertenecen al owner del repositorio. Si el scope pertenece a otro owner, CI
@@ -27,7 +28,20 @@ un registry token dedicado o alinea el package scope antes de publicar.
 
 Secrets y variables requeridas:
 
-- `CLOUDFLARE_API_TOKEN`
-- `CLOUDFLARE_ACCOUNT_ID`
+- `CLOUDFLARE_API_KEY` como GitHub secret con la Global API Key
+- `CLOUDFLARE_EMAIL` como GitHub secret del owner de la Global API Key
 - `STATUS_TOKEN`
 - `GITHUB_TOKEN` de GitHub Actions
+
+Los dos `wrangler.jsonc` son la fuente de verdad de cuenta y Worker. No uses ni
+derives `CLOUDFLARE_API_TOKEN` desde la Global API Key: Wrangler requiere el par
+`CLOUDFLARE_API_KEY` y `CLOUDFLARE_EMAIL` en este repositorio.
+
+## Blocker actual de Cloudflare
+
+La Global API Key configurada para Lemn DEV no expone actualmente la zona
+`lemn.ai`. Los dominios activos `ui.lemn.ai` y `showcase.ui.lemn.ai` fueron
+desplegados desde otra cuenta de Cloudflare. El workflow falla intencionalmente
+en el preflight, antes de Changesets, push o npm publish, hasta que se resuelva
+explicitamente el ownership/acceso de cuenta y zona. No debe mover ownership,
+reescribir account IDs ni recrear dominios como workaround implicito.

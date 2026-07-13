@@ -101,6 +101,9 @@ importers:
       happy-dom:
         specifier: 20.9.0
         version: 20.9.0
+      jsonc-parser:
+        specifier: 3.3.1
+        version: 3.3.1
       turbo:
         specifier: 'catalog:'
         version: 2.9.14
@@ -113,6 +116,9 @@ importers:
       vitest:
         specifier: 'catalog:'
         version: 3.2.6(@types/debug@4.1.13)(@types/node@26.0.0)(esbuild@0.28.1)(happy-dom@20.9.0)(yaml@2.9.0)
+      yaml:
+        specifier: '>=2.8.3'
+        version: 2.9.0
 
   apps/docs:
     dependencies:

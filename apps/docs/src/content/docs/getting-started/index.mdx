@@ -6,11 +6,23 @@ sidebar:
   order: 2
 ---
 
-Install the package from GitHub Packages with the `@lemn-ltd` scope configured:
+Keep the GitHub Packages scope mapping in the consuming repository:
 
 ```ini
 @lemn-ltd:registry=https://npm.pkg.github.com
 ```
+
+Configure authentication in the user's `~/.npmrc`. Never commit this auth entry
+or a token value to the consuming repository:
+
+```ini
+# ~/.npmrc
+//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}
+```
+
+Load a classic GitHub personal access token with `read:packages` and repository
+access into `NODE_AUTH_TOKEN` through the local secret manager. A scope mapping
+or environment variable by itself is not an npm/pnpm authentication contract.
 
 ```bash
 pnpm add @lemn-ltd/ui@<published-version>

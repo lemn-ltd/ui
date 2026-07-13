@@ -67,6 +67,7 @@ package and publish a new version. Do not make a permanent consumer-side
 
 - `.` → the public component + theme + `tokens` + `componentCatalog` surface.
 - `./tokens` → the typed token mirror only (`src/tokens.ts`).
+- `./catalog` → the typed component catalog and catalog lookup helpers (`src/catalog.ts`).
 - `./styles.css` → the aggregated stylesheet (tokens, reset, globals, motion).
 
 Barrel re-exports are `.js`-suffixed for Node16 module resolution.
@@ -90,6 +91,21 @@ The agent-facing "when to use" guide lives in `docs/`:
 component is missing from `docs/components.md`.
 
 ## Consumer contract
+
+Private GitHub Packages installs require the committed scope mapping plus a
+user-level auth entry. Keep the credential outside every repository:
+
+```ini
+# consuming repo .npmrc
+@lemn-ltd:registry=https://npm.pkg.github.com
+
+# ~/.npmrc
+//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}
+```
+
+Load a classic GitHub personal access token with `read:packages` and repository
+access into `NODE_AUTH_TOKEN` through the local secret manager before running
+pnpm. Do not commit the user-level auth entry or a token value.
 
 Consumer applications must:
 

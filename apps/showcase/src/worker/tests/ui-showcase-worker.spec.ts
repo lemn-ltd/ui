@@ -28,6 +28,7 @@ describe("ui showcase worker", () => {
 	it("answers /health with a 200 health shape", async () => {
 		const worker = createWorker({
 			BUILD_GIT_SHA: "abc123",
+			BUILD_TIME: "2026-07-14T00:00:00Z",
 			BUILD_VERSION: "1.2.3",
 		});
 		const response = await worker.fetch(request("/health"));
@@ -37,6 +38,21 @@ describe("ui showcase worker", () => {
 			service: uiShowcaseAppDescriptor.name,
 			version: "1.2.3",
 			gitSha: "abc123",
+			buildTime: "2026-07-14T00:00:00Z",
+		});
+	});
+
+	it("exposes the exact build identity from readiness", async () => {
+		const worker = createWorker({
+			BUILD_GIT_SHA: "release-sha",
+			BUILD_VERSION: "1.2.3",
+		});
+		const response = await worker.fetch(request("/health/ready"));
+		expect(response.status).toBe(200);
+		expect(await response.json()).toMatchObject({
+			ok: true,
+			version: "1.2.3",
+			gitSha: "release-sha",
 		});
 	});
 

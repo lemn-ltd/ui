@@ -34,17 +34,28 @@ pnpm install
 
 ## Install In A Consumer Repo
 
-Add the package registry to the consuming repository:
+Keep only the package scope mapping in the consuming repository:
 
 ```ini
 # .npmrc
 @lemn-ltd:registry=https://npm.pkg.github.com
 ```
 
-Authenticate locally with a package-readable GitHub token:
+Configure authentication in the user's `~/.npmrc`, which must never be
+committed to a repository:
+
+```ini
+# ~/.npmrc
+@lemn-ltd:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}
+```
+
+Load a classic GitHub personal access token with `read:packages` and repository
+access into `NODE_AUTH_TOKEN` through the local secret manager. The registry
+mapping alone, or `NODE_AUTH_TOKEN` without the user-level `_authToken` entry,
+does not authenticate npm or pnpm.
 
 ```bash
-export NODE_AUTH_TOKEN=<github-token>
 pnpm add @lemn-ltd/ui@<published-version>
 ```
 
@@ -108,13 +119,25 @@ pnpm validate:boundaries
    The release workflow turns merged changesets into a release metadata commit
    that updates `packages/ui/package.json`, `packages/ui/CHANGELOG.md`, and the
    docs changelog.
-5. CI publishes `@lemn-ltd/ui` only when the package version is not already
+5. Before versioning, pushing, or publishing, CI validates the configured
+   Cloudflare Global API Key, account membership, Worker write permissions, and
+   access to the production DNS zone without changing ownership or domains. This repository uses
+   `CLOUDFLARE_API_KEY` with `CLOUDFLARE_EMAIL`; it must not map the Global API
+   Key to `CLOUDFLARE_API_TOKEN`.
+6. CI publishes `@lemn-ltd/ui` only when the package version is not already
    available and the registry owner/token can publish the package scope. With
    GitHub Packages, a repo-owned `GITHUB_TOKEN` can publish scopes owned by the
    repo owner; otherwise CI records a publish warning and still deploys docs and
    showcase.
-6. Update each consuming repo to the newly published version and regenerate its
+7. Update each consuming repo to the newly published version and regenerate its
    lockfile.
+
+The current Lemn DEV credential does not expose the `lemn.ai` zone. The active
+`ui.lemn.ai` and `showcase.ui.lemn.ai` domains were deployed from a different
+Cloudflare account. Release therefore fails closed during preflight, before a
+version commit, push, or package publish, until zone ownership/access is
+resolved explicitly. Do not change account IDs or domain ownership merely to
+bypass this gate.
 
 ## Documentation
 

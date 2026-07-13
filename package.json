@@ -1,6 +1,7 @@
 {
   "name": "appranks-ui-workspace",
   "private": true,
+  "type": "module",
   "packageManager": "pnpm@11.8.0",
   "engines": {
     "node": ">=22"
@@ -9,9 +10,10 @@
     "build": "turbo run build",
     "check": "turbo run check",
     "test": "turbo run test",
-    "validate": "pnpm validate:package-identity && pnpm validate:brand-neutrality && pnpm validate:boundaries && pnpm validate:release",
+    "validate": "pnpm validate:package-identity && pnpm validate:brand-neutrality && pnpm validate:boundaries && pnpm validate:release && pnpm validate:release-contracts",
     "validate:package-identity": "node scripts/check-package-identity.mjs",
     "validate:release": "node scripts/sync-docs-changelog.mjs --check",
+    "validate:release-contracts": "node --test tests/contract/*.test.ts",
     "validate:release-hosts": "node scripts/check-release-hosts.mjs",
     "validate:release-preconditions": "pnpm validate && pnpm validate:release-hosts",
     "validate:brand-neutrality": "node scripts/check-brand-neutrality.mjs",
@@ -25,7 +27,10 @@
     "deploy:docs": "pnpm --filter @appranks/ui-docs run deploy:production",
     "deploy:showcase": "pnpm --filter @appranks/ui-showcase run deploy:production",
     "pack:ui": "pnpm validate:package-identity && node scripts/smoke-package-tarball.mjs",
+    "preflight:cloudflare:release": "node scripts/release/cloudflare-preflight.ts",
     "publish:ui": "pnpm validate:release-preconditions && pnpm --filter @lemn-ltd/ui publish --access restricted --no-git-checks",
+    "smoke:cloudflare:release": "node scripts/release/cloudflare-preflight.ts --require-resources",
+    "smoke:release:production": "node scripts/release/deployment-smoke.ts",
     "changeset": "changeset",
     "version:packages": "changeset version && pnpm sync:docs-changelog",
     "release": "pnpm build && pnpm publish:ui"
@@ -37,9 +42,11 @@
     "@vitejs/plugin-react": "6.0.1",
     "@vitest/coverage-v8": "catalog:",
     "happy-dom": "20.9.0",
+    "jsonc-parser": "3.3.1",
     "turbo": "catalog:",
     "typescript": "catalog:",
     "vite": "8.0.16",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "yaml": "2.9.0"
   }
 }

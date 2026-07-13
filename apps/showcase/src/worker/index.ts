@@ -1,8 +1,8 @@
+import { WorkerEntrypoint } from "cloudflare:workers";
 import {
 	componentCatalog,
 	componentExportsFromSlug,
 } from "@lemn-ltd/ui/catalog";
-import { WorkerEntrypoint } from "cloudflare:workers";
 import type { UiShowcaseEnv } from "./env";
 import { buildStatusReport, validateUiShowcaseEnv } from "./service-descriptor";
 
@@ -51,6 +51,7 @@ function healthResponse(env: UiShowcaseEnv): Response {
 		environment: env.DEPLOYMENT_ENVIRONMENT ?? "local",
 		version: env.BUILD_VERSION ?? "0.0.0",
 		gitSha: env.BUILD_GIT_SHA ?? "local",
+		buildTime: env.BUILD_TIME ?? "local",
 	});
 }
 
@@ -61,6 +62,8 @@ function readyResponse(env: UiShowcaseEnv): Response {
 			ok: validation.ready,
 			service: "ui-showcase",
 			environment: env.DEPLOYMENT_ENVIRONMENT ?? "local",
+			version: env.BUILD_VERSION ?? "0.0.0",
+			gitSha: env.BUILD_GIT_SHA ?? "local",
 			missingBindings: validation.missingBindings,
 			missingConfiguration: validation.missingConfiguration,
 		},
