@@ -21,10 +21,10 @@ changeset status. Pushes to `main` run the release workflow:
 5. Deploy docs and showcase with the captured build identity.
 6. Smoke both public surfaces and reject stale version or Git SHA metadata.
 
-With GitHub Packages, `GITHUB_TOKEN` can publish package scopes owned by the
-repository owner. If the package scope is owned elsewhere, CI records a publish
-warning and continues the docs/showcase deployment; configure a dedicated
-registry token or align the package scope before publishing.
+CI checks the authenticated GitHub Packages version list before publishing.
+Only a successful lookup that omits the exact version permits publication.
+Authentication, authorization, package lookup, network, or scope/owner failures
+stop the release instead of being treated as an unpublished version.
 
 Required secrets and variables:
 

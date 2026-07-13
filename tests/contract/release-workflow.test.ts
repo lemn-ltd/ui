@@ -92,8 +92,35 @@ test("unpublished current package versions do not receive an accidental second c
 		(candidate) => candidate.name === "Require changesets for package changes",
 	);
 	assert.ok(changesetGuard);
-	assert.match(String(changesetGuard.run), /npm view/u);
-	assert.match(String(changesetGuard.run), /E404/u);
+	const changesetGuardEnv = record(changesetGuard.env, "changeset guard env");
+	assert.equal(
+		changesetGuardEnv.GITHUB_REPOSITORY_OWNER,
+		expression("github.repository_owner"),
+	);
+	assert.equal(
+		changesetGuardEnv.GITHUB_TOKEN,
+		expression("secrets.GITHUB_TOKEN"),
+	);
+	assert.match(
+		String(changesetGuard.run),
+		/check-unpublished-package-version\.ts/u,
+	);
+	assert.doesNotMatch(String(changesetGuard.run), /npm view|grep.*E404/u);
+	assert.doesNotMatch(workflowSource, /npm view|E404/u);
+	const publicationCheck = step("Check package publication status");
+	const publicationCheckEnv = record(
+		publicationCheck.env,
+		"publication status env",
+	);
+	assert.equal(publicationCheck.id, "package-version");
+	assert.equal(
+		publicationCheckEnv.GITHUB_TOKEN,
+		expression("secrets.GITHUB_TOKEN"),
+	);
+	assert.equal(
+		step("Publish package if needed").if,
+		"steps.package-version.outputs.published == 'false'",
+	);
 	assert.equal(
 		step("Version packages from changesets").if,
 		"steps.changesets.outputs.has_pending == 'true'",

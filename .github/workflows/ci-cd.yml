@@ -54,6 +54,9 @@ jobs:
 
       - name: Require changesets for package changes
         if: github.event_name == 'pull_request' && !startsWith(github.head_ref, 'changeset-release/')
+        env:
+          GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if find .changeset -maxdepth 1 -type f -name '*.md' ! -name README.md | grep -q .; then
             pnpm changeset status --since=origin/main
@@ -64,20 +67,7 @@ jobs:
             exit 0
           fi
 
-          package_name="$(node -p "require('./packages/ui/package.json').name")"
-          package_version="$(node -p "require('./packages/ui/package.json').version")"
-          set +e
-          registry_result="$(npm view "${package_name}@${package_version}" version --json 2>&1)"
-          registry_status=$?
-          set -e
-
-          if [ "$registry_status" -ne 0 ] && printf '%s' "$registry_result" | grep -q 'E404'; then
-            echo "${package_name}@${package_version} is not published; package changes remain in that release."
-            exit 0
-          fi
-
-          echo "::error::Package changes require a changeset because ${package_name}@${package_version} is already published or registry availability could not be verified."
-          exit 1
+          node scripts/release/check-unpublished-package-version.ts
 
       - name: Validate repo policy and release metadata
         run: pnpm validate
@@ -192,32 +182,16 @@ jobs:
       - name: Build package
         run: pnpm --filter @lemn-ltd/ui run build
 
+      - name: Check package publication status
+        id: package-version
+        run: node scripts/release/check-unpublished-package-version.ts --github-output
+        env:
+          GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Publish package if needed
-        run: |
-          version="$(node -p "require('./packages/ui/package.json').version")"
-          package_name="$(node -p "require('./packages/ui/package.json').name")"
-          package_scope="${package_name%%/*}"
-          package_scope="${package_scope#@}"
-          package_basename="${package_name##*/}"
-          owner_scope="$(printf '%s' "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')"
-          owner_package="@${owner_scope}/${package_basename}"
-          if npm view "${package_name}@${version}" version >/dev/null 2>&1 || npm view "${owner_package}@${version}" version >/dev/null 2>&1; then
-            echo "${package_name}@${version} already published"
-            exit 0
-          fi
-          if [ "${package_scope}" != "${owner_scope}" ]; then
-            echo "::warning title=Package publish skipped::${package_name}@${version} cannot be published to GitHub Packages with GITHUB_TOKEN from ${GITHUB_REPOSITORY}. The package scope must match repository owner ${owner_scope}, or a dedicated registry token for ${package_scope} must be configured."
-            {
-              echo "### Package publish skipped"
-              echo ""
-              echo "- Package: \`${package_name}@${version}\`"
-              echo "- Repository owner: \`${owner_scope}\`"
-              echo "- Package scope: \`${package_scope}\`"
-              echo "- Action: align the package scope with the repo owner, or configure a dedicated registry token for the package scope."
-            } >> "$GITHUB_STEP_SUMMARY"
-            exit 0
-          fi
-          pnpm publish:ui
+        if: steps.package-version.outputs.published == 'false'
+        run: pnpm publish:ui
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

@@ -23,10 +23,10 @@ El workflow de produccion completa el preflight no mutante de la Global API Key
 de Cloudflare antes de que Changesets pueda versionar, pushear o publicar. Luego
 captura el SHA del commit de release y despliega ese SHA y version exactos.
 
-CI publica el paquete cuando la version generada todavia no existe y el
-owner/token del registry puede publicar el package scope. Si GitHub Packages no
-esta alineado con el scope del paquete, CI registra un warning y aun asi
-despliega docs mas showcase.
+CI publica el paquete solo cuando una lista autenticada de GitHub Packages omite
+la version generada exacta y el package scope coincide con el owner del
+repositorio. Un estado de registry no verificable falla cerrado antes de la
+publicacion.
 
 ## Comandos
 

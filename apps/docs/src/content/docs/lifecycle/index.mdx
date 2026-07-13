@@ -22,10 +22,9 @@ The production workflow completes its non-mutating Cloudflare Global API Key
 preflight before Changesets can version, push, or publish anything. It then
 captures the release commit SHA and deploys that exact SHA and package version.
 
-CI publishes the package when the generated version is not already present and
-the registry owner/token can publish the package scope. If GitHub Packages
-ownership is not aligned with the package scope, CI records a warning and still
-deploys docs plus showcase.
+CI publishes the package only when an authenticated GitHub Packages version
+list omits the exact generated version and package scope matches repository
+ownership. An unverifiable registry state fails closed before publication.
 
 ## Commands
 

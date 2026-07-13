@@ -21,10 +21,11 @@ changeset status. Los pushes a `main` ejecutan el release workflow:
 5. Despliega docs y showcase con la identidad de build capturada.
 6. Hace smoke de ambas superficies y rechaza metadata stale de version o Git SHA.
 
-Con GitHub Packages, `GITHUB_TOKEN` puede publicar scopes de paquetes que
-pertenecen al owner del repositorio. Si el scope pertenece a otro owner, CI
-registra un warning de publish y continua el deploy de docs/showcase; configura
-un registry token dedicado o alinea el package scope antes de publicar.
+CI consulta la lista autenticada de versiones de GitHub Packages antes de
+publicar. Solo una consulta exitosa que omita la version exacta permite la
+publicacion. Los fallos de autenticacion, autorizacion, lookup del paquete, red
+o alineacion scope/owner detienen el release en lugar de tratar la version como
+inedita.
 
 Secrets y variables requeridas:
 

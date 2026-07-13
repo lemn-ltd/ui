@@ -125,10 +125,10 @@ pnpm validate:boundaries
    `CLOUDFLARE_API_KEY` with `CLOUDFLARE_EMAIL`; it must not map the Global API
    Key to `CLOUDFLARE_API_TOKEN`.
 6. CI publishes `@lemn-ltd/ui` only when the package version is not already
-   available and the registry owner/token can publish the package scope. With
-   GitHub Packages, a repo-owned `GITHUB_TOKEN` can publish scopes owned by the
-   repo owner; otherwise CI records a publish warning and still deploys docs and
-   showcase.
+   available in the authenticated GitHub Packages version list and the package
+   scope matches the repository owner. Authentication, authorization, package
+   lookup, or network failures stop the release instead of being treated as an
+   unpublished version.
 7. Update each consuming repo to the newly published version and regenerate its
    lockfile.
 
