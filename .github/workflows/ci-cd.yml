@@ -56,6 +56,9 @@ jobs:
       - name: Validate repo policy and release metadata
         run: pnpm validate
 
+      - name: Validate release host DNS
+        run: pnpm validate:release-hosts
+
       - name: Check
         run: pnpm check
 
@@ -112,6 +115,9 @@ jobs:
         run: pnpm install --frozen-lockfile
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Validate release preconditions
+        run: pnpm validate:release-preconditions
 
       - name: Detect pending changesets
         id: changesets
@@ -227,13 +233,13 @@ jobs:
             return 1
           }
 
-          retry docs-home sh -c 'curl --fail --silent --max-time 5 https://ui.appranks.com/ | grep -q "Docs - UI"'
-          retry docs-changelog sh -c 'curl --fail --silent --max-time 5 https://ui.appranks.com/changelog/ | grep -q "Current package version"'
-          retry showcase-health sh -c 'curl --fail --silent --max-time 5 https://showcase.ui.appranks.com/health | jq -e ".ok == true" >/dev/null'
-          retry showcase-ready sh -c 'curl --fail --silent --max-time 5 https://showcase.ui.appranks.com/health/ready | jq -e ".ok == true" >/dev/null'
-          retry showcase-catalog sh -c 'curl --fail --silent --max-time 5 https://showcase.ui.appranks.com/catalog.json | jq -e ".package == \"@lemn-ltd/ui\" and (.components | length) > 0" >/dev/null'
-          retry showcase-llms sh -c 'curl --fail --silent --max-time 5 https://showcase.ui.appranks.com/llms.txt | grep -q "@lemn-ltd/ui"'
-          retry showcase-llms-full sh -c 'curl --fail --silent --max-time 5 https://showcase.ui.appranks.com/llms-full.txt | grep -q "Appranks UI Component Catalog"'
+          retry docs-home sh -c 'curl --fail --silent --max-time 5 https://ui.lemn.ai/ | grep -q "Docs - UI"'
+          retry docs-changelog sh -c 'curl --fail --silent --max-time 5 https://ui.lemn.ai/changelog/ | grep -q "Current package version"'
+          retry showcase-health sh -c 'curl --fail --silent --max-time 5 https://showcase.ui.lemn.ai/health | jq -e ".ok == true" >/dev/null'
+          retry showcase-ready sh -c 'curl --fail --silent --max-time 5 https://showcase.ui.lemn.ai/health/ready | jq -e ".ok == true" >/dev/null'
+          retry showcase-catalog sh -c 'curl --fail --silent --max-time 5 https://showcase.ui.lemn.ai/catalog.json | jq -e ".package == \"@lemn-ltd/ui\" and (.components | length) > 0" >/dev/null'
+          retry showcase-llms sh -c 'curl --fail --silent --max-time 5 https://showcase.ui.lemn.ai/llms.txt | grep -q "@lemn-ltd/ui"'
+          retry showcase-llms-full sh -c 'curl --fail --silent --max-time 5 https://showcase.ui.lemn.ai/llms-full.txt | grep -q "LEMN UI Component Catalog"'
 
       - name: Summary
         run: |
@@ -241,9 +247,9 @@ jobs:
             echo "### Docs - UI"
             echo ""
             echo "- Package: \`@lemn-ltd/ui@${{ steps.build.outputs.version }}\`"
-            echo "- Docs: https://ui.appranks.com"
-            echo "- Showcase: https://showcase.ui.appranks.com"
-            echo "- Catalog: https://showcase.ui.appranks.com/catalog.json"
-            echo "- Agent guide: https://showcase.ui.appranks.com/llms.txt"
+            echo "- Docs: https://ui.lemn.ai"
+            echo "- Showcase: https://showcase.ui.lemn.ai"
+            echo "- Catalog: https://showcase.ui.lemn.ai/catalog.json"
+            echo "- Agent guide: https://showcase.ui.lemn.ai/llms.txt"
             echo "- Commit: \`${GITHUB_SHA}\`"
           } >> "$GITHUB_STEP_SUMMARY"

@@ -11,6 +11,16 @@ const canonicalPackageName = '@lemn-ltd/ui';
 const pnpmCommand = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
 const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 const requiredPublicExports = new Set(['.', './tokens', './catalog', './styles.css']);
+const consumerVersions = {
+  react: '19.2.4',
+  reactDom: '19.2.4',
+  reactTypes: '19.2.14',
+  reactDomTypes: '19.2.3',
+  lucideReact: '0.469.0',
+  typescript: '5.9.3',
+  vite: '8.0.16',
+  viteReact: '6.0.1',
+};
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -50,6 +60,22 @@ async function collectCssFiles(directory, sourceRoot = directory) {
     if (entry.isFile() && entry.name.endsWith('.css')) {
       files.push(`dist/${relative(sourceRoot, child).replaceAll('\\', '/')}`);
     }
+  }
+
+  return files;
+}
+
+async function collectRelativeFiles(directory, outputRoot = directory) {
+  const entries = await readdir(directory, { withFileTypes: true });
+  const files = [];
+
+  for (const entry of entries) {
+    const child = join(directory, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...(await collectRelativeFiles(child, outputRoot)));
+      continue;
+    }
+    if (entry.isFile()) files.push(relative(outputRoot, child).replaceAll('\\', '/'));
   }
 
   return files;
@@ -99,6 +125,8 @@ try {
 
   const files = packResult.files ?? [];
   const packedPaths = new Set(files.map((file) => file.path));
+  const packedSourcePaths = files.filter((file) => file.path.startsWith('src/')).map((file) => file.path);
+  assert(packedSourcePaths.length === 0, `Tarball must not contain src/: ${packedSourcePaths.join(', ')}`);
   const publicExportKeys = Object.keys(uiPackage.exports ?? {});
   for (const exportKey of requiredPublicExports) {
     assert(publicExportKeys.includes(exportKey), `Package manifest must expose ${exportKey}`);
@@ -122,7 +150,38 @@ try {
     `Tarball CSS differs from packages/ui/src (missing: ${missingCss.join(', ') || 'none'}; unexpected: ${unexpectedCss.join(', ') || 'none'})`,
   );
 
-  run(npmCommand, ['install', '--ignore-scripts', '--no-audit', '--no-fund', tarballPath], consumerDirectory);
+  run(
+    npmCommand,
+    [
+      'install',
+      '--ignore-scripts',
+      '--no-audit',
+      '--no-fund',
+      '--save-exact',
+      tarballPath,
+      `react@${consumerVersions.react}`,
+      `react-dom@${consumerVersions.reactDom}`,
+      `lucide-react@${consumerVersions.lucideReact}`,
+    ],
+    consumerDirectory,
+  );
+  run(
+    npmCommand,
+    [
+      'install',
+      '--ignore-scripts',
+      '--no-audit',
+      '--no-fund',
+      '--save-dev',
+      '--save-exact',
+      `typescript@${consumerVersions.typescript}`,
+      `@types/react@${consumerVersions.reactTypes}`,
+      `@types/react-dom@${consumerVersions.reactDomTypes}`,
+      `vite@${consumerVersions.vite}`,
+      `@vitejs/plugin-react@${consumerVersions.viteReact}`,
+    ],
+    consumerDirectory,
+  );
 
   const installedPackage = JSON.parse(
     await readFile(join(consumerDirectory, 'node_modules/@lemn-ltd/ui/package.json'), 'utf8'),
@@ -150,6 +209,22 @@ try {
   assert(listedPackage?.version === uiPackage.version, 'npm must list the canonical package directly');
   assert(!listedPackage.invalid, 'npm must not classify the canonical package as invalid');
   assert(!npmList.problems?.length, `npm reported package problems: ${npmList.problems?.join(', ')}`);
+
+  const installedVersionContracts = {
+    react: consumerVersions.react,
+    'react-dom': consumerVersions.reactDom,
+    'lucide-react': consumerVersions.lucideReact,
+    '@types/react': consumerVersions.reactTypes,
+    '@types/react-dom': consumerVersions.reactDomTypes,
+    typescript: consumerVersions.typescript,
+    vite: consumerVersions.vite,
+    '@vitejs/plugin-react': consumerVersions.viteReact,
+  };
+  for (const [packageName, expectedVersion] of Object.entries(installedVersionContracts)) {
+    const packagePath = join(consumerDirectory, 'node_modules', ...packageName.split('/'), 'package.json');
+    const installedVersion = JSON.parse(await readFile(packagePath, 'utf8')).version;
+    assert(installedVersion === expectedVersion, `${packageName} must resolve to ${expectedVersion}; received ${installedVersion}`);
+  }
 
   const publicSpecifiers = publicExportKeys.map((exportKey) =>
     exportKey === '.' ? canonicalPackageName : `${canonicalPackageName}${exportKey.slice(1)}`,
@@ -179,14 +254,98 @@ try {
     resolvedExports[specifier] = relative(consumerDirectory, expectedEntry);
   }
 
+  const sourceDirectory = join(consumerDirectory, 'src');
+  await mkdir(sourceDirectory);
+  await writeFile(
+    join(consumerDirectory, 'tsconfig.json'),
+    `${JSON.stringify(
+      {
+        compilerOptions: {
+          strict: true,
+          skipLibCheck: false,
+          noEmit: true,
+          jsx: 'react-jsx',
+          module: 'ESNext',
+          moduleResolution: 'Bundler',
+          target: 'ES2022',
+          lib: ['ES2022', 'DOM', 'DOM.Iterable'],
+        },
+        include: ['src'],
+      },
+      null,
+      2,
+    )}\n`,
+  );
+  await writeFile(
+    join(sourceDirectory, 'main.tsx'),
+    `import { Button, type IconName } from '@lemn-ltd/ui';
+import { componentCatalog } from '@lemn-ltd/ui/catalog';
+import '@lemn-ltd/ui/styles.css';
+import { tokens } from '@lemn-ltd/ui/tokens';
+import { createRoot } from 'react-dom/client';
+
+const iconName: IconName = 'check';
+const rootElement = document.getElementById('root');
+if (!rootElement) throw new Error('Missing #root');
+
+createRoot(rootElement).render(
+  <main data-icon={iconName}>
+    <Button>Package smoke</Button>
+    <output>{componentCatalog.length}:{tokens.space[2]}</output>
+  </main>,
+);
+`,
+  );
+  await writeFile(
+    join(consumerDirectory, 'index.html'),
+    '<!doctype html><html><body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body></html>\n',
+  );
+  await writeFile(
+    join(consumerDirectory, 'vite.config.mjs'),
+    `import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite';
+
+export default defineConfig({ plugins: [react()] });
+`,
+  );
+
+  const executableExtension = process.platform === 'win32' ? '.cmd' : '';
+  const tscCommand = join(consumerDirectory, 'node_modules/.bin', `tsc${executableExtension}`);
+  const viteCommand = join(consumerDirectory, 'node_modules/.bin', `vite${executableExtension}`);
+  run(tscCommand, ['--project', 'tsconfig.json'], consumerDirectory);
+  run(viteCommand, ['build'], consumerDirectory);
+
+  const viteOutputDirectory = join(consumerDirectory, 'dist');
+  const viteOutputFiles = await collectRelativeFiles(viteOutputDirectory);
+  const viteJavaScript = viteOutputFiles.filter((path) => path.endsWith('.js'));
+  const viteCss = viteOutputFiles.filter((path) => path.endsWith('.css'));
+  assert(viteOutputFiles.includes('index.html'), 'Vite consumer must emit index.html');
+  assert(viteJavaScript.length > 0, 'Vite consumer must emit JavaScript');
+  assert(viteCss.length > 0, 'Vite consumer must emit the imported public stylesheet');
+  const bundledCss = (
+    await Promise.all(viteCss.map((path) => readFile(join(viteOutputDirectory, path), 'utf8')))
+  ).join('\n');
+  assert(bundledCss.includes('--accent:'), 'Vite CSS output must contain @lemn-ltd/ui design tokens');
+
   console.log(
     JSON.stringify(
       {
         package: `${canonicalPackageName}@${uiPackage.version}`,
         entryCount: files.length,
         css: packedCssPaths.length,
-        src: files.filter((file) => file.path.startsWith('src/')).length,
+        src: packedSourcePaths.length,
         exports: resolvedExports,
+        typescript: {
+          strict: true,
+          skipLibCheck: false,
+          react: consumerVersions.react,
+          reactTypes: consumerVersions.reactTypes,
+          lucideReact: consumerVersions.lucideReact,
+        },
+        vite: {
+          javascript: viteJavaScript.length,
+          css: viteCss.length,
+        },
       },
       null,
       2,

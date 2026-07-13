@@ -67,6 +67,70 @@ import './icon.css';
  * The product-neutral glyph set. Domain glyphs stay in the product apps; adding
  * one here would break the brand-neutral leaf boundary.
  */
+export const iconNames = [
+  'search',
+  'x',
+  'check',
+  'check-circle',
+  'chevron-down',
+  'chevron-right',
+  'chevron-up',
+  'plus',
+  'minus',
+  'ellipsis',
+  'eye',
+  'lock',
+  'info',
+  'alert',
+  'triangle-alert',
+  'refresh',
+  'rotate-ccw',
+  'settings',
+  'user-check',
+  'external-link',
+  'copy',
+  'trash-2',
+  'panel-left-close',
+  'panel-left-open',
+  'log-out',
+  'maximize',
+  'maximize-2',
+  'minimize',
+  'zoom-in',
+  'zoom-out',
+  'list',
+  'layout-grid',
+  'file',
+  'folder',
+  'clock',
+  'arrow-left',
+  'arrow-right',
+  'arrow-up',
+  'corner-down-left',
+  'grip-vertical',
+  'pointer',
+  'pencil',
+  'square',
+  'square-pen',
+  'play',
+  'pause',
+  'radio',
+  'plug',
+  'users',
+  'wrench',
+  'sun',
+  'moon',
+  'menu',
+  'monitor',
+  'code',
+  'file-text',
+  'minimize-2',
+  'panel-right-close',
+  'panel-right-open',
+] as const;
+
+export type IconName = (typeof iconNames)[number];
+
 const GLYPHS = {
   search: Search,
   x: X,
@@ -127,12 +191,7 @@ const GLYPHS = {
   'minimize-2': Minimize2,
   'panel-right-close': PanelRightClose,
   'panel-right-open': PanelRightOpen,
-} satisfies Record<string, LucideIcon>;
-
-export type IconName = keyof typeof GLYPHS;
-
-/** Every product-neutral glyph name, in declaration order. */
-export const iconNames = Object.keys(GLYPHS) as readonly IconName[];
+} satisfies Record<IconName, LucideIcon>;
 
 export type IconSize = 12 | 14 | 16 | 18 | 20 | 32;
 

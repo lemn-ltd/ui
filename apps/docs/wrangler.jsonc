@@ -11,7 +11,7 @@
   },
   "routes": [
     {
-      "pattern": "ui.appranks.com",
+      "pattern": "ui.lemn.ai",
       "custom_domain": true,
     },
   ],

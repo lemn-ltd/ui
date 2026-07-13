@@ -10,8 +10,8 @@ Read this reference when using `component-capture-migration`, then inspect the c
 - Showcase app: `apps/showcase`
 - Showcase kit helpers: `packages/showcase-kit`
 - Component docs: `packages/ui/docs/components.md`
-- Public docs domain: `https://ui.appranks.com`
-- Public showcase domain: `https://showcase.ui.appranks.com`
+- Public docs domain: `https://ui.lemn.ai`
+- Public showcase domain: `https://showcase.ui.lemn.ai`
 
 ## Core Design-System Files
 

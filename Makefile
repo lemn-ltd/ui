@@ -3,7 +3,7 @@ SHELL := /bin/bash
 
 PNPM ?= pnpm
 
-.PHONY: help install dev dev-docs validate-package-identity validate-brand-neutrality validate-boundaries validate check test build pack-ui release-preflight clean
+.PHONY: help install dev dev-docs validate-package-identity validate-brand-neutrality validate-boundaries validate-release-preconditions validate check test build pack-ui release-preflight clean
 
 help:
 	@printf 'Useful targets:\n'
@@ -13,6 +13,7 @@ help:
 	@printf '  make validate-package-identity Verify the canonical package and registry contract.\n'
 	@printf '  make validate-brand-neutrality Scan shared UI and showcase source for product-specific names.\n'
 	@printf '  make validate-boundaries      Scan @lemn-ltd/ui runtime imports for boundary violations.\n'
+	@printf '  make validate-release-preconditions Validate static release contracts and production DNS.\n'
 	@printf '  make validate                 Run all repository validation scripts, including release metadata.\n'
 	@printf '  make check                    Typecheck all workspace packages.\n'
 	@printf '  make test                     Run all workspace test suites.\n'
@@ -40,6 +41,9 @@ validate-brand-neutrality:
 validate-boundaries:
 	$(PNPM) validate:boundaries
 
+validate-release-preconditions:
+	$(PNPM) validate:release-preconditions
+
 validate:
 	$(PNPM) validate
 
@@ -55,7 +59,7 @@ build:
 pack-ui:
 	$(PNPM) pack:ui
 
-release-preflight: validate check test build pack-ui
+release-preflight: validate-release-preconditions check test build pack-ui
 
 clean:
 	rm -rf .turbo coverage playwright-report test-results

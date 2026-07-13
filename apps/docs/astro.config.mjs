@@ -2,7 +2,7 @@ import starlight from '@astrojs/starlight';
 import { defineConfig } from 'astro/config';
 
 export default defineConfig({
-  site: 'https://ui.appranks.com',
+  site: 'https://ui.lemn.ai',
   integrations: [
     starlight({
       title: 'Docs - UI',

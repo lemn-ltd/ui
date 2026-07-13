@@ -67,7 +67,7 @@ routes. Local secrets live in the versioned encrypted `.dev.vars`; `.env.keys`
 owns the local `DOTENV_PRIVATE_KEY_VARS` and stays ignored. Start through
 `make dev-ui-showcase` or `pnpm env:with --service ui-showcase -- <command>` so
 `.dev.vars` is decrypted only for the local process and re-encrypted on exit.
-Production uses the `appranks-ui` Worker and `showcase.ui.appranks.com`.
+Production uses the `appranks-ui` Worker and `showcase.ui.lemn.ai`.
 
 ## Fidelity
 

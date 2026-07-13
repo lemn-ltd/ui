@@ -7,14 +7,22 @@ const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const canonicalPackageName = '@lemn-ltd/ui';
 const canonicalRegistry = 'https://npm.pkg.github.com';
 const canonicalRepositoryUrl = 'https://github.com/lemn-ltd/ui';
+const canonicalDocsHost = 'ui.lemn.ai';
+const canonicalShowcaseHost = 'showcase.ui.lemn.ai';
+const canonicalCatalogTitle = 'LEMN UI Component Catalog';
 const legacyPackageName = ['@appranks', 'ui'].join('/');
 const legacyPackagePattern = new RegExp(`${legacyPackageName}(?![-A-Za-z0-9])`, 'u');
 const legacyRepositoryPattern = /https:\/\/github\.com\/appranks\/ui(?![-A-Za-z0-9])/iu;
+const legacyProductDomainPattern = new RegExp(
+  `[A-Za-z0-9.-]*${['appranks', 'com'].join('\\.')}`,
+  'iu',
+);
 const canonicalRepositoryFiles = [
   'apps/docs/astro.config.mjs',
   'apps/docs/src/content/docs/index.mdx',
   'apps/docs/src/content/docs/es/index.mdx',
 ];
+const legacyPackagePolicyFiles = new Set(['docs/showcase-component-documentation-migration/SPEC.md']);
 
 const ignoredDirectories = new Set([
   '.git',
@@ -33,6 +41,7 @@ const textExtensions = new Set([
   '.js',
   '.jsx',
   '.json',
+  '.jsonc',
   '.md',
   '.mdx',
   '.mjs',
@@ -87,6 +96,14 @@ const changesetConfig = await readJson('.changeset/config.json');
 const npmrc = await readFile(join(root, '.npmrc'), 'utf8');
 const workflow = await readFile(join(root, '.github/workflows/ci-cd.yml'), 'utf8');
 const makefile = await readFile(join(root, 'Makefile'), 'utf8');
+const docsAstroConfig = await readFile(join(root, 'apps/docs/astro.config.mjs'), 'utf8');
+const docsWrangler = await readFile(join(root, 'apps/docs/wrangler.jsonc'), 'utf8');
+const showcaseWrangler = await readFile(join(root, 'apps/showcase/wrangler.jsonc'), 'utf8');
+const showcaseWorker = await readFile(join(root, 'apps/showcase/src/worker/index.ts'), 'utf8');
+const packageIdentitySpec = await readFile(
+  join(root, 'docs/showcase-component-documentation-migration/SPEC.md'),
+  'utf8',
+);
 
 assert(
   uiPackage.name === canonicalPackageName,
@@ -108,8 +125,8 @@ assert(
 );
 assert(
   rootPackage.scripts?.['publish:ui'] ===
-    'pnpm validate:package-identity && pnpm --filter @lemn-ltd/ui publish --access restricted --no-git-checks',
-  'publish:ui must validate and publish the canonical package name',
+    'pnpm validate:release-preconditions && pnpm --filter @lemn-ltd/ui publish --access restricted --no-git-checks',
+  'publish:ui must validate release preconditions before publishing the canonical package name',
 );
 assert(
   makefile.includes('pack-ui:\n\t$(PNPM) pack:ui'),
@@ -122,6 +139,33 @@ assert(
 assert(
   workflow.match(/scope: "@lemn-ltd"/gu)?.length === 2,
   'Both CI jobs must configure setup-node for the @lemn-ltd registry scope',
+);
+assert(
+  docsAstroConfig.includes(`site: 'https://${canonicalDocsHost}'`),
+  `Astro docs site must use https://${canonicalDocsHost}`,
+);
+assert(
+  docsWrangler.includes(`"pattern": "${canonicalDocsHost}"`),
+  `Docs Wrangler route must use ${canonicalDocsHost}`,
+);
+assert(
+  showcaseWrangler.includes(`"pattern": "${canonicalShowcaseHost}"`),
+  `Showcase Wrangler route must use ${canonicalShowcaseHost}`,
+);
+assert(
+  showcaseWorker.includes(`# ${canonicalCatalogTitle}`),
+  `Showcase agent catalog must use the title ${canonicalCatalogTitle}`,
+);
+assert(
+  workflow.includes(`https://${canonicalDocsHost}/`) &&
+    workflow.includes(`https://${canonicalShowcaseHost}/health`) &&
+    workflow.includes(`grep -q "${canonicalCatalogTitle}"`),
+  'Release smoke checks must use the canonical LEMN hosts and catalog title',
+);
+assert(
+  packageIdentitySpec.includes(`Se prohíben la identidad legacy \`${legacyPackageName}\``) &&
+    packageIdentitySpec.includes(`el paquete recomendado es \`${canonicalPackageName}\``),
+  'Package identity policy must prohibit only the legacy identity and recommend the canonical package',
 );
 assert(
   showcasePackage.dependencies?.[canonicalPackageName] === 'workspace:*',
@@ -147,14 +191,19 @@ for (const relativePath of canonicalRepositoryFiles) {
 const staleReferences = [];
 for (const file of await collectTextFiles(root)) {
   const content = await readFile(file, 'utf8');
-  if (legacyPackagePattern.test(content) || legacyRepositoryPattern.test(content)) {
-    staleReferences.push(relative(root, file));
+  const relativePath = relative(root, file);
+  if (
+    (legacyPackagePattern.test(content) && !legacyPackagePolicyFiles.has(relativePath)) ||
+    legacyRepositoryPattern.test(content) ||
+    legacyProductDomainPattern.test(content)
+  ) {
+    staleReferences.push(relativePath);
   }
 }
 
 assert(
   staleReferences.length === 0,
-  `Legacy package or repository identity remains in: ${staleReferences.join(', ')}`,
+  `Legacy package, repository, or product domain remains in: ${staleReferences.join(', ')}`,
 );
 
 console.log(`Package identity check passed: ${canonicalPackageName}@${uiPackage.version}`);
