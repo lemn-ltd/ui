@@ -1,6 +1,6 @@
 import { createRoot } from "react-dom/client";
-import { getTheme, setTheme } from "@appranks/ui";
-import "@appranks/ui/styles.css";
+import { getTheme, setTheme } from "@lemn-ltd/ui";
+import "@lemn-ltd/ui/styles.css";
 import "@appranks/showcase-kit/styles.css";
 import "./styles.css";
 import { UiShowcaseApp } from "./ui-showcase-app";

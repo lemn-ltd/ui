@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { SyntaxCodeBlock } from '@appranks/ui';
+import { SyntaxCodeBlock } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 const BASH_SAMPLE = `export API_BASE="https://api.example.com"

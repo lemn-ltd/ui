@@ -18971,7 +18971,7 @@
                   "fill": "$textDim",
                   "textGrowth": "fixed-width",
                   "width": "fill_container",
-                  "content": "Behavior the @appranks/ui code implements. Captured here as notes; the visual specimens above stay product-neutral.",
+                  "content": "Behavior the @lemn-ltd/ui code implements. Captured here as notes; the visual specimens above stay product-neutral.",
                   "lineHeight": "$lineHeightSmall",
                   "fontFamily": "Inter",
                   "fontSize": "$fontSizeSmall",

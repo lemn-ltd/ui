@@ -1,4 +1,4 @@
-import type { TabItem } from '@appranks/ui';
+import type { TabItem } from '@lemn-ltd/ui';
 
 /** Default tab set: 5 tabs, one carrying a count badge. */
 export const tabs: readonly TabItem[] = [

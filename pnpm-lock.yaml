@@ -138,7 +138,7 @@ importers:
       '@appranks/showcase-kit':
         specifier: workspace:*
         version: link:../../packages/showcase-kit
-      '@appranks/ui':
+      '@lemn-ltd/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       react:
@@ -196,7 +196,7 @@ importers:
 
   packages/showcase-kit:
     dependencies:
-      '@appranks/ui':
+      '@lemn-ltd/ui':
         specifier: workspace:*
         version: link:../ui
     devDependencies:

@@ -23,7 +23,7 @@ import {
   Toaster,
   Toggle,
   TopBar,
-} from '@appranks/ui';
+} from '@lemn-ltd/ui';
 import { type CSSProperties, type ReactElement, useState } from 'react';
 import {
   columns as baseColumns,

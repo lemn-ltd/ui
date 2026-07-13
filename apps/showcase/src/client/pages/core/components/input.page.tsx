@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { Input } from '@appranks/ui';
+import { Input } from '@lemn-ltd/ui';
 import { type ReactElement, useState } from 'react';
 
 function InputPage(): ReactElement {

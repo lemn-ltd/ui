@@ -1,13 +1,13 @@
 ---
 name: component-capture-migration
-description: Analyze a screenshot, image, or source URL of a UI component, compare it against this repo's @appranks/ui component catalog, identify functional and visual gaps, propose a design-system-aligned migration, implement or adapt the component, add it to the showcase, update docs, and verify responsive visual/functional parity with browser or preview tooling before writing tests. Use when the user wants to copy, recreate, migrate, or benchmark a component from another website or image into this design system.
+description: Analyze a screenshot, image, or source URL of a UI component, compare it against this repo's @lemn-ltd/ui component catalog, identify functional and visual gaps, propose a design-system-aligned migration, implement or adapt the component, add it to the showcase, update docs, and verify responsive visual/functional parity with browser or preview tooling before writing tests. Use when the user wants to copy, recreate, migrate, or benchmark a component from another website or image into this design system.
 ---
 
 # Component Capture Migration
 
 ## Core Rule
 
-Recreate the component as an original `@appranks/ui` implementation that matches the user's target behavior and visual intent while conforming to this repo's design system. Do not paste third-party source code, copy proprietary assets, bypass access controls, or introduce brand-specific styling that conflicts with `@appranks/ui`.
+Recreate the component as an original `@lemn-ltd/ui` implementation that matches the user's target behavior and visual intent while conforming to this repo's design system. Do not paste third-party source code, copy proprietary assets, bypass access controls, or introduce brand-specific styling that conflicts with `@lemn-ltd/ui`.
 
 Read [references/project-map.md](references/project-map.md) at the start of each task, then inspect the current repo files it names because catalog and showcase wiring may have changed.
 
@@ -55,7 +55,7 @@ Classify the target as one of:
 - **Existing component match**: configure or document an existing component.
 - **Variant extension**: add a variant/size/state to an existing component.
 - **Composition pattern**: build the target from existing components and add a showcase pattern rather than a new primitive.
-- **New component**: add a new `@appranks/ui` component only when no existing component or composition owns the job.
+- **New component**: add a new `@lemn-ltd/ui` component only when no existing component or composition owns the job.
 
 Write a short diff before implementation:
 
@@ -116,8 +116,8 @@ Add tests after runtime parity is established:
 Use these commands as the default validation ladder:
 
 ```bash
-pnpm --filter @appranks/ui run test
-pnpm --filter @appranks/ui run check
+pnpm --filter @lemn-ltd/ui run test
+pnpm --filter @lemn-ltd/ui run check
 pnpm --filter @appranks/ui-showcase run test
 pnpm --filter @appranks/ui-showcase run test:e2e
 pnpm run check

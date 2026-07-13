@@ -8,7 +8,7 @@ import {
 	InfoBanner,
 	type InfoBannerDensity,
 	type InfoBannerVariant,
-} from "@appranks/ui";
+} from "@lemn-ltd/ui";
 import type { ReactElement } from "react";
 
 const VARIANTS: readonly InfoBannerVariant[] = [

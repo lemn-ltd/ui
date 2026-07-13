@@ -1,6 +1,6 @@
-# @appranks/ui - usage guide
+# @lemn-ltd/ui - usage guide
 
-`@appranks/ui` is the shared, brand-neutral, presentational component library:
+`@lemn-ltd/ui` is the shared, brand-neutral, presentational component library:
 tokens, theme runtime, motion, and components across eight
 taxonomies. It is the one place product screens get their UI from — apps compose
 it, they do not fork it.
@@ -12,8 +12,8 @@ live showcase (`apps/showcase`) renders every component, variant, and prop.
 ## How to consume
 
 ```ts
-import { Button, Card, componentCatalog } from "@appranks/ui";
-import "@appranks/ui/styles.css"; // once, at the app root
+import { Button, Card, componentCatalog } from "@lemn-ltd/ui";
+import "@lemn-ltd/ui/styles.css"; // once, at the app root
 ```
 
 - Import the stylesheet **once** at the app root; components are styled by it.

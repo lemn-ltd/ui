@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { SelectionList } from '@appranks/ui';
+import { SelectionList } from '@lemn-ltd/ui';
 import { type ReactElement, useState } from 'react';
 import { selectionListDefaultValue, selectionListGroups } from '../../../fixtures';
 

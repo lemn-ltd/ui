@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { AgentStatusBadge, type AgentStatusBadgeStatus } from '@appranks/ui';
+import { AgentStatusBadge, type AgentStatusBadgeStatus } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 const STATUSES: readonly AgentStatusBadgeStatus[] = [

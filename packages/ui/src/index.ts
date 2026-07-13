@@ -1,5 +1,5 @@
 /**
- * Public entry for `@appranks/ui`: the theme runtime, the typed token mirror,
+ * Public entry for `@lemn-ltd/ui`: the theme runtime, the typed token mirror,
  * and every component taxonomy slice.
  */
 

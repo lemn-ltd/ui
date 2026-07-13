@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable } from '@appranks/showcase-kit';
-import { Card, TwoColumn } from '@appranks/ui';
+import { Card, TwoColumn } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 function TwoColumnPage(): ReactElement {

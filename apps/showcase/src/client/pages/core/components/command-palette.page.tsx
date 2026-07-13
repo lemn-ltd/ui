@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable } from '@appranks/showcase-kit';
-import { Button, CommandPalette } from '@appranks/ui';
+import { Button, CommandPalette } from '@lemn-ltd/ui';
 import { type ReactElement, useState } from 'react';
 import { commandGroups } from '../../../fixtures';
 

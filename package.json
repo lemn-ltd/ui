@@ -9,7 +9,8 @@
     "build": "turbo run build",
     "check": "turbo run check",
     "test": "turbo run test",
-    "validate": "pnpm validate:brand-neutrality && pnpm validate:boundaries && pnpm validate:release",
+    "validate": "pnpm validate:package-identity && pnpm validate:brand-neutrality && pnpm validate:boundaries && pnpm validate:release",
+    "validate:package-identity": "node scripts/check-package-identity.mjs",
     "validate:release": "node scripts/sync-docs-changelog.mjs --check",
     "validate:brand-neutrality": "node scripts/check-brand-neutrality.mjs",
     "validate:boundaries": "node scripts/check-ui-boundaries.mjs",
@@ -21,7 +22,7 @@
     "check:docs": "pnpm --filter @appranks/ui-docs run check",
     "deploy:docs": "pnpm --filter @appranks/ui-docs run deploy:production",
     "deploy:showcase": "pnpm --filter @appranks/ui-showcase run deploy:production",
-    "publish:ui": "pnpm --filter @appranks/ui publish --access restricted --no-git-checks",
+    "publish:ui": "pnpm validate:package-identity && pnpm --filter @lemn-ltd/ui publish --access restricted --no-git-checks",
     "changeset": "changeset",
     "version:packages": "changeset version && pnpm sync:docs-changelog",
     "release": "pnpm build && pnpm publish:ui"

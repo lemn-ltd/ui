@@ -1,4 +1,4 @@
-import type { StatCardProps } from '@appranks/ui';
+import type { StatCardProps } from '@lemn-ltd/ui';
 
 export interface SectionCard {
   readonly id: string;

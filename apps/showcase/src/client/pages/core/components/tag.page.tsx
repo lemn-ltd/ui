@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { Tag, type TagVariant } from '@appranks/ui';
+import { Tag, type TagVariant } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 const VARIANTS: readonly TagVariant[] = ['default', 'accent', 'muted'];

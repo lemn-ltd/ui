@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable } from '@appranks/showcase-kit';
-import { Button, Filter, ListFiltersBar } from '@appranks/ui';
+import { Button, Filter, ListFiltersBar } from '@lemn-ltd/ui';
 import { type ReactElement, useState } from 'react';
 import { filters } from '../../../fixtures';
 

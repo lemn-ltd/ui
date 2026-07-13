@@ -5,7 +5,7 @@ import {
 	DocumentationSteps,
 	ExampleBlock,
 } from "@appranks/showcase-kit";
-import { Checkbox, SyntaxCodeBlock } from "@appranks/ui";
+import { Checkbox, SyntaxCodeBlock } from "@lemn-ltd/ui";
 import { type ReactElement, useState } from "react";
 
 const CHECKBOX_USAGE = `import { Checkbox } from '@lemn-ltd/ui';

@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable } from '@appranks/showcase-kit';
-import { Card, ContentLayout } from '@appranks/ui';
+import { Card, ContentLayout } from '@lemn-ltd/ui';
 import type { CSSProperties, ReactElement } from 'react';
 
 // A bordered frame so the centered content reads as a preview rather than

@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable } from '@appranks/showcase-kit';
-import { Button, Field, InfoBanner, Input, SignInScreen } from '@appranks/ui';
+import { Button, Field, InfoBanner, Input, SignInScreen } from '@lemn-ltd/ui';
 import type { CSSProperties, ReactElement } from 'react';
 
 // The screen fills the viewport; inside the docs it is capped and framed so it

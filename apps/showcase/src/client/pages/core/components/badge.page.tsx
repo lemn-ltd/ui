@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { Badge, type BadgeTone } from '@appranks/ui';
+import { Badge, type BadgeTone } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 const TONES: readonly BadgeTone[] = [

@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { Avatar, type AvatarColor, AvatarGroup, type AvatarSize } from '@appranks/ui';
+import { Avatar, type AvatarColor, AvatarGroup, type AvatarSize } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 import { people } from '../../../fixtures';
 

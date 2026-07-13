@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { Icon, IconButton, type IconButtonVariant } from '@appranks/ui';
+import { Icon, IconButton, type IconButtonVariant } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 const VARIANTS: readonly IconButtonVariant[] = ['ghost', 'ghost-danger', 'primary', 'default'];

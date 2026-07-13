@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { KeyValueEditor, type KeyValueEditorEntry } from '@appranks/ui';
+import { KeyValueEditor, type KeyValueEditorEntry } from '@lemn-ltd/ui';
 import { type ReactElement, useState } from 'react';
 
 const initialHeaders: KeyValueEditorEntry[] = [

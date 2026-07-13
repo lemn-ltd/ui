@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { type PlannerState, PlannerStatus } from '@appranks/ui';
+import { type PlannerState, PlannerStatus } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 const STATES: readonly PlannerState[] = ['idle', 'planning', 'streaming', 'compiled', 'failed'];

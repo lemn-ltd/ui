@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable } from '@appranks/showcase-kit';
-import { Card, ListShell } from '@appranks/ui';
+import { Card, ListShell } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 function ListShellPage(): ReactElement {

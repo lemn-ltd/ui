@@ -1,4 +1,4 @@
-# @appranks/ui
+# @lemn-ltd/ui
 
 ## 0.1.2
 

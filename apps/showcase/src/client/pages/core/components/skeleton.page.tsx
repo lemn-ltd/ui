@@ -5,7 +5,7 @@ import {
   type SkeletonShape,
   SkeletonTableRows,
   SkeletonText,
-} from '@appranks/ui';
+} from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 import { skeletonTableRows, skeletonTextLines } from '../../../fixtures';
 

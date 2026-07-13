@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { FileBundleEditor, type FileBundleEditorFile, MarkdownEditor } from '@appranks/ui';
+import { FileBundleEditor, type FileBundleEditorFile, MarkdownEditor } from '@lemn-ltd/ui';
 import { type ReactElement, useState } from 'react';
 
 const initialFiles: readonly FileBundleEditorFile[] = [

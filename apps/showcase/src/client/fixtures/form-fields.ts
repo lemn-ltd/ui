@@ -1,4 +1,4 @@
-import type { FieldState } from '@appranks/ui';
+import type { FieldState } from '@lemn-ltd/ui';
 
 export type FieldKind = 'text' | 'email' | 'select' | 'checkbox' | 'toggle';
 

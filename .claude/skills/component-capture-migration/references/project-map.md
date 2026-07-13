@@ -83,8 +83,8 @@ Read this reference when using `component-capture-migration`, then inspect the c
 
 ```bash
 pnpm dev:showcase
-pnpm --filter @appranks/ui run test
-pnpm --filter @appranks/ui run check
+pnpm --filter @lemn-ltd/ui run test
+pnpm --filter @lemn-ltd/ui run check
 pnpm --filter @appranks/ui-showcase run test
 pnpm --filter @appranks/ui-showcase run test:e2e
 pnpm run check
@@ -93,7 +93,7 @@ pnpm run build
 
 ## Local Conventions To Preserve
 
-- Catalog drives showcase metadata. A showcase component route must have a matching `@appranks/ui` catalog entry.
+- Catalog drives showcase metadata. A showcase component route must have a matching `@lemn-ltd/ui` catalog entry.
 - Use `componentEntry('<slug>', () => <Page />)` for catalog-backed showcase entries.
 - Component folders usually contain the `.tsx`, `.css`, and `tests/` files.
 - Components use typed props, explicit exported types, local CSS imports, and `data-*` attributes for variants/states.

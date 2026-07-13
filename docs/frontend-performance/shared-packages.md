@@ -1,6 +1,6 @@
 # Shared Packages
 
-## `@appranks/ui`
+## `@lemn-ltd/ui`
 
 Should contain:
 
@@ -26,7 +26,7 @@ Must not contain:
 ## Future Packages
 
 If a pattern repeats across apps but is not presentational UI, it should not be
-forced into `@appranks/ui`.
+forced into `@lemn-ltd/ui`.
 
 Options:
 
@@ -47,4 +47,4 @@ Move code into shared packages only when it is:
 - backed by a clear public contract
 
 If something touches runtime, data, Workers, auth, or observability, it should
-live in a dedicated package. It should not be mixed into `@appranks/ui`.
+live in a dedicated package. It should not be mixed into `@lemn-ltd/ui`.

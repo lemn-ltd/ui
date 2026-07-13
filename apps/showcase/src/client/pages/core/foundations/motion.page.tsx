@@ -1,5 +1,5 @@
 import { FoundationPage } from '@appranks/showcase-kit';
-import { PageSection, ProgressBar, Skeleton, Spinner } from '@appranks/ui';
+import { PageSection, ProgressBar, Skeleton, Spinner } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 const DURATIONS = [

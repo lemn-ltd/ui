@@ -5,7 +5,7 @@ import {
   type NodeInspectorTab,
   NodePalette,
   type NodePaletteItem,
-} from '@appranks/ui';
+} from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 const PALETTE: readonly NodePaletteItem[] = [

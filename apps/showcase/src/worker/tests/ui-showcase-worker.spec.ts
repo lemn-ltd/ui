@@ -62,7 +62,7 @@ describe("ui showcase worker", () => {
 		const summary = await (await worker.fetch(request("/llms.txt"))).text();
 		expect(summary).toContain("# LEMN UI");
 		expect(summary).toContain("https://showcase.ui.lemn.ai/catalog.json");
-		expect(summary).not.toContain("@appranks/ui");
+		expect(summary).toContain("@lemn-ltd/ui");
 
 		const full = await (await worker.fetch(request("/llms-full.txt"))).text();
 		expect(full).toContain("from '@lemn-ltd/ui';");
@@ -70,7 +70,6 @@ describe("ui showcase worker", () => {
 			"import { RadioGroup, RadioGroupItem } from '@lemn-ltd/ui';",
 		);
 		expect(full).toContain("import { GraphCanvas } from '@lemn-ltd/ui';");
-		expect(full).not.toContain("from '@appranks/ui';");
 		expect(full).not.toContain("@latest");
 	});
 

@@ -1,4 +1,4 @@
-import type { DataTableColumn } from '@appranks/ui';
+import type { DataTableColumn } from '@lemn-ltd/ui';
 import { faker, NOW, resetSeed } from './faker-seed.js';
 import { people } from './people.js';
 

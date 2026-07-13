@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable } from '@appranks/showcase-kit';
-import { type CapabilityConstraints, CapabilityConstraintsEditor } from '@appranks/ui';
+import { type CapabilityConstraints, CapabilityConstraintsEditor } from '@lemn-ltd/ui';
 import { type ReactElement, useState } from 'react';
 
 const INITIAL_CONSTRAINTS: CapabilityConstraints = {

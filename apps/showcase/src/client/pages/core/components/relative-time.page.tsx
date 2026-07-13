@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { RelativeTime } from '@appranks/ui';
+import { RelativeTime } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 import { relativeNow, relativeSamples } from '../../../fixtures';
 

@@ -15,14 +15,14 @@ export default defineConfig({
   server: {
     allowedHosts: ['local-ui.appranks.com'],
   },
-  // The showcase consumes @appranks/ui from source so the catalog stays the
+  // The showcase consumes @lemn-ltd/ui from source so the catalog stays the
   // single visual source of truth without a rebuild on every change.
   resolve: {
     alias: [
-      { find: '@appranks/ui/styles.css', replacement: uiSrc('styles.css') },
-      { find: '@appranks/ui/catalog', replacement: uiSrc('catalog.ts') },
-      { find: '@appranks/ui/tokens', replacement: uiSrc('tokens.ts') },
-      { find: '@appranks/ui', replacement: uiSrc('index.ts') },
+      { find: '@lemn-ltd/ui/styles.css', replacement: uiSrc('styles.css') },
+      { find: '@lemn-ltd/ui/catalog', replacement: uiSrc('catalog.ts') },
+      { find: '@lemn-ltd/ui/tokens', replacement: uiSrc('tokens.ts') },
+      { find: '@lemn-ltd/ui', replacement: uiSrc('index.ts') },
       {
         find: '@appranks/showcase-kit/styles.css',
         replacement: showcaseKitSrc('styles.css'),

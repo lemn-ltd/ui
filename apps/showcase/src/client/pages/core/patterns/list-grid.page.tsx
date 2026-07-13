@@ -11,7 +11,7 @@ import {
   SectionGrid,
   Sidebar,
   TopBar,
-} from '@appranks/ui';
+} from '@lemn-ltd/ui';
 import { type CSSProperties, type ReactElement, useState } from 'react';
 import { filters, navGroups, relativeNow, relativeSamples, sectionCards } from '../../../fixtures';
 

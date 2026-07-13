@@ -7,7 +7,7 @@ import {
   type GraphNodeKind,
   type NodeState,
   NodeStateChip,
-} from '@appranks/ui';
+} from '@lemn-ltd/ui';
 import type { CSSProperties, ReactElement } from 'react';
 
 const SECTION_TITLE: CSSProperties = {

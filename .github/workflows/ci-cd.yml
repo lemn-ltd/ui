@@ -27,7 +27,7 @@ jobs:
         with:
           node-version: 22
           registry-url: https://npm.pkg.github.com
-          scope: "@appranks"
+          scope: "@lemn-ltd"
 
       - name: Enable pnpm
         run: |
@@ -88,7 +88,7 @@ jobs:
         with:
           node-version: 22
           registry-url: https://npm.pkg.github.com
-          scope: "@appranks"
+          scope: "@lemn-ltd"
 
       - name: Enable pnpm
         run: |
@@ -137,7 +137,7 @@ jobs:
           fi
 
       - name: Build package
-        run: pnpm --filter @appranks/ui run build
+        run: pnpm --filter @lemn-ltd/ui run build
 
       - name: Publish package if needed
         run: |
@@ -228,8 +228,8 @@ jobs:
           retry docs-changelog sh -c 'curl --fail --silent --max-time 5 https://ui.appranks.com/changelog/ | grep -q "Current package version"'
           retry showcase-health sh -c 'curl --fail --silent --max-time 5 https://showcase.ui.appranks.com/health | jq -e ".ok == true" >/dev/null'
           retry showcase-ready sh -c 'curl --fail --silent --max-time 5 https://showcase.ui.appranks.com/health/ready | jq -e ".ok == true" >/dev/null'
-          retry showcase-catalog sh -c 'curl --fail --silent --max-time 5 https://showcase.ui.appranks.com/catalog.json | jq -e ".package == \"@appranks/ui\" and (.components | length) > 0" >/dev/null'
-          retry showcase-llms sh -c 'curl --fail --silent --max-time 5 https://showcase.ui.appranks.com/llms.txt | grep -q "@appranks/ui"'
+          retry showcase-catalog sh -c 'curl --fail --silent --max-time 5 https://showcase.ui.appranks.com/catalog.json | jq -e ".package == \"@lemn-ltd/ui\" and (.components | length) > 0" >/dev/null'
+          retry showcase-llms sh -c 'curl --fail --silent --max-time 5 https://showcase.ui.appranks.com/llms.txt | grep -q "@lemn-ltd/ui"'
           retry showcase-llms-full sh -c 'curl --fail --silent --max-time 5 https://showcase.ui.appranks.com/llms-full.txt | grep -q "Appranks UI Component Catalog"'
 
       - name: Summary
@@ -237,7 +237,7 @@ jobs:
           {
             echo "### Docs - UI"
             echo ""
-            echo "- Package: \`@appranks/ui@${{ steps.build.outputs.version }}\`"
+            echo "- Package: \`@lemn-ltd/ui@${{ steps.build.outputs.version }}\`"
             echo "- Docs: https://ui.appranks.com"
             echo "- Showcase: https://showcase.ui.appranks.com"
             echo "- Catalog: https://showcase.ui.appranks.com/catalog.json"

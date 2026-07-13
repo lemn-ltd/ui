@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { type ProposalNode, ProposalPreview } from '@appranks/ui';
+import { type ProposalNode, ProposalPreview } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 const NODES: readonly ProposalNode[] = [

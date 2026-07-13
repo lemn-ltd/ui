@@ -1,11 +1,11 @@
 # Appranks UI
 
 Shared, brand-neutral UI system for Appranks projects. The repository owns the
-published `@appranks/ui` React package, its public component catalog, the docs
+published `@lemn-ltd/ui` React package, its public component catalog, the docs
 site at `https://ui.appranks.com`, and the showcase site at
 `https://showcase.ui.appranks.com`.
 
-`@appranks/ui` is the source of truth for shared styles. If a consuming product
+`@lemn-ltd/ui` is the source of truth for shared styles. If a consuming product
 needs a reusable component, token, layout, or style migration, make that change
 in this repository first, publish a new package version, then update the
 consumer. Do not patch `node_modules` or copy shared component CSS into product
@@ -13,7 +13,7 @@ apps as a permanent fix.
 
 ## Packages
 
-- `@appranks/ui` - public component and token package, published to GitHub Packages.
+- `@lemn-ltd/ui` - public component and token package, published to GitHub Packages.
 - `@appranks/showcase-kit` - internal workspace package for showcase page chrome.
 - `@appranks/ui-docs` - Astro Starlight docs deployed to `https://ui.appranks.com`.
 - `@appranks/ui-showcase` - Cloudflare Worker SPA deployed to `https://showcase.ui.appranks.com`.
@@ -22,7 +22,7 @@ apps as a permanent fix.
 
 - Node.js `>=22`.
 - pnpm `11.8.0` through Corepack.
-- Access to GitHub Packages for the `@appranks` scope.
+- Access to GitHub Packages for the `@lemn-ltd` scope.
 - A GitHub token with package read access for local installs. Publishing requires
   package write access.
 
@@ -38,14 +38,14 @@ Add the package registry to the consuming repository:
 
 ```ini
 # .npmrc
-@appranks:registry=https://npm.pkg.github.com
+@lemn-ltd:registry=https://npm.pkg.github.com
 ```
 
 Authenticate locally with a package-readable GitHub token:
 
 ```bash
 export NODE_AUTH_TOKEN=<github-token>
-pnpm add @appranks/ui@<published-version>
+pnpm add @lemn-ltd/ui@<published-version>
 ```
 
 Consumers need compatible React peer dependencies. This workspace currently
@@ -54,12 +54,12 @@ catalogs React and React DOM at `19.2.4`.
 Import the package from its public surface only:
 
 ```tsx
-import { Button, Card, componentCatalog } from "@appranks/ui";
-import "@appranks/ui/styles.css";
+import { Button, Card, componentCatalog } from "@lemn-ltd/ui";
+import "@lemn-ltd/ui/styles.css";
 ```
 
-Import `@appranks/ui/styles.css` once at the application root. Do not deep-import
-from `@appranks/ui/dist`, `@appranks/ui/src`, Radix, `cmdk`, or `sonner` in
+Import `@lemn-ltd/ui/styles.css` once at the application root. Do not deep-import
+from `@lemn-ltd/ui/dist`, `@lemn-ltd/ui/src`, Radix, `cmdk`, or `sonner` in
 product apps.
 
 ## Agent Access
@@ -72,7 +72,7 @@ Agents should discover available components through:
 
 Rules:
 
-- Use existing `@appranks/ui` components before creating app-local UI.
+- Use existing `@lemn-ltd/ui` components before creating app-local UI.
 - Import only from the public package surface.
 - Do not deep-import package internals.
 - Do not import Radix, cmdk, or sonner directly in product apps.
@@ -89,9 +89,10 @@ The showcase runs at `http://localhost:6500`.
 Useful package commands:
 
 ```bash
-pnpm --filter @appranks/ui run build
-pnpm --filter @appranks/ui run check
-pnpm --filter @appranks/ui run test
+pnpm --filter @lemn-ltd/ui run build
+pnpm --filter @lemn-ltd/ui run check
+pnpm --filter @lemn-ltd/ui run test
+pnpm validate:package-identity
 pnpm validate:brand-neutrality
 pnpm validate:boundaries
 ```
@@ -101,13 +102,13 @@ pnpm validate:boundaries
 1. Make shared UI changes in `packages/ui/src`.
 2. Update package docs and showcase coverage when the public surface changes.
 3. Run `pnpm validate:brand-neutrality`, `pnpm validate:boundaries`,
-   `pnpm --filter @appranks/ui run check`, `pnpm --filter @appranks/ui run test`,
-   and `pnpm --filter @appranks/ui run build`.
+   `pnpm --filter @lemn-ltd/ui run check`, `pnpm --filter @lemn-ltd/ui run test`,
+   and `pnpm --filter @lemn-ltd/ui run build`.
 4. Add a changeset with `pnpm changeset` for every publishable package change.
    The release workflow turns merged changesets into a release metadata commit
    that updates `packages/ui/package.json`, `packages/ui/CHANGELOG.md`, and the
    docs changelog.
-5. CI publishes `@appranks/ui` only when the package version is not already
+5. CI publishes `@lemn-ltd/ui` only when the package version is not already
    available and the registry owner/token can publish the package scope. With
    GitHub Packages, a repo-owned `GITHUB_TOKEN` can publish scopes owned by the
    repo owner; otherwise CI records a publish warning and still deploys docs and

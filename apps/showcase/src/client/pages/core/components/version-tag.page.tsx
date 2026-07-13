@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { VersionTag } from '@appranks/ui';
+import { VersionTag } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 function VersionTagPage(): ReactElement {

@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { Toast, type ToastTone } from '@appranks/ui';
+import { Toast, type ToastTone } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 import { type ToastDescriptor, toastStack, toasts } from '../../../fixtures';
 

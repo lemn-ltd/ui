@@ -1,5 +1,5 @@
 import { Children, type ReactElement, type ReactNode } from 'react';
-import { ContentLayout, PageSection } from '@appranks/ui';
+import { ContentLayout, PageSection } from '@lemn-ltd/ui';
 import {
   ShowcasePreviewCanvas,
   useShowcaseRenderMode,

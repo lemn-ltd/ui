@@ -3,7 +3,7 @@ import {
 	componentExportsFromSlug,
 	ContentLayout,
 	SyntaxCodeBlock,
-} from "@appranks/ui";
+} from "@lemn-ltd/ui";
 import {
 	Children,
 	cloneElement,

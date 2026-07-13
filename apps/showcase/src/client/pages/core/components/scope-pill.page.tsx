@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { Icon, ScopePill } from '@appranks/ui';
+import { Icon, ScopePill } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 function ScopePillPage(): ReactElement {

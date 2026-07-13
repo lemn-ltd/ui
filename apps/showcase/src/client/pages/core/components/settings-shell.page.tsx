@@ -15,7 +15,7 @@ import {
 	SettingsRow,
 	SettingsShell,
 	Toggle,
-} from "@appranks/ui";
+} from "@lemn-ltd/ui";
 import type { ReactElement, ReactNode } from "react";
 
 const GROUPS: readonly SettingsNavGroup[] = [

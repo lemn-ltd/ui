@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { HintIcon, type HintIconTone } from '@appranks/ui';
+import { HintIcon, type HintIconTone } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 const TONES: readonly { tone: HintIconTone; icon: 'info' | 'triangle-alert'; label: string }[] = [

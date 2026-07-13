@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { InputSearch } from '@appranks/ui';
+import { InputSearch } from '@lemn-ltd/ui';
 import { type ReactElement, useState } from 'react';
 
 function SearchPage(): ReactElement {

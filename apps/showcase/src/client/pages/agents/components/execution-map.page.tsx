@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable } from '@appranks/showcase-kit';
-import { ExecutionMap, type ExecutionMapEntity, type ExecutionMapGraph } from '@appranks/ui';
+import { ExecutionMap, type ExecutionMapEntity, type ExecutionMapGraph } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 const sessionId = 'session-demo-001';

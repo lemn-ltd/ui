@@ -10,7 +10,7 @@ small, neutral, documented, and releasable.
 - Keep product-specific workflows, API adapters, runtime DTOs, customer data,
   and feature composition in consuming product apps.
 - If a product app needs a shared style, migrate it here first, publish a new
-  `@appranks/ui` version, then update the product dependency.
+  `@lemn-ltd/ui` version, then update the product dependency.
 - Do not rely on consumer-side `node_modules` edits, copied `dist` files, or
   app-local forks as permanent fixes.
 
@@ -45,7 +45,7 @@ small, neutral, documented, and releasable.
 - Keep `src/styles.css` as the single root stylesheet import for consumers.
 - Do not hard-code product palettes, logos, domain icons, app names, or route
   structure into shared components.
-- When adding a component-local CSS file, verify `pnpm --filter @appranks/ui run
+- When adding a component-local CSS file, verify `pnpm --filter @lemn-ltd/ui run
   build` copies it to `dist` with the same relative path.
 
 ## Documentation And Showcase
@@ -71,11 +71,12 @@ Run the narrowest relevant checks while iterating, then run the package gate
 before release:
 
 ```bash
+pnpm validate:package-identity
 pnpm validate:brand-neutrality
 pnpm validate:boundaries
-pnpm --filter @appranks/ui run check
-pnpm --filter @appranks/ui run test
-pnpm --filter @appranks/ui run build
+pnpm --filter @lemn-ltd/ui run check
+pnpm --filter @lemn-ltd/ui run test
+pnpm --filter @lemn-ltd/ui run build
 ```
 
 For showcase or docs behavior, also run:
@@ -96,7 +97,7 @@ pnpm dev:showcase
   version to fix packaging or CSS output.
 - Commit and push only reviewed source changes. Avoid mixing unrelated worktree
   changes into the release commit.
-- The CI workflow publishes `@appranks/ui` when the pushed version is not already
+- The CI workflow publishes `@lemn-ltd/ui` when the pushed version is not already
   present and the registry owner/token can publish the package scope. If the
   package scope and GitHub repo owner are not aligned, CI records a warning and
   continues the docs/showcase deploy.

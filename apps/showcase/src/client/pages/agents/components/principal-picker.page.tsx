@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable } from '@appranks/showcase-kit';
-import { PrincipalPicker, type PrincipalTarget, TeamMemberPicker } from '@appranks/ui';
+import { PrincipalPicker, type PrincipalTarget, TeamMemberPicker } from '@lemn-ltd/ui';
 import { type ReactElement, useState } from 'react';
 
 const TEAMS = [

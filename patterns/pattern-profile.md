@@ -9,14 +9,14 @@ Derived audit-state projection: `patterns/pattern-audit.md`
 ## Inventory Basis
 
 This profile is based on the Appranks UI repository inventory as of
-2026-07-13.
+2026-07-14.
 
 Appranks UI is not a product backend or the full AgentOps control plane. It is
 the shared graphical UI system and release workspace for Appranks products,
 with:
 
 - a Node.js 22+, pnpm, and Turborepo workspace
-- the published `@appranks/ui` React package, including components, design
+- the published `@lemn-ltd/ui` React package, including components, design
   tokens, styles, catalog metadata, package docs, and public exports
 - the internal `@appranks/showcase-kit` package for reusable showcase chrome
 - a React/Vite showcase deployed as a Cloudflare Worker SPA
@@ -37,11 +37,10 @@ requirements merely because they exist in the organization-wide catalog.
   `precedence_level <= target_level` only when its `applies_when` condition
   matches this repository inventory.
 - Treat this repository as the producer and source of truth for
-  `@appranks/ui`. Where organization-level `PAT-UI-LEMN-001` or
-  `PAT-UI-SYSTEM-001` examples name `@lemn-ltd/ui`, apply their design-system
-  control intent through the current package, registry, catalog, docs, and
-  showcase contracts declared by this repository. A package-scope rename is
-  not implied by this profile.
+  `@lemn-ltd/ui`. Apply organization-level `PAT-UI-LEMN-001` and
+  `PAT-UI-SYSTEM-001` through that exact package identity across the manifest,
+  registry, workspace, catalog, docs, showcase, tests, and release automation.
+  Compatibility aliases are not part of the public package contract.
 - Treat package exports, tokens, CSS, component props, catalog metadata,
   changesets, and published versions as public contracts. HTTP-specific Hono,
   OpenAPI, Problem Details, CORS, webhook, and MCP requirements are not
@@ -96,7 +95,7 @@ pattern_profile:
   API:
     target_level: 4
     reason:
-      - "The `@appranks/ui` exports, component props, token exports, stylesheet path, catalog metadata, and agent-facing catalog endpoints are stable public contracts."
+      - "The `@lemn-ltd/ui` exports, component props, token exports, stylesheet path, catalog metadata, and agent-facing catalog endpoints are stable public contracts."
       - Public changes must remain additive or carry a changeset, migration guidance, and versioned compatibility decision.
       - Hono, OpenAPI-generated clients, backend DTO mappers, webhooks, and MCP server tools are not part of the current repository inventory.
 
@@ -124,7 +123,7 @@ pattern_profile:
     target_level: 5
     reason:
       - Reusable graphical components, design tokens, CSS, accessibility behavior, composition patterns, and catalog documentation are the primary product of this repository.
-      - "`@appranks/ui` is the project source of truth; consumers must use public exports and the single public stylesheet instead of copying CSS or deep-importing internals."
+      - "`@lemn-ltd/ui` is the project source of truth; consumers must use public exports and the single public stylesheet instead of copying CSS or deep-importing internals."
       - Every reusable component must be composable, responsive, accessible, brand-neutral, documented, catalogued, and demonstrated in the showcase.
       - Dashboard, report, chart, agent, workflow, and evidence components must expose complete loading, empty, error, permission, pending, success, and interaction states when applicable.
 
@@ -163,8 +162,7 @@ The following are not required by this profile for the current project shape:
   execution runtimes
 - product-specific data fetching, routing, telemetry, or business-policy
   components inside the shared UI package
-- renaming the current `@appranks/ui` package scope solely to match generic
-  organization-level examples
+- compatibility aliases or alternate public package names for `@lemn-ltd/ui`
 
 If future work introduces one of these capabilities, update this profile first
 or record a scoped exception in `patterns/pattern-audit.md`.

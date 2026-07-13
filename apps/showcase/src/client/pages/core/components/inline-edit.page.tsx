@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { InlineEdit } from '@appranks/ui';
+import { InlineEdit } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 const noop = async (): Promise<void> => undefined;

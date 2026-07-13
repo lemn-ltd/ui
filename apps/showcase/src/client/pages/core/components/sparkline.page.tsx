@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { Sparkline } from '@appranks/ui';
+import { Sparkline } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 import { sparklinePoints } from '../../../fixtures';
 

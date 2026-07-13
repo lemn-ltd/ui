@@ -1,7 +1,7 @@
 # @appranks/ui-showcase
 
 `apps/showcase` is a static Cloudflare Worker SPA that renders the whole
-`@appranks/ui` catalog as a functional docs site. It owns no backend: no D1,
+`@lemn-ltd/ui` catalog as a functional docs site. It owns no backend: no D1,
 PostgreSQL, Hyperdrive, R2, KV, Durable Objects, Queues, Workflows, or service
 bindings. It owns only the `ASSETS` binding that serves the Vite client bundle.
 
@@ -27,9 +27,9 @@ bindings. It owns only the `ASSETS` binding that serves the Vite client bundle.
 - Core routes live under `/core/foundations/<slug>`,
   `/core/components/<slug>`, and `/core/patterns/<slug>`.
 - Agent-compatible shared components live under `/agents/components/<slug>`.
-- Product apps consume `@appranks/ui`; they do not own local showcase routes,
+- Product apps consume `@lemn-ltd/ui`; they do not own local showcase routes,
   local design catalogs, or duplicate component docs.
-- The client imports only the `@appranks/ui` public surface. It never deep-imports
+- The client imports only the `@lemn-ltd/ui` public surface. It never deep-imports
   `packages/ui/src/...`, `radix-ui`, `cmdk`, or `sonner` directly.
 - The worker entry imports none of `react`, `react-router`, `radix`, `cmdk`, or
   `sonner`; it uses Worker `env` plus the data-only component catalog.
@@ -47,7 +47,7 @@ Outbound service dependencies: none.
 
 ## Development
 
-The client consumes `@appranks/ui` from source via Vite/Vitest aliases to
+The client consumes `@lemn-ltd/ui` from source via Vite/Vitest aliases to
 `../ui/src`, so the catalog stays the single visual source of truth without a
 package rebuild during development.
 

@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@appranks/showcase-kit": "workspace:*",
-    "@appranks/ui": "workspace:*",
+    "@lemn-ltd/ui": "workspace:*",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-router-dom": "catalog:"

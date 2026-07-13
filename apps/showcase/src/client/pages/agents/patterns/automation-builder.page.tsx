@@ -17,7 +17,7 @@ import {
   TopBar,
   TriggerComposer,
   type ComposerTrigger,
-} from '@appranks/ui';
+} from '@lemn-ltd/ui';
 import { type CSSProperties, type ReactElement, useState } from 'react';
 
 const FRAME: CSSProperties = {

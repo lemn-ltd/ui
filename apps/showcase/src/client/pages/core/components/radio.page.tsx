@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { RadioGroup, RadioGroupItem } from '@appranks/ui';
+import { RadioGroup, RadioGroupItem } from '@lemn-ltd/ui';
 import { type ReactElement, useState } from 'react';
 
 const OPTIONS = [

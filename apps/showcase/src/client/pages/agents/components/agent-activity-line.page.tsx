@@ -4,7 +4,7 @@ import {
   AgentActivityLine,
   type AgentActivityLineState,
   type AgentActivityLineTone,
-} from '@appranks/ui';
+} from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 interface ActivityExample {

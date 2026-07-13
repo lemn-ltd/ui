@@ -1,5 +1,5 @@
 import { FoundationPage } from '@appranks/showcase-kit';
-import { PageSection } from '@appranks/ui';
+import { PageSection } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 const STEPS: { step: number; px: number }[] = [

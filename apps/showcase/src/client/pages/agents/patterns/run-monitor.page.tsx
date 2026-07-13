@@ -18,7 +18,7 @@ import {
   StatsStrip,
   type StatCardProps,
   TopBar,
-} from '@appranks/ui';
+} from '@lemn-ltd/ui';
 import type { CSSProperties, ReactElement } from 'react';
 
 const FRAME: CSSProperties = {

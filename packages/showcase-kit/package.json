@@ -29,7 +29,7 @@
     }
   },
   "dependencies": {
-    "@appranks/ui": "workspace:*"
+    "@lemn-ltd/ui": "workspace:*"
   },
   "devDependencies": {
     "@testing-library/react": "16.3.2",

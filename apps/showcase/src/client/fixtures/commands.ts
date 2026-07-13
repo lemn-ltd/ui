@@ -1,4 +1,4 @@
-import type { CommandPaletteGroup } from '@appranks/ui';
+import type { CommandPaletteGroup } from '@lemn-ltd/ui';
 
 /**
  * Command palette groups (Recent / Pages / Actions / Help). Every item icon is

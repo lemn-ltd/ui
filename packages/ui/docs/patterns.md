@@ -1,6 +1,6 @@
 # Screen composition recipes
 
-> How to assemble whole screens from `@appranks/ui` components. Each recipe
+> How to assemble whole screens from `@lemn-ltd/ui` components. Each recipe
 > mirrors a live pattern page in the showcase (`/<module>/patterns/<slug>`).
 > Component names link to their selection guidance in [components.md](components.md).
 

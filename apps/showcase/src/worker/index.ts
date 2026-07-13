@@ -1,7 +1,7 @@
 import {
 	componentCatalog,
 	componentExportsFromSlug,
-} from "@appranks/ui/catalog";
+} from "@lemn-ltd/ui/catalog";
 import { WorkerEntrypoint } from "cloudflare:workers";
 import type { UiShowcaseEnv } from "./env";
 import { buildStatusReport, validateUiShowcaseEnv } from "./service-descriptor";

@@ -13,4 +13,4 @@ Boundary:
 
 - `apps/showcase` owns pages, fixtures, registries, route mounting, and visual baselines.
 - The kit owns generic page-authoring primitives only.
-- The only workspace dependency is `@appranks/ui`.
+- The only workspace dependency is `@lemn-ltd/ui`.

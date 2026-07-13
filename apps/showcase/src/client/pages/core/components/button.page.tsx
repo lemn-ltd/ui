@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { Button, type ButtonVariant } from '@appranks/ui';
+import { Button, type ButtonVariant } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 const VARIANTS: readonly ButtonVariant[] = [

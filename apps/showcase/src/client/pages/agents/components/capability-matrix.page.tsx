@@ -4,7 +4,7 @@ import {
   type MatrixCapability,
   type MatrixCell,
   type MatrixTarget,
-} from '@appranks/ui';
+} from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 const CAPABILITIES: readonly MatrixCapability[] = [

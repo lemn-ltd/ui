@@ -8,7 +8,7 @@ import {
   InputSelect,
   Textarea,
   Toggle,
-} from '@appranks/ui';
+} from '@lemn-ltd/ui';
 import { type ReactElement, useState } from 'react';
 
 const STATUS_OPTIONS = [

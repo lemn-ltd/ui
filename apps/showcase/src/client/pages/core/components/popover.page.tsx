@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { Button, Popover, type PopoverPlacement } from '@appranks/ui';
+import { Button, Popover, type PopoverPlacement } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 const PLACEMENTS: readonly PopoverPlacement[] = ['top', 'bottom', 'left', 'right'];

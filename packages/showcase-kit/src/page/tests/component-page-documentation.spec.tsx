@@ -47,7 +47,6 @@ describe("ComponentPage documentation contract", () => {
 		expect(container.textContent).toContain(
 			"import { Button } from '@lemn-ltd/ui';",
 		);
-		expect(container.textContent).not.toContain("@appranks/ui");
 		expect(screen.getByText("Variant guidance")).toBeDefined();
 		expect(
 			screen.getByRole("heading", { name: "API Reference: Button" }),

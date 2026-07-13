@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable } from '@appranks/showcase-kit';
-import { AgentToolCallList, type AgentToolCallPart, CodeBlock } from '@appranks/ui';
+import { AgentToolCallList, type AgentToolCallPart, CodeBlock } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 const TOOL_CALLS: readonly AgentToolCallPart[] = [

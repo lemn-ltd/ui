@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable } from '@appranks/showcase-kit';
-import { Button, Dialog } from '@appranks/ui';
+import { Button, Dialog } from '@lemn-ltd/ui';
 import { type ReactElement, useState } from 'react';
 
 function DialogPage(): ReactElement {

@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable } from '@appranks/showcase-kit';
-import { Meter } from '@appranks/ui';
+import { Meter } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 function MeterPage(): ReactElement {

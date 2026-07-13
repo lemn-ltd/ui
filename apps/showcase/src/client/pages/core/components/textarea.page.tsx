@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { Textarea } from '@appranks/ui';
+import { Textarea } from '@lemn-ltd/ui';
 import { type ReactElement, useState } from 'react';
 
 function TextareaPage(): ReactElement {

@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { StatCard, type StatDeltaDirection } from '@appranks/ui';
+import { StatCard, type StatDeltaDirection } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 import { stats } from '../../../fixtures';
 

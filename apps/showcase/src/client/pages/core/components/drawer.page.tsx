@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable } from '@appranks/showcase-kit';
-import { Button, Drawer } from '@appranks/ui';
+import { Button, Drawer } from '@lemn-ltd/ui';
 import { type ReactElement, useState } from 'react';
 
 function DrawerPage(): ReactElement {

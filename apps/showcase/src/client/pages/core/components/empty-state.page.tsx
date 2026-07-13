@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { Button, Card, EmptyState, type EmptyStateIntent } from '@appranks/ui';
+import { Button, Card, EmptyState, type EmptyStateIntent } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 const INTENTS: readonly EmptyStateIntent[] = ['first-run', 'no-results'];

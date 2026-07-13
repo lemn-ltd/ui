@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { Breadcrumb } from '@appranks/ui';
+import { Breadcrumb } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 import { longTrail, shortTrail } from '../../../fixtures';
 

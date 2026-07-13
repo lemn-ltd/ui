@@ -14,7 +14,7 @@ import {
   TopBar,
   type AgentToolCallPart,
   UserMessageBubble,
-} from '@appranks/ui';
+} from '@lemn-ltd/ui';
 import { type CSSProperties, type ReactElement, useState } from 'react';
 import { relativeNow } from '../../../fixtures';
 

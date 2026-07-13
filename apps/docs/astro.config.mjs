@@ -7,7 +7,7 @@ export default defineConfig({
     starlight({
       title: 'Docs - UI',
       description:
-        'Human-facing documentation, release notes, and lifecycle guidance for @appranks/ui.',
+        'Human-facing documentation, release notes, and lifecycle guidance for @lemn-ltd/ui.',
       disable404Route: true,
       logo: {
         src: './src/assets/agent-icon.svg',

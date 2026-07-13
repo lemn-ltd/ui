@@ -1,5 +1,5 @@
 import { ComponentPage } from '@appranks/showcase-kit';
-import { Avatar, Badge, RelativeTime } from '@appranks/ui';
+import { Avatar, Badge, RelativeTime } from '@lemn-ltd/ui';
 import { type CSSProperties, type ReactElement, useState } from 'react';
 import { people, relativeNow, relativeSamples } from '../../../fixtures';
 

@@ -8,7 +8,7 @@ import {
   PageHeader,
   Sidebar,
   TopBar,
-} from '@appranks/ui';
+} from '@lemn-ltd/ui';
 import { type CSSProperties, type ReactElement, useState } from 'react';
 import { columns, filters, navGroups, rowKey, rows } from '../../../fixtures';
 

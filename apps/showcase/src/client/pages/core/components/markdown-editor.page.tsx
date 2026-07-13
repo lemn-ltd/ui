@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { MarkdownEditor } from '@appranks/ui';
+import { MarkdownEditor } from '@lemn-ltd/ui';
 import { type ReactElement, useState } from 'react';
 
 const markdown = `# Skill

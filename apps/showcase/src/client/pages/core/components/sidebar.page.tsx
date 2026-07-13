@@ -10,7 +10,7 @@ import {
 	Sidebar,
 	SidebarUserRow,
 	VersionTag,
-} from "@appranks/ui";
+} from "@lemn-ltd/ui";
 import {
 	type CSSProperties,
 	type ReactElement,

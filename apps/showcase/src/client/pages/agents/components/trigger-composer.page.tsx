@@ -4,7 +4,7 @@ import {
   type ComposerTrigger,
   type ScheduleTriggerValue,
   TriggerComposer,
-} from '@appranks/ui';
+} from '@lemn-ltd/ui';
 import { type ReactElement, useRef, useState } from 'react';
 
 const ADDABLE: readonly AddableTrigger[] = [

@@ -4,7 +4,7 @@ import {
   type CapabilityDecisionEffect,
   type CapabilityDriftState,
   type CapabilityRiskLevel,
-} from '@appranks/ui';
+} from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 const RISKS: readonly CapabilityRiskLevel[] = ['low', 'medium', 'high', 'critical'];

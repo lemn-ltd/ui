@@ -11,9 +11,9 @@
     "moduleResolution": "Bundler",
     "noEmit": true,
     "paths": {
-      "@appranks/ui": ["../../packages/ui/src/index.ts"],
-      "@appranks/ui/catalog": ["../../packages/ui/src/catalog.ts"],
-      "@appranks/ui/tokens": ["../../packages/ui/src/tokens.ts"]
+      "@lemn-ltd/ui": ["../../packages/ui/src/index.ts"],
+      "@lemn-ltd/ui/catalog": ["../../packages/ui/src/catalog.ts"],
+      "@lemn-ltd/ui/tokens": ["../../packages/ui/src/tokens.ts"]
     },
     "target": "ES2022",
     "types": ["@cloudflare/workers-types", "vitest/globals"]

@@ -1,4 +1,4 @@
-import type { StepperStep } from '@appranks/ui';
+import type { StepperStep } from '@lemn-ltd/ui';
 
 /** 5 steps: 2 completed, 1 active, 2 upcoming. */
 export const steps: readonly StepperStep[] = [

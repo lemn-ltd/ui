@@ -19,7 +19,7 @@ import {
 	SidebarUserRow,
 	ThemeToggle,
 	TopBar,
-} from "@appranks/ui";
+} from "@lemn-ltd/ui";
 import {
 	type CSSProperties,
 	type ReactElement,

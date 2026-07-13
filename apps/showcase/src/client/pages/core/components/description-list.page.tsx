@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable } from '@appranks/showcase-kit';
-import { Badge, DescriptionList, DescriptionRow, Icon, IconButton, RelativeTime } from '@appranks/ui';
+import { Badge, DescriptionList, DescriptionRow, Icon, IconButton, RelativeTime } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 function DescriptionListPage(): ReactElement {

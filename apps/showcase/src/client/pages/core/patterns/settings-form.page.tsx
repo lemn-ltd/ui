@@ -8,7 +8,7 @@ import {
   Sidebar,
   Toggle,
   VersionTag,
-} from '@appranks/ui';
+} from '@lemn-ltd/ui';
 import type { CSSProperties, ReactElement } from 'react';
 import { drillNavGroups } from '../../../fixtures';
 

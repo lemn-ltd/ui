@@ -1,5 +1,5 @@
 import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { ScheduleEditor } from '@appranks/ui';
+import { ScheduleEditor } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 function ScheduleEditorPage(): ReactElement {
