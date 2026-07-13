@@ -80,8 +80,14 @@ test("Global API Key preflight runs before every release mutation and package pu
 });
 
 test("unpublished current package versions do not receive an accidental second changeset bump", () => {
-	const validationSteps = record(jobs.validate, "validate job")
-		.steps as UnknownRecord[];
+	const validationJob = record(jobs.validate, "validate job");
+	const validationPermissions = record(
+		validationJob.permissions,
+		"validate permissions",
+	);
+	assert.equal(validationPermissions.contents, "read");
+	assert.equal(validationPermissions.packages, "read");
+	const validationSteps = validationJob.steps as UnknownRecord[];
 	const changesetGuard = validationSteps.find(
 		(candidate) => candidate.name === "Require changesets for package changes",
 	);
