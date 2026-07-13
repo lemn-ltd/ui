@@ -53,6 +53,7 @@ export default defineConfig({
   use: {
     ...devices['Desktop Chrome'],
     baseURL: BASE_URL,
+    permissions: ['clipboard-read', 'clipboard-write'],
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     deviceScaleFactor: 1,

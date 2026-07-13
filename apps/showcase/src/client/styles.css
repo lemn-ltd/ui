@@ -73,8 +73,13 @@
   flex-direction: column;
 }
 
-.showcase-overview-card__preview-trigger {
+.showcase-overview-card__preview-frame {
   position: relative;
+}
+
+.showcase-overview-card__preview-trigger {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
   padding: 0;

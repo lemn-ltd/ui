@@ -41,7 +41,7 @@ export interface DocumentationApiRow {
 	readonly prop: string;
 	readonly type: string;
 	readonly defaultValue?: string;
-	readonly description: string;
+	readonly description: ReactNode;
 }
 
 export interface DocumentationStepsProps {

@@ -40,6 +40,8 @@ export function OverviewPage(): ReactElement {
                   {section.entries.map((entry) => (
                     <article className="showcase-overview-card" key={pathFor(entry)}>
                     <Card className="showcase-overview-card__surface" interactive>
+                      <div className="showcase-overview-card__preview-frame">
+                          <LivePreview entry={entry} />
                         <button
                           aria-haspopup="dialog"
                           aria-label={`Open ${entry.title} interactive playground`}
@@ -47,12 +49,12 @@ export function OverviewPage(): ReactElement {
                           onClick={() => setPreview(entry)}
                           type="button"
                         >
-                          <LivePreview entry={entry} />
                           <span className="showcase-overview-card__live-label">
                             <span aria-hidden="true" className="showcase-overview-card__live-dot" />
                             Live preview
                           </span>
                         </button>
+                      </div>
                       <div className="showcase-overview-card__copy">
                           <h3>
                             <Link to={pathFor(entry)}>{entry.title}</Link>

@@ -490,6 +490,13 @@
 	gap: var(--space-3);
 }
 
+.showcase-docs-supplemental {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-6);
+	min-width: 0;
+}
+
 .showcase-docs-footer {
 	display: flex;
 	flex-direction: column;

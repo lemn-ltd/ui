@@ -30,3 +30,27 @@ not create a second thumbnail component or commit captured images.
 When a component needs a richer canonical interaction, improve its first
 `ExampleBlock`. The card, playground, component route, responsive controls, and
 deep link will inherit it automatically.
+
+## Component reference contract
+
+Every catalog component page uses `ComponentPage`; the shared adapter turns its
+existing content into the long-form interactive reference automatically. A new
+page must provide, in this order:
+
+1. One to three direct `ExampleBlock` children. The first is the hero and must
+   be a real, deterministic interaction; it is also the card and playground
+   preview.
+2. Optional galleries or supporting controls for variants and states. These do
+   not replace an interactive hero.
+3. One direct `PropsTable` whose rows reflect the component's public props,
+   real defaults, and observable behavior.
+
+The adapter supplies the catalog category, canonical title and summary,
+Preview/Code presentation, public `@lemn-ltd/ui` imports, installation steps,
+API table, support link, and legal footer. `DocumentationPage` rejects more
+than three examples. The route-sweep tests derive all component routes from
+`/catalog.json`, so registering a component without this contract fails CI.
+
+Never add page-local theme controls, captured component images, product data,
+authentication, remote API fixtures, `@latest`, deep package imports, or public
+snippets using the internal workspace package name.

@@ -26,12 +26,17 @@ function request(pathname: string, init?: RequestInit): Request {
 
 describe("ui showcase worker", () => {
 	it("answers /health with a 200 health shape", async () => {
-		const worker = createWorker();
+		const worker = createWorker({
+			BUILD_GIT_SHA: "abc123",
+			BUILD_VERSION: "1.2.3",
+		});
 		const response = await worker.fetch(request("/health"));
 		expect(response.status).toBe(200);
 		expect(await response.json()).toMatchObject({
 			ok: true,
 			service: uiShowcaseAppDescriptor.name,
+			version: "1.2.3",
+			gitSha: "abc123",
 		});
 	});
 
@@ -61,7 +66,12 @@ describe("ui showcase worker", () => {
 
 		const full = await (await worker.fetch(request("/llms-full.txt"))).text();
 		expect(full).toContain("from '@lemn-ltd/ui';");
+		expect(full).toContain(
+			"import { RadioGroup, RadioGroupItem } from '@lemn-ltd/ui';",
+		);
+		expect(full).toContain("import { GraphCanvas } from '@lemn-ltd/ui';");
 		expect(full).not.toContain("from '@appranks/ui';");
+		expect(full).not.toContain("@latest");
 	});
 
 	it("has no api branch — /api/* falls through to the SPA assets", async () => {

@@ -47,6 +47,11 @@ export {
 	useShowcaseRenderMode,
 } from "./preview/render-mode.js";
 export {
+	ShowcaseEntryProvider,
+	type ShowcaseEntryProviderProps,
+	useShowcaseEntryMeta,
+} from "./registry/entry-context.js";
+export {
 	buildNavGroups,
 	type ShowcaseNavGroup,
 } from "./registry/nav-groups.js";

@@ -1,4 +1,7 @@
-import { componentCatalog } from "@appranks/ui/catalog";
+import {
+	componentCatalog,
+	componentExportsFromSlug,
+} from "@appranks/ui/catalog";
 import { WorkerEntrypoint } from "cloudflare:workers";
 import type { UiShowcaseEnv } from "./env";
 import { buildStatusReport, validateUiShowcaseEnv } from "./service-descriptor";
@@ -46,6 +49,8 @@ function healthResponse(env: UiShowcaseEnv): Response {
 		ok: true,
 		service: "ui-showcase",
 		environment: env.DEPLOYMENT_ENVIRONMENT ?? "local",
+		version: env.BUILD_VERSION ?? "0.0.0",
+		gitSha: env.BUILD_GIT_SHA ?? "local",
 	});
 }
 
@@ -121,7 +126,7 @@ function llmsFullResponse(): Response {
 		`group: ${entry.group}`,
 		`status: ${entry.status}`,
 		`intent: ${entry.intent}`,
-		`import: import { ${componentNameFromSlug(entry.slug)} } from '@lemn-ltd/ui';`,
+		`import: import { ${componentExportsFromSlug(entry.slug).join(", ")} } from '@lemn-ltd/ui';`,
 		"",
 	]);
 
@@ -131,11 +136,4 @@ function llmsFullResponse(): Response {
 			headers: { "content-type": "text/plain; charset=utf-8" },
 		},
 	);
-}
-
-function componentNameFromSlug(slug: string): string {
-	return slug
-		.split("-")
-		.map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-		.join("");
 }

@@ -1,7 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "dev-appranks-ui",
-  "account_id": "d8642f551bb031f9be852dff0c2b909d",
+  "account_id": "71da6f8791d79c8abe7beea6f03d0162",
   "main": "src/worker/index.ts",
   "compatibility_date": "2026-05-14",
   "compatibility_flags": ["nodejs_compat"],
@@ -40,7 +40,7 @@
       "name": "appranks-ui",
       "routes": [
         {
-          "pattern": "showcase.ui.appranks.com",
+          "pattern": "showcase.ui.lemn.ai",
           "custom_domain": true,
         },
       ],
