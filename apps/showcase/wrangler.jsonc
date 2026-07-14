@@ -40,7 +40,7 @@
       "name": "appranks-ui",
       "routes": [
         {
-          "pattern": "showcase.ui.lemn.ai",
+          "pattern": "showcase.ui.le-mn.com",
           "custom_domain": true,
         },
       ],

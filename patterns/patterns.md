@@ -5389,7 +5389,7 @@ multiple API surfaces need the same HTTP error serialization, use
 
 ```ts
 return c.json({
-  type: 'https://docs.lemn.ai/errors/project-not-found',
+  type: 'https://docs.le-mn.com/errors/project-not-found',
   title: 'Project not found',
   status: error.status,
   code: error.code,
@@ -7338,7 +7338,7 @@ applies_when:
 
 ## Strategy
 
-Use `@lemn-ltd/ui` from `https://ui.lemn.ai` as the required company design-system package for graphical UI. Product apps consume the published package and its public stylesheet instead of copying component CSS, deep-importing internals, or creating divergent local component systems.
+Use `@lemn-ltd/ui` from `https://ui.le-mn.com` as the required company design-system package for graphical UI. Product apps consume the published package and its public stylesheet instead of copying component CSS, deep-importing internals, or creating divergent local component systems.
 
 ## Rules
 
@@ -7587,7 +7587,7 @@ applies_when:
 
 ## Strategy
 
-Design in Pencil, then promote reusable components to `@lemn-ltd/ui` and document them in ui.lemn.ai.
+Design in Pencil, then promote reusable components to `@lemn-ltd/ui` and document them in ui.le-mn.com.
 
 ## Rules
 

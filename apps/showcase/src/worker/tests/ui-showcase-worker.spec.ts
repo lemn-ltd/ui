@@ -61,7 +61,7 @@ describe("ui showcase worker", () => {
 
 		const summary = await (await worker.fetch(request("/llms.txt"))).text();
 		expect(summary).toContain("# LEMN UI");
-		expect(summary).toContain("https://showcase.ui.lemn.ai/catalog.json");
+		expect(summary).toContain("https://showcase.ui.le-mn.com/catalog.json");
 		expect(summary).not.toContain("@appranks/ui");
 
 		const full = await (await worker.fetch(request("/llms-full.txt"))).text();

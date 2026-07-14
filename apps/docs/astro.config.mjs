@@ -2,7 +2,7 @@ import starlight from '@astrojs/starlight';
 import { defineConfig } from 'astro/config';
 
 export default defineConfig({
-  site: 'https://ui.appranks.com',
+  site: 'https://ui.le-mn.com',
   integrations: [
     starlight({
       title: 'Docs - UI',
@@ -30,7 +30,7 @@ export default defineConfig({
         {
           icon: 'github',
           label: 'GitHub',
-          href: 'https://github.com/appranks/ui',
+          href: 'https://github.com/lemn-ltd/ui',
         },
       ],
       sidebar: [

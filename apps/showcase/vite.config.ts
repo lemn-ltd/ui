@@ -13,7 +13,7 @@ const showcaseKitSrc = (relativePath: string): string =>
 
 export default defineConfig({
   server: {
-    allowedHosts: ['local-ui.appranks.com'],
+    allowedHosts: ['showcase-ui-6500.le-mn.com'],
   },
   // The showcase consumes @appranks/ui from source so the catalog stays the
   // single visual source of truth without a rebuild on every change.

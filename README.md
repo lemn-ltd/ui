@@ -2,8 +2,8 @@
 
 Shared, brand-neutral UI system for Appranks projects. The repository owns the
 published `@appranks/ui` React package, its public component catalog, the docs
-site at `https://ui.appranks.com`, and the showcase site at
-`https://showcase.ui.appranks.com`.
+site at `https://ui.le-mn.com`, and the showcase site at
+`https://showcase.ui.le-mn.com`.
 
 `@appranks/ui` is the source of truth for shared styles. If a consuming product
 needs a reusable component, token, layout, or style migration, make that change
@@ -15,8 +15,8 @@ apps as a permanent fix.
 
 - `@appranks/ui` - public component and token package, published to GitHub Packages.
 - `@appranks/showcase-kit` - internal workspace package for showcase page chrome.
-- `@appranks/ui-docs` - Astro Starlight docs deployed to `https://ui.appranks.com`.
-- `@appranks/ui-showcase` - Cloudflare Worker SPA deployed to `https://showcase.ui.appranks.com`.
+- `@appranks/ui-docs` - Astro Starlight docs deployed to `https://ui.le-mn.com`.
+- `@appranks/ui-showcase` - Cloudflare Worker SPA deployed to `https://showcase.ui.le-mn.com`.
 
 ## Requirements
 
@@ -66,9 +66,9 @@ product apps.
 
 Agents should discover available components through:
 
-- `https://showcase.ui.appranks.com/catalog.json`
-- `https://showcase.ui.appranks.com/llms.txt`
-- `https://showcase.ui.appranks.com/llms-full.txt`
+- `https://showcase.ui.le-mn.com/catalog.json`
+- `https://showcase.ui.le-mn.com/llms.txt`
+- `https://showcase.ui.le-mn.com/llms-full.txt`
 
 Rules:
 
@@ -120,5 +120,5 @@ pnpm validate:boundaries
 - [Package usage guide](packages/ui/README.md)
 - [Agent-facing component guide](packages/ui/docs/README.md)
 - [Contribution rules](CONTRIBUTING.md)
-- [Human docs](https://ui.appranks.com)
-- [Interactive showcase](https://showcase.ui.appranks.com)
+- [Human docs](https://ui.le-mn.com)
+- [Interactive showcase](https://showcase.ui.le-mn.com)

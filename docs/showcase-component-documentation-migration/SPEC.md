@@ -9,7 +9,7 @@
 - Catálogo base: 112 componentes, 83 Core y 29 Agents
 - Alcance pendiente: 111 componentes; Checkbox ya es el piloto
 - Rama de implementación: `main`
-- Producción: `https://showcase.ui.lemn.ai`
+- Producción: `https://showcase.ui.le-mn.com`
 - Revisión browser obligatoria: `https://showcase-ui-6500.le-mn.com`
 
 ## Decisión
@@ -396,10 +396,10 @@ Solo cuando los 112 componentes pasan el contrato:
 Después del deploy:
 
 1. Verificar producción:
-   - `https://showcase.ui.lemn.ai/health`
-   - `https://showcase.ui.lemn.ai/catalog.json`
-   - `https://showcase.ui.lemn.ai/llms.txt`
-   - `https://showcase.ui.lemn.ai/llms-full.txt`
+   - `https://showcase.ui.le-mn.com/health`
+   - `https://showcase.ui.le-mn.com/catalog.json`
+   - `https://showcase.ui.le-mn.com/llms.txt`
+   - `https://showcase.ui.le-mn.com/llms-full.txt`
    - muestras Core y Agents, más un route sweep automatizado.
 2. Verificar en browser el build local de ese mismo SHA mediante
    `https://showcase-ui-6500.le-mn.com`.
