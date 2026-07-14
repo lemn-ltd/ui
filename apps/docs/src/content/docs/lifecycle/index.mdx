@@ -18,6 +18,11 @@ Feature authors or agents add a changeset to describe the release intent. The
 release automation turns merged changesets into a release metadata commit that
 updates `packages/ui/package.json` and `packages/ui/CHANGELOG.md`.
 
+All Changesets operations use the catalogued `pnpm changeset ...` wrapper. The
+wrapper guards `version` before mutation. `pnpm exec changeset version` invokes
+the dependency binary outside package-script governance and is not a supported
+release path.
+
 The production workflow completes its non-mutating Cloudflare Global API Key
 preflight before Changesets can version, push, or publish anything. It then
 captures the release commit SHA and deploys that exact SHA and package version.

@@ -1,5 +1,14 @@
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { execFileSync, spawnSync } from "node:child_process";
+import {
+	copyFile,
+	mkdir,
+	mkdtemp,
+	readFile,
+	rm,
+	symlink,
+	writeFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import test from "node:test";
@@ -21,6 +30,7 @@ const docsPackage = JSON.parse(
 const showcasePackage = JSON.parse(
 	await readFile(resolve(root, "apps/showcase/package.json"), "utf8"),
 ) as UnknownRecord;
+const contributing = await readFile(resolve(root, "CONTRIBUTING.md"), "utf8");
 
 function record(value: unknown, description: string): UnknownRecord {
 	assert.ok(
@@ -73,11 +83,14 @@ test("all production mutation entrypoints share the guarded release path", () =>
 	for (const name of [
 		"deploy:showcase:prod",
 		"deploy:docs:prod",
-		"version:packages",
 		"publish:ui",
 	]) {
 		assert.match(String(scripts[name]), /^pnpm guard:release:mutation && /u);
 	}
+	assert.match(
+		String(scripts["version:packages"]),
+		/^pnpm changeset version && /u,
+	);
 	assert.equal(scripts["deploy:showcase"], "pnpm deploy:showcase:prod");
 	assert.equal(scripts["deploy:docs"], "pnpm deploy:docs:prod");
 	assert.equal(
@@ -102,19 +115,134 @@ test("all production mutation entrypoints share the guarded release path", () =>
 	);
 });
 
-test("Changesets exposes explicit add and status commands but no versioning bypass", () => {
+test("Changesets routes add, status, and version through the governed wrapper", () => {
 	const scripts = record(rootPackage.scripts, "root scripts");
-	assert.equal(scripts.changeset, undefined);
-	assert.equal(scripts["changeset:add"], "changeset add");
-	assert.equal(scripts["changeset:status"], "changeset status");
-	assert.match(
-		String(scripts["version:packages"]),
-		/^pnpm guard:release:mutation && changeset version && /u,
+	assert.equal(scripts.changeset, "node scripts/release/changeset-command.ts");
+	assert.equal(scripts["changeset:add"], "pnpm changeset add");
+	assert.equal(scripts["changeset:status"], "pnpm changeset status");
+	assert.equal(
+		scripts["version:packages"],
+		"pnpm changeset version && pnpm sync:docs-changelog",
 	);
-	for (const [name, command] of Object.entries(scripts)) {
-		if (/changeset version/u.test(String(command))) {
-			assert.equal(name, "version:packages");
+	assert.match(
+		contributing,
+		/`pnpm exec changeset version`[\s\S]*unsupported[\s\S]*prohibited/u,
+	);
+});
+
+test("pnpm changeset version cannot mutate a package in a feature checkout", async () => {
+	const temporaryRoot = await mkdtemp(
+		resolve(tmpdir(), "lemn-ui-changeset-guard-"),
+	);
+	try {
+		await Promise.all([
+			mkdir(resolve(temporaryRoot, "scripts/release"), { recursive: true }),
+			mkdir(resolve(temporaryRoot, "packages/ui"), { recursive: true }),
+			mkdir(resolve(temporaryRoot, ".changeset"), { recursive: true }),
+		]);
+		for (const file of [
+			"changeset-command.ts",
+			"release-mutation-guard.ts",
+			"cloudflare-preflight.ts",
+		]) {
+			await copyFile(
+				resolve(root, "scripts/release", file),
+				resolve(temporaryRoot, "scripts/release", file),
+			);
 		}
+		await symlink(
+			resolve(root, "node_modules"),
+			resolve(temporaryRoot, "node_modules"),
+		);
+		await writeFile(
+			resolve(temporaryRoot, "package.json"),
+			JSON.stringify({
+				name: "changeset-guard-contract",
+				private: true,
+				type: "module",
+				packageManager: "pnpm@11.8.0",
+				scripts: {
+					changeset: "node scripts/release/changeset-command.ts",
+				},
+			}),
+		);
+		await writeFile(
+			resolve(temporaryRoot, "pnpm-workspace.yaml"),
+			"packages:\n  - packages/*\n",
+		);
+		await writeFile(
+			resolve(temporaryRoot, "packages/ui/package.json"),
+			JSON.stringify({
+				name: "@lemn-ltd/ui",
+				version: "0.1.2",
+			}),
+		);
+		await writeFile(
+			resolve(temporaryRoot, ".changeset/config.json"),
+			JSON.stringify({
+				$schema: "https://unpkg.com/@changesets/config@3.1.2/schema.json",
+				changelog: false,
+				commit: false,
+				fixed: [],
+				linked: [],
+				access: "restricted",
+				baseBranch: "main",
+				updateInternalDependencies: "patch",
+				ignore: [],
+			}),
+		);
+		await writeFile(
+			resolve(temporaryRoot, ".changeset/guard-contract.md"),
+			'---\n"@lemn-ltd/ui": patch\n---\n\nGuard contract.\n',
+		);
+
+		execFileSync("git", ["init", "--initial-branch=review/guard-contract"], {
+			cwd: temporaryRoot,
+			stdio: "ignore",
+		});
+		execFileSync("git", ["config", "user.name", "Contract Test"], {
+			cwd: temporaryRoot,
+		});
+		execFileSync("git", ["config", "user.email", "contract@example.test"], {
+			cwd: temporaryRoot,
+		});
+		execFileSync("git", ["add", "."], { cwd: temporaryRoot });
+		execFileSync("git", ["commit", "-m", "fixture"], {
+			cwd: temporaryRoot,
+			stdio: "ignore",
+		});
+
+		const environment = { ...process.env };
+		delete environment.GITHUB_ACTIONS;
+		delete environment.GITHUB_REF;
+		delete environment.CLOUDFLARE_API_KEY;
+		delete environment.CLOUDFLARE_EMAIL;
+		const result = spawnSync("pnpm", ["changeset", "version"], {
+			cwd: temporaryRoot,
+			encoding: "utf8",
+			env: environment,
+		});
+		assert.notEqual(result.status, 0);
+		assert.match(
+			`${result.stdout}${result.stderr}`,
+			/release mutations require local branch main/iu,
+		);
+		const packageManifest = JSON.parse(
+			await readFile(
+				resolve(temporaryRoot, "packages/ui/package.json"),
+				"utf8",
+			),
+		) as { version: string };
+		assert.equal(packageManifest.version, "0.1.2");
+		assert.match(
+			await readFile(
+				resolve(temporaryRoot, ".changeset/guard-contract.md"),
+				"utf8",
+			),
+			/@lemn-ltd\/ui/u,
+		);
+	} finally {
+		await rm(temporaryRoot, { recursive: true, force: true });
 	}
 });
 

@@ -32,6 +32,8 @@ function response(result: unknown, status = 200): Response {
 function cloudflareFixture(
 	options: {
 		conflictingDomain?: boolean;
+		malformedDomainItem?: boolean;
+		malformedWorkerItem?: boolean;
 		malformedWorkerList?: boolean;
 		missingResources?: boolean;
 		missingZone?: boolean;
@@ -92,6 +94,7 @@ function cloudflareFixture(
 			if (options.malformedWorkerList) {
 				return response({ success: true, result: [] });
 			}
+			if (options.malformedWorkerItem) return response([{}]);
 			return response(
 				options.missingResources
 					? [{ id: "appranks-ui" }]
@@ -100,6 +103,7 @@ function cloudflareFixture(
 		}
 		if (url.includes("/workers/domains?")) {
 			const requestUrl = new URL(url);
+			if (options.malformedDomainItem) return response([{}]);
 			if (options.missingResources) return response([]);
 			return response([
 				{
@@ -168,6 +172,34 @@ test("preflight rejects a malformed Worker list during bootstrap", async () => {
 			requireResources: false,
 		}),
 		/malformed Worker list for docs/u,
+	);
+});
+
+test("preflight rejects malformed Worker items during bootstrap", async () => {
+	const fixture = cloudflareFixture({ malformedWorkerItem: true });
+	await assert.rejects(
+		verifyCloudflareReleaseAccess({
+			apiKey,
+			email,
+			targets,
+			fetchImplementation: fixture.fetchImplementation,
+			requireResources: false,
+		}),
+		/malformed Worker list for docs/u,
+	);
+});
+
+test("preflight rejects malformed custom-domain items during bootstrap", async () => {
+	const fixture = cloudflareFixture({ malformedDomainItem: true });
+	await assert.rejects(
+		verifyCloudflareReleaseAccess({
+			apiKey,
+			email,
+			targets,
+			fetchImplementation: fixture.fetchImplementation,
+			requireResources: false,
+		}),
+		/malformed custom-domain list for docs/u,
 	);
 });
 

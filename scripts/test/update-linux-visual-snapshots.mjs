@@ -12,11 +12,7 @@ import {
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-const root = resolve(fileURLToPath(new URL("../..", import.meta.url)));
-const snapshotDirectory = resolve(
-	root,
-	"apps/showcase/tests/e2e/visual.e2e.ts-snapshots",
-);
+const defaultRoot = resolve(fileURLToPath(new URL("../..", import.meta.url)));
 const image = "mcr.microsoft.com/playwright:v1.60.0-noble";
 const expectedSnapshotCount = 78;
 
@@ -145,7 +141,7 @@ function assertSnapshotParity(currentFiles, generatedFiles) {
 	}
 }
 
-async function replaceLinuxSnapshots(generatedDirectory) {
+async function replaceLinuxSnapshots(snapshotDirectory, generatedDirectory) {
 	const currentFiles = await readdir(snapshotDirectory);
 	const generatedFiles = await readdir(generatedDirectory);
 	assertSnapshotParity(currentFiles, generatedFiles);
@@ -159,10 +155,16 @@ async function replaceLinuxSnapshots(generatedDirectory) {
 		for (const file of currentFiles.filter(
 			(candidate) => !candidate.endsWith("-linux.png"),
 		)) {
-			await copyFile(resolve(snapshotDirectory, file), resolve(replacement, file));
+			await copyFile(
+				resolve(snapshotDirectory, file),
+				resolve(replacement, file),
+			);
 		}
 		for (const file of generatedFiles) {
-			await copyFile(resolve(generatedDirectory, file), resolve(replacement, file));
+			await copyFile(
+				resolve(generatedDirectory, file),
+				resolve(replacement, file),
+			);
 		}
 
 		await rename(snapshotDirectory, backup);
@@ -179,18 +181,33 @@ async function replaceLinuxSnapshots(generatedDirectory) {
 	}
 }
 
-async function main() {
+function repositoryRootFromArgs(args) {
+	if (args.length === 0) return defaultRoot;
+	if (args.length !== 2 || args[0] !== "--repository-root" || !args[1]) {
+		throw new Error(
+			"Usage: update-linux-visual-snapshots [--repository-root PATH]",
+		);
+	}
+	return resolve(args[1]);
+}
+
+async function main(args = []) {
+	const repositoryRoot = repositoryRootFromArgs(args);
+	const snapshotDirectory = resolve(
+		repositoryRoot,
+		"apps/showcase/tests/e2e/visual.e2e.ts-snapshots",
+	);
 	const temporaryRoot = await mkdtemp(
-		resolve(dirname(root), ".lemn-linux-snapshots-"),
+		resolve(dirname(repositoryRoot), ".lemn-linux-snapshots-"),
 	);
 	const archivePath = resolve(temporaryRoot, "source.tar");
 	const sourceRoot = resolve(temporaryRoot, "source");
 	const generatedDirectory = resolve(temporaryRoot, "generated");
-	const port = linuxSnapshotPort(root);
+	const port = linuxSnapshotPort(repositoryRoot);
 	let server;
 
 	try {
-		createIndexedSourceArchive({ repositoryRoot: root, archivePath });
+		createIndexedSourceArchive({ repositoryRoot, archivePath });
 		await Promise.all([
 			mkdir(sourceRoot, { recursive: true }),
 			mkdir(generatedDirectory, { recursive: true }),
@@ -258,7 +275,7 @@ async function main() {
 			],
 			{ stdio: "inherit" },
 		);
-		await replaceLinuxSnapshots(generatedDirectory);
+		await replaceLinuxSnapshots(snapshotDirectory, generatedDirectory);
 		console.log(
 			`Generated ${expectedSnapshotCount} Linux baselines with ${image} against the canonical Worker-backed server`,
 		);
@@ -272,5 +289,5 @@ if (
 	process.argv[1] &&
 	import.meta.url === pathToFileURL(resolve(process.argv[1])).href
 ) {
-	await main();
+	await main(process.argv.slice(2));
 }

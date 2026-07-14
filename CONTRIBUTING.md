@@ -90,6 +90,11 @@ pnpm dev:showcase
 ## Release Rules
 
 - Add a changeset with `pnpm changeset:add` for every publishable package change.
+- Use the catalogued `pnpm changeset ...` wrapper for Changesets operations. Its
+  generic `version` route enforces the same main-only Cloudflare guard as
+  `pnpm version:packages`. `pnpm exec changeset version` calls the dependency
+  binary directly, bypasses package scripts, and is therefore an unsupported
+  and prohibited release path for contributors and automation.
 - Let CI generate the release metadata commit that updates
   `packages/ui/package.json` and `packages/ui/CHANGELOG.md`; do not hand-edit
   package versions in feature PRs.

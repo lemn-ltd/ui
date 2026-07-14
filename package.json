@@ -38,9 +38,10 @@
     "smoke:showcase:local": "CLOUDFLARE_ENV=production pnpm --filter @appranks/ui-showcase run cf:build && node scripts/release/showcase-assets-smoke.ts",
     "smoke:cloudflare:release": "node scripts/release/cloudflare-preflight.ts --require-resources",
     "smoke:release:production": "node scripts/release/deployment-smoke.ts",
-    "changeset:add": "changeset add",
-    "changeset:status": "changeset status",
-    "version:packages": "pnpm guard:release:mutation && changeset version && pnpm sync:docs-changelog",
+    "changeset": "node scripts/release/changeset-command.ts",
+    "changeset:add": "pnpm changeset add",
+    "changeset:status": "pnpm changeset status",
+    "version:packages": "pnpm changeset version && pnpm sync:docs-changelog",
     "release": "pnpm release:preflight && pnpm check && pnpm test && pnpm publish:ui"
   },
   "devDependencies": {

@@ -63,7 +63,9 @@ export { expect };
 export async function gotoStable(page: Page, path = "/"): Promise<void> {
 	await page.goto(path);
 	await page
-		.locator(".ui-content-layout, .showcase-not-found")
+		.locator(
+			".ui-content-layout, .showcase-not-found, .showcase-embedded-preview",
+		)
 		.first()
 		.waitFor({ timeout: 15_000 });
 	await page.evaluate(async () => {

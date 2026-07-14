@@ -53,6 +53,13 @@ test("manual production release is guarded to main before the job starts", () =>
 	);
 });
 
+test("production release has only the write permissions it uses", () => {
+	const permissions = record(releaseJob.permissions, "release permissions");
+	assert.equal(permissions.contents, "write");
+	assert.equal(permissions.packages, "write");
+	assert.equal(permissions["pull-requests"], undefined);
+});
+
 test("Global API Key preflight runs before every release mutation and package publish", () => {
 	const preflight = step("Preflight Cloudflare release access");
 	const env = record(preflight.env, "Cloudflare preflight env");
@@ -339,10 +346,7 @@ test("the successful validation gate runs complete showcase E2E before release",
 	);
 	assert.ok(shard);
 	assert.equal(e2eJob.needs, "validate");
-	assert.equal(
-		container.image,
-		"mcr.microsoft.com/playwright:v1.60.0-noble",
-	);
+	assert.equal(container.image, "mcr.microsoft.com/playwright:v1.60.0-noble");
 	assert.equal(container.options, "--ipc=host");
 	assert.equal(strategy["fail-fast"], false);
 	assert.deepEqual(matrix.shard, [1, 2, 3]);

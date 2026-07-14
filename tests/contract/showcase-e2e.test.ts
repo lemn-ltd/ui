@@ -1,16 +1,41 @@
 import assert from "node:assert/strict";
+import { execFileSync, spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { realpathSync } from "node:fs";
-import { readdir, readFile } from "node:fs/promises";
+import {
+	chmod,
+	mkdir,
+	mkdtemp,
+	readdir,
+	readFile,
+	rm,
+	writeFile,
+} from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import test from "node:test";
 import playwrightConfig, {
 	showcaseE2ePortForCheckout,
 } from "../../apps/showcase/playwright.config.ts";
-import { createIndexedSourceArchive } from "../../scripts/test/update-linux-visual-snapshots.mjs";
 
 type UnknownRecord = Record<string, unknown>;
 
 const root = resolve(import.meta.dirname, "../..");
+
+async function aggregateSnapshotHash(directory: string): Promise<string> {
+	const hash = createHash("sha256");
+	const files = (await readdir(directory)).sort();
+	for (const file of files) {
+		hash.update(file);
+		hash.update("\0");
+		hash.update(await readFile(resolve(directory, file)));
+	}
+	return hash.digest("hex");
+}
+
+function shellQuote(value: string): string {
+	return `'${value.replaceAll("'", `'"'"'`)}'`;
+}
 
 function record(value: unknown, description: string): UnknownRecord {
 	assert.ok(
@@ -92,6 +117,29 @@ test("Darwin and Linux visual baselines have exact platform parity", async () =>
 	assert.equal(screenshots.animations, "disabled");
 });
 
+test("Sidebar visual coverage captures one explicit canonical instance", async () => {
+	const [pageSource, visualSource] = await Promise.all([
+		readFile(
+			resolve(
+				root,
+				"apps/showcase/src/client/pages/core/components/sidebar.page.tsx",
+			),
+			"utf8",
+		),
+		readFile(resolve(root, "apps/showcase/tests/e2e/visual.e2e.ts"), "utf8"),
+	]);
+	assert.equal(
+		pageSource.match(/data-testid=\{visualTarget \? "sidebar-visual-target"/gu)
+			?.length,
+		1,
+	);
+	assert.match(visualSource, /getByTestId\("sidebar-visual-target"\)/u);
+	assert.match(visualSource, /embed=playground&theme=/u);
+	assert.match(visualSource, /testInfo\.project\.name\.includes\("dark"\)/u);
+	assert.match(visualSource, /expect\(target\)\.toHaveCount\(1\)/u);
+	assert.match(visualSource, /expect\(target\)\.toHaveScreenshot/u);
+});
+
 test("Linux baselines use the pinned official Playwright runtime", async () => {
 	const [rootPackageSource, generator, linuxConfig] = await Promise.all([
 		readFile(resolve(root, "package.json"), "utf8"),
@@ -126,27 +174,74 @@ test("Linux baselines use the pinned official Playwright runtime", async () => {
 	assert.match(linuxConfig, /webServer: undefined/u);
 });
 
-test("Linux source archive fails closed when its producer fails", () => {
-	const calls: string[] = [];
-	const fakeSpawn = (command: string, args: string[]) => {
-		calls.push([command, ...args].join(" "));
-		if (args[0] === "status") return { status: 0, stdout: "M  staged.ts\n" };
-		if (args[0] === "write-tree") {
-			return { status: 0, stdout: `${"a".repeat(40)}\n` };
-		}
-		return { status: 23, stdout: "" };
-	};
-	assert.throws(
-		() =>
-			createIndexedSourceArchive({
-				repositoryRoot: "/tmp/immutable-source",
-				archivePath: "/tmp/source.tar",
-				spawnImplementation: fakeSpawn,
-			}),
-		/git archive .* failed with exit code 23/u,
+test("Linux snapshot CLI preserves aggregate baselines when Git archive fails", async () => {
+	const temporaryRoot = await mkdtemp(
+		resolve(tmpdir(), "lemn-linux-snapshot-failure-"),
 	);
-	assert.equal(calls.length, 3);
-	assert.match(calls[2] ?? "", /^git archive --format=tar --output=/u);
+	try {
+		const repositoryRoot = resolve(temporaryRoot, "repository");
+		const fakeBin = resolve(temporaryRoot, "bin");
+		const snapshotDirectory = resolve(
+			repositoryRoot,
+			"apps/showcase/tests/e2e/visual.e2e.ts-snapshots",
+		);
+		await Promise.all([
+			mkdir(snapshotDirectory, { recursive: true }),
+			mkdir(fakeBin, { recursive: true }),
+		]);
+		await Promise.all([
+			writeFile(resolve(snapshotDirectory, "fixture-darwin.png"), "darwin"),
+			writeFile(resolve(snapshotDirectory, "fixture-linux.png"), "linux"),
+		]);
+		execFileSync("git", ["init", "--initial-branch=main"], {
+			cwd: repositoryRoot,
+			stdio: "ignore",
+		});
+		execFileSync("git", ["config", "user.name", "Contract Test"], {
+			cwd: repositoryRoot,
+		});
+		execFileSync("git", ["config", "user.email", "contract@example.test"], {
+			cwd: repositoryRoot,
+		});
+		execFileSync("git", ["add", "."], { cwd: repositoryRoot });
+		execFileSync("git", ["commit", "-m", "fixture"], {
+			cwd: repositoryRoot,
+			stdio: "ignore",
+		});
+
+		const realGit = execFileSync("which", ["git"], { encoding: "utf8" }).trim();
+		const fakeGit = resolve(fakeBin, "git");
+		await writeFile(
+			fakeGit,
+			`#!/bin/sh\nif [ "\${1:-}" = "archive" ]; then\n  exit 23\nfi\nexec ${shellQuote(realGit)} "$@"\n`,
+		);
+		await chmod(fakeGit, 0o755);
+
+		const before = await aggregateSnapshotHash(snapshotDirectory);
+		const result = spawnSync(
+			process.execPath,
+			[
+				resolve(root, "scripts/test/update-linux-visual-snapshots.mjs"),
+				"--repository-root",
+				repositoryRoot,
+			],
+			{
+				encoding: "utf8",
+				env: {
+					...process.env,
+					PATH: `${fakeBin}:${process.env.PATH ?? ""}`,
+				},
+			},
+		);
+		assert.notEqual(result.status, 0);
+		assert.match(
+			`${result.stdout}${result.stderr}`,
+			/git archive .* failed with exit code 23/u,
+		);
+		assert.equal(await aggregateSnapshotHash(snapshotDirectory), before);
+	} finally {
+		await rm(temporaryRoot, { recursive: true, force: true });
+	}
 });
 
 test("catalog-scale E2E closes isolated pages within explicit aggregate budgets", async () => {

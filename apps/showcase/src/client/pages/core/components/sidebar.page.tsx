@@ -30,9 +30,11 @@ import {
 function Frame({
 	width,
 	children,
+	visualTarget = false,
 }: {
 	readonly width: number;
 	readonly children: ReactNode;
+	readonly visualTarget?: boolean;
 }): ReactElement {
 	const style: CSSProperties = {
 		width,
@@ -42,7 +44,14 @@ function Frame({
 		overflow: "hidden",
 		display: "flex",
 	};
-	return <div style={style}>{children}</div>;
+	return (
+		<div
+			data-testid={visualTarget ? "sidebar-visual-target" : undefined}
+			style={style}
+		>
+			{children}
+		</div>
+	);
 }
 
 function userRow(collapsed: boolean): ReactElement {
@@ -84,7 +93,7 @@ function SidebarPage(): ReactElement {
   versionTag={<VersionTag version="v1.4.0" env="local" />}
 />`}
 				render={() => (
-					<Frame width={264}>
+					<Frame visualTarget width={264}>
 						<Sidebar
 							groups={navGroups}
 							mode="expanded"

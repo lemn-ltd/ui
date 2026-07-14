@@ -19,6 +19,11 @@ release. La automatizacion convierte los changesets mergeados en un commit de
 metadata de release que actualiza `packages/ui/package.json` y
 `packages/ui/CHANGELOG.md`.
 
+Todas las operaciones de Changesets usan el wrapper catalogado
+`pnpm changeset ...`. El wrapper protege `version` antes de cualquier mutacion.
+`pnpm exec changeset version` invoca el binario de la dependencia fuera de la
+gobernanza de package scripts y no es una ruta de release soportada.
+
 El workflow de produccion completa el preflight no mutante de la Global API Key
 de Cloudflare antes de que Changesets pueda versionar, pushear o publicar. Luego
 captura el SHA del commit de release y despliega ese SHA y version exactos.

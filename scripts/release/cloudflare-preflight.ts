@@ -131,11 +131,53 @@ function redact(message: string, auth: CloudflareAuth): string {
 		.replaceAll(auth.email, "[REDACTED]");
 }
 
-function requireArrayResult<T>(value: T[], description: string): T[] {
+function requireArrayResult(value: unknown, description: string): unknown[] {
 	if (!Array.isArray(value)) {
 		throw new Error(`Cloudflare preflight returned malformed ${description}`);
 	}
 	return value;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function requireWorkerList(
+	value: unknown,
+	description: string,
+): Array<{ id: string }> {
+	const workers = requireArrayResult(value, description);
+	if (
+		workers.some(
+			(worker) =>
+				!isRecord(worker) ||
+				typeof worker.id !== "string" ||
+				worker.id.trim().length === 0,
+		)
+	) {
+		throw new Error(`Cloudflare preflight returned malformed ${description}`);
+	}
+	return workers as Array<{ id: string }>;
+}
+
+function requireDomainList(
+	value: unknown,
+	description: string,
+): Array<{ hostname: string; service: string }> {
+	const domains = requireArrayResult(value, description);
+	if (
+		domains.some(
+			(domain) =>
+				!isRecord(domain) ||
+				typeof domain.hostname !== "string" ||
+				domain.hostname.trim().length === 0 ||
+				typeof domain.service !== "string" ||
+				domain.service.trim().length === 0,
+		)
+	) {
+		throw new Error(`Cloudflare preflight returned malformed ${description}`);
+	}
+	return domains as Array<{ hostname: string; service: string }>;
 }
 
 async function cloudflareRequest<T>(
@@ -256,7 +298,7 @@ export async function verifyCloudflareReleaseAccess(input: {
 		),
 		"membership list",
 	);
-	const membership = memberships.find(
+	const membership = (memberships as Membership[]).find(
 		(candidate) => candidate.account?.id === accountId,
 	);
 	const membershipId = requireValue(
@@ -301,7 +343,9 @@ export async function verifyCloudflareReleaseAccess(input: {
 		"zone list",
 	);
 	if (
-		!zones.some(
+		!(
+			zones as Array<{ id?: string; name?: string; account?: { id?: string } }>
+		).some(
 			(zone) =>
 				zone.name === EXPECTED_ZONE_NAME && zone.account?.id === accountId,
 		)
@@ -312,7 +356,7 @@ export async function verifyCloudflareReleaseAccess(input: {
 	}
 
 	for (const target of input.targets) {
-		const scripts = requireArrayResult(
+		const scripts = requireWorkerList(
 			await cloudflareRequest<Array<{ id?: string }>>(
 				`/accounts/${encodeURIComponent(target.accountId)}/workers/scripts`,
 				auth,
@@ -330,10 +374,8 @@ export async function verifyCloudflareReleaseAccess(input: {
 		}
 
 		const query = new URLSearchParams({ hostname: target.hostname });
-		const domains = requireArrayResult(
-			await cloudflareRequest<
-				Array<{ hostname?: string; service?: string }>
-			>(
+		const domains = requireDomainList(
+			await cloudflareRequest<Array<{ hostname?: string; service?: string }>>(
 				`/accounts/${encodeURIComponent(target.accountId)}/workers/domains?${query}`,
 				auth,
 				fetchImplementation,

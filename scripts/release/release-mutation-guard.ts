@@ -49,24 +49,33 @@ function localBranch(): string | undefined {
 }
 
 async function main(): Promise<void> {
-	const githubActions = process.env.GITHUB_ACTIONS === "true";
+	await guardReleaseMutationFromEnvironment();
+}
+
+export async function guardReleaseMutationFromEnvironment(
+	environment: NodeJS.ProcessEnv = process.env,
+): Promise<void> {
+	const githubActions = environment.GITHUB_ACTIONS === "true";
+	const ref = {
+		githubActions,
+		githubRef: environment.GITHUB_REF,
+		localBranch: githubActions ? undefined : localBranch(),
+	};
+	assertMainReleaseRef(ref);
+
 	const targets = await loadCloudflareReleaseTargets();
 	await runReleaseMutationGuard({
-		ref: {
-			githubActions,
-			githubRef: process.env.GITHUB_REF,
-			localBranch: githubActions ? undefined : localBranch(),
-		},
+		ref,
 		preflight: () =>
 			verifyCloudflareReleaseAccess({
-				apiKey: process.env.CLOUDFLARE_API_KEY ?? "",
-				email: process.env.CLOUDFLARE_EMAIL ?? "",
+				apiKey: environment.CLOUDFLARE_API_KEY ?? "",
+				email: environment.CLOUDFLARE_EMAIL ?? "",
 				targets,
 			}),
 	});
 
-	if (process.env.GITHUB_OUTPUT) {
-		await appendFile(process.env.GITHUB_OUTPUT, githubOutputs(targets), {
+	if (environment.GITHUB_OUTPUT) {
+		await appendFile(environment.GITHUB_OUTPUT, githubOutputs(targets), {
 			encoding: "utf8",
 			mode: 0o600,
 		});

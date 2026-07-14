@@ -26,8 +26,12 @@ const PAGES: readonly (readonly [string, string])[] = [
 ];
 
 for (const [name, route] of PAGES) {
-	test(`visual: ${name}`, async ({ page }) => {
-		await gotoStable(page, route);
+	test(`visual: ${name}`, async ({ page }, testInfo) => {
+		const stableRoute =
+			name === "sidebar"
+				? `${route}?embed=playground&theme=${testInfo.project.name.includes("dark") ? "dark" : "light"}`
+				: route;
+		await gotoStable(page, stableRoute);
 		if (route === "/core/components/checkbox") {
 			await page.locator(".showcase-docs-page .shiki").first().waitFor();
 		}
@@ -46,7 +50,13 @@ for (const [name, route] of PAGES) {
 				})
 				.toBe(true);
 		}
-		await expect(page).toHaveScreenshot(`${name}.png`, { fullPage: true });
+		if (name === "sidebar") {
+			const target = page.getByTestId("sidebar-visual-target");
+			await expect(target).toHaveCount(1);
+			await expect(target).toHaveScreenshot(`${name}.png`);
+		} else {
+			await expect(page).toHaveScreenshot(`${name}.png`, { fullPage: true });
+		}
 	});
 }
 
