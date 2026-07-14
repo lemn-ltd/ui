@@ -68,7 +68,7 @@ export function VisualizationDocs({
         apiHref="https://github.com/lemn-ltd/ui/tree/main/packages/ui/src/visualizations"
         apiLabel="Source"
         apiRows={[...apiRows]}
-        componentName={componentName}
+        componentName={title}
         copyright="2026 LEMN. All rights reserved."
         issueHref="https://github.com/lemn-ltd/ui/issues/new"
       />
