@@ -12,13 +12,16 @@ import {
 	writeFile,
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { resolve } from "node:path";
+import { relative, resolve } from "node:path";
 import test from "node:test";
 import { parse } from "yaml";
 import playwrightConfig, {
 	showcaseE2ePortForCheckout,
 } from "../../apps/showcase/playwright.config.ts";
-import { formatGotoStableFailure } from "../../apps/showcase/tests/helpers/deterministic.ts";
+import {
+	createDeterministicPage,
+	formatGotoStableFailure,
+} from "../../apps/showcase/tests/helpers/deterministic.ts";
 import {
 	assertE2eRunnerCapacity,
 	MINIMUM_E2E_FREE_BYTES,
@@ -42,6 +45,26 @@ async function aggregateSnapshotHash(directory: string): Promise<string> {
 		hash.update(await readFile(resolve(directory, file)));
 	}
 	return hash.digest("hex");
+}
+
+async function filesUnder(directory: string): Promise<string[]> {
+	const entries = await readdir(directory, { withFileTypes: true });
+	const files = await Promise.all(
+		entries.map(async (entry) => {
+			const path = resolve(directory, entry.name);
+			return entry.isDirectory() ? filesUnder(path) : [path];
+		}),
+	);
+	return files.flat();
+}
+
+function isTestArtifact(path: string): boolean {
+	const segments = path.split("/");
+	return (
+		segments.includes("tests") ||
+		segments.includes("__tests__") ||
+		/\.(?:spec|test)\.[cm]?[jt]sx?$/u.test(path)
+	);
 }
 
 function shellQuote(value: string): string {
@@ -106,10 +129,7 @@ test("Linux E2E frees disk and runs visual shards in the pinned Playwright image
 	);
 	const run = String(step("Run showcase E2E shard").run);
 	assert.match(run, /docker run --rm --ipc=host/u);
-	assert.match(
-		run,
-		/mcr\.microsoft\.com\/playwright:v1\.60\.0-noble/u,
-	);
+	assert.match(run, /mcr\.microsoft\.com\/playwright:v1\.60\.0-noble/u);
 	assert.match(run, /--volume "\$GITHUB_WORKSPACE:\/work"/u);
 	assert.match(run, /sudo chown -R/u);
 	for (const project of [
@@ -142,6 +162,7 @@ test("gotoStable failures retain route state and transport diagnostics", () => {
 		pageErrors: [],
 		path: "/core/components/date-range-picker",
 		readyState: "complete",
+		reason: "browser diagnostics reported route failures",
 		state: "loading",
 		url: "http://127.0.0.1:3000/core/components/date-range-picker",
 	});
@@ -151,6 +172,26 @@ test("gotoStable failures retain route state and transport diagnostics", () => {
 	assert.match(message, /date-range-picker\.page\.js \(net::ERR_FAILED\)/u);
 	assert.match(message, /500 GET .*date-range-picker\.page\.js/u);
 	assert.match(message, /body="Loading\.\.\."/u);
+});
+
+test("deterministic page creation closes a page when configuration fails", async () => {
+	let closed = false;
+	const configurationFailure = new Error("emulateMedia failed");
+	const page = {
+		async addInitScript(): Promise<void> {},
+		async close(): Promise<void> {
+			closed = true;
+		},
+		async emulateMedia(): Promise<void> {
+			throw configurationFailure;
+		},
+	};
+
+	await assert.rejects(
+		createDeterministicPage(async () => page, "behavior"),
+		configurationFailure,
+	);
+	assert.equal(closed, true);
 });
 
 test("Playwright always owns an isolated strict-port showcase server", async () => {
@@ -355,23 +396,47 @@ test("Linux snapshot CLI preserves aggregate baselines when Git archive fails", 
 	}
 });
 
-test("catalog-scale E2E closes isolated pages within explicit aggregate budgets", async () => {
-	const [capabilityExpansion, documentation, navigation, visual] =
-		await Promise.all([
-			readFile(
-				resolve(root, "apps/showcase/tests/e2e/capability-expansion.e2e.ts"),
-				"utf8",
+test("test architecture keeps pages isolated, timeouts fixed, and package tests canonical", async () => {
+	const [
+		accessibility,
+		capabilityExpansion,
+		deterministic,
+		documentation,
+		livePagePreview,
+		navigation,
+		visual,
+		showcaseKitVitestConfig,
+	] = await Promise.all([
+		readFile(
+			resolve(root, "apps/showcase/tests/e2e/accessibility.e2e.ts"),
+			"utf8",
+		),
+		readFile(
+			resolve(root, "apps/showcase/tests/e2e/capability-expansion.e2e.ts"),
+			"utf8",
+		),
+		readFile(
+			resolve(root, "apps/showcase/tests/helpers/deterministic.ts"),
+			"utf8",
+		),
+		readFile(
+			resolve(root, "apps/showcase/tests/e2e/documentation-contract.e2e.ts"),
+			"utf8",
+		),
+		readFile(
+			resolve(
+				root,
+				"packages/showcase-kit/tests/unit/page/live-page-preview.spec.tsx",
 			),
-			readFile(
-				resolve(root, "apps/showcase/tests/e2e/documentation-contract.e2e.ts"),
-				"utf8",
-			),
-			readFile(
-				resolve(root, "apps/showcase/tests/e2e/navigation.e2e.ts"),
-				"utf8",
-			),
-			readFile(resolve(root, "apps/showcase/tests/e2e/visual.e2e.ts"), "utf8"),
-		]);
+			"utf8",
+		),
+		readFile(
+			resolve(root, "apps/showcase/tests/e2e/navigation.e2e.ts"),
+			"utf8",
+		),
+		readFile(resolve(root, "apps/showcase/tests/e2e/visual.e2e.ts"), "utf8"),
+		readFile(resolve(root, "packages/showcase-kit/vitest.config.ts"), "utf8"),
+	]);
 	for (const source of [
 		capabilityExpansion,
 		documentation,
@@ -381,8 +446,90 @@ test("catalog-scale E2E closes isolated pages within explicit aggregate budgets"
 		assert.match(source, /newDeterministicPage/u);
 		assert.match(source, /finally\s*\{[\s\S]*await page\.close\(\)/u);
 	}
-	assert.match(capabilityExpansion, /test\.setTimeout\(240_000\)/u);
+	assert.match(accessibility, /newIsolatedDeterministicPage/u);
+	assert.doesNotMatch(accessibility, /newDeterministicPage/u);
+	assert.match(
+		accessibility,
+		/for \(const route of routes\) \{[\s\S]*newAccessibilityPage\([\s\S]*await context\.close\(\)/u,
+	);
+	assert.match(
+		accessibility,
+		/for \(const accessibilityCase of componentAccessibilityCases\) \{[\s\S]*newAccessibilityPage\([\s\S]*theme[\s\S]*await context\.close\(\)/u,
+	);
+	assert.match(
+		accessibility,
+		/test\.describe\.configure\(\{ timeout: 60_000 \}\)/u,
+	);
+	assert.match(
+		accessibility,
+		/test\.describe\.configure\(\{ timeout: 180_000 \}\)/u,
+	);
+	assert.doesNotMatch(accessibility, /test\.setTimeout\(900_000\)/u);
+	assert.match(
+		accessibility,
+		/\[accessibility\] route=\$\{route\} theme=\$\{theme\}/u,
+	);
+	assert.match(accessibility, /showcase-accessibility-isolation-probe/u);
+	assert.doesNotMatch(accessibility, /Switch to dark theme/u);
+	assert.match(deterministic, /browser\.newContext\(/u);
+	assert.match(deterministic, /page\.on\("close", onClose\)/u);
+	assert.match(deterministic, /POST_READY_DIAGNOSTIC_QUIET_MS = 750/u);
+	assert.doesNotMatch(deterministic, /page\.on\("request"/u);
+	assert.doesNotMatch(deterministic, /ROUTE_DIAGNOSTIC_PROBE_DELAY_MS/u);
+	assert.match(navigation, /const delay = 500/u);
+	assert.match(navigation, /synthetic failure between stable windows/u);
+	assert.doesNotMatch(capabilityExpansion, /test\.setTimeout\(/u);
 	assert.match(documentation, /test\.setTimeout\(900_000\)/u);
 	assert.match(navigation, /test\.setTimeout\(900_000\)/u);
 	assert.match(visual, /test\.setTimeout\(900_000\)/u);
+
+	const showcaseKitRoot = resolve(root, "packages/showcase-kit");
+	const sourceViolations = (await filesUnder(resolve(showcaseKitRoot, "src")))
+		.map((path) => relative(showcaseKitRoot, path))
+		.filter(isTestArtifact)
+		.sort();
+	assert.deepEqual(sourceViolations, []);
+	const canonicalSuites = (
+		await filesUnder(resolve(showcaseKitRoot, "tests/unit"))
+	)
+		.map((path) => relative(showcaseKitRoot, path))
+		.filter((path) => /\.spec\.[cm]?[jt]sx?$/u.test(path))
+		.sort();
+	assert.deepEqual(canonicalSuites, [
+		"tests/unit/example/example-block.spec.tsx",
+		"tests/unit/example/variants-gallery.spec.tsx",
+		"tests/unit/page/component-page-documentation.spec.tsx",
+		"tests/unit/page/documentation-page.spec.tsx",
+		"tests/unit/page/live-page-preview.spec.tsx",
+		"tests/unit/registry/nav-groups.spec.ts",
+	]);
+	assert.equal(canonicalSuites.length, 6);
+	const collectedSuites = execFileSync(
+		process.execPath,
+		[resolve(root, "node_modules/vitest/vitest.mjs"), "list", "--filesOnly"],
+		{
+			cwd: showcaseKitRoot,
+			encoding: "utf8",
+			env: { ...process.env, NO_COLOR: "1" },
+		},
+	)
+		.trim()
+		.split("\n")
+		.filter(Boolean)
+		.sort();
+	assert.deepEqual(collectedSuites, canonicalSuites);
+	assert.equal(collectedSuites.length, 6);
+	assert.equal(new Set(collectedSuites).size, 6);
+	assert.match(livePagePreview, /data-showcase-route-state/u);
+	assert.match(livePagePreview, /fixture lazy import failed/u);
+	assert.match(livePagePreview, /Reload page/u);
+	assert.match(
+		showcaseKitVitestConfig,
+		/include: \["tests\/\*\*\/\*\.spec\.\{ts,tsx\}"\]/u,
+	);
+	assert.equal(
+		showcaseKitVitestConfig.match(/tests\/\*\*\/\*\.spec\./gu)?.length,
+		1,
+	);
+	assert.doesNotMatch(showcaseKitVitestConfig, /"src\/\*\*\/\*\.spec\./u);
 });

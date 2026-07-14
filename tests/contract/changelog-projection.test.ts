@@ -6,6 +6,7 @@ import {
 	mkdtemp,
 	readFile,
 	rm,
+	writeFile,
 } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
@@ -24,13 +25,16 @@ const changelog = await readFile(
 	resolve(root, "packages/ui/CHANGELOG.md"),
 	"utf8",
 );
-const pendingChangeset = await readFile(
-	resolve(root, ".changeset/published-identity-followup.md"),
-	"utf8",
-);
 const changesetsCli = createRequire(import.meta.url).resolve(
 	"@changesets/cli/bin.js",
 );
+
+const nextReleaseChangeset = `---
+"@lemn-ltd/ui": patch
+---
+
+Exercise the post-0.2.5 changelog projection contract.
+`;
 
 async function createProjectionFixture(): Promise<string> {
 	const fixtureRoot = await mkdtemp(resolve(tmpdir(), "lemn-ui-changelog-"));
@@ -49,7 +53,6 @@ async function createProjectionFixture(): Promise<string> {
 		"package.json",
 		"pnpm-workspace.yaml",
 		".changeset/config.json",
-		".changeset/published-identity-followup.md",
 		"apps/docs/package.json",
 		"apps/showcase/package.json",
 		"packages/showcase-kit/package.json",
@@ -58,6 +61,10 @@ async function createProjectionFixture(): Promise<string> {
 	]) {
 		await copyFile(resolve(root, relativePath), resolve(fixtureRoot, relativePath));
 	}
+	await writeFile(
+		resolve(fixtureRoot, ".changeset/next-release.md"),
+		nextReleaseChangeset,
+	);
 	return fixtureRoot;
 }
 
@@ -72,7 +79,7 @@ test("the source changelog is version-true and has one section per release", () 
 	const firstPass = validateVersionedChangelog(changelog, packageJson.version);
 	const secondPass = validateVersionedChangelog(changelog, packageJson.version);
 	assert.deepEqual(firstPass, secondPass);
-	assert.equal(firstPass[0], "0.2.4");
+	assert.equal(firstPass[0], "0.2.5");
 	assert.equal(new Set(firstPass).size, firstPass.length);
 	assert.doesNotMatch(changelog, /^##\s+Unreleased\s*$/mu);
 });
@@ -99,7 +106,7 @@ test("release projection rejects duplicate release sections", () => {
 	);
 });
 
-test("real 0.2.5 projection and docs sync are idempotent", async () => {
+test("real post-0.2.5 projection and docs sync are idempotent", async () => {
 	const fixtureRoot = await createProjectionFixture();
 	try {
 		projectChangesets(fixtureRoot);
@@ -114,8 +121,8 @@ test("real 0.2.5 projection and docs sync are idempotent", async () => {
 			projectedChangelog,
 			projectedManifest.version,
 		);
-		assert.equal(projectedManifest.version, "0.2.5");
-		assert.deepEqual(projectedHeadings.slice(0, 2), ["0.2.5", "0.2.4"]);
+		assert.equal(projectedManifest.version, "0.2.6");
+		assert.deepEqual(projectedHeadings.slice(0, 2), ["0.2.6", "0.2.5"]);
 		assert.equal(
 			projectedHeadings.filter((heading) => heading === "0.2.0").length,
 			1,
@@ -133,6 +140,7 @@ test("real 0.2.5 projection and docs sync are idempotent", async () => {
 			),
 		);
 		for (const docs of firstDocs) {
+			assert.equal(docs.match(/^## 0\.2\.6$/gmu)?.length, 1);
 			assert.equal(docs.match(/^## 0\.2\.5$/gmu)?.length, 1);
 			assert.equal(docs.match(/^## 0\.2\.0$/gmu)?.length, 1);
 			assert.doesNotMatch(docs, /^##\s+Unreleased\s*$/mu);
@@ -158,8 +166,12 @@ test("real 0.2.5 projection and docs sync are idempotent", async () => {
 	}
 });
 
-test("the pending changeset names the current and projected versions", () => {
-	assert.match(pendingChangeset, /current `0\.2\.4` package/u);
-	assert.match(pendingChangeset, /projected release `0\.2\.5`/u);
-	assert.doesNotMatch(pendingChangeset, /after `0\.1\.2`/u);
+test("the 0.2.5 release consumed its changeset and retained the exact note", async () => {
+	await assert.rejects(
+		readFile(resolve(root, ".changeset/published-identity-followup.md")),
+		{ code: "ENOENT" },
+	);
+	assert.match(changelog, /current `0\.2\.4` package/u);
+	assert.match(changelog, /projected release `0\.2\.5`/u);
+	assert.doesNotMatch(changelog, /after `0\.1\.2`/u);
 });

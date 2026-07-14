@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
-import { ShowcaseRenderModeProvider } from "../../preview/render-mode.js";
-import { ExampleBlock } from "../example-block.js";
+import { ExampleBlock } from "../../../src/example/example-block.js";
+import { ShowcaseRenderModeProvider } from "../../../src/preview/render-mode.js";
 
 describe("ExampleBlock", () => {
 	afterEach(cleanup);

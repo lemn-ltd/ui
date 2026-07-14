@@ -1,14 +1,14 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
-import { ExampleBlock } from "../../example/example-block.js";
-import { ShowcaseRenderModeProvider } from "../../preview/render-mode.js";
+import { ExampleBlock } from "../../../src/example/example-block.js";
 import {
 	DocumentationFooter,
 	DocumentationPage,
 	DocumentationSection,
 	DocumentationSteps,
 	MAX_DOCUMENTATION_EXAMPLES,
-} from "../documentation-page.js";
+} from "../../../src/page/documentation-page.js";
+import { ShowcaseRenderModeProvider } from "../../../src/preview/render-mode.js";
 
 function ReferencePage(): React.ReactElement {
 	return (

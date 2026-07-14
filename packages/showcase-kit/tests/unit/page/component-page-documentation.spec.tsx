@@ -6,10 +6,10 @@ import {
 	within,
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ExampleBlock } from "../../example/example-block.js";
-import { PropsTable } from "../../example/props-table.js";
-import { ShowcaseEntryProvider } from "../../registry/entry-context.js";
-import { ComponentPage } from "../component-page.js";
+import { ExampleBlock } from "../../../src/example/example-block.js";
+import { PropsTable } from "../../../src/example/props-table.js";
+import { ComponentPage } from "../../../src/page/component-page.js";
+import { ShowcaseEntryProvider } from "../../../src/registry/entry-context.js";
 
 const LEGACY_UI_PACKAGE_NAME = `@${["app", "ranks"].join("")}/ui`;
 const LEGACY_UI_PACKAGE_PATTERN = new RegExp(
@@ -27,7 +27,11 @@ function CatalogPage(): React.ReactElement {
 			/>
 			<ExampleBlock
 				code={"<Button disabled>Unavailable</Button>"}
-				render={() => <button disabled>Unavailable</button>}
+				render={() => (
+					<button disabled type="button">
+						Unavailable
+					</button>
+				)}
 			/>
 			<p>Variant guidance</p>
 			<PropsTable

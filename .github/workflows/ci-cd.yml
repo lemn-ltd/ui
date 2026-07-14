@@ -172,13 +172,17 @@ jobs:
           exit "$status"
 
   showcase-accessibility:
-    name: Showcase Accessibility
+    name: Showcase Accessibility (${{ matrix.shard }}/4)
     needs: validate
     runs-on: ubuntu-latest
     timeout-minutes: 25
     permissions:
       contents: read
       packages: read
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@v4
 
@@ -212,7 +216,7 @@ jobs:
         run: pnpm --filter @lemn-ltd/ui-showcase exec playwright install --with-deps chromium
 
       - name: Run showcase accessibility crawl
-        run: pnpm --filter @lemn-ltd/ui-showcase exec playwright test --project=accessibility
+        run: pnpm --filter @lemn-ltd/ui-showcase exec playwright test --project=accessibility --shard=${{ matrix.shard }}/4
 
   release-and-deploy:
     name: Release And Deploy

@@ -82,6 +82,7 @@ export default defineConfig({
     },
     {
       name: 'accessibility',
+      fullyParallel: true,
       testMatch: ACCESSIBILITY_MATCH,
       use: {
         ...devices['Desktop Chrome'],
