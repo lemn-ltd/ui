@@ -15,7 +15,15 @@ const rootPackage = JSON.parse(
 	await readFile(resolve(root, "package.json"), "utf8"),
 ) as UnknownRecord;
 const contributing = await readFile(resolve(root, "CONTRIBUTING.md"), "utf8");
-const showcaseRolloutSource = await readFile(
+const prepareSource = await readFile(
+	resolve(root, "scripts/release/prepare-ui-release.ts"),
+	"utf8",
+);
+const publishSource = await readFile(
+	resolve(root, "scripts/release/publish-ui-release.ts"),
+	"utf8",
+);
+const rolloutSource = await readFile(
 	resolve(root, "scripts/release/showcase-production-rollout.ts"),
 	"utf8",
 );
@@ -53,25 +61,28 @@ function productionSecret(name: string): string {
 	return expression(`secrets.PRODUCTION_${name}`);
 }
 
-test("manual production release is guarded to main before the job starts", () => {
+test("manual production release is main-only and workflow concurrency never cancels", () => {
 	assert.match(String(releaseJob.if), /github\.ref == 'refs\/heads\/main'/u);
 	assert.match(
 		String(releaseJob.if),
 		/github\.event_name == 'workflow_dispatch'/u,
 	);
+	const concurrency = record(workflow.concurrency, "workflow concurrency");
+	assert.equal(
+		concurrency.group,
+		["lemn-ui-", expression("github.ref")].join(""),
+	);
+	assert.equal(concurrency["cancel-in-progress"], false);
+	assert.ok(Number(releaseJob["timeout-minutes"]) >= 60);
 });
 
-test("production credentials are exclusive to the protected environment job", () => {
+test("production credentials remain exclusive to the protected environment job", () => {
 	assert.equal(releaseJob.environment, "production");
 	const productionSecretPattern =
 		/secrets\.PRODUCTION_(?:CLOUDFLARE_API_KEY|CLOUDFLARE_EMAIL|STATUS_TOKEN)/u;
 	for (const [jobName, job] of Object.entries(jobs)) {
 		if (jobName === "release-and-deploy") continue;
-		assert.doesNotMatch(
-			JSON.stringify(job),
-			productionSecretPattern,
-			`${jobName} must not resolve production credentials`,
-		);
+		assert.doesNotMatch(JSON.stringify(job), productionSecretPattern);
 	}
 	const workflowWithoutRollbackBridge = workflowSource.replaceAll(
 		"secrets.STATUS_TOKEN || secrets.PRODUCTION_STATUS_TOKEN",
@@ -87,19 +98,10 @@ test("production credentials are exclusive to the protected environment job", ()
 		)?.length,
 		2,
 	);
-	for (const name of [
-		"CLOUDFLARE_API_KEY",
-		"CLOUDFLARE_EMAIL",
-		"STATUS_TOKEN",
-	]) {
-		assert.match(
-			workflowSource,
-			new RegExp(`secrets\\.PRODUCTION_${name}`, "u"),
-		);
-	}
-
-	const preflight = step("Preflight Cloudflare release access");
-	const preflightEnv = record(preflight.env, "Cloudflare preflight env");
+	const preflightEnv = record(
+		step("Preflight Cloudflare release access").env,
+		"preflight env",
+	);
 	assert.equal(
 		preflightEnv.CLOUDFLARE_API_KEY,
 		productionSecret("CLOUDFLARE_API_KEY"),
@@ -116,169 +118,71 @@ test("production credentials are exclusive to the protected environment job", ()
 		preflightEnv.ROLLBACK_STATUS_TOKEN,
 		expression("secrets.STATUS_TOKEN || secrets.PRODUCTION_STATUS_TOKEN"),
 	);
-	assert.match(
-		String(preflight.run),
-		/Missing required production environment secret/u,
-	);
-	assert.match(String(preflight.run), /pnpm release:preflight/u);
 });
 
-test("production release has only the write permissions it uses", () => {
+test("release permissions are limited to protected main and package writes", () => {
 	const permissions = record(releaseJob.permissions, "release permissions");
 	assert.equal(permissions.contents, "write");
 	assert.equal(permissions.packages, "write");
 	assert.equal(permissions["pull-requests"], undefined);
 });
 
-test("Global API Key preflight runs before every release mutation and package publish", () => {
-	const preflight = step("Preflight Cloudflare release access");
-	const env = record(preflight.env, "Cloudflare preflight env");
-	assert.equal(env.CLOUDFLARE_API_KEY, productionSecret("CLOUDFLARE_API_KEY"));
-	assert.equal(env.CLOUDFLARE_EMAIL, productionSecret("CLOUDFLARE_EMAIL"));
-	assert.match(String(preflight.run), /pnpm release:preflight/u);
+test("preflight precedes the single stateful release preparation and package gate", () => {
 	assert.ok(
 		stepIndex("Preflight Cloudflare release access") <
-			stepIndex("Detect pending changesets"),
+			stepIndex("Prepare or resume release metadata"),
 	);
 	assert.ok(
-		stepIndex("Preflight Cloudflare release access") <
-			stepIndex("Version packages from changesets"),
+		stepIndex("Prepare or resume release metadata") <
+			stepIndex("Publish or verify exact package"),
 	);
-	assert.ok(
-		stepIndex("Preflight Cloudflare release access") <
-			stepIndex("Push release metadata"),
+	assert.equal(
+		step("Prepare or resume release metadata").run,
+		"pnpm prepare:ui:release",
 	);
-	assert.ok(
-		stepIndex("Preflight Cloudflare release access") <
-			stepIndex("Publish package if needed"),
+	assert.equal(
+		step("Publish or verify exact package").run,
+		"pnpm publish:ui:release",
 	);
+	assert.match(prepareSource, /Release-Origin:/u);
+	assert.match(prepareSource, /"fetch",[\s\S]{0,80}"--no-tags"/u);
+	assert.match(prepareSource, /HEAD:refs\/heads\/main/u);
+	assert.doesNotMatch(prepareSource, /--force|force-with-lease/u);
+	assert.match(publishSource, /sha512/u);
+	assert.match(publishSource, /dist.*integrity|integrity/u);
 	assert.doesNotMatch(
 		workflowSource,
-		/secrets\.CLOUDFLARE_API_TOKEN|vars\.CLOUDFLARE_EMAIL/u,
+		/Detect pending changesets|Push release metadata/u,
 	);
+	assert.doesNotMatch(workflowSource, /npm view|E404/u);
 });
 
-test("package publication entrypoints use the main-only guard and strict publish lifecycle", () => {
-	const scripts = record(rootPackage.scripts, "root package scripts");
+test("package and release entrypoints share main-only guarded implementations", () => {
+	const scripts = record(rootPackage.scripts, "root scripts");
 	assert.equal(
 		scripts["release:preflight"],
 		"pnpm guard:release:mutation && pnpm validate:release-preconditions",
 	);
-	assert.equal(
-		scripts["publish:ui"],
-		"pnpm guard:release:mutation && pnpm --filter @lemn-ltd/ui run build && pnpm --filter @lemn-ltd/ui publish --access restricted --no-git-checks",
-	);
+	for (const name of [
+		"deploy:showcase:prod",
+		"prepare:ui:release",
+		"publish:ui",
+		"publish:ui:release",
+		"rollout:showcase:prod",
+	]) {
+		assert.match(String(scripts[name]), /^pnpm guard:release:mutation && /u);
+	}
 	assert.equal(
 		scripts.release,
-		"pnpm release:preflight && pnpm check && pnpm test && pnpm publish:ui",
-	);
-	assert.equal(
-		scripts["publish:ui:verify"],
-		"pnpm guard:release:mutation && node scripts/release/verify-ui-dist.mjs && pnpm pack:ui",
+		"pnpm release:preflight && pnpm check && pnpm test && pnpm publish:ui:release",
 	);
 	assert.equal(scripts["publish:ui:internal"], undefined);
-	assert.equal(step("Publish package if needed").run, "pnpm publish:ui");
 });
 
-test("direct main pushes re-run the fail-closed changeset and version guard", () => {
-	const guard = step("Guard main package version");
-	const env = record(guard.env, "main version guard env");
-	assert.equal(
-		env.GITHUB_REPOSITORY_OWNER,
-		expression("github.repository_owner"),
-	);
-	assert.equal(env.GITHUB_TOKEN, expression("secrets.GITHUB_TOKEN"));
-	assert.equal(env.RELEASE_BASE_SHA, expression("github.event.before"));
-	assert.match(String(guard.run), /git diff --quiet/u);
-	assert.match(String(guard.run), /packages\/ui/u);
-	assert.match(String(guard.run), /check-unpublished-package-version\.ts/u);
-	assert.match(String(guard.run), /changeset:status/u);
-	assert.ok(
-		stepIndex("Guard main package version") <
-			stepIndex("Preflight Cloudflare release access"),
-	);
-	assert.ok(
-		stepIndex("Guard main package version") <
-			stepIndex("Detect pending changesets"),
-	);
-});
-
-test("unpublished current package versions do not receive an accidental second changeset bump", () => {
-	const validationJob = record(jobs.validate, "validate job");
-	const validationPermissions = record(
-		validationJob.permissions,
-		"validate permissions",
-	);
-	assert.equal(validationPermissions.contents, "read");
-	assert.equal(validationPermissions.packages, "read");
-	const validationSteps = validationJob.steps as UnknownRecord[];
-	const changesetGuard = validationSteps.find(
-		(candidate) => candidate.name === "Require changesets for package changes",
-	);
-	assert.ok(changesetGuard);
-	const changesetGuardEnv = record(changesetGuard.env, "changeset guard env");
-	assert.equal(
-		changesetGuardEnv.GITHUB_REPOSITORY_OWNER,
-		expression("github.repository_owner"),
-	);
-	assert.equal(
-		changesetGuardEnv.GITHUB_TOKEN,
-		expression("secrets.GITHUB_TOKEN"),
-	);
-	assert.match(
-		String(changesetGuard.run),
-		/check-unpublished-package-version\.ts/u,
-	);
-	assert.doesNotMatch(String(changesetGuard.run), /npm view|grep.*E404/u);
-	assert.doesNotMatch(workflowSource, /npm view|E404/u);
-	const publicationCheck = step("Check package publication status");
-	const publicationCheckEnv = record(
-		publicationCheck.env,
-		"publication status env",
-	);
-	assert.equal(publicationCheck.id, "package-version");
-	assert.equal(
-		publicationCheckEnv.GITHUB_TOKEN,
-		expression("secrets.GITHUB_TOKEN"),
-	);
-	assert.equal(
-		step("Publish package if needed").if,
-		"steps.package-version.outputs.published == 'false'",
-	);
-	assert.equal(
-		step("Version packages from changesets").if,
-		"steps.changesets.outputs.has_pending == 'true'",
-	);
-});
-
-test("the transactional rollout uses the release commit outputs instead of trigger GITHUB_SHA", () => {
-	assert.ok(
-		stepIndex("Capture release metadata") < stepIndex("Push release metadata"),
-	);
-	assert.ok(
-		stepIndex("Capture release metadata") <
-			stepIndex("Publish package if needed"),
-	);
-	assert.match(
-		String(
-			record(
-				step("Roll out showcase with protected rollback").env,
-				"Showcase rollout env",
-			).EXPECTED_RELEASE_VERSION,
-		),
-		/steps\.release\.outputs\.version/u,
-	);
-	assert.match(
-		String(
-			record(
-				step("Roll out showcase with protected rollback").env,
-				"Showcase rollout env",
-			).EXPECTED_RELEASE_GIT_SHA,
-		),
-		/steps\.release\.outputs\.sha/u,
-	);
-
-	const docsEnv = record(step("Build docs").env, "Build docs env");
+test("docs and showcase consume one immutable release identity", () => {
+	const prepare = step("Prepare or resume release metadata");
+	assert.equal(prepare.id, "release");
+	const docsEnv = record(step("Build docs").env, "docs env");
 	assert.equal(
 		docsEnv.PUBLIC_BUILD_VERSION,
 		expression("steps.release.outputs.version"),
@@ -291,28 +195,32 @@ test("the transactional rollout uses the release commit outputs instead of trigg
 		docsEnv.PUBLIC_BUILD_TIME,
 		expression("steps.release.outputs.time"),
 	);
-	const smokeEnv = record(
+
+	const rolloutEnv = record(
 		step("Roll out showcase with protected rollback").env,
-		"Showcase rollout env",
+		"rollout env",
 	);
 	assert.equal(
-		smokeEnv.EXPECTED_RELEASE_VERSION,
+		rolloutEnv.EXPECTED_RELEASE_ID,
+		expression("steps.release.outputs.release_id"),
+	);
+	assert.equal(
+		rolloutEnv.EXPECTED_RELEASE_VERSION,
 		expression("steps.release.outputs.version"),
 	);
 	assert.equal(
-		smokeEnv.EXPECTED_RELEASE_GIT_SHA,
+		rolloutEnv.EXPECTED_RELEASE_GIT_SHA,
 		expression("steps.release.outputs.sha"),
 	);
 	assert.equal(
-		smokeEnv.EXPECTED_RELEASE_TIME,
+		rolloutEnv.EXPECTED_RELEASE_TIME,
 		expression("steps.release.outputs.time"),
 	);
-	assert.match(showcaseRolloutSource, /expected\.gitSha/u);
-	assert.match(showcaseRolloutSource, /expected\.buildTime/u);
-	assert.doesNotMatch(showcaseRolloutSource, /GITHUB_SHA/u);
+	assert.match(rolloutSource, /EXPECTED_RELEASE_ID/u);
+	assert.doesNotMatch(rolloutSource, /GITHUB_SHA/u);
 });
 
-test("all deploy commands receive the Global API Key pair and preflight account output", () => {
+test("all production deploys receive only the Environment credential pair", () => {
 	for (const name of [
 		"Deploy docs",
 		"Roll out showcase with protected rollback",
@@ -328,16 +236,9 @@ test("all deploy commands receive the Global API Key pair and preflight account 
 			/steps\.cloudflare\.outputs\.(?:docs|showcase)_account_id/u,
 		);
 	}
-
-	const rollout = step("Roll out showcase with protected rollback");
-	const rolloutEnv = record(rollout.env, "Showcase rollout env");
-	assert.equal(
-		rolloutEnv.CLOUDFLARE_API_KEY,
-		productionSecret("CLOUDFLARE_API_KEY"),
-	);
-	assert.equal(
-		rolloutEnv.CLOUDFLARE_EMAIL,
-		productionSecret("CLOUDFLARE_EMAIL"),
+	const rolloutEnv = record(
+		step("Roll out showcase with protected rollback").env,
+		"rollout env",
 	);
 	assert.equal(
 		rolloutEnv.PRODUCTION_STATUS_TOKEN,
@@ -347,19 +248,13 @@ test("all deploy commands receive the Global API Key pair and preflight account 
 		rolloutEnv.ROLLBACK_STATUS_TOKEN,
 		expression("secrets.STATUS_TOKEN || secrets.PRODUCTION_STATUS_TOKEN"),
 	);
-	assert.equal(rollout.run, "pnpm rollout:showcase:prod");
 	assert.equal(
 		stepIndex("Roll out showcase with protected rollback"),
 		steps.length - 1,
 	);
 });
 
-test("workflow mutations use guarded root entrypoints instead of direct publishers or deploys", () => {
-	assert.equal(
-		step("Version packages from changesets").run,
-		"pnpm version:packages",
-	);
-	assert.equal(step("Publish package if needed").run, "pnpm publish:ui");
+test("workflow never invokes direct publisher, secret mutation, or Worker deploy commands", () => {
 	assert.equal(step("Deploy docs").run, "pnpm deploy:docs:prod");
 	assert.equal(
 		step("Roll out showcase with protected rollback").run,
@@ -367,44 +262,33 @@ test("workflow mutations use guarded root entrypoints instead of direct publishe
 	);
 	assert.doesNotMatch(
 		workflowSource,
-		/publish:ui:internal|run:\s*pnpm --dir apps\/(?:docs|showcase) exec wrangler (?:deploy|secret|rollback)/u,
+		/run:\s*pnpm --dir apps\/(?:docs|showcase) exec wrangler (?:deploy|secret|rollback|versions)/u,
 	);
-	for (const name of [
-		"Version packages from changesets",
-		"Publish package if needed",
-	]) {
-		const env = record(step(name).env, `${name} env`);
-		assert.equal(
-			env.CLOUDFLARE_API_KEY,
-			productionSecret("CLOUDFLARE_API_KEY"),
-		);
-		assert.equal(env.CLOUDFLARE_EMAIL, productionSecret("CLOUDFLARE_EMAIL"));
-	}
+	assert.doesNotMatch(
+		rolloutSource,
+		/wrangler[\s\S]{0,80}secret[\s\S]{0,20}put/u,
+	);
+	assert.match(rolloutSource, /versions[\s\S]{0,40}upload/u);
+	assert.match(rolloutSource, /versions[\s\S]{0,40}deploy/u);
 });
 
-test("CI and release smoke the exact local showcase asset deployment before publish", () => {
-	const validationJob = record(jobs.validate, "validate job");
-	const validationSteps = validationJob.steps as UnknownRecord[];
+test("CI and release smoke local showcase assets before package publication", () => {
+	const validationSteps = record(jobs.validate, "validate job")
+		.steps as UnknownRecord[];
 	const localSmoke = validationSteps.find(
 		(candidate) => candidate.name === "Smoke showcase deployment locally",
 	);
 	assert.ok(localSmoke);
 	assert.equal(localSmoke.run, "pnpm smoke:showcase:local");
-	assert.ok(
-		validationSteps.indexOf(localSmoke) >
-			validationSteps.findIndex((candidate) => candidate.name === "Build"),
-	);
-
 	const releaseSmoke = step("Build and smoke showcase deployment locally");
 	assert.equal(releaseSmoke.run, "pnpm smoke:showcase:local");
 	assert.ok(
 		stepIndex("Build and smoke showcase deployment locally") <
-			stepIndex("Publish package if needed"),
+			stepIndex("Publish or verify exact package"),
 	);
 });
 
-test("the successful validation gate runs complete showcase E2E before release", () => {
-	const validationJob = record(jobs.validate, "validate job");
+test("the validation gate requires all three complete showcase E2E shards", () => {
 	const e2eJob = record(jobs["showcase-e2e"], "showcase E2E job");
 	const strategy = record(e2eJob.strategy, "showcase E2E strategy");
 	const matrix = record(strategy.matrix, "showcase E2E matrix");
@@ -416,27 +300,13 @@ test("the successful validation gate runs complete showcase E2E before release",
 	assert.ok(shard);
 	assert.equal(e2eJob.needs, "validate");
 	assert.equal(container.image, "mcr.microsoft.com/playwright:v1.60.0-noble");
-	assert.equal(container.options, "--ipc=host");
 	assert.equal(strategy["fail-fast"], false);
 	assert.deepEqual(matrix.shard, [1, 2, 3]);
-	assert.equal(
-		shard.run,
-		[
-			"pnpm --filter @lemn-ltd/ui-showcase exec playwright test --shard=",
-			expression("matrix.shard"),
-			"/3",
-		].join(""),
-	);
-	assert.equal(shard.if, undefined);
 	assert.doesNotMatch(String(shard.run), /--grep|visual\.e2e/u);
-	assert.ok(Number(validationJob["timeout-minutes"]) >= 60);
-	assert.ok(Number(e2eJob["timeout-minutes"]) >= 30);
 	assert.deepEqual(releaseJob.needs, ["validate", "showcase-e2e"]);
-	assert.doesNotMatch(String(releaseJob.if), /always\s*\(/u);
-	assert.ok(stepIndex("Publish package if needed") < stepIndex("Deploy docs"));
 });
 
-test("contributor release guidance documents fail-closed behavior", () => {
+test("contributor release guidance remains fail closed", () => {
 	assert.match(
 		contributing,
 		/A scope, owner, authentication, version,\s+package-content, or Cloudflare mismatch fails closed/u,

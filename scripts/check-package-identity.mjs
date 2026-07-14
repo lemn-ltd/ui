@@ -143,7 +143,7 @@ assert(
 );
 assert(
   rootPackage.scripts?.release ===
-    'pnpm release:preflight && pnpm check && pnpm test && pnpm publish:ui',
+    'pnpm release:preflight && pnpm check && pnpm test && pnpm publish:ui:release',
   'release must use the guarded canonical publisher after validation',
 );
 assert(

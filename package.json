@@ -31,7 +31,7 @@
     "deploy:docs": "pnpm deploy:docs:prod",
     "deploy:showcase": "pnpm deploy:showcase:prod",
     "deploy:docs:prod": "pnpm guard:release:mutation && test -n \"$PUBLIC_BUILD_VERSION\" && test -n \"$PUBLIC_BUILD_GIT_SHA\" && test -n \"$PUBLIC_BUILD_TIME\" && pnpm --filter @lemn-ltd/ui-docs run build && pnpm --dir apps/docs exec wrangler deploy --config wrangler.jsonc",
-    "deploy:showcase:prod": "pnpm guard:release:mutation && test -n \"$BUILD_VERSION\" && test -n \"$BUILD_GIT_SHA\" && test -n \"$BUILD_TIME\" && CLOUDFLARE_ENV=production pnpm --filter @lemn-ltd/ui-showcase run cf:build && pnpm --dir apps/showcase exec wrangler deploy --config wrangler.jsonc --env production --var BUILD_VERSION:$BUILD_VERSION --var BUILD_GIT_SHA:$BUILD_GIT_SHA --var BUILD_TIME:$BUILD_TIME",
+    "deploy:showcase:prod": "pnpm guard:release:mutation && node scripts/release/showcase-production-rollout.ts",
     "rollout:showcase:prod": "pnpm guard:release:mutation && node scripts/release/showcase-production-rollout.ts",
     "pack:ui": "pnpm validate:package-identity && node scripts/smoke-package-tarball.mjs",
     "preflight:cloudflare:release": "node scripts/release/cloudflare-preflight.ts",
@@ -39,6 +39,8 @@
     "release:preflight": "pnpm guard:release:mutation && pnpm validate:release-preconditions",
     "publish:ui:verify": "pnpm guard:release:mutation && node scripts/release/verify-ui-dist.mjs && pnpm pack:ui",
     "publish:ui": "pnpm guard:release:mutation && pnpm --filter @lemn-ltd/ui run build && pnpm --filter @lemn-ltd/ui publish --access restricted --no-git-checks",
+    "publish:ui:release": "pnpm guard:release:mutation && node scripts/release/publish-ui-release.ts",
+    "prepare:ui:release": "pnpm guard:release:mutation && node scripts/release/prepare-ui-release.ts",
     "smoke:showcase:local": "CLOUDFLARE_ENV=production pnpm --filter @lemn-ltd/ui-showcase run cf:build && node scripts/release/showcase-assets-smoke.ts",
     "smoke:cloudflare:release": "node scripts/release/cloudflare-preflight.ts --require-resources",
     "smoke:release:production": "node scripts/release/deployment-smoke.ts",
@@ -46,7 +48,7 @@
     "changeset:add": "pnpm changeset add",
     "changeset:status": "pnpm changeset status",
     "version:packages": "pnpm changeset version && pnpm sync:docs-changelog",
-    "release": "pnpm release:preflight && pnpm check && pnpm test && pnpm publish:ui"
+    "release": "pnpm release:preflight && pnpm check && pnpm test && pnpm publish:ui:release"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.7",

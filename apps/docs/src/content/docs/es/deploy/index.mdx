@@ -15,23 +15,28 @@ CI valida pull requests con typecheck, tests, build, metadata de release y
 changeset status. Los pushes a `main` ejecutan el release workflow:
 
 1. Valida sin mutar Cloudflare el owner de la Global API Key, la membresia, los permisos de escritura, el acceso a la zona y que no existan mapeos de dominio conflictivos.
-2. Si hay changesets pendientes, crea y pushea un unico commit de metadata con el bump SemVer y changelog.
-3. Captura la version y Git SHA de ese commit de release.
-4. Publica cualquier version no publicada de `@lemn-ltd/ui` cuando el owner/token del registry puede publicar ese package scope.
-5. Despliega docs con la identidad de build capturada.
-6. Captura la version activa del Worker del showcase, hace smoke de todas las
-   rutas protegidas con el token actual, rota el secret del Worker, despliega el
-   showcase y hace smoke publico y protegido con el token nuevo y la identidad
-   de build exacta.
-7. Si algo falla despues de la rotacion, vuelve a la version capturada y hace
-   smoke con el token que autenticaba esa version. El release sigue fallido
-   aunque el rollback funcione y reporta por separado cualquier fallo del rollback.
+2. Hace fetch de `main` protegido. Un rerun antiguo solo puede retomar el commit
+   unico de release con su trailer `Release-Origin`; en otro caso se detiene sin
+   crear un sibling ni intentar un push non-fast-forward.
+3. Si quedan changesets, crea y pushea un unico commit fast-forward. Version,
+   SHA completo, timestamp del commit y release ID son entradas inmutables para
+   todos los retries.
+4. Empaqueta el paquete exacto y calcula su integridad `sha512`. Publica solo si
+   la version no existe; si existe, exige identidad e integridad inmutable igual.
+5. Despliega docs con la identidad inmutable del release.
+6. Sube codigo, assets, identidad y `PRODUCTION_STATUS_TOKEN` como una version
+   inactiva del Worker etiquetada por release. Su metadata guarda baseline,
+   identidad anterior y rol del token de rollback.
+7. Crea una lease sin trafico nuevo (`baseline=100%`, `candidate=0%`), hace smoke
+   de la candidata con version override, vuelve a comprobar la lease y activa
+   exactamente esa candidata al 100%.
+8. Hace smoke del deployment activo. Un fallo normal restaura y verifica el
+   baseline; una interrupcion deja un estado durable recuperable por release ID.
 
-CI consulta la lista autenticada de versiones de GitHub Packages antes de
-publicar. Solo una consulta exitosa que omita la version exacta permite la
-publicacion. Los fallos de autenticacion, autorizacion, lookup del paquete, red
-o alineacion scope/owner detienen el release en lugar de tratar la version como
-inedita.
+CI consulta la lista autenticada de GitHub Packages antes de publicar y la
+metadata npm despues. Solo una consulta exitosa que omita la version exacta
+permite publicarla. Una version presente nunca se republica: su `dist.integrity`
+debe coincidir con el `sha512` local o el release falla cerrado.
 
 El job `Release And Deploy` es el unico que puede resolver credenciales de
 produccion. Usa el GitHub Environment `production`, que exige al reviewer
@@ -63,22 +68,33 @@ openssl rand -hex 32 | gh secret set PRODUCTION_STATUS_TOKEN --env production --
 
 El workflow aprobado de `main` ejecuta este orden exacto:
 
-1. Lee `wrangler deployments list --json`, exige una sola version activa al 100%
-   del trafico y retiene en memoria su UUID validado.
+1. Lee `wrangler deployments list --json` y versiones etiquetadas por release. Un retry retoma su
+   candidata; un release nuevo exige un baseline unico al 100%.
 2. Hace smoke de `/_status`, `/_status.json` y `/health/deep` sin token (`401`) y
    con el `STATUS_TOKEN` retenido en el repositorio (`200`). Si produccion ya fue
    rotada, reintenta con `PRODUCTION_STATUS_TOKEN`.
-3. Envia `PRODUCTION_STATUS_TOKEN` solo por stdin a `wrangler secret put`.
-4. Despliega el showcase con version, Git SHA y hora del release capturado.
-5. Verifica mappings de Cloudflare, endpoints publicos y las tres rutas
-   protegidas. Las protegidas deben devolver `200`, `ok`, ready e identidad de
-   build exacta; las peticiones sin autenticar deben seguir en `401`.
-6. Escribe el summary solo despues de que pasen todos los smokes.
+3. Envia un documento JSON con el token nuevo solo por stdin a `wrangler
+   versions upload --secrets-file /dev/stdin`. La candidata inactiva incluye
+   codigo, assets, identidad, token y metadata de recovery sin cambiar trafico.
+4. Despliega baseline al 100% y candidata al 0% con una lease del release. Hace
+   smoke publico/protegido de la candidata mediante
+   `Cloudflare-Workers-Version-Overrides`, manteniendo trafico normal en baseline.
+5. Relee deployments, exige el mismo deployment ID y reparto de trafico, activa
+   la candidata al 100% y repite mappings y smoke sin override.
+6. Escribe el summary solo despues de que todo pase.
 
-Si fallan los pasos 3-6, el runner ejecuta `wrangler rollback
-<captured-version-id> --yes` y repite el smoke protegido con el token y la
-identidad capturados antes de rotar. Los fallos del comando y del smoke de
-rollback se reportan juntos; ninguno puede dejar verde el workflow.
+El concurrency group usa `cancel-in-progress: false`; los releases conformes se
+serializan y respetan la lease durable. La API de Cloudflare no ofrece update
+condicional atomico para deployments, por lo que ningun operador externo debe
+desplegar este Worker mientras exista la lease. Cualquier cambio de deployment
+ID, trafico o mensaje detiene el run sin sobrescribir el deployment concurrente.
+
+Los fallos normales despues de la lease ejecutan `wrangler rollback
+<captured-version-id> --yes` y verifican el baseline con el rol de token y la
+identidad guardados. Los fallos de rollback no ocultan el error original.
+`SIGTERM`/`SIGINT` terminan el child activo y un retry retoma candidata, lease o
+candidata activa. `SIGKILL` no puede limpiar; por eso el token nuevo no recibe
+trafico antes del smoke y todos los limites quedan visibles en Cloudflare.
 
 Conserva los cuatro repository secrets legacy hasta que el deploy aprobado sea
 estable: `CLOUDFLARE_API_KEY`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_EMAIL` y

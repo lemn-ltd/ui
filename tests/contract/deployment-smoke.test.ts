@@ -60,12 +60,20 @@ test("release identity requires the canonical package without imposing it on hea
 });
 
 test("production smoke compares exact docs and showcase build identities", async () => {
+	const candidateVersionId = "b2642364-a615-4287-a8b7-6134289e2746";
+	const showcaseOverrides: Array<string | null> = [];
 	const protectedRequests: Array<{
 		authorization: string | null;
 		url: string;
 	}> = [];
 	const fetchImplementation: typeof fetch = async (input, init) => {
 		const url = String(input);
+		const headers = new Headers(init?.headers);
+		if (url.startsWith("https://showcase.ui.le-mn.com")) {
+			showcaseOverrides.push(
+				headers.get("cloudflare-workers-version-overrides"),
+			);
+		}
 		if (url === "https://ui.le-mn.com/")
 			return new Response("<title>Overview | UI</title>");
 		if (url === "https://ui.le-mn.com/release.json") {
@@ -102,7 +110,7 @@ test("production smoke compares exact docs and showcase build identities", async
 			url === "https://showcase.ui.le-mn.com/_status.json" ||
 			url === "https://showcase.ui.le-mn.com/health/deep"
 		) {
-			const authorization = new Headers(init?.headers).get("authorization");
+			const authorization = headers.get("authorization");
 			protectedRequests.push({ authorization, url });
 			if (authorization !== `Bearer ${statusToken}`) {
 				return Response.json({ error: "unauthorized" }, { status: 401 });
@@ -124,7 +132,13 @@ test("production smoke compares exact docs and showcase build identities", async
 		expected,
 		statusToken,
 		fetchImplementation,
+		showcaseVersionId: candidateVersionId,
 	});
+	assert.ok(showcaseOverrides.length > 0);
+	assert.deepEqual(
+		new Set(showcaseOverrides),
+		new Set([`lemn-ui-showcase="${candidateVersionId}"`]),
+	);
 	assert.equal(protectedRequests.length, 6);
 	for (const path of ["/_status", "/_status.json", "/health/deep"]) {
 		const requests = protectedRequests.filter(({ url }) => url.endsWith(path));

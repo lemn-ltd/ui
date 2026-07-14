@@ -1,14 +1,20 @@
 # @lemn-ltd/ui
 
+## Unreleased
+
+### Patch Changes
+
+- Reconcile the published package source with the canonical `@lemn-ltd/ui`
+  identity, strict public exports, and fail-closed release contracts.
+- Make package publication resumable by immutable tarball integrity and stage
+  the protected showcase token inside an inactive Worker version before traffic
+  activation.
+
 ## 0.1.2
 
 ### Patch Changes
 
 - 089bff0: Add documentation, changelog, and release automation for the UI design system.
-- Publish the canonical GitHub Packages identity as `@lemn-ltd/ui`, including
-  the root, tokens, catalog, and stylesheet exports for strict React 19.2 consumers.
-- Fail the production release before package publication unless the Cloudflare
-  Global API Key can deploy both docs and showcase, then reject stale build metadata.
 
 ## 0.1.1
 

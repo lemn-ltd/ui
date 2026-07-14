@@ -11,7 +11,7 @@ permissions:
 
 concurrency:
   group: lemn-ui-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name != 'push' }}
+  cancel-in-progress: false
 
 jobs:
   validate:
@@ -145,7 +145,7 @@ jobs:
     needs: [validate, showcase-e2e]
     if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 60
     environment: production
     permissions:
       contents: write
@@ -181,28 +181,6 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Guard main package version
-        env:
-          GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RELEASE_BASE_SHA: ${{ github.event.before }}
-        run: |
-          base_sha="$RELEASE_BASE_SHA"
-          if [ -z "$base_sha" ] || [ "$base_sha" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "${base_sha}^{commit}"; then
-            base_sha="$(git rev-parse HEAD^)"
-          fi
-
-          if find .changeset -maxdepth 1 -type f -name '*.md' ! -name README.md | grep -q .; then
-            pnpm changeset:status --since="$base_sha"
-            exit 0
-          fi
-
-          if git diff --quiet "${base_sha}...HEAD" -- packages/ui; then
-            exit 0
-          fi
-
-          node scripts/release/check-unpublished-package-version.ts
-
       - name: Preflight Cloudflare release access
         id: cloudflare
         run: |
@@ -219,45 +197,11 @@ jobs:
           PRODUCTION_STATUS_TOKEN: ${{ secrets.PRODUCTION_STATUS_TOKEN }}
           ROLLBACK_STATUS_TOKEN: ${{ secrets.STATUS_TOKEN || secrets.PRODUCTION_STATUS_TOKEN }}
 
-      - name: Detect pending changesets
-        id: changesets
-        run: |
-          if find .changeset -maxdepth 1 -type f -name '*.md' ! -name README.md | grep -q .; then
-            echo "has_pending=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "has_pending=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Version packages from changesets
-        if: steps.changesets.outputs.has_pending == 'true'
-        run: pnpm version:packages
-        env:
-          CLOUDFLARE_API_KEY: ${{ secrets.PRODUCTION_CLOUDFLARE_API_KEY }}
-          CLOUDFLARE_EMAIL: ${{ secrets.PRODUCTION_CLOUDFLARE_EMAIL }}
-
-      - name: Commit release metadata
-        if: steps.changesets.outputs.has_pending == 'true'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .changeset packages/ui/package.json packages/ui/CHANGELOG.md apps/docs/src/content/docs/changelog/index.mdx apps/docs/src/content/docs/es/changelog/index.mdx
-          if git diff --cached --quiet; then
-            echo "No release metadata changed."
-          else
-            git commit -m "chore: release packages [skip ci]"
-          fi
-
-      - name: Capture release metadata
+      - name: Prepare or resume release metadata
         id: release
-        run: |
-          package_version="$(node -p "require('./packages/ui/package.json').version")"
-          echo "version=${package_version}" >> "$GITHUB_OUTPUT"
-          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-          echo "time=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
-
-      - name: Push release metadata
-        if: steps.changesets.outputs.has_pending == 'true'
-        run: git push origin HEAD:main
+        run: pnpm prepare:ui:release
+        env:
+          GITHUB_SHA: ${{ github.sha }}
 
       - name: Build package
         run: pnpm --filter @lemn-ltd/ui run build
@@ -265,16 +209,8 @@ jobs:
       - name: Build and smoke showcase deployment locally
         run: pnpm smoke:showcase:local
 
-      - name: Check package publication status
-        id: package-version
-        run: node scripts/release/check-unpublished-package-version.ts --github-output
-        env:
-          GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Publish package if needed
-        if: steps.package-version.outputs.published == 'false'
-        run: pnpm publish:ui
+      - name: Publish or verify exact package
+        run: pnpm publish:ui:release
         env:
           CLOUDFLARE_API_KEY: ${{ secrets.PRODUCTION_CLOUDFLARE_API_KEY }}
           CLOUDFLARE_EMAIL: ${{ secrets.PRODUCTION_CLOUDFLARE_EMAIL }}
@@ -303,6 +239,7 @@ jobs:
           CLOUDFLARE_API_KEY: ${{ secrets.PRODUCTION_CLOUDFLARE_API_KEY }}
           CLOUDFLARE_EMAIL: ${{ secrets.PRODUCTION_CLOUDFLARE_EMAIL }}
           CLOUDFLARE_ACCOUNT_ID: ${{ steps.cloudflare.outputs.showcase_account_id }}
+          EXPECTED_RELEASE_ID: ${{ steps.release.outputs.release_id }}
           EXPECTED_RELEASE_VERSION: ${{ steps.release.outputs.version }}
           EXPECTED_RELEASE_GIT_SHA: ${{ steps.release.outputs.sha }}
           EXPECTED_RELEASE_TIME: ${{ steps.release.outputs.time }}

@@ -15,21 +15,32 @@ CI validates pull requests with typecheck, tests, build, release metadata, and
 changeset status. Pushes to `main` run the release workflow:
 
 1. Validate the Cloudflare Global API Key owner, account membership, Worker write permissions, zone access, and absence of conflicting domain mappings without mutating Cloudflare.
-2. If changesets are pending, create and push one release metadata commit with the SemVer bump and changelog.
-3. Capture that release commit's package version and Git SHA.
-4. Publish any unpublished `@lemn-ltd/ui` version when the registry owner/token can publish the package scope.
-5. Deploy docs with the captured build identity.
-6. Capture the active showcase Worker version, smoke all protected routes with
-   the current token, rotate the Worker secret, deploy the showcase, and smoke
-   public plus protected routes with the new token and exact build identity.
-7. If anything after the rotation fails, roll back to the captured version and
-   smoke it with the token that authenticated that version. The release remains
-   failed even when rollback succeeds, and reports rollback failure separately.
+2. Fetch protected `main`. A stale rerun may resume only the unique release
+   commit carrying its `Release-Origin` trailer; otherwise it stops instead of
+   creating a sibling or attempting a non-fast-forward push.
+3. If changesets remain, create and push one fast-forward release commit. The
+   package version, full commit SHA, commit timestamp, and resulting release ID
+   are immutable inputs for every later retry.
+4. Pack the exact package and calculate its `sha512` integrity. Publish only when
+   the version is absent. When it already exists, require registry package,
+   version, and immutable tarball integrity to match before resuming.
+5. Deploy docs with the immutable release identity.
+6. Upload showcase code, assets, build identity, and `PRODUCTION_STATUS_TOKEN`
+   together as an inactive, release-tagged Worker version. Its metadata durably
+   records the baseline version, baseline build identity, and token role.
+7. Create a zero-traffic lease (`baseline=100%`, `candidate=0%`), smoke the
+   candidate through Cloudflare version override, re-check the unchanged lease,
+   and then activate that exact candidate at 100%.
+8. Smoke the active deployment. A normal failure restores and verifies the
+   captured baseline; interruption leaves the inactive, leased, or pre-smoked
+   active state discoverable by release ID for the next retry.
 
-CI checks the authenticated GitHub Packages version list before publishing.
-Only a successful lookup that omits the exact version permits publication.
-Authentication, authorization, package lookup, network, or scope/owner failures
-stop the release instead of being treated as an unpublished version.
+CI checks the authenticated GitHub Packages version list before publishing and
+the npm registry metadata after publishing. Only a successful lookup that omits
+the exact version permits publication. A present version is never republished:
+its `dist.integrity` must equal the locally packed `sha512` or the release fails
+closed. Authentication, authorization, lookup, network, or identity failures
+are not treated as an unpublished version.
 
 The `Release And Deploy` job is the only job that can resolve production
 credentials. It uses the `production` GitHub Environment, which requires the
@@ -61,22 +72,39 @@ openssl rand -hex 32 | gh secret set PRODUCTION_STATUS_TOKEN --env production --
 
 The approved `main` workflow then performs this exact order:
 
-1. Read `wrangler deployments list --json`, require one active version at 100%
-   traffic, and retain its validated Worker version UUID in memory.
+1. Read `wrangler deployments list --json` plus release-tagged versions. A retry resumes the matching
+   candidate; a new release requires one baseline version at 100% traffic.
 2. Smoke `/_status`, `/_status.json`, and `/health/deep` without a token (`401`)
    and with the retained repository `STATUS_TOKEN` (`200`). If production was
    already rotated, retry with `PRODUCTION_STATUS_TOKEN`.
-3. Send `PRODUCTION_STATUS_TOKEN` only over stdin to `wrangler secret put`.
-4. Deploy the showcase with the captured release version, Git SHA, and time.
-5. Verify Cloudflare mappings, all public endpoints, and all three protected
-   endpoints. Protected responses must be `200`, `ok`, ready, and carry the exact
-   release build identity; unauthenticated responses must remain `401`.
-6. Write the release summary only after every smoke passes.
+3. Build locally and send a JSON secret document only through stdin to
+   `wrangler versions upload --secrets-file /dev/stdin`. This creates an inactive
+   candidate carrying the code, assets, new token, release tag, and recovery
+   metadata; it does not change production traffic.
+4. Deploy the baseline at 100% and candidate at 0% with a release-specific lease
+   message. Smoke all public/protected showcase routes against the candidate via
+   `Cloudflare-Workers-Version-Overrides`; the new token and exact build identity
+   must work while normal traffic still uses the baseline.
+5. Re-read deployments and require the same lease deployment ID and traffic
+   split. Activate only that candidate at 100%, then verify mappings and repeat
+   the full smoke without an override.
+6. Write the summary only after all checks pass.
 
-If steps 3-6 fail, the runner executes `wrangler rollback <captured-version-id>
---yes`, then repeats the protected smoke with the token and build identity
-captured before rotation. Command and smoke rollback failures are both reported;
-neither can turn the workflow green.
+The workflow concurrency group uses `cancel-in-progress: false`; compliant
+release attempts serialize and recognize the durable lease. Cloudflare's create
+deployment API does not expose an atomic conditional update, so out-of-band
+operators must not deploy this Worker while the lease is present. Any observed
+deployment ID, traffic, or release-message change stops without overwriting the
+concurrent deployment.
+
+Normal failures after the lease execute `wrangler rollback
+<captured-version-id> --yes`, then repeat protected smoke with the baseline token
+role and identity stored in candidate metadata. Command and smoke rollback
+failures are reported alongside the original error. `SIGTERM`/`SIGINT` terminate
+the active child; a later run resumes from the inactive candidate, zero-traffic
+lease, or already activated candidate. `SIGKILL` cannot run cleanup, which is why
+no secret reaches traffic before candidate smoke and every boundary remains
+discoverable from Cloudflare state.
 
 Keep all four legacy repository secrets until the approved deploy is stable:
 `CLOUDFLARE_API_KEY`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_EMAIL`, and

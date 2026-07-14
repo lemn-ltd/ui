@@ -6,7 +6,25 @@ import { guardReleaseMutationFromEnvironment } from "./release-mutation-guard.ts
 
 const supportedCommands = new Set(["add", "status", "version"]);
 
-export async function runChangesetCommand(args: string[]): Promise<number> {
+interface ChangesetCommandDependencies {
+	readonly root: string;
+	readonly cli: string;
+	readonly environment: NodeJS.ProcessEnv;
+	readonly guardVersion: () => Promise<void>;
+}
+
+const root = resolve(import.meta.dirname, "../..");
+const defaultDependencies: ChangesetCommandDependencies = {
+	root,
+	cli: resolve(root, "node_modules/@changesets/cli/bin.js"),
+	environment: process.env,
+	guardVersion: () => guardReleaseMutationFromEnvironment(),
+};
+
+export async function runChangesetCommand(
+	args: string[],
+	dependencies: ChangesetCommandDependencies = defaultDependencies,
+): Promise<number> {
 	const [command, ...commandArgs] = args;
 	if (!command || !supportedCommands.has(command)) {
 		throw new Error(
@@ -15,16 +33,18 @@ export async function runChangesetCommand(args: string[]): Promise<number> {
 	}
 
 	if (command === "version") {
-		await guardReleaseMutationFromEnvironment();
+		await dependencies.guardVersion();
 	}
 
-	const root = resolve(import.meta.dirname, "../..");
-	const cli = resolve(root, "node_modules/@changesets/cli/bin.js");
-	const result = spawnSync(process.execPath, [cli, command, ...commandArgs], {
-		cwd: root,
-		env: process.env,
-		stdio: "inherit",
-	});
+	const result = spawnSync(
+		process.execPath,
+		[dependencies.cli, command, ...commandArgs],
+		{
+			cwd: dependencies.root,
+			env: dependencies.environment,
+			stdio: "inherit",
+		},
+	);
 	if (result.error) throw result.error;
 	if (result.signal) {
 		throw new Error(`Changesets terminated by signal ${result.signal}`);

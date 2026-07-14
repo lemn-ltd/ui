@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+import { setTimeout as delay } from "node:timers/promises";
+
 const DOCS_ORIGIN = "https://ui.le-mn.com";
 const SHOWCASE_ORIGIN = "https://showcase.ui.le-mn.com";
 const UI_PACKAGE_NAME = "@lemn-ltd/ui";
@@ -69,13 +71,16 @@ async function fetchResponse(
 	url: string,
 	fetchImplementation: FetchImplementation,
 	init: RequestInit = {},
+	signal?: AbortSignal,
 ): Promise<Response> {
 	const headers = new Headers(init.headers);
 	headers.set("Accept", "application/json, text/plain, text/html");
 	const response = await fetchImplementation(url, {
 		...init,
 		headers,
-		signal: AbortSignal.timeout(5_000),
+		signal: signal
+			? AbortSignal.any([signal, AbortSignal.timeout(5_000)])
+			: AbortSignal.timeout(5_000),
 	});
 	if (!response.ok) throw new Error(`${url} returned HTTP ${response.status}`);
 	return response;
@@ -85,6 +90,7 @@ async function retry(
 	label: string,
 	operation: () => Promise<void>,
 	options: RetryOptions = defaultRetryOptions,
+	signal?: AbortSignal,
 ): Promise<void> {
 	let lastError: unknown;
 	for (let attempt = 1; attempt <= options.attempts; attempt += 1) {
@@ -93,14 +99,36 @@ async function retry(
 			console.log(`OK ${label}`);
 			return;
 		} catch (error) {
+			if (signal?.aborted) throw signal.reason;
 			lastError = error;
-			if (attempt < options.attempts)
-				await new Promise((resolve) => setTimeout(resolve, options.delayMs));
+			if (attempt < options.attempts) {
+				await delay(options.delayMs, undefined, { signal });
+			}
 		}
 	}
 	throw new Error(
 		`${label} failed after ${options.attempts} attempts: ${String(lastError)}`,
 	);
+}
+
+function showcaseHeaders(
+	versionId: string | undefined,
+	headers: HeadersInit = {},
+): Headers {
+	const result = new Headers(headers);
+	if (versionId) {
+		result.set(
+			"Cloudflare-Workers-Version-Overrides",
+			`lemn-ui-showcase="${versionId}"`,
+		);
+	}
+	return result;
+}
+
+function requestSignal(signal?: AbortSignal): AbortSignal {
+	return signal
+		? AbortSignal.any([signal, AbortSignal.timeout(5_000)])
+		: AbortSignal.timeout(5_000);
 }
 
 function showcaseAssetPath(html: string): string {
@@ -172,6 +200,8 @@ export async function smokeProtectedStatusRoutes(input: {
 	expected?: BuildIdentity;
 	fetchImplementation?: FetchImplementation;
 	retryOptions?: RetryOptions;
+	showcaseVersionId?: string;
+	signal?: AbortSignal;
 }): Promise<BuildIdentity> {
 	assert(input.token.length > 0, "A protected status token is required");
 	const fetchImplementation = input.fetchImplementation ?? fetch;
@@ -184,8 +214,10 @@ export async function smokeProtectedStatusRoutes(input: {
 			`showcase-protected-unauthorized:${path}`,
 			async () => {
 				const response = await fetchImplementation(url, {
-					headers: { Accept: "application/json" },
-					signal: AbortSignal.timeout(5_000),
+					headers: showcaseHeaders(input.showcaseVersionId, {
+						Accept: "application/json",
+					}),
+					signal: requestSignal(input.signal),
 				});
 				const body = await response.text();
 				assert(
@@ -195,17 +227,18 @@ export async function smokeProtectedStatusRoutes(input: {
 				assertResponseDoesNotExposeToken(response, body, input.token, url);
 			},
 			retryOptions,
+			input.signal,
 		);
 
 		await retry(
 			`showcase-protected-authorized:${path}`,
 			async () => {
 				const response = await fetchImplementation(url, {
-					headers: {
+					headers: showcaseHeaders(input.showcaseVersionId, {
 						Accept: "application/json",
 						Authorization: `Bearer ${input.token}`,
-					},
-					signal: AbortSignal.timeout(5_000),
+					}),
+					signal: requestSignal(input.signal),
 				});
 				const body = await response.text();
 				assert(
@@ -218,6 +251,7 @@ export async function smokeProtectedStatusRoutes(input: {
 				else expected = actual;
 			},
 			retryOptions,
+			input.signal,
 		);
 	}
 
@@ -230,6 +264,8 @@ export async function smokeProductionDeployment(input: {
 	statusToken: string;
 	fetchImplementation?: FetchImplementation;
 	retryOptions?: RetryOptions;
+	showcaseVersionId?: string;
+	signal?: AbortSignal;
 }): Promise<void> {
 	const fetchImplementation = input.fetchImplementation ?? fetch;
 	const expected = input.expected;
@@ -239,7 +275,12 @@ export async function smokeProductionDeployment(input: {
 		"docs-home",
 		async () => {
 			const text = await (
-				await fetchResponse(`${DOCS_ORIGIN}/`, fetchImplementation)
+				await fetchResponse(
+					`${DOCS_ORIGIN}/`,
+					fetchImplementation,
+					{},
+					input.signal,
+				)
 			).text();
 			assert(
 				text.includes("Overview | UI"),
@@ -247,27 +288,40 @@ export async function smokeProductionDeployment(input: {
 			);
 		},
 		retryOptions,
+		input.signal,
 	);
 	await retry(
 		"docs-release",
 		async () => {
 			const payload = await (
-				await fetchResponse(`${DOCS_ORIGIN}/release.json`, fetchImplementation)
+				await fetchResponse(
+					`${DOCS_ORIGIN}/release.json`,
+					fetchImplementation,
+					{},
+					input.signal,
+				)
 			).json();
 			assertPackageBuildIdentity(payload, expected, "docs release.json");
 		},
 		retryOptions,
+		input.signal,
 	);
 	await retry(
 		"showcase-health",
 		async () => {
 			const payload = (await (
-				await fetchResponse(`${SHOWCASE_ORIGIN}/health`, fetchImplementation)
+				await fetchResponse(
+					`${SHOWCASE_ORIGIN}/health`,
+					fetchImplementation,
+					{ headers: showcaseHeaders(input.showcaseVersionId) },
+					input.signal,
+				)
 			).json()) as Record<string, unknown>;
 			assert(payload.ok === true, "showcase health is not OK");
 			assertBuildIdentity(payload, expected, "showcase health");
 		},
 		retryOptions,
+		input.signal,
 	);
 	await retry(
 		"showcase-ready",
@@ -276,12 +330,15 @@ export async function smokeProductionDeployment(input: {
 				await fetchResponse(
 					`${SHOWCASE_ORIGIN}/health/ready`,
 					fetchImplementation,
+					{ headers: showcaseHeaders(input.showcaseVersionId) },
+					input.signal,
 				)
 			).json()) as Record<string, unknown>;
 			assert(payload.ok === true, "showcase readiness is not OK");
 			assertBuildIdentity(payload, expected, "showcase readiness");
 		},
 		retryOptions,
+		input.signal,
 	);
 	await retry(
 		"showcase-home",
@@ -289,6 +346,8 @@ export async function smokeProductionDeployment(input: {
 			const home = await fetchResponse(
 				`${SHOWCASE_ORIGIN}/`,
 				fetchImplementation,
+				{ headers: showcaseHeaders(input.showcaseVersionId) },
+				input.signal,
 			);
 			const html = await home.text();
 			assert(html.includes('id="root"'), "showcase home is not the built SPA");
@@ -296,6 +355,8 @@ export async function smokeProductionDeployment(input: {
 			const asset = await fetchResponse(
 				`${SHOWCASE_ORIGIN}${assetPath}`,
 				fetchImplementation,
+				{ headers: showcaseHeaders(input.showcaseVersionId) },
+				input.signal,
 			);
 			assert(
 				(await asset.arrayBuffer()).byteLength > 0,
@@ -303,6 +364,7 @@ export async function smokeProductionDeployment(input: {
 			);
 		},
 		retryOptions,
+		input.signal,
 	);
 	await retry(
 		"showcase-catalog",
@@ -311,6 +373,8 @@ export async function smokeProductionDeployment(input: {
 				await fetchResponse(
 					`${SHOWCASE_ORIGIN}/catalog.json`,
 					fetchImplementation,
+					{ headers: showcaseHeaders(input.showcaseVersionId) },
+					input.signal,
 				)
 			).json()) as Record<string, unknown>;
 			assert(
@@ -327,12 +391,18 @@ export async function smokeProductionDeployment(input: {
 			);
 		},
 		retryOptions,
+		input.signal,
 	);
 	await retry(
 		"showcase-llms",
 		async () => {
 			const text = await (
-				await fetchResponse(`${SHOWCASE_ORIGIN}/llms.txt`, fetchImplementation)
+				await fetchResponse(
+					`${SHOWCASE_ORIGIN}/llms.txt`,
+					fetchImplementation,
+					{ headers: showcaseHeaders(input.showcaseVersionId) },
+					input.signal,
+				)
 			).text();
 			assert(
 				text.includes("@lemn-ltd/ui"),
@@ -340,6 +410,7 @@ export async function smokeProductionDeployment(input: {
 			);
 		},
 		retryOptions,
+		input.signal,
 	);
 	await retry(
 		"showcase-llms-full",
@@ -348,6 +419,8 @@ export async function smokeProductionDeployment(input: {
 				await fetchResponse(
 					`${SHOWCASE_ORIGIN}/llms-full.txt`,
 					fetchImplementation,
+					{ headers: showcaseHeaders(input.showcaseVersionId) },
+					input.signal,
 				)
 			).text();
 			assert(
@@ -356,12 +429,15 @@ export async function smokeProductionDeployment(input: {
 			);
 		},
 		retryOptions,
+		input.signal,
 	);
 	await smokeProtectedStatusRoutes({
 		token: input.statusToken,
 		expected,
 		fetchImplementation,
 		retryOptions,
+		showcaseVersionId: input.showcaseVersionId,
+		signal: input.signal,
 	});
 }
 

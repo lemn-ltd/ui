@@ -3,7 +3,8 @@
 `apps/showcase` is a static Cloudflare Worker SPA that renders the whole
 `@lemn-ltd/ui` catalog as a functional docs site. It owns no backend: no D1,
 PostgreSQL, Hyperdrive, R2, KV, Durable Objects, Queues, Workflows, or service
-bindings. It owns only the `ASSETS` binding that serves the Vite client bundle.
+bindings. Its only non-secret platform binding is `ASSETS`, which serves the
+Vite client bundle; production also binds the protected-route `STATUS_TOKEN`.
 
 ## Local Cloudflare Surface
 
@@ -37,7 +38,9 @@ bindings. It owns only the `ASSETS` binding that serves the Vite client bundle.
 
 ## Runtime Bindings
 
-- `ASSETS` - serves the Vite client bundle. This is the only binding.
+- `ASSETS` serves the Vite client bundle and is the only non-secret platform binding.
+- `STATUS_TOKEN` is a required production secret binding used only by the three
+  protected status routes. Build identity uses versioned Worker vars.
 
 ## Service Graph
 
@@ -72,6 +75,11 @@ live in the versioned encrypted `.dev.vars`; `.env.keys` owns the local
 dev-ui-showcase` or `pnpm env:with --service ui-showcase -- <command>` so
 `.dev.vars` is decrypted only for the local process and re-encrypted on exit.
 Production uses the `lemn-ui-showcase` Worker and `showcase.ui.le-mn.com`.
+Production release uploads code, assets, build identity, and the new token as one
+inactive version. CI leases that candidate at 0% traffic, smokes it through a
+Cloudflare version override, verifies the unchanged lease, and only then moves
+traffic to it. Release-tagged candidate metadata preserves the baseline version
+and identity so interrupted runs resume without repeating secret mutation.
 
 ## Fidelity
 
