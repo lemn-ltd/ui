@@ -10,6 +10,18 @@
   the protected showcase token inside an inactive Worker version before traffic
   activation.
 
+## 0.2.4
+
+### Patch Changes
+
+- 1fc6030: Apply custom AccentColorPicker values exactly to accent-backed surfaces and derive an accessible foreground token for content rendered on them.
+
+## 0.2.3
+
+### Patch Changes
+
+- 22f9d34: Render AccentColorPicker swatches with the exact selected color while keeping contrast-adjusted theme tokens for product UI.
+
 ## 0.2.2
 
 ### Patch Changes

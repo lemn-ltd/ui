@@ -38,6 +38,7 @@ const text = {
 const accents = {
   light: {
     accent: '#0d9488',
+    accentForeground: '#ffffff',
     accentStrong: '#0f766e',
     accentSoft: '#e6fbf6',
     accent2: '#7c3aed',
@@ -45,6 +46,7 @@ const accents = {
   },
   dark: {
     accent: '#5eead4',
+    accentForeground: '#0e141b',
     accentStrong: '#2dd4bf',
     accentSoft: '#0f2a2a',
     accent2: '#a78bfa',

@@ -37,7 +37,7 @@
 
 .ui-stepper__step[data-status="completed"] .ui-stepper__dot {
   background: var(--accent);
-  color: var(--bg);
+  color: var(--accent-foreground);
 }
 
 .ui-stepper__step[data-status="active"] .ui-stepper__dot {

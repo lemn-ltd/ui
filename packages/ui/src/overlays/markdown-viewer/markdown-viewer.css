@@ -37,6 +37,6 @@
 }
 
 ::highlight(ui-markdown-viewer-search-active) {
-  color: var(--surface);
+  color: var(--accent-foreground);
   background-color: var(--accent);
 }

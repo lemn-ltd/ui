@@ -45,7 +45,7 @@
 
 .ui-button[data-variant="primary"] {
   background: var(--accent);
-  color: var(--bg);
+  color: var(--accent-foreground);
 }
 .ui-button[data-variant="primary"]:not(:disabled):hover {
   background: color-mix(in srgb, var(--accent) 86%, var(--text));

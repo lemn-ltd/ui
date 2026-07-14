@@ -41,7 +41,10 @@ import "@lemn-ltd/ui/styles.css";
 `ThemeToggle` cambia entre modo light y dark. `AccentColorPicker` permite mover
 un puntero por una paleta y actualiza los tokens compartidos de accent en tiempo
 real; tambien soporta flechas del teclado, un espectro de Hue y entrada
-hexadecimal validada que se aplica al presionar Enter.
+hexadecimal validada que se aplica al presionar Enter. Sus indicadores muestran
+el color exacto seleccionado y ese mismo valor se aplica a `--accent`; los
+tokens de texto, hover, superficie suave y foco se derivan para conservar
+contraste legible.
 
 ```tsx
 import { AccentColorPicker, ThemeToggle } from "@lemn-ltd/ui";

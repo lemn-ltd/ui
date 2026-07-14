@@ -56,7 +56,7 @@
 
 .ui-pagination__page[data-current="true"] {
   background: var(--accent);
-  color: var(--bg);
+  color: var(--accent-foreground);
 }
 
 .ui-pagination__ellipsis {

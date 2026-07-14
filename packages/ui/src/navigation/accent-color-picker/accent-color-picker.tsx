@@ -165,7 +165,7 @@ export function AccentColorPicker({
 					<span
 						aria-hidden="true"
 						className="ui-accent-color-picker__trigger-swatch"
-						style={{ backgroundColor: "var(--accent)" }}
+						style={{ backgroundColor: currentValue }}
 					/>
 				</IconButton>
 			</RadixPopover.Trigger>
@@ -286,7 +286,7 @@ export function AccentColorPicker({
 					<div className="ui-accent-color-picker__footer">
 						<span
 							className="ui-accent-color-picker__preview"
-							style={{ backgroundColor: "var(--accent)" }}
+							style={{ backgroundColor: currentValue }}
 						/>
 						<Button onClick={reset} size="sm" variant="outline">
 							<Icon name="rotate-ccw" size={14} />

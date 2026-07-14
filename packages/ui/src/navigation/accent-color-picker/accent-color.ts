@@ -3,6 +3,7 @@ export const ACCENT_COLOR_STORAGE_KEY = "accent-color";
 
 const ACCENT_PROPERTIES = [
 	"--accent",
+	"--accent-foreground",
 	"--accent-strong",
 	"--accent-soft",
 	"--focus-ring",
@@ -78,7 +79,28 @@ function targetRoot(target?: HTMLElement): HTMLElement | undefined {
 	return typeof document === "undefined" ? undefined : document.documentElement;
 }
 
-/** Applies accessible light/dark accent derivatives while preserving the selected hue. */
+function relativeLuminance(value: string): number {
+	const normalized = normalizeAccentColor(value) ?? DEFAULT_ACCENT_COLOR;
+	const channel = (offset: number): number => {
+		const encoded =
+			Number.parseInt(normalized.slice(offset, offset + 2), 16) / 255;
+		return encoded <= 0.04045
+			? encoded / 12.92
+			: ((encoded + 0.055) / 1.055) ** 2.4;
+	};
+
+	return 0.2126 * channel(1) + 0.7152 * channel(3) + 0.0722 * channel(5);
+}
+
+function accentForeground(value: string): "#ffffff" | "#0e141b" {
+	const luminance = relativeLuminance(value);
+	const darkLuminance = relativeLuminance("#0e141b");
+	const whiteContrast = 1.05 / (luminance + 0.05);
+	const darkContrast = (luminance + 0.05) / (darkLuminance + 0.05);
+	return whiteContrast >= darkContrast ? "#ffffff" : "#0e141b";
+}
+
+/** Applies the exact selected accent plus readable, theme-aware derivatives. */
 export function applyAccentColor(value: string, target?: HTMLElement): string {
 	const normalized = normalizeAccentColor(value) ?? DEFAULT_ACCENT_COLOR;
 	const root = targetRoot(target);
@@ -91,33 +113,19 @@ export function applyAccentColor(value: string, target?: HTMLElement): string {
 		return normalized;
 	}
 
-	const { hue, saturation, value: brightness } = hexToHsv(normalized);
-	const chroma = 0.035 + (saturation / 100) * 0.135;
-	const lightLightness = 0.4 + (brightness / 100) * 0.07;
-	const darkLightness = 0.7 + (brightness / 100) * 0.12;
-	const format = (number: number): string => number.toFixed(3);
-	const color = (
-		lightness: number,
-		colorChroma = chroma,
-		alpha?: number,
-	): string =>
-		`oklch(${format(lightness)} ${format(colorChroma)} ${hue}${alpha === undefined ? "" : ` / ${alpha}`})`;
-
-	root.style.setProperty(
-		"--accent",
-		`light-dark(${color(lightLightness)}, ${color(darkLightness)})`,
-	);
+	root.style.setProperty("--accent", normalized);
+	root.style.setProperty("--accent-foreground", accentForeground(normalized));
 	root.style.setProperty(
 		"--accent-strong",
-		`light-dark(${color(lightLightness - 0.08)}, ${color(darkLightness - 0.09)})`,
+		`color-mix(in srgb, ${normalized} 86%, var(--text))`,
 	);
 	root.style.setProperty(
 		"--accent-soft",
-		`light-dark(${color(0.96, chroma * 0.22)}, ${color(0.22, chroma * 0.24)})`,
+		`color-mix(in srgb, ${normalized} 12%, var(--surface))`,
 	);
 	root.style.setProperty(
 		"--focus-ring",
-		`light-dark(${color(lightLightness, chroma, 0.45)}, ${color(darkLightness, chroma, 0.55)})`,
+		`color-mix(in srgb, ${normalized} 68%, var(--text))`,
 	);
 	root.dataset.accentColor = normalized;
 	return normalized;
