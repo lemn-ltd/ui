@@ -1,5 +1,11 @@
 # @lemn-ltd/ui
 
+## 0.2.2
+
+### Patch Changes
+
+- ff4dd1e: Keep AccentColorPicker palette dragging live across pointer-capture differences and add validated hexadecimal entry applied with Enter.
+
 ## 0.2.1
 
 ### Patch Changes
