@@ -131,6 +131,13 @@ function redact(message: string, auth: CloudflareAuth): string {
 		.replaceAll(auth.email, "[REDACTED]");
 }
 
+function requireArrayResult<T>(value: T[], description: string): T[] {
+	if (!Array.isArray(value)) {
+		throw new Error(`Cloudflare preflight returned malformed ${description}`);
+	}
+	return value;
+}
+
 async function cloudflareRequest<T>(
 	path: string,
 	auth: CloudflareAuth,
@@ -241,10 +248,13 @@ export async function verifyCloudflareReleaseAccess(input: {
 		throw new Error("CLOUDFLARE_EMAIL does not match the Global API Key owner");
 	}
 
-	const memberships = await cloudflareRequest<Membership[]>(
-		"/memberships",
-		auth,
-		fetchImplementation,
+	const memberships = requireArrayResult(
+		await cloudflareRequest<Membership[]>(
+			"/memberships",
+			auth,
+			fetchImplementation,
+		),
+		"membership list",
 	);
 	const membership = memberships.find(
 		(candidate) => candidate.account?.id === accountId,
@@ -284,9 +294,12 @@ export async function verifyCloudflareReleaseAccess(input: {
 		"account.id": accountId,
 		status: "active",
 	});
-	const zones = await cloudflareRequest<
-		Array<{ id?: string; name?: string; account?: { id?: string } }>
-	>(`/zones?${zoneQuery}`, auth, fetchImplementation);
+	const zones = requireArrayResult(
+		await cloudflareRequest<
+			Array<{ id?: string; name?: string; account?: { id?: string } }>
+		>(`/zones?${zoneQuery}`, auth, fetchImplementation),
+		"zone list",
+	);
 	if (
 		!zones.some(
 			(zone) =>
@@ -299,10 +312,13 @@ export async function verifyCloudflareReleaseAccess(input: {
 	}
 
 	for (const target of input.targets) {
-		const scripts = await cloudflareRequest<Array<{ id?: string }>>(
-			`/accounts/${encodeURIComponent(target.accountId)}/workers/scripts`,
-			auth,
-			fetchImplementation,
+		const scripts = requireArrayResult(
+			await cloudflareRequest<Array<{ id?: string }>>(
+				`/accounts/${encodeURIComponent(target.accountId)}/workers/scripts`,
+				auth,
+				fetchImplementation,
+			),
+			`Worker list for ${target.id}`,
 		);
 		if (
 			input.requireResources &&
@@ -314,12 +330,15 @@ export async function verifyCloudflareReleaseAccess(input: {
 		}
 
 		const query = new URLSearchParams({ hostname: target.hostname });
-		const domains = await cloudflareRequest<
-			Array<{ hostname?: string; service?: string }>
-		>(
-			`/accounts/${encodeURIComponent(target.accountId)}/workers/domains?${query}`,
-			auth,
-			fetchImplementation,
+		const domains = requireArrayResult(
+			await cloudflareRequest<
+				Array<{ hostname?: string; service?: string }>
+			>(
+				`/accounts/${encodeURIComponent(target.accountId)}/workers/domains?${query}`,
+				auth,
+				fetchImplementation,
+			),
+			`custom-domain list for ${target.id}`,
 		);
 		const hostnameMappings = domains.filter(
 			(domain) => domain.hostname === target.hostname,

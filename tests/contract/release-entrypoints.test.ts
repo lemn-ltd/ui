@@ -102,6 +102,22 @@ test("all production mutation entrypoints share the guarded release path", () =>
 	);
 });
 
+test("Changesets exposes explicit add and status commands but no versioning bypass", () => {
+	const scripts = record(rootPackage.scripts, "root scripts");
+	assert.equal(scripts.changeset, undefined);
+	assert.equal(scripts["changeset:add"], "changeset add");
+	assert.equal(scripts["changeset:status"], "changeset status");
+	assert.match(
+		String(scripts["version:packages"]),
+		/^pnpm guard:release:mutation && changeset version && /u,
+	);
+	for (const [name, command] of Object.entries(scripts)) {
+		if (/changeset version/u.test(String(command))) {
+			assert.equal(name, "version:packages");
+		}
+	}
+});
+
 test("publish lifecycle builds then requires dist and a strict consumer smoke", () => {
 	const scripts = record(rootPackage.scripts, "root scripts");
 	const publish = String(scripts["publish:ui"]);

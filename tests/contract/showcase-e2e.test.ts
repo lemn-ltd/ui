@@ -6,6 +6,7 @@ import test from "node:test";
 import playwrightConfig, {
 	showcaseE2ePortForCheckout,
 } from "../../apps/showcase/playwright.config.ts";
+import { createIndexedSourceArchive } from "../../scripts/test/update-linux-visual-snapshots.mjs";
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -92,10 +93,14 @@ test("Darwin and Linux visual baselines have exact platform parity", async () =>
 });
 
 test("Linux baselines use the pinned official Playwright runtime", async () => {
-	const [rootPackageSource, generator] = await Promise.all([
+	const [rootPackageSource, generator, linuxConfig] = await Promise.all([
 		readFile(resolve(root, "package.json"), "utf8"),
 		readFile(
 			resolve(root, "scripts/test/update-linux-visual-snapshots.mjs"),
+			"utf8",
+		),
+		readFile(
+			resolve(root, "apps/showcase/playwright.linux-snapshots.config.ts"),
 			"utf8",
 		),
 	]);
@@ -110,8 +115,38 @@ test("Linux baselines use the pinned official Playwright runtime", async () => {
 	assert.match(generator, /mcr\.microsoft\.com\/playwright:v1\.60\.0-noble/u);
 	assert.match(generator, /corepack prepare pnpm@11\.8\.0 --activate/u);
 	assert.match(generator, /pnpm install --frozen-lockfile/u);
-	assert.match(generator, /SHOWCASE_E2E_STATIC_PREVIEW=1/u);
+	assert.match(generator, /"write-tree"/u);
+	assert.match(generator, /"archive"[\s\S]*--output/u);
+	assert.match(generator, /set -euo pipefail/u);
+	assert.match(generator, /replaceLinuxSnapshots/u);
+	assert.doesNotMatch(generator, /SHOWCASE_E2E_STATIC_PREVIEW|WEB_UI_LOCAL/u);
+	assert.doesNotMatch(generator, /tar[^\n]*\|[^\n]*tar/u);
 	assert.match(generator, /--grep 'visual: ' --update-snapshots/u);
+	assert.match(linuxConfig, /SHOWCASE_LINUX_SNAPSHOT_BASE_URL/u);
+	assert.match(linuxConfig, /webServer: undefined/u);
+});
+
+test("Linux source archive fails closed when its producer fails", () => {
+	const calls: string[] = [];
+	const fakeSpawn = (command: string, args: string[]) => {
+		calls.push([command, ...args].join(" "));
+		if (args[0] === "status") return { status: 0, stdout: "M  staged.ts\n" };
+		if (args[0] === "write-tree") {
+			return { status: 0, stdout: `${"a".repeat(40)}\n` };
+		}
+		return { status: 23, stdout: "" };
+	};
+	assert.throws(
+		() =>
+			createIndexedSourceArchive({
+				repositoryRoot: "/tmp/immutable-source",
+				archivePath: "/tmp/source.tar",
+				spawnImplementation: fakeSpawn,
+			}),
+		/git archive .* failed with exit code 23/u,
+	);
+	assert.equal(calls.length, 3);
+	assert.match(calls[2] ?? "", /^git archive --format=tar --output=/u);
 });
 
 test("catalog-scale E2E closes isolated pages within explicit aggregate budgets", async () => {

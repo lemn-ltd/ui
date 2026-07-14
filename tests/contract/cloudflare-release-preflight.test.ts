@@ -32,6 +32,7 @@ function response(result: unknown, status = 200): Response {
 function cloudflareFixture(
 	options: {
 		conflictingDomain?: boolean;
+		malformedWorkerList?: boolean;
 		missingResources?: boolean;
 		missingZone?: boolean;
 		readOnly?: boolean;
@@ -88,6 +89,9 @@ function cloudflareFixture(
 			);
 		}
 		if (url.endsWith(`/accounts/${accountId}/workers/scripts`)) {
+			if (options.malformedWorkerList) {
+				return response({ success: true, result: [] });
+			}
 			return response(
 				options.missingResources
 					? [{ id: "appranks-ui" }]
@@ -151,6 +155,20 @@ test("preflight allows bootstrap when the target Worker and domains do not exist
 		targets,
 		fetchImplementation: fixture.fetchImplementation,
 	});
+});
+
+test("preflight rejects a malformed Worker list during bootstrap", async () => {
+	const fixture = cloudflareFixture({ malformedWorkerList: true });
+	await assert.rejects(
+		verifyCloudflareReleaseAccess({
+			apiKey,
+			email,
+			targets,
+			fetchImplementation: fixture.fetchImplementation,
+			requireResources: false,
+		}),
+		/malformed Worker list for docs/u,
+	);
 });
 
 test("post-deploy resource smoke requires both Workers and exact domain mappings", async () => {

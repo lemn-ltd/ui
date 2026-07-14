@@ -89,7 +89,7 @@ pnpm dev:showcase
 
 ## Release Rules
 
-- Add a changeset with `pnpm changeset` for every publishable package change.
+- Add a changeset with `pnpm changeset:add` for every publishable package change.
 - Let CI generate the release metadata commit that updates
   `packages/ui/package.json` and `packages/ui/CHANGELOG.md`; do not hand-edit
   package versions in feature PRs.

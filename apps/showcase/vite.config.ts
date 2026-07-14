@@ -13,7 +13,7 @@ const showcaseKitSrc = (relativePath: string): string =>
 
 export default defineConfig({
   server: {
-    allowedHosts: ['showcase-ui-6500.le-mn.com'],
+    allowedHosts: ['showcase-ui-6500.le-mn.com', 'host.docker.internal'],
   },
   // The showcase consumes @lemn-ltd/ui from source so the catalog stays the
   // single visual source of truth without a rebuild on every change.

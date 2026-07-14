@@ -13,7 +13,6 @@ export function showcaseE2ePortForCheckout(checkoutPath: string): number {
 const SHOWCASE_ROOT = realpathSync(import.meta.dirname);
 const E2E_PORT = showcaseE2ePortForCheckout(SHOWCASE_ROOT);
 const BASE_URL = `http://127.0.0.1:${E2E_PORT}`;
-const STATIC_PREVIEW = process.env.SHOWCASE_E2E_STATIC_PREVIEW === '1';
 
 const VIEWPORTS = {
   mobile: { width: 375, height: 812 },
@@ -54,9 +53,7 @@ export default defineConfig({
     toHaveScreenshot: { maxDiffPixelRatio: 0.01, animations: 'disabled' },
   },
   webServer: {
-    // The canonical command is Worker-backed; the pinned Linux baseline
-    // generator alone opts into static preview. Both remain Playwright-owned.
-    command: `pnpm exec vite ${STATIC_PREVIEW ? 'preview' : 'dev'} --host 127.0.0.1 --port ${E2E_PORT} --strictPort`,
+    command: `pnpm exec vite dev --host 127.0.0.1 --port ${E2E_PORT} --strictPort`,
     cwd: SHOWCASE_ROOT,
     url: BASE_URL,
     reuseExistingServer: false,

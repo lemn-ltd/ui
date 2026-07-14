@@ -96,7 +96,10 @@ development server on port 6500 or a server from another worktree.
 
 Visual assertions keep paired Darwin and Linux baselines at the unchanged 1%
 pixel threshold. Regenerate the Linux side reproducibly with the pinned
-Playwright container:
+Playwright container. The generator archives the immutable Git index, rejects
+unstaged or untracked source, and replaces existing Linux images only after all
+78 outputs have exact filename parity with Darwin. Stage the intended source
+tree before running it:
 
 ```bash
 pnpm visual:update:linux

@@ -118,7 +118,7 @@ test("direct main pushes re-run the fail-closed changeset and version guard", ()
 	assert.match(String(guard.run), /git diff --quiet/u);
 	assert.match(String(guard.run), /packages\/ui/u);
 	assert.match(String(guard.run), /check-unpublished-package-version\.ts/u);
-	assert.match(String(guard.run), /changeset status/u);
+	assert.match(String(guard.run), /changeset:status/u);
 	assert.ok(
 		stepIndex("Guard main package version") <
 			stepIndex("Preflight Cloudflare release access"),
@@ -329,31 +329,36 @@ test("CI and release smoke the exact local showcase asset deployment before publ
 
 test("the successful validation gate runs complete showcase E2E before release", () => {
 	const validationJob = record(jobs.validate, "validate job");
-	const validationSteps = validationJob.steps as UnknownRecord[];
-	const validationStepIndex = (name: string): number => {
-		const index = validationSteps.findIndex(
-			(candidate) => candidate.name === name,
-		);
-		assert.notEqual(index, -1, `Missing validation step: ${name}`);
-		return index;
-	};
-	const e2e = validationSteps[validationStepIndex("Run complete showcase E2E")];
-	assert.equal(e2e?.run, "make test-e2e-ui-showcase");
-	assert.equal(e2e?.if, undefined);
+	const e2eJob = record(jobs["showcase-e2e"], "showcase E2E job");
+	const strategy = record(e2eJob.strategy, "showcase E2E strategy");
+	const matrix = record(strategy.matrix, "showcase E2E matrix");
+	const container = record(e2eJob.container, "showcase E2E container");
+	const e2eSteps = e2eJob.steps as UnknownRecord[];
+	const shard = e2eSteps.find(
+		(candidate) => candidate.name === "Run showcase E2E shard",
+	);
+	assert.ok(shard);
+	assert.equal(e2eJob.needs, "validate");
+	assert.equal(
+		container.image,
+		"mcr.microsoft.com/playwright:v1.60.0-noble",
+	);
+	assert.equal(container.options, "--ipc=host");
+	assert.equal(strategy["fail-fast"], false);
+	assert.deepEqual(matrix.shard, [1, 2, 3]);
+	assert.equal(
+		shard.run,
+		[
+			"make test-e2e-ui-showcase-shard SHARD=",
+			expression("matrix.shard"),
+			"/3",
+		].join(""),
+	);
+	assert.equal(shard.if, undefined);
+	assert.doesNotMatch(String(shard.run), /--grep|visual\.e2e/u);
 	assert.ok(Number(validationJob["timeout-minutes"]) >= 60);
-	assert.ok(
-		validationStepIndex("Install Playwright Chromium") <
-			validationStepIndex("Run complete showcase E2E"),
-	);
-	assert.ok(
-		validationStepIndex("Build") <
-			validationStepIndex("Run complete showcase E2E"),
-	);
-	assert.ok(
-		validationStepIndex("Run complete showcase E2E") <
-			validationStepIndex("Smoke showcase deployment locally"),
-	);
-	assert.equal(releaseJob.needs, "validate");
+	assert.ok(Number(e2eJob["timeout-minutes"]) >= 30);
+	assert.deepEqual(releaseJob.needs, ["validate", "showcase-e2e"]);
 	assert.doesNotMatch(String(releaseJob.if), /always\s*\(/u);
 	assert.ok(stepIndex("Publish package if needed") < stepIndex("Deploy docs"));
 });

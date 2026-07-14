@@ -115,7 +115,7 @@ pnpm validate:boundaries
 3. Run `pnpm validate:brand-neutrality`, `pnpm validate:boundaries`,
    `pnpm --filter @lemn-ltd/ui run check`, `pnpm --filter @lemn-ltd/ui run test`,
    and `pnpm --filter @lemn-ltd/ui run build`.
-4. Add a changeset with `pnpm changeset` for every publishable package change.
+4. Add a changeset with `pnpm changeset:add` for every publishable package change.
    The release workflow turns merged changesets into a release metadata commit
    that updates `packages/ui/package.json`, `packages/ui/CHANGELOG.md`, and the
    docs changelog.

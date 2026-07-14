@@ -3,7 +3,7 @@ SHELL := /bin/bash
 
 PNPM ?= pnpm
 
-.PHONY: help install dev dev-docs validate-package-identity validate-brand-neutrality validate-boundaries validate-release-preconditions validate check test test-e2e-ui-showcase build pack-ui release-preflight clean
+.PHONY: help install dev dev-docs validate-package-identity validate-brand-neutrality validate-boundaries validate-release-preconditions validate check test test-e2e-ui-showcase test-e2e-ui-showcase-shard build pack-ui release-preflight clean
 
 help:
 	@printf 'Useful targets:\n'
@@ -56,6 +56,10 @@ test:
 
 test-e2e-ui-showcase:
 	$(PNPM) --filter @appranks/ui-showcase run test:e2e
+
+test-e2e-ui-showcase-shard:
+	@test -n "$(SHARD)" || { printf 'SHARD is required (for example, 1/3).\n' >&2; exit 2; }
+	$(PNPM) --filter @appranks/ui-showcase exec playwright test --shard=$(SHARD)
 
 build:
 	$(PNPM) build

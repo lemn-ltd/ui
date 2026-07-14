@@ -59,7 +59,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if find .changeset -maxdepth 1 -type f -name '*.md' ! -name README.md | grep -q .; then
-            pnpm changeset status --since=origin/main
+            pnpm changeset:status --since=origin/main
             exit 0
           fi
 
@@ -84,12 +84,6 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Install Playwright Chromium
-        run: pnpm --filter @appranks/ui-showcase exec playwright install --with-deps chromium
-
-      - name: Run complete showcase E2E
-        run: make test-e2e-ui-showcase
-
       - name: Smoke showcase deployment locally
         run: pnpm smoke:showcase:local
 
@@ -99,9 +93,56 @@ jobs:
       - name: Verify generated files are committed
         run: git diff --exit-code
 
+  showcase-e2e:
+    name: Showcase E2E (${{ matrix.shard }}/3)
+    needs: validate
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.60.0-noble
+      options: --ipc=host
+    timeout-minutes: 35
+    permissions:
+      contents: read
+      packages: read
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://npm.pkg.github.com
+          scope: "@lemn-ltd"
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare "$(node -p "require('./package.json').packageManager")" --activate
+
+      - name: Resolve pnpm store
+        run: echo "PNPM_STORE_PATH=$(pnpm store path --silent)" >> "$GITHUB_ENV"
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.PNPM_STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run showcase E2E shard
+        run: make test-e2e-ui-showcase-shard SHARD=${{ matrix.shard }}/3
+
   release-and-deploy:
     name: Release And Deploy
-    needs: validate
+    needs: [validate, showcase-e2e]
     if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     timeout-minutes: 35
@@ -153,7 +194,7 @@ jobs:
           fi
 
           if find .changeset -maxdepth 1 -type f -name '*.md' ! -name README.md | grep -q .; then
-            pnpm changeset status --since="$base_sha"
+            pnpm changeset:status --since="$base_sha"
             exit 0
           fi
 

@@ -155,8 +155,8 @@ assert(
   '.npmrc must map the @lemn-ltd scope to GitHub Packages',
 );
 assert(
-  workflow.match(/scope: "@lemn-ltd"/gu)?.length === 2,
-  'Both CI jobs must configure setup-node for the @lemn-ltd registry scope',
+  workflow.match(/scope: "@lemn-ltd"/gu)?.length === 3,
+  'All CI jobs must configure setup-node for the @lemn-ltd registry scope',
 );
 assert(
   docsAstroConfig.includes(`site: 'https://${canonicalDocsHost}'`),
