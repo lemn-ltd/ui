@@ -8,7 +8,7 @@ interface PackageManifest {
 }
 
 interface GitHubPackageVersion {
-	name?: string;
+	name: string;
 }
 
 type FetchImplementation = typeof fetch;
@@ -88,7 +88,22 @@ async function packageVersionsPage(input: {
 	if (!Array.isArray(payload)) {
 		throw new Error("GitHub Packages returned a malformed version response");
 	}
-	return payload as GitHubPackageVersion[];
+
+	return payload.map((entry, index) => {
+		if (
+			!entry ||
+			typeof entry !== "object" ||
+			Array.isArray(entry) ||
+			!("name" in entry) ||
+			typeof entry.name !== "string" ||
+			entry.name === ""
+		) {
+			throw new Error(
+				`GitHub Packages returned a malformed version at index ${index}`,
+			);
+		}
+		return { name: entry.name };
+	});
 }
 
 interface PackageVersionStatusInput {
@@ -107,6 +122,7 @@ export async function getPackageVersionStatus(
 	const token = requireValue(input.token, "GITHUB_TOKEN");
 	const packageName = packageCoordinates(input.packageName, owner);
 	const fetchImplementation = input.fetchImplementation ?? fetch;
+	const seenVersions = new Set<string>();
 
 	for (let page = 1; ; page += 1) {
 		const versions = await packageVersionsPage({
@@ -117,9 +133,15 @@ export async function getPackageVersionStatus(
 			token,
 			fetchImplementation,
 		});
-		if (versions.some((version) => version.name === input.version)) {
-			return "published";
+		for (const version of versions) {
+			if (seenVersions.has(version.name)) {
+				throw new Error(
+					`GitHub Packages returned duplicate version ${version.name}`,
+				);
+			}
+			seenVersions.add(version.name);
 		}
+		if (seenVersions.has(input.version)) return "published";
 		if (versions.length < 100) return "unpublished";
 	}
 }

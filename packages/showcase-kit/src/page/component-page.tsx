@@ -35,10 +35,17 @@ export interface ComponentPageProps {
 	readonly children: ReactNode;
 }
 
+const LEGACY_UI_PACKAGE_PATTERN = /@appranks\/ui(?![-A-Za-z0-9])/u;
+
 function withPublicImport(
 	code: string,
 	publicExports: readonly string[],
 ): string {
+	if (LEGACY_UI_PACKAGE_PATTERN.test(code)) {
+		throw new Error(
+			"Component documentation must not expose the legacy UI package identity.",
+		);
+	}
 	if (code.includes("from '@lemn-ltd/ui'")) return code;
 	return `import { ${publicExports.join(", ")} } from '@lemn-ltd/ui';\n\n${code}`;
 }

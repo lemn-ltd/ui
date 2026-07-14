@@ -97,10 +97,10 @@ pnpm dev:showcase
   version to fix packaging or CSS output.
 - Commit and push only reviewed source changes. Avoid mixing unrelated worktree
   changes into the release commit.
-- The CI workflow publishes `@lemn-ltd/ui` when the pushed version is not already
-  present and the registry owner/token can publish the package scope. If the
-  package scope and GitHub repo owner are not aligned, CI records a warning and
-  continues the docs/showcase deploy.
+- The CI workflow publishes `@lemn-ltd/ui` only after it verifies the pushed
+  version, registry owner/token, and Cloudflare release access. A scope, owner,
+  authentication, version, or Cloudflare mismatch fails closed before package
+  publication or docs/showcase deployment.
 - The CI workflow deploys docs to `ui.lemn.ai` and the interactive showcase
   to `showcase.ui.lemn.ai` after the release automation has run.
 - After publish, update consuming repos to the new version and regenerate their

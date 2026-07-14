@@ -84,6 +84,9 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Smoke showcase deployment locally
+        run: pnpm smoke:showcase:local
+
       - name: Pack and install package smoke
         run: pnpm pack:ui
 
@@ -132,12 +135,31 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Validate release preconditions
-        run: pnpm validate:release-preconditions
+      - name: Guard main package version
+        env:
+          GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_BASE_SHA: ${{ github.event.before }}
+        run: |
+          base_sha="$RELEASE_BASE_SHA"
+          if [ -z "$base_sha" ] || [ "$base_sha" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "${base_sha}^{commit}"; then
+            base_sha="$(git rev-parse HEAD^)"
+          fi
+
+          if find .changeset -maxdepth 1 -type f -name '*.md' ! -name README.md | grep -q .; then
+            pnpm changeset status --since="$base_sha"
+            exit 0
+          fi
+
+          if git diff --quiet "${base_sha}...HEAD" -- packages/ui; then
+            exit 0
+          fi
+
+          node scripts/release/check-unpublished-package-version.ts
 
       - name: Preflight Cloudflare release access
         id: cloudflare
-        run: pnpm preflight:cloudflare:release
+        run: pnpm release:preflight
         env:
           CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
           CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
@@ -182,6 +204,9 @@ jobs:
       - name: Build package
         run: pnpm --filter @lemn-ltd/ui run build
 
+      - name: Build and smoke showcase deployment locally
+        run: pnpm smoke:showcase:local
+
       - name: Check package publication status
         id: package-version
         run: node scripts/release/check-unpublished-package-version.ts --github-output
@@ -191,7 +216,7 @@ jobs:
 
       - name: Publish package if needed
         if: steps.package-version.outputs.published == 'false'
-        run: pnpm publish:ui
+        run: pnpm publish:ui:internal
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -208,11 +233,6 @@ jobs:
           CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
           CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
           CLOUDFLARE_ACCOUNT_ID: ${{ steps.cloudflare.outputs.docs_account_id }}
-
-      - name: Build showcase
-        run: pnpm --filter @appranks/ui-showcase run cf:build
-        env:
-          CLOUDFLARE_ENV: production
 
       - name: Deploy showcase
         run: >-
@@ -244,6 +264,7 @@ jobs:
         env:
           EXPECTED_RELEASE_VERSION: ${{ steps.release.outputs.version }}
           EXPECTED_RELEASE_GIT_SHA: ${{ steps.release.outputs.sha }}
+          EXPECTED_RELEASE_TIME: ${{ steps.release.outputs.time }}
 
       - name: Summary
         run: |
@@ -256,4 +277,5 @@ jobs:
             echo "- Catalog: https://showcase.ui.lemn.ai/catalog.json"
             echo "- Agent guide: https://showcase.ui.lemn.ai/llms.txt"
             echo "- Commit: \`${{ steps.release.outputs.sha }}\`"
+            echo "- Build time: \`${{ steps.release.outputs.time }}\`"
           } >> "$GITHUB_STEP_SUMMARY"

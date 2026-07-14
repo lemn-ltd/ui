@@ -64,6 +64,7 @@ function readyResponse(env: UiShowcaseEnv): Response {
 			environment: env.DEPLOYMENT_ENVIRONMENT ?? "local",
 			version: env.BUILD_VERSION ?? "0.0.0",
 			gitSha: env.BUILD_GIT_SHA ?? "local",
+			buildTime: env.BUILD_TIME ?? "local",
 			missingBindings: validation.missingBindings,
 			missingConfiguration: validation.missingConfiguration,
 		},

@@ -3,6 +3,8 @@ import { uiShowcaseAppDescriptor } from "../../app-descriptor";
 import type { UiShowcaseEnv } from "../env";
 import UiShowcaseWorker from "../index";
 
+const LEGACY_UI_PACKAGE_PATTERN = /@appranks\/ui(?![-A-Za-z0-9])/u;
+
 function assetsFetcher(): Fetcher {
 	return {
 		fetch: vi.fn(
@@ -45,6 +47,7 @@ describe("ui showcase worker", () => {
 	it("exposes the exact build identity from readiness", async () => {
 		const worker = createWorker({
 			BUILD_GIT_SHA: "release-sha",
+			BUILD_TIME: "2026-07-14T00:00:00Z",
 			BUILD_VERSION: "1.2.3",
 		});
 		const response = await worker.fetch(request("/health/ready"));
@@ -53,6 +56,7 @@ describe("ui showcase worker", () => {
 			ok: true,
 			version: "1.2.3",
 			gitSha: "release-sha",
+			buildTime: "2026-07-14T00:00:00Z",
 		});
 	});
 
@@ -69,16 +73,19 @@ describe("ui showcase worker", () => {
 
 		const catalogResponse = await worker.fetch(request("/catalog.json"));
 		expect(catalogResponse.status).toBe(200);
-		expect(await catalogResponse.json()).toMatchObject({
+		const catalog = await catalogResponse.json();
+		expect(catalog).toMatchObject({
 			package: "@lemn-ltd/ui",
 			version: "1.2.3",
 			source: "https://github.com/lemn-ltd/ui",
 		});
+		expect(JSON.stringify(catalog)).not.toMatch(LEGACY_UI_PACKAGE_PATTERN);
 
 		const summary = await (await worker.fetch(request("/llms.txt"))).text();
 		expect(summary).toContain("# LEMN UI");
 		expect(summary).toContain("https://showcase.ui.lemn.ai/catalog.json");
 		expect(summary).toContain("@lemn-ltd/ui");
+		expect(summary).not.toMatch(LEGACY_UI_PACKAGE_PATTERN);
 
 		const full = await (await worker.fetch(request("/llms-full.txt"))).text();
 		expect(full).toContain("from '@lemn-ltd/ui';");
@@ -86,6 +93,7 @@ describe("ui showcase worker", () => {
 			"import { RadioGroup, RadioGroupItem } from '@lemn-ltd/ui';",
 		);
 		expect(full).toContain("import { GraphCanvas } from '@lemn-ltd/ui';");
+		expect(full).not.toMatch(LEGACY_UI_PACKAGE_PATTERN);
 		expect(full).not.toContain("@latest");
 	});
 

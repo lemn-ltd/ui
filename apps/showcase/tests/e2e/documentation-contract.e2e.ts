@@ -1,6 +1,8 @@
 import { componentRoutesFromCatalog } from "../helpers/component-catalog";
 import { expect, gotoStable, test } from "../helpers/deterministic";
 
+const LEGACY_UI_PACKAGE_PATTERN = /@appranks\/ui(?![-A-Za-z0-9])/u;
+
 test("every catalog component implements the interactive documentation contract", async ({
 	page,
 }) => {
@@ -15,6 +17,10 @@ test("every catalog component implements the interactive documentation contract"
 				await gotoStable(page, entry.route);
 				const docs = page.locator(".showcase-docs-page");
 				await expect(docs).toBeVisible();
+				expect(
+					await docs.innerText(),
+					`${entry.route} visible content`,
+				).not.toMatch(LEGACY_UI_PACKAGE_PATTERN);
 				await expect(
 					docs.locator(".showcase-docs-page__title-row > h1"),
 				).toHaveCount(1);
@@ -50,7 +56,7 @@ test("every catalog component implements the interactive documentation contract"
 					}
 					const visibleCode = await code.innerText();
 					expect(visibleCode, `${entry.route} public snippet`).not.toMatch(
-						/@latest|@lemn-ltd\/ui\//,
+						/@appranks\/ui(?![-A-Za-z0-9])|@latest|@lemn-ltd\/ui\//u,
 					);
 				}
 
@@ -63,6 +69,9 @@ test("every catalog component implements the interactive documentation contract"
 				);
 				expect(clipboardText, `${entry.route} clipboard`).toContain(
 					"from '@lemn-ltd/ui';",
+				);
+				expect(clipboardText, `${entry.route} clipboard`).not.toMatch(
+					LEGACY_UI_PACKAGE_PATTERN,
 				);
 				await expect(
 					docs.getByRole("heading", { name: "Installation" }),

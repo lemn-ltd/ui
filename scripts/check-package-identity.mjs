@@ -129,8 +129,18 @@ assert(
 );
 assert(
   rootPackage.scripts?.['publish:ui'] ===
-    'pnpm validate:release-preconditions && pnpm --filter @lemn-ltd/ui publish --access restricted --no-git-checks',
-  'publish:ui must validate release preconditions before publishing the canonical package name',
+    'pnpm release:preflight && pnpm publish:ui:internal',
+  'publish:ui must run the full release preflight before the internal publisher',
+);
+assert(
+  rootPackage.scripts?.['publish:ui:internal'] ===
+    'pnpm --filter @lemn-ltd/ui publish --access restricted --no-git-checks',
+  'publish:ui:internal must publish the canonical package name',
+);
+assert(
+  rootPackage.scripts?.release ===
+    'pnpm release:preflight && pnpm build && pnpm publish:ui:internal',
+  'release must run one full release preflight before build and internal publish',
 );
 assert(
   makefile.includes('pack-ui:\n\t$(PNPM) pack:ui'),

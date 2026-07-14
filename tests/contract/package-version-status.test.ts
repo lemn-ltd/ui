@@ -43,6 +43,38 @@ test("rejects an already published 0.1.2 and requires a new changeset", async ()
 	);
 });
 
+test("fails closed when a 200 version response has a malformed item", async () => {
+	await assert.rejects(
+		assertPackageVersionUnpublished({
+			...input,
+			fetchImplementation: async () => response([{ unexpected: "shape" }]),
+		}),
+		/malformed version at index 0/u,
+	);
+});
+
+test("fails closed when a 200 version response mixes valid and malformed items", async () => {
+	await assert.rejects(
+		assertPackageVersionUnpublished({
+			...input,
+			fetchImplementation: async () =>
+				response([{ name: "0.1.1" }, { name: 12 }]),
+		}),
+		/malformed version at index 1/u,
+	);
+});
+
+test("fails closed when a 200 version response duplicates a version", async () => {
+	await assert.rejects(
+		assertPackageVersionUnpublished({
+			...input,
+			fetchImplementation: async () =>
+				response([{ name: "0.1.1" }, { name: "0.1.1" }]),
+		}),
+		/duplicate version 0\.1\.1/u,
+	);
+});
+
 test("does not misclassify a package-level 404 as an unpublished version", async () => {
 	await assert.rejects(
 		assertPackageVersionUnpublished({

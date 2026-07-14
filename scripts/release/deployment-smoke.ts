@@ -2,10 +2,12 @@
 
 const DOCS_ORIGIN = "https://ui.lemn.ai";
 const SHOWCASE_ORIGIN = "https://showcase.ui.lemn.ai";
+const UI_PACKAGE_NAME = "@lemn-ltd/ui";
 
 interface BuildIdentity {
 	version: string;
 	gitSha: string;
+	buildTime: string;
 }
 
 type FetchImplementation = typeof fetch;
@@ -31,6 +33,23 @@ export function assertBuildIdentity(
 	assert(
 		actual.gitSha === expected.gitSha,
 		`${endpoint} has stale gitSha ${String(actual.gitSha)}`,
+	);
+	assert(
+		actual.buildTime === expected.buildTime,
+		`${endpoint} has stale buildTime ${String(actual.buildTime)}`,
+	);
+}
+
+export function assertPackageBuildIdentity(
+	payload: unknown,
+	expected: BuildIdentity,
+	endpoint: string,
+): void {
+	assertBuildIdentity(payload, expected, endpoint);
+	const actual = payload as Record<string, unknown>;
+	assert(
+		actual.package === UI_PACKAGE_NAME,
+		`${endpoint} has wrong package ${String(actual.package)}`,
 	);
 }
 
@@ -65,6 +84,12 @@ async function retry(
 	throw new Error(`${label} failed after 60s: ${String(lastError)}`);
 }
 
+function showcaseAssetPath(html: string): string {
+	const match = /(?:src|href)=["'](\/assets\/[^"']+)["']/u.exec(html);
+	assert(match?.[1], "showcase home does not reference a built asset");
+	return match[1];
+}
+
 export async function smokeProductionDeployment(input: {
 	expected: BuildIdentity;
 	fetchImplementation?: FetchImplementation;
@@ -85,7 +110,7 @@ export async function smokeProductionDeployment(input: {
 		const payload = await (
 			await fetchResponse(`${DOCS_ORIGIN}/release.json`, fetchImplementation)
 		).json();
-		assertBuildIdentity(payload, expected, "docs release.json");
+		assertPackageBuildIdentity(payload, expected, "docs release.json");
 	});
 	await retry("showcase-health", async () => {
 		const payload = (await (
@@ -104,6 +129,23 @@ export async function smokeProductionDeployment(input: {
 		assert(payload.ok === true, "showcase readiness is not OK");
 		assertBuildIdentity(payload, expected, "showcase readiness");
 	});
+	await retry("showcase-home", async () => {
+		const home = await fetchResponse(
+			`${SHOWCASE_ORIGIN}/`,
+			fetchImplementation,
+		);
+		const html = await home.text();
+		assert(html.includes('id="root"'), "showcase home is not the built SPA");
+		const assetPath = showcaseAssetPath(html);
+		const asset = await fetchResponse(
+			`${SHOWCASE_ORIGIN}${assetPath}`,
+			fetchImplementation,
+		);
+		assert(
+			(await asset.arrayBuffer()).byteLength > 0,
+			"showcase asset is empty",
+		);
+	});
 	await retry("showcase-catalog", async () => {
 		const payload = (await (
 			await fetchResponse(
@@ -112,7 +154,7 @@ export async function smokeProductionDeployment(input: {
 			)
 		).json()) as Record<string, unknown>;
 		assert(
-			payload.package === "@lemn-ltd/ui",
+			payload.package === UI_PACKAGE_NAME,
 			"showcase catalog has the wrong package",
 		);
 		assert(
@@ -150,12 +192,13 @@ export async function smokeProductionDeployment(input: {
 async function main(): Promise<void> {
 	const version = process.env.EXPECTED_RELEASE_VERSION;
 	const gitSha = process.env.EXPECTED_RELEASE_GIT_SHA;
-	if (!version || !gitSha) {
+	const buildTime = process.env.EXPECTED_RELEASE_TIME;
+	if (!version || !gitSha || !buildTime) {
 		throw new Error(
-			"EXPECTED_RELEASE_VERSION and EXPECTED_RELEASE_GIT_SHA are required",
+			"EXPECTED_RELEASE_VERSION, EXPECTED_RELEASE_GIT_SHA, and EXPECTED_RELEASE_TIME are required",
 		);
 	}
-	await smokeProductionDeployment({ expected: { version, gitSha } });
+	await smokeProductionDeployment({ expected: { version, gitSha, buildTime } });
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
