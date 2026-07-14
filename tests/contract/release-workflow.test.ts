@@ -311,7 +311,7 @@ test("CI and release smoke local showcase assets before package publication", ()
 	);
 });
 
-test("the validation gate isolates accessibility pressure from all three complete E2E shards", () => {
+test("the validation gate isolates complete E2E and accessibility shard matrices", () => {
 	const e2eJob = record(jobs["showcase-e2e"], "showcase E2E job");
 	const strategy = record(e2eJob.strategy, "showcase E2E strategy");
 	const matrix = record(strategy.matrix, "showcase E2E matrix");
@@ -356,8 +356,31 @@ test("the validation gate isolates accessibility pressure from all three complet
 		jobs["showcase-accessibility"],
 		"showcase accessibility job",
 	);
+	const accessibilityStrategy = record(
+		accessibilityJob.strategy,
+		"showcase accessibility strategy",
+	);
+	const accessibilityMatrix = record(
+		accessibilityStrategy.matrix,
+		"showcase accessibility matrix",
+	);
+	const accessibilityPermissions = record(
+		accessibilityJob.permissions,
+		"showcase accessibility permissions",
+	);
+	assert.equal(
+		accessibilityJob.name,
+		`Showcase Accessibility (${expression("matrix.shard")}/4)`,
+	);
 	assert.equal(accessibilityJob.needs, "validate");
 	assert.equal(accessibilityJob.container, undefined);
+	assert.equal(accessibilityJob["timeout-minutes"], 25);
+	assert.equal(accessibilityStrategy["fail-fast"], false);
+	assert.deepEqual(accessibilityMatrix.shard, [1, 2, 3, 4]);
+	assert.deepEqual(accessibilityPermissions, {
+		contents: "read",
+		packages: "read",
+	});
 	const accessibilitySteps = accessibilityJob.steps as UnknownRecord[];
 	const browserInstall = accessibilitySteps.find(
 		(candidate) => candidate.name === "Install Chromium",
@@ -369,7 +392,8 @@ test("the validation gate isolates accessibility pressure from all three complet
 	assert.ok(crawl);
 	assert.match(String(browserInstall.run), /install --with-deps chromium/u);
 	assert.match(String(crawl.run), /--project=accessibility/u);
-	assert.doesNotMatch(String(crawl.run), /--shard|--grep/u);
+	assert.match(String(crawl.run), /--shard=\$\{\{ matrix\.shard \}\}\/4/u);
+	assert.doesNotMatch(String(crawl.run), /--grep/u);
 	assert.deepEqual(releaseJob.needs, [
 		"validate",
 		"showcase-e2e",

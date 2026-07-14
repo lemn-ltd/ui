@@ -1,6 +1,10 @@
 import AxeBuilder from "@axe-core/playwright";
-import type { Browser, TestInfo } from "@playwright/test";
-import { componentRoutesFromCatalog } from "../helpers/component-catalog";
+import type { Browser, Page, TestInfo } from "@playwright/test";
+import {
+	componentAccessibilityCases,
+	componentAccessibilityTestTitle,
+	componentRoutesFromCatalog,
+} from "../helpers/component-catalog";
 import {
 	expect,
 	gotoStable,
@@ -26,101 +30,61 @@ async function newAccessibilityPage(
 	});
 }
 
-test("no critical accessibility violations across non-component registry pages", async ({
-	browser,
-}, testInfo) => {
-	test.setTimeout(900_000);
+async function criticalAxeViolations(page: Page) {
+	const results = await new AxeBuilder({ page }).analyze();
+	return results.violations.filter(
+		(violation) => violation.impact === "critical",
+	);
+}
 
-	const { context: catalogContext, page: catalogPage } =
-		await newAccessibilityPage(browser, testInfo, "light");
-	let hrefs: string[];
-	try {
-		await gotoStable(catalogPage, "/");
-		hrefs = await catalogPage
-			.locator('.showcase-home a[href^="/"]')
-			.evaluateAll((els) => [
-				...new Set(
-					els
-						.map((el) => (el as HTMLAnchorElement).getAttribute("href"))
-						.filter((href): href is string => Boolean(href)),
-				),
-			]);
-	} finally {
-		await catalogContext.close();
-	}
+test.describe("non-component registry accessibility", () => {
+	test.describe.configure({ timeout: 180_000 });
 
-	const routes = [
-		"/",
-		...hrefs.filter(
-			(route) =>
-				!route.startsWith("/core/components/") &&
-				!route.startsWith("/agents/components/"),
-		),
-	];
-	const offenders: string[] = [];
+	test("no critical accessibility violations across non-component registry pages", async ({
+		browser,
+	}, testInfo) => {
+		const { context: catalogContext, page: catalogPage } =
+			await newAccessibilityPage(browser, testInfo, "light");
+		let hrefs: string[];
+		try {
+			await gotoStable(catalogPage, "/");
+			hrefs = await catalogPage
+				.locator('.showcase-home a[href^="/"]')
+				.evaluateAll((els) => [
+					...new Set(
+						els
+							.map((el) => (el as HTMLAnchorElement).getAttribute("href"))
+							.filter((href): href is string => Boolean(href)),
+					),
+				]);
+		} finally {
+			await catalogContext.close();
+		}
 
-	for (const route of routes) {
-		await test.step(route, async () => {
-			const { context, page } = await newAccessibilityPage(
-				browser,
-				testInfo,
-				"light",
-			);
-			try {
-				await gotoStable(page, route);
-				const results = await new AxeBuilder({ page }).analyze();
-				const critical = results.violations.filter(
-					(violation) => violation.impact === "critical",
-				);
-				if (critical.length > 0) {
-					offenders.push(
-						`${route}: ${critical.map((violation) => violation.id).join(", ")}`,
-					);
-				}
-			} finally {
-				await context.close();
-			}
-		});
-	}
+		const routes = [
+			"/",
+			...hrefs.filter(
+				(route) =>
+					!route.startsWith("/core/components/") &&
+					!route.startsWith("/agents/components/"),
+			),
+		];
+		const offenders: string[] = [];
 
-	expect(offenders, offenders.join(" | ")).toEqual([]);
-});
-
-test("every component page has no critical Axe violations in Light or Dark", async ({
-	browser,
-}, testInfo) => {
-	test.setTimeout(900_000);
-	const { context: catalogContext, page: catalogPage } =
-		await newAccessibilityPage(browser, testInfo, "light");
-	let routes: Awaited<ReturnType<typeof componentRoutesFromCatalog>>;
-	try {
-		routes = await componentRoutesFromCatalog(catalogPage);
-	} finally {
-		await catalogContext.close();
-	}
-	const offenders: string[] = [];
-
-	for (const entry of routes) {
-		for (const theme of ["light", "dark"] as const) {
-			await test.step(`${entry.route} (${theme})`, async () => {
+		for (const route of routes) {
+			await test.step(route, async () => {
+				console.log(`[accessibility] route=${route} theme=light`);
 				const { context, page } = await newAccessibilityPage(
 					browser,
 					testInfo,
-					theme,
+					"light",
 				);
 				try {
-					await gotoStable(page, entry.route);
-					await expect(page.locator("html")).toHaveAttribute(
-						"data-theme",
-						theme,
-					);
-					const results = await new AxeBuilder({ page }).analyze();
-					const critical = results.violations.filter(
-						(violation) => violation.impact === "critical",
-					);
+					await gotoStable(page, route);
+					const critical = await criticalAxeViolations(page);
 					if (critical.length > 0) {
 						offenders.push(
-							`${entry.route} (${theme}): ${critical.map((violation) => violation.id).join(", ")}`,
+							`${route}: ${critical.map((violation) => violation.id).join(", ")}`,
 						);
 					}
 				} finally {
@@ -128,9 +92,62 @@ test("every component page has no critical Axe violations in Light or Dark", asy
 				}
 			});
 		}
-	}
 
-	expect(offenders, offenders.join(" | ")).toEqual([]);
+		expect(offenders, offenders.join(" | ")).toEqual([]);
+	});
+});
+
+test("component accessibility inventory matches the runtime catalog", async ({
+	browser,
+}, testInfo) => {
+	const { context, page } = await newAccessibilityPage(
+		browser,
+		testInfo,
+		"light",
+	);
+	try {
+		await componentRoutesFromCatalog(page);
+	} finally {
+		await context.close();
+	}
+});
+
+test.describe("component catalog accessibility", () => {
+	test.describe.configure({ timeout: 60_000 });
+
+	for (const accessibilityCase of componentAccessibilityCases) {
+		test(
+			componentAccessibilityTestTitle(accessibilityCase),
+			async ({ browser }, testInfo) => {
+				const { route, theme } = accessibilityCase;
+				console.log(`[accessibility] route=${route} theme=${theme}`);
+				const { context, page } = await newAccessibilityPage(
+					browser,
+					testInfo,
+					theme,
+				);
+				try {
+					await gotoStable(page, route);
+					await expect(page.locator("html")).toHaveAttribute(
+						"data-theme",
+						theme,
+					);
+					const critical = await criticalAxeViolations(page);
+					expect(
+						critical.map((violation) => violation.id),
+						critical
+							.map(
+								(violation) =>
+									`${route} (${theme}): ${violation.id}: ${violation.help}`,
+							)
+							.join(" | "),
+					).toEqual([]);
+				} finally {
+					await context.close();
+				}
+			},
+		);
+	}
 });
 
 test("accessibility contexts do not inherit route or theme state", async ({
@@ -187,10 +204,7 @@ test("the homepage dialog preserves accessible modal behavior", async ({
 			page.getByRole("dialog", { name: "Review report access" }),
 		).toBeVisible();
 
-		const results = await new AxeBuilder({ page }).analyze();
-		const critical = results.violations.filter(
-			(violation) => violation.impact === "critical",
-		);
+		const critical = await criticalAxeViolations(page);
 		expect(
 			critical.map((violation) => violation.id),
 			critical

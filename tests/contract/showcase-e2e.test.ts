@@ -129,10 +129,7 @@ test("Linux E2E frees disk and runs visual shards in the pinned Playwright image
 	);
 	const run = String(step("Run showcase E2E shard").run);
 	assert.match(run, /docker run --rm --ipc=host/u);
-	assert.match(
-		run,
-		/mcr\.microsoft\.com\/playwright:v1\.60\.0-noble/u,
-	);
+	assert.match(run, /mcr\.microsoft\.com\/playwright:v1\.60\.0-noble/u);
 	assert.match(run, /--volume "\$GITHUB_WORKSPACE:\/work"/u);
 	assert.match(run, /sudo chown -R/u);
 	for (const project of [
@@ -457,7 +454,20 @@ test("test architecture keeps pages isolated, timeouts fixed, and package tests 
 	);
 	assert.match(
 		accessibility,
-		/for \(const entry of routes\) \{[\s\S]*for \(const theme of \["light", "dark"\][\s\S]*newAccessibilityPage\([\s\S]*theme[\s\S]*await context\.close\(\)/u,
+		/for \(const accessibilityCase of componentAccessibilityCases\) \{[\s\S]*newAccessibilityPage\([\s\S]*theme[\s\S]*await context\.close\(\)/u,
+	);
+	assert.match(
+		accessibility,
+		/test\.describe\.configure\(\{ timeout: 60_000 \}\)/u,
+	);
+	assert.match(
+		accessibility,
+		/test\.describe\.configure\(\{ timeout: 180_000 \}\)/u,
+	);
+	assert.doesNotMatch(accessibility, /test\.setTimeout\(900_000\)/u);
+	assert.match(
+		accessibility,
+		/\[accessibility\] route=\$\{route\} theme=\$\{theme\}/u,
 	);
 	assert.match(accessibility, /showcase-accessibility-isolation-probe/u);
 	assert.doesNotMatch(accessibility, /Switch to dark theme/u);
