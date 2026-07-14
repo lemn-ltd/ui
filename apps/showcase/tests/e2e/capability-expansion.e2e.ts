@@ -1,5 +1,10 @@
 import type { ConsoleMessage, Page } from "@playwright/test";
-import { expect, gotoStable, test } from "../helpers/deterministic";
+import {
+	expect,
+	gotoStable,
+	newDeterministicPage,
+	test,
+} from "../helpers/deterministic";
 
 const EXPANDED_ROUTES = [
 	["area-chart", "Area chart"],
@@ -32,30 +37,34 @@ function runtimeErrors(page: Page): string[] {
 }
 
 test("all expanded component routes render without runtime errors", async ({
-	page,
-}) => {
+	context,
+}, testInfo) => {
 	test.setTimeout(240_000);
-	const errors = runtimeErrors(page);
 	for (const [slug, title] of EXPANDED_ROUTES) {
 		const route = `/core/components/${slug}`;
 		await test.step(route, async () => {
-			const errorsBeforeNavigation = errors.length;
-			await gotoStable(page, route);
-			expect(new URL(page.url()).pathname).toBe(route);
-			await expect(page.locator(".showcase-docs-page")).toBeVisible();
-			await expect(
-				page.getByRole("heading", { level: 1, name: title, exact: true }),
-			).toBeVisible();
-			await expect(page.locator(".showcase-page-fallback")).toHaveCount(0);
-			expect(errors.slice(errorsBeforeNavigation), `${route} runtime errors`).toEqual(
-				[],
-			);
+			const page = await newDeterministicPage(context, testInfo.project.name);
+			const errors = runtimeErrors(page);
+			try {
+				await gotoStable(page, route);
+				expect(new URL(page.url()).pathname).toBe(route);
+				await expect(page.locator(".showcase-docs-page")).toBeVisible();
+				await expect(
+					page.getByRole("heading", { level: 1, name: title, exact: true }),
+				).toBeVisible();
+				await expect(page.locator(".showcase-page-fallback")).toHaveCount(0);
+				await expect(page.locator(".showcase-route-error")).toHaveCount(0);
+				expect(errors, `${route} runtime errors`).toEqual([]);
+			} finally {
+				await page.close();
+			}
 		});
 	}
-	expect(errors).toEqual([]);
 });
 
-test("chart legends are keyboard-operable series controls", async ({ page }) => {
+test("chart legends are keyboard-operable series controls", async ({
+	page,
+}) => {
 	await gotoStable(page, "/core/components/line-chart");
 	const legend = page.getByRole("button", { name: "Revenue" });
 	await expect(legend).toHaveAttribute("aria-pressed", "true");
@@ -82,8 +91,12 @@ test("date range selection completes by keyboard and returns focus", async ({
 	await expect(page.getByRole("grid")).toHaveCount(0);
 	await expect(trigger).toBeFocused();
 	await expect(trigger).toContainText("Jul 10, 2026 – Jul 11, 2026");
-	await expect(page.locator('input[name="period.start"]')).toHaveValue("2026-07-10");
-	await expect(page.locator('input[name="period.end"]')).toHaveValue("2026-07-11");
+	await expect(page.locator('input[name="period.start"]')).toHaveValue(
+		"2026-07-10",
+	);
+	await expect(page.locator('input[name="period.end"]')).toHaveValue(
+		"2026-07-11",
+	);
 });
 
 test("Tabs own panels while TabNavigation remains URL navigation", async ({
@@ -95,16 +108,17 @@ test("Tabs own panels while TabNavigation remains URL navigation", async ({
 	await activityTab.click();
 	await expect(activityTab).toHaveAttribute("aria-selected", "true");
 	await expect(
-		tabsExample.getByRole("tabpanel").filter({ hasText: "Activity panel content" }),
+		tabsExample
+			.getByRole("tabpanel")
+			.filter({ hasText: "Activity panel content" }),
 	).toBeVisible();
 
 	await page.setViewportSize({ width: 375, height: 812 });
 	await gotoStable(page, "/core/components/tab-navigation");
 	const navigation = page.getByRole("navigation", { name: "Report sections" });
-	await expect(navigation.getByRole("link", { name: /Activity/ })).toHaveAttribute(
-		"aria-current",
-		"page",
-	);
+	await expect(
+		navigation.getByRole("link", { name: /Activity/ }),
+	).toHaveAttribute("aria-current", "page");
 	const dimensions = await navigation.evaluate((element) => ({
 		clientWidth: element.clientWidth,
 		scrollWidth: element.scrollWidth,

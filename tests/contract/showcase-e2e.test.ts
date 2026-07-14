@@ -14,13 +14,24 @@ import {
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import test from "node:test";
+import { parse } from "yaml";
 import playwrightConfig, {
 	showcaseE2ePortForCheckout,
 } from "../../apps/showcase/playwright.config.ts";
+import { formatGotoStableFailure } from "../../apps/showcase/tests/helpers/deterministic.ts";
+import {
+	assertE2eRunnerCapacity,
+	MINIMUM_E2E_FREE_BYTES,
+} from "../../scripts/test/check-e2e-runner-capacity.mjs";
 
 type UnknownRecord = Record<string, unknown>;
 
 const root = resolve(import.meta.dirname, "../..");
+
+function array(value: unknown, description: string): unknown[] {
+	assert.ok(Array.isArray(value), `${description} must be an array`);
+	return value;
+}
 
 async function aggregateSnapshotHash(directory: string): Promise<string> {
 	const hash = createHash("sha256");
@@ -44,6 +55,92 @@ function record(value: unknown, description: string): UnknownRecord {
 	);
 	return value as UnknownRecord;
 }
+
+test("Linux E2E avoids the heavyweight job container and preflights disk capacity", async () => {
+	const workflowSource = await readFile(
+		resolve(root, ".github/workflows/ci-cd.yml"),
+		"utf8",
+	);
+	const workflow = record(parse(workflowSource), "CI workflow");
+	const jobs = record(workflow.jobs, "CI jobs");
+	const e2e = record(jobs["showcase-e2e"], "showcase-e2e job");
+	const strategy = record(e2e.strategy, "showcase-e2e strategy");
+	const matrix = record(strategy.matrix, "showcase-e2e matrix");
+	const steps = array(e2e.steps, "showcase-e2e steps").map((value, index) =>
+		record(value, `showcase-e2e step ${index}`),
+	);
+	const stepIndex = (name: string): number =>
+		steps.findIndex((candidate) => candidate.name === name);
+	const step = (name: string): UnknownRecord => {
+		const index = stepIndex(name);
+		assert.notEqual(index, -1, `Missing showcase-e2e step: ${name}`);
+		return steps[index] as UnknownRecord;
+	};
+
+	assert.equal(e2e["runs-on"], "ubuntu-24.04");
+	assert.equal(e2e.container, undefined);
+	assert.deepEqual(matrix.shard, [1, 2, 3]);
+	assert.equal(
+		step("Verify E2E runner disk capacity").run,
+		'node scripts/test/check-e2e-runner-capacity.mjs "$RUNNER_TEMP"',
+	);
+	assert.equal(
+		step("Install Chromium").run,
+		"pnpm --filter @lemn-ltd/ui-showcase exec playwright install --with-deps chromium",
+	);
+	assert.ok(
+		stepIndex("Verify E2E runner disk capacity") <
+			stepIndex("Install Chromium"),
+	);
+	assert.ok(
+		stepIndex("Install Chromium") < stepIndex("Run showcase E2E shard"),
+	);
+	const run = String(step("Run showcase E2E shard").run);
+	for (const project of [
+		"behavior",
+		"visual-light-mobile",
+		"visual-light-tablet",
+		"visual-light-desktop",
+		"visual-dark-mobile",
+		"visual-dark-tablet",
+		"visual-dark-desktop",
+	]) {
+		assert.match(run, new RegExp(`--project=${project}(?:\\s|$)`, "u"));
+	}
+	assert.match(run, /--shard=\$\{\{ matrix\.shard \}\}\/3/u);
+	assert.doesNotMatch(
+		JSON.stringify(e2e),
+		/mcr\.microsoft\.com\/playwright|--ipc=host/u,
+	);
+
+	assert.throws(
+		() => assertE2eRunnerCapacity(0n),
+		/E2E runner disk preflight failed: 0\.00 GiB available; 4\.00 GiB required/u,
+	);
+	assert.doesNotThrow(() => assertE2eRunnerCapacity(MINIMUM_E2E_FREE_BYTES));
+});
+
+test("gotoStable failures retain route state and transport diagnostics", () => {
+	const message = formatGotoStableFailure({
+		body: "Loading...",
+		consoleErrors: [],
+		failedRequests: [
+			"GET http://127.0.0.1:3000/date-range-picker.page.js (net::ERR_FAILED)",
+		],
+		httpErrors: ["500 GET http://127.0.0.1:3000/date-range-picker.page.js"],
+		pageErrors: [],
+		path: "/core/components/date-range-picker",
+		readyState: "complete",
+		state: "loading",
+		url: "http://127.0.0.1:3000/core/components/date-range-picker",
+	});
+
+	assert.match(message, /state=loading/u);
+	assert.match(message, /readyState=complete/u);
+	assert.match(message, /date-range-picker\.page\.js \(net::ERR_FAILED\)/u);
+	assert.match(message, /500 GET .*date-range-picker\.page\.js/u);
+	assert.match(message, /body="Loading\.\.\."/u);
+});
 
 test("Playwright always owns an isolated strict-port showcase server", async () => {
 	const firstCheckout = "/worktrees/ui-review-a/apps/showcase";
@@ -248,21 +345,32 @@ test("Linux snapshot CLI preserves aggregate baselines when Git archive fails", 
 });
 
 test("catalog-scale E2E closes isolated pages within explicit aggregate budgets", async () => {
-	const [documentation, navigation, visual] = await Promise.all([
-		readFile(
-			resolve(root, "apps/showcase/tests/e2e/documentation-contract.e2e.ts"),
-			"utf8",
-		),
-		readFile(
-			resolve(root, "apps/showcase/tests/e2e/navigation.e2e.ts"),
-			"utf8",
-		),
-		readFile(resolve(root, "apps/showcase/tests/e2e/visual.e2e.ts"), "utf8"),
-	]);
-	for (const source of [documentation, navigation, visual]) {
+	const [capabilityExpansion, documentation, navigation, visual] =
+		await Promise.all([
+			readFile(
+				resolve(root, "apps/showcase/tests/e2e/capability-expansion.e2e.ts"),
+				"utf8",
+			),
+			readFile(
+				resolve(root, "apps/showcase/tests/e2e/documentation-contract.e2e.ts"),
+				"utf8",
+			),
+			readFile(
+				resolve(root, "apps/showcase/tests/e2e/navigation.e2e.ts"),
+				"utf8",
+			),
+			readFile(resolve(root, "apps/showcase/tests/e2e/visual.e2e.ts"), "utf8"),
+		]);
+	for (const source of [
+		capabilityExpansion,
+		documentation,
+		navigation,
+		visual,
+	]) {
 		assert.match(source, /newDeterministicPage/u);
 		assert.match(source, /finally\s*\{[\s\S]*await page\.close\(\)/u);
 	}
+	assert.match(capabilityExpansion, /test\.setTimeout\(240_000\)/u);
 	assert.match(documentation, /test\.setTimeout\(900_000\)/u);
 	assert.match(navigation, /test\.setTimeout\(900_000\)/u);
 	assert.match(visual, /test\.setTimeout\(900_000\)/u);
