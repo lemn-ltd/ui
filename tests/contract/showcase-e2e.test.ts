@@ -14,6 +14,7 @@ import {
 import { tmpdir } from "node:os";
 import { relative, resolve } from "node:path";
 import test from "node:test";
+import { parse } from "yaml";
 import playwrightConfig, {
 	showcaseE2ePortForCheckout,
 } from "../../apps/showcase/playwright.config.ts";
@@ -21,10 +22,19 @@ import {
 	createDeterministicPage,
 	formatGotoStableFailure,
 } from "../../apps/showcase/tests/helpers/deterministic.ts";
+import {
+	assertE2eRunnerCapacity,
+	MINIMUM_E2E_FREE_BYTES,
+} from "../../scripts/test/check-e2e-runner-capacity.mjs";
 
 type UnknownRecord = Record<string, unknown>;
 
 const root = resolve(import.meta.dirname, "../..");
+
+function array(value: unknown, description: string): unknown[] {
+	assert.ok(Array.isArray(value), `${description} must be an array`);
+	return value;
+}
 
 async function aggregateSnapshotHash(directory: string): Promise<string> {
 	const hash = createHash("sha256");
@@ -68,6 +78,81 @@ function record(value: unknown, description: string): UnknownRecord {
 	);
 	return value as UnknownRecord;
 }
+
+test("Linux E2E frees disk and runs visual shards in the pinned Playwright image", async () => {
+	const workflowSource = await readFile(
+		resolve(root, ".github/workflows/ci-cd.yml"),
+		"utf8",
+	);
+	const workflow = record(parse(workflowSource), "CI workflow");
+	const jobs = record(workflow.jobs, "CI jobs");
+	const e2e = record(jobs["showcase-e2e"], "showcase-e2e job");
+	const strategy = record(e2e.strategy, "showcase-e2e strategy");
+	const matrix = record(strategy.matrix, "showcase-e2e matrix");
+	const steps = array(e2e.steps, "showcase-e2e steps").map((value, index) =>
+		record(value, `showcase-e2e step ${index}`),
+	);
+	const stepIndex = (name: string): number =>
+		steps.findIndex((candidate) => candidate.name === name);
+	const step = (name: string): UnknownRecord => {
+		const index = stepIndex(name);
+		assert.notEqual(index, -1, `Missing showcase-e2e step: ${name}`);
+		return steps[index] as UnknownRecord;
+	};
+
+	assert.equal(e2e["runs-on"], "ubuntu-24.04");
+	assert.equal(e2e.container, undefined);
+	assert.deepEqual(matrix.shard, [1, 2, 3]);
+	assert.match(
+		String(step("Free runner disk for pinned Playwright image").run),
+		/docker system prune --all --force/u,
+	);
+	assert.equal(
+		step("Verify E2E runner disk capacity").run,
+		'node scripts/test/check-e2e-runner-capacity.mjs "$RUNNER_TEMP"',
+	);
+	assert.equal(
+		step("Pull pinned Playwright image").run,
+		"docker pull mcr.microsoft.com/playwright:v1.60.0-noble",
+	);
+	assert.ok(
+		stepIndex("Free runner disk for pinned Playwright image") <
+			stepIndex("Verify E2E runner disk capacity"),
+	);
+	assert.ok(
+		stepIndex("Verify E2E runner disk capacity") <
+			stepIndex("Pull pinned Playwright image"),
+	);
+	assert.ok(
+		stepIndex("Pull pinned Playwright image") <
+			stepIndex("Run showcase E2E shard"),
+	);
+	const run = String(step("Run showcase E2E shard").run);
+	assert.match(run, /docker run --rm --ipc=host/u);
+	assert.match(
+		run,
+		/mcr\.microsoft\.com\/playwright:v1\.60\.0-noble/u,
+	);
+	assert.match(run, /--volume "\$GITHUB_WORKSPACE:\/work"/u);
+	assert.match(run, /sudo chown -R/u);
+	for (const project of [
+		"behavior",
+		"visual-light-mobile",
+		"visual-light-tablet",
+		"visual-light-desktop",
+		"visual-dark-mobile",
+		"visual-dark-tablet",
+		"visual-dark-desktop",
+	]) {
+		assert.match(run, new RegExp(`--project=${project}(?:\\s|$)`, "u"));
+	}
+	assert.match(run, /--shard=\$\{\{ matrix\.shard \}\}\/3/u);
+	assert.throws(
+		() => assertE2eRunnerCapacity(0n),
+		/E2E runner disk preflight failed: 0\.00 GiB available; 24\.00 GiB required/u,
+	);
+	assert.doesNotThrow(() => assertE2eRunnerCapacity(MINIMUM_E2E_FREE_BYTES));
+});
 
 test("gotoStable failures retain route state and transport diagnostics", () => {
 	const message = formatGotoStableFailure({
