@@ -1,5 +1,11 @@
 # @lemn-ltd/ui
 
+## 0.2.4
+
+### Patch Changes
+
+- 1fc6030: Apply custom AccentColorPicker values exactly to accent-backed surfaces and derive an accessible foreground token for content rendered on them.
+
 ## 0.2.3
 
 ### Patch Changes
