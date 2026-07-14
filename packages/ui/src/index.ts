@@ -5,8 +5,10 @@
 
 export * from "./agents/index.js";
 export {
+	type AgentComponentGroup,
+	type ComponentArea,
 	type ComponentCatalogEntry,
-	type ComponentGroup,
+	type CoreComponentGroup,
 	componentCatalog,
 	componentExportsFromSlug,
 } from "./catalog.js";

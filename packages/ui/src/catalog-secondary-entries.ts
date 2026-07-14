@@ -5,6 +5,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'sidebar',
     title: 'Sidebar',
+    area: 'core',
     group: 'Navigation',
     status: 'stable',
     intent:
@@ -13,6 +14,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'top-bar',
     title: 'Top bar',
+    area: 'core',
     group: 'Navigation',
     status: 'stable',
     intent: 'The screen header: sidebar toggle and breadcrumb, optional center tabs, and actions.',
@@ -20,6 +22,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'entity-toolbar',
     title: 'Entity toolbar',
+    area: 'core',
     group: 'Navigation',
     status: 'stable',
     intent:
@@ -28,6 +31,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'breadcrumb',
     title: 'Breadcrumb',
+    area: 'core',
     group: 'Navigation',
     status: 'stable',
     intent: 'A slash-separated navigation trail with link, button, and current-page segments.',
@@ -35,6 +39,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'tabs',
     title: 'Tabs',
+    area: 'core',
     group: 'Navigation',
     status: 'stable',
     intent: 'A controlled row of triggers with optional count badges.',
@@ -42,6 +47,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'stepper',
     title: 'Stepper',
+    area: 'core',
     group: 'Navigation',
     status: 'stable',
     intent: 'A horizontal progress indicator with completed, active, and upcoming steps.',
@@ -49,6 +55,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'org-switcher',
     title: 'Org switcher',
+    area: 'core',
     group: 'Navigation',
     status: 'stable',
     intent: 'A menu-backed organization picker in expanded and rail variants.',
@@ -56,6 +63,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'pagination',
     title: 'Pagination',
+    area: 'core',
     group: 'Navigation',
     status: 'stable',
     intent: 'Page navigation in numbered-pages and load-more variants.',
@@ -63,6 +71,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'dock-panel',
     title: 'Dock panel',
+    area: 'core',
     group: 'Navigation',
     status: 'stable',
     intent: 'A right-docked workspace panel with tabbed content and maximize/hide controls.',
@@ -72,6 +81,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'card',
     title: 'Card',
+    area: 'core',
     group: 'Data display',
     status: 'stable',
     intent:
@@ -80,6 +90,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'settings-row',
     title: 'Settings row',
+    area: 'core',
     group: 'Data display',
     status: 'stable',
     intent:
@@ -88,6 +99,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'description-list',
     title: 'Description list',
+    area: 'core',
     group: 'Data display',
     status: 'stable',
     intent:
@@ -96,6 +108,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'data-table',
     title: 'Data table',
+    area: 'core',
     group: 'Data display',
     status: 'stable',
     intent:
@@ -104,6 +117,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'stat-card',
     title: 'Stat card',
+    area: 'core',
     group: 'Data display',
     status: 'stable',
     intent: 'A single metric tile: muted label, display-sized value, and an optional signed delta.',
@@ -111,6 +125,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'stats-strip',
     title: 'Stats strip',
+    area: 'core',
     group: 'Data display',
     status: 'stable',
     intent: 'Edge-to-edge horizontal row of stat cards separated by thin border dividers.',
@@ -118,6 +133,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'code-block',
     title: 'Code block',
+    area: 'core',
     group: 'Data display',
     status: 'stable',
     intent:
@@ -126,6 +142,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'syntax-code-block',
     title: 'Syntax code block',
+    area: 'core',
     group: 'Data display',
     status: 'beta',
     intent:
@@ -134,6 +151,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'json-viewer',
     title: 'JSON viewer',
+    area: 'core',
     group: 'Data display',
     status: 'stable',
     intent: 'Monospace JSON tree with per-node collapse and key/string/number/punctuation tones.',
@@ -141,6 +159,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'markdown',
     title: 'Markdown',
+    area: 'core',
     group: 'Data display',
     status: 'beta',
     intent: 'Read-only GFM renderer with dual-theme code highlighting and copyable fenced blocks.',
@@ -148,13 +167,15 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'sparkline',
     title: 'Sparkline',
-    group: 'Data display',
+    area: 'core',
+    group: 'Visualizations',
     status: 'stable',
     intent: 'Compact inline bar chart: thin accent bars scaled to the series maximum.',
   },
   {
     slug: 'relative-time',
     title: 'Relative time',
+    area: 'core',
     group: 'Data display',
     status: 'stable',
     intent: 'Renders an absolute timestamp as a muted relative label, anchored by the now prop.',
@@ -162,6 +183,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'list-shell',
     title: 'List shell',
+    area: 'core',
     group: 'Data display',
     status: 'stable',
     intent: 'Outer content section giving every list or grid the same padding and vertical rhythm.',
@@ -169,6 +191,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'list-filters-bar',
     title: 'List filters bar',
+    area: 'core',
     group: 'Data display',
     status: 'stable',
     intent: 'Layout-only filter row: a pills slot, a per-view search input, and a trailing slot.',
@@ -176,6 +199,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'filter',
     title: 'Filter',
+    area: 'core',
     group: 'Data display',
     status: 'stable',
     intent:
@@ -184,6 +208,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'filter-chip',
     title: 'Filter chip',
+    area: 'core',
     group: 'Data display',
     status: 'stable',
     intent:
@@ -192,6 +217,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'empty-state',
     title: 'Empty state',
+    area: 'core',
     group: 'Data display',
     status: 'stable',
     intent:
@@ -200,6 +226,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'recent-chips',
     title: 'Recent chips',
+    area: 'core',
     group: 'Data display',
     status: 'stable',
     intent: 'A leading label followed by a row of muted Tag chips for recent items.',
@@ -207,6 +234,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'preset-selector',
     title: 'Preset selector',
+    area: 'core',
     group: 'Data display',
     status: 'stable',
     intent:
@@ -217,6 +245,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'toast',
     title: 'Toast',
+    area: 'core',
     group: 'Feedback',
     status: 'stable',
     intent: 'Presentational status row; tone drives the icon and accent.',
@@ -224,6 +253,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'toaster',
     title: 'Toaster',
+    area: 'core',
     group: 'Feedback',
     status: 'stable',
     intent: 'The mounted toast stack region that owns the viewport, queue, and auto-dismiss.',
@@ -231,6 +261,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'info-banner',
     title: 'Info banner',
+    area: 'core',
     group: 'Feedback',
     status: 'stable',
     intent: 'In-content tinted banner with a tone left border across four variants.',
@@ -238,6 +269,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'system-bar',
     title: 'System bar',
+    area: 'core',
     group: 'Feedback',
     status: 'stable',
     intent: 'Full-width page-level notice above the top bar, with optional action and dismiss.',
@@ -245,6 +277,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'skeleton',
     title: 'Skeleton',
+    area: 'core',
     group: 'Feedback',
     status: 'stable',
     intent:
@@ -253,6 +286,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'spinner',
     title: 'Spinner',
+    area: 'core',
     group: 'Feedback',
     status: 'stable',
     intent: 'Indeterminate circular spinner in three sizes; static under reduced motion.',
@@ -260,7 +294,8 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'progress-bar',
     title: 'Progress bar',
-    group: 'Feedback',
+    area: 'core',
+    group: 'Visualizations',
     status: 'stable',
     intent: 'Linear progress with determinate, indeterminate, and route loops.',
   },
@@ -269,6 +304,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'screen-shell',
     title: 'Screen shell',
+    area: 'core',
     group: 'Layout',
     status: 'stable',
     intent:
@@ -277,6 +313,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'content-layout',
     title: 'Content layout',
+    area: 'core',
     group: 'Layout',
     status: 'stable',
     intent:
@@ -285,6 +322,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'page-section',
     title: 'Page section',
+    area: 'core',
     group: 'Layout',
     status: 'stable',
     intent: 'A titled region with an optional title, caption, and actions header above its body.',
@@ -292,6 +330,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'section-grid',
     title: 'Section grid',
+    area: 'core',
     group: 'Layout',
     status: 'stable',
     intent: 'An auto-fitting card grid that reflows 4 → 3 → 2 → 1 against its own container width.',
@@ -299,6 +338,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'two-column',
     title: 'Two column',
+    area: 'core',
     group: 'Layout',
     status: 'stable',
     intent: 'A main-and-aside split that sits side by side at lg and up, then stacks below.',
@@ -306,6 +346,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'settings-shell',
     title: 'Settings shell',
+    area: 'core',
     group: 'Layout',
     status: 'stable',
     intent:
@@ -314,6 +355,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'sign-in-screen',
     title: 'Sign-in screen',
+    area: 'core',
     group: 'Layout',
     status: 'stable',
     intent:
@@ -322,6 +364,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
   {
     slug: 'version-tag',
     title: 'Version tag',
+    area: 'core',
     group: 'Layout',
     status: 'stable',
     intent:

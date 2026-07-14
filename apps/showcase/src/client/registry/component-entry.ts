@@ -19,7 +19,7 @@ export function componentEntry(slug: string, page: () => ReactElement): UiShowca
   return entryFromMeta<ShowcaseGroup>(
     {
       group: meta.group,
-      area: meta.group === 'Agents' ? 'agents' : 'core',
+      area: meta.area,
       kind: 'component',
       slug: meta.slug,
       status: meta.status,

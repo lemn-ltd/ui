@@ -15,7 +15,12 @@ import { primaryComponentCatalogEntries } from "./catalog-primary-entries.js";
 import { secondaryComponentCatalogEntries } from "./catalog-secondary-entries.js";
 import type { ComponentCatalogEntry } from "./catalog-types.js";
 
-export type { ComponentCatalogEntry, ComponentGroup } from "./catalog-types.js";
+export type {
+	AgentComponentGroup,
+	ComponentArea,
+	ComponentCatalogEntry,
+	CoreComponentGroup,
+} from "./catalog-types.js";
 
 export const componentCatalog: readonly ComponentCatalogEntry[] = [
 	...primaryComponentCatalogEntries,

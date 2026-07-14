@@ -5,6 +5,7 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'button',
     title: 'Button',
+    area: 'core',
     group: 'Primitives',
     status: 'stable',
     intent: 'A clickable action with six variants mapped to data-variant.',
@@ -12,6 +13,7 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'icon-button',
     title: 'Icon button',
+    area: 'core',
     group: 'Primitives',
     status: 'stable',
     intent: 'A square, icon-only action requiring an aria-label; four variants.',
@@ -19,6 +21,7 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'scroll-to-bottom-button',
     title: 'Scroll to bottom button',
+    area: 'core',
     group: 'Primitives',
     status: 'stable',
     intent:
@@ -27,55 +30,63 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'input',
     title: 'Input',
-    group: 'Primitives',
+    area: 'core',
+    group: 'Inputs',
     status: 'stable',
     intent: 'A single-line text field with an invalid state for inline errors.',
   },
   {
     slug: 'textarea',
     title: 'Textarea',
-    group: 'Primitives',
+    area: 'core',
+    group: 'Inputs',
     status: 'stable',
     intent: 'A multi-line text field with an invalid state and a default row count.',
   },
   {
     slug: 'select',
     title: 'Select',
-    group: 'Primitives',
+    area: 'core',
+    group: 'Inputs',
     status: 'stable',
     intent: 'A styled wrapper over the native select with a trailing chevron.',
   },
   {
     slug: 'search',
     title: 'Search',
-    group: 'Primitives',
+    area: 'core',
+    group: 'Inputs',
     status: 'stable',
     intent: 'An expand-on-focus search field that collapses back to its icon.',
   },
   {
     slug: 'checkbox',
     title: 'Checkbox',
-    group: 'Primitives',
+    area: 'core',
+    group: 'Inputs',
     status: 'stable',
     intent: 'A checkbox with checked, unchecked, and indeterminate states.',
   },
   {
     slug: 'radio',
     title: 'Radio',
-    group: 'Primitives',
+    area: 'core',
+    group: 'Inputs',
     status: 'stable',
     intent: 'A single-choice radio group built from RadioGroup and RadioGroupItem.',
   },
   {
     slug: 'toggle',
     title: 'Toggle',
-    group: 'Primitives',
+    area: 'core',
+    group: 'Inputs',
     status: 'stable',
     intent: 'A switch with a sliding thumb for an immediate on/off setting.',
   },
   {
     slug: 'badge',
     title: 'Badge',
+    area: 'core',
     group: 'Primitives',
     status: 'stable',
     intent: 'A small status label with eight tones and an optional leading dot.',
@@ -83,6 +94,7 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'tag',
     title: 'Tag',
+    area: 'core',
     group: 'Primitives',
     status: 'stable',
     intent: 'An inline metadata label with three variants.',
@@ -90,6 +102,7 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'avatar',
     title: 'Avatar',
+    area: 'core',
     group: 'Primitives',
     status: 'stable',
     intent: 'A circular identity badge, with a group that collapses overflow into +N.',
@@ -97,6 +110,7 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'kbd',
     title: 'Kbd',
+    area: 'core',
     group: 'Primitives',
     status: 'stable',
     intent: 'A keyboard key hint that composes into shortcut chords.',
@@ -104,7 +118,8 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'meter',
     title: 'Meter',
-    group: 'Primitives',
+    area: 'core',
+    group: 'Visualizations',
     status: 'beta',
     intent:
       'A linear ratio bar for a single value against a max (quota, budget, progress); tone signals headroom.',
@@ -112,6 +127,7 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'filter-pill',
     title: 'Filter pill',
+    area: 'core',
     group: 'Primitives',
     status: 'stable',
     intent: 'A toggleable filter trigger with active and open states.',
@@ -119,6 +135,7 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'scope-pill',
     title: 'Scope pill',
+    area: 'core',
     group: 'Primitives',
     status: 'stable',
     intent: 'A read-only pill labelling the scope something applies to.',
@@ -128,6 +145,7 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'field',
     title: 'Field',
+    area: 'core',
     group: 'Forms',
     status: 'stable',
     intent:
@@ -136,7 +154,8 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'calendar',
     title: 'Calendar',
-    group: 'Forms',
+    area: 'core',
+    group: 'Inputs',
     status: 'beta',
     intent:
       'A month-grid date picker with selected/today states, prev/next and quick-year navigation, and min/max/future/past validation that disables out-of-range days.',
@@ -144,6 +163,7 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'inline-edit',
     title: 'Inline edit',
+    area: 'core',
     group: 'Forms',
     status: 'stable',
     intent:
@@ -152,7 +172,8 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'segmented-control',
     title: 'Segmented control',
-    group: 'Forms',
+    area: 'core',
+    group: 'Inputs',
     status: 'stable',
     intent:
       'Single-select control on a recessed track; the pressed segment rises to a raised pill.',
@@ -160,7 +181,8 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'combobox',
     title: 'Combobox',
-    group: 'Forms',
+    area: 'core',
+    group: 'Inputs',
     status: 'stable',
     intent:
       'Searchable select with single and multi modes, built on the canonical Popover and a cmdk filter.',
@@ -168,6 +190,7 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'accordion',
     title: 'Accordion',
+    area: 'core',
     group: 'Forms',
     status: 'stable',
     intent:
@@ -176,7 +199,8 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'selection-list',
     title: 'SelectionList',
-    group: 'Forms',
+    area: 'core',
+    group: 'Inputs',
     status: 'stable',
     intent:
       'Searchable grouped multi-select: category pills with counts, group select-all with indeterminate state, and indented item rows with optional badges.',
@@ -184,6 +208,7 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'composer',
     title: 'Composer',
+    area: 'core',
     group: 'Forms',
     status: 'beta',
     intent:
@@ -192,6 +217,7 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'key-value-editor',
     title: 'Key-value editor',
+    area: 'core',
     group: 'Forms',
     status: 'stable',
     intent: 'A compact editable table for string key/value pairs with add and remove actions.',
@@ -199,6 +225,7 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'json-code-editor',
     title: 'JSON code editor',
+    area: 'core',
     group: 'Forms',
     status: 'beta',
     intent:
@@ -207,6 +234,7 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'file-dropzone',
     title: 'File dropzone',
+    area: 'core',
     group: 'Forms',
     status: 'stable',
     intent:
@@ -215,6 +243,7 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'file-bundle-editor',
     title: 'File bundle editor',
+    area: 'core',
     group: 'Forms',
     status: 'stable',
     intent:
@@ -223,6 +252,7 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'markdown-editor',
     title: 'Markdown editor',
+    area: 'core',
     group: 'Forms',
     status: 'stable',
     intent:
@@ -233,7 +263,8 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'agent-activity-line',
     title: 'Agent activity line',
-    group: 'Agents',
+    area: 'agents',
+    group: 'Conversation',
     status: 'beta',
     intent:
       'A compact agent activity row with optional agent name, action phrase, pulse animation, and explicit runtime/local activity states.',
@@ -241,7 +272,8 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'agent-message-bubble',
     title: 'Agent message bubble',
-    group: 'Agents',
+    area: 'agents',
+    group: 'Conversation',
     status: 'beta',
     intent:
       'A full-width transparent assistant response bubble for agent conversations, with copy and optional timestamp metadata.',
@@ -249,14 +281,16 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'agent-reasoning-block',
     title: 'Agent reasoning block',
-    group: 'Agents',
+    area: 'agents',
+    group: 'Conversation',
     status: 'beta',
     intent: 'A collapsible Thinking block for streaming and completed agent reasoning parts.',
   },
   {
     slug: 'agent-text-block',
     title: 'Agent text block',
-    group: 'Agents',
+    area: 'agents',
+    group: 'Conversation',
     status: 'beta',
     intent:
       'A Markdown answer block for agent text parts that can stay hidden while reasoning streams.',
@@ -264,7 +298,8 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'user-message-bubble',
     title: 'User message bubble',
-    group: 'Agents',
+    area: 'agents',
+    group: 'Conversation',
     status: 'beta',
     intent:
       'A right-aligned operator message bubble for agent conversations, using the accent surface plus copy and optional timestamp metadata.',
@@ -272,14 +307,16 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'agent-status-badge',
     title: 'Agent status badge',
-    group: 'Agents',
+    area: 'agents',
+    group: 'Runtime & evidence',
     status: 'beta',
     intent: 'A reusable status badge for agent lifecycle and execution state surfaces.',
   },
   {
     slug: 'capability-chip',
     title: 'Capability chip',
-    group: 'Agents',
+    area: 'agents',
+    group: 'Governance',
     status: 'beta',
     intent:
       'A semantic chip for capability governance state: one component, three lenses (risk ceiling, surface drift, policy decision) mapped to consistent tones.',
@@ -287,7 +324,8 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'capability-constraints-editor',
     title: 'Capability constraints editor',
-    group: 'Agents',
+    area: 'agents',
+    group: 'Governance',
     status: 'beta',
     intent:
       'A controlled editor for capability narrowing: risk ceiling, approval gates, numeric limits, and allowlists.',
@@ -295,7 +333,8 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'principal-picker',
     title: 'Principal picker',
-    group: 'Agents',
+    area: 'agents',
+    group: 'Governance',
     status: 'beta',
     intent:
       'A controlled principal target picker for roles, teams, API clients, and team member selection.',
@@ -303,7 +342,8 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'approval-card',
     title: 'Approval card',
-    group: 'Agents',
+    area: 'agents',
+    group: 'Approvals',
     status: 'beta',
     intent:
       'A single pending HITL request as a decision surface: prompt, capability/integration context, risk chip, and mode-specific approve, reject, and choice actions.',
@@ -311,7 +351,8 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'approvals-inbox',
     title: 'Approvals inbox',
-    group: 'Agents',
+    area: 'agents',
+    group: 'Approvals',
     status: 'beta',
     intent:
       'A vertical queue of pending HITL requests rendered as approval cards with a count header, falling back to an empty state when the inbox is clear.',
@@ -319,7 +360,8 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'capability-matrix',
     title: 'Capability matrix',
-    group: 'Agents',
+    area: 'agents',
+    group: 'Governance',
     status: 'beta',
     intent:
       'A who-can-what grid of capability rows by target columns, each cell projecting a grant state, with reused risk and drift chips per capability.',
@@ -327,7 +369,8 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'classification-matrix',
     title: 'Classification matrix',
-    group: 'Agents',
+    area: 'agents',
+    group: 'Governance',
     status: 'beta',
     intent:
       'A controlled editor for a capability data policy: output classification, model-context policy, a per-field classification matrix, and allowed sink refs.',
@@ -335,7 +378,8 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'effective-surface-viewer',
     title: 'Effective surface viewer',
-    group: 'Agents',
+    area: 'agents',
+    group: 'Governance',
     status: 'beta',
     intent:
       'The consumption My Integrations view: a read-only surface of the effective capabilities available to the caller, grouped by integration, with risk, approval gate, quota, and drift block.',
@@ -343,7 +387,8 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'agent-tool-call-list',
     title: 'Agent tool call list',
-    group: 'Agents',
+    area: 'agents',
+    group: 'Conversation',
     status: 'beta',
     intent:
       'A collapsible group of agent tool calls; each row expands to show its input, output content blocks, and per-status evidence.',
@@ -351,7 +396,8 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'execution-map',
     title: 'Execution map',
-    group: 'Agents',
+    area: 'agents',
+    group: 'Runtime & evidence',
     status: 'beta',
     intent:
       'A read-only lane canvas for agent execution evidence, synchronized graph selection, inspector, timeline, and relationship filters.',
@@ -361,6 +407,7 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'dialog',
     title: 'Dialog',
+    area: 'core',
     group: 'Overlays',
     status: 'stable',
     intent: 'A modal surface with a built-in focus trap, Escape-to-close, and focus return.',
@@ -368,6 +415,7 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'drawer',
     title: 'Drawer',
+    area: 'core',
     group: 'Overlays',
     status: 'stable',
     intent:
@@ -376,6 +424,7 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'markdown-viewer',
     title: 'Markdown viewer',
+    area: 'core',
     group: 'Overlays',
     status: 'beta',
     intent:
@@ -384,6 +433,7 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'confirm-dialog',
     title: 'Confirm dialog',
+    area: 'core',
     group: 'Overlays',
     status: 'stable',
     intent: 'An alert dialog for a single decision, with default and danger variants.',
@@ -391,6 +441,7 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'form-dialog',
     title: 'Form dialog',
+    area: 'core',
     group: 'Overlays',
     status: 'beta',
     intent:
@@ -399,6 +450,7 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'menu',
     title: 'Menu',
+    area: 'core',
     group: 'Overlays',
     status: 'stable',
     intent: 'The canonical dropdown menu: sections, dividers, checks, shortcuts, and danger items.',
@@ -406,6 +458,7 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'popover',
     title: 'Popover',
+    area: 'core',
     group: 'Overlays',
     status: 'stable',
     intent: 'A non-modal floating panel anchored to a trigger on any of four sides.',
@@ -413,6 +466,7 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'tooltip',
     title: 'Tooltip',
+    area: 'core',
     group: 'Overlays',
     status: 'stable',
     intent: 'A hover and focus label that points back at its trigger from any of four sides.',
@@ -420,6 +474,7 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'hint-icon',
     title: 'Hint icon',
+    area: 'core',
     group: 'Overlays',
     status: 'stable',
     intent: 'An inline glyph that reveals a toned tooltip to flag and explain a constraint.',
@@ -427,6 +482,7 @@ export const primaryComponentCatalogEntries: readonly ComponentCatalogEntry[] = 
   {
     slug: 'command-palette',
     title: 'Command palette',
+    area: 'core',
     group: 'Overlays',
     status: 'stable',
     intent: 'A ⌘K search dialog over grouped commands, with live filtering and an empty state.',
