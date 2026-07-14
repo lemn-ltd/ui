@@ -214,6 +214,7 @@ jobs:
         env:
           CLOUDFLARE_API_KEY: ${{ secrets.PRODUCTION_CLOUDFLARE_API_KEY }}
           CLOUDFLARE_EMAIL: ${{ secrets.PRODUCTION_CLOUDFLARE_EMAIL }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build docs

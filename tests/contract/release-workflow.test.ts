@@ -157,6 +157,15 @@ test("preflight precedes the single stateful release preparation and package gat
 	assert.doesNotMatch(workflowSource, /npm view|E404/u);
 });
 
+test("package release receives explicit API and registry authentication", () => {
+	const publishEnv = record(
+		step("Publish or verify exact package").env,
+		"package publish env",
+	);
+	assert.equal(publishEnv.GITHUB_TOKEN, expression("secrets.GITHUB_TOKEN"));
+	assert.equal(publishEnv.NODE_AUTH_TOKEN, expression("secrets.GITHUB_TOKEN"));
+});
+
 test("package and release entrypoints share main-only guarded implementations", () => {
 	const scripts = record(rootPackage.scripts, "root scripts");
 	assert.equal(
