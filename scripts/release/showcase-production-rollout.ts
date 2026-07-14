@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { type ChildProcess, spawn } from "node:child_process";
-import { appendFile } from "node:fs/promises";
+import { appendFile, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import {
 	type BuildIdentity,
@@ -288,8 +289,9 @@ function rolloutMessage(
 }
 
 export function uploadCandidateCommand(
-	input: ProductionRolloutInput,
+	expected: BuildIdentity,
 	state: CandidateRecoveryState,
+	secretsFilePath: string,
 ): CommandSpec {
 	return {
 		command: "pnpm",
@@ -299,21 +301,43 @@ export function uploadCandidateCommand(
 			"upload",
 			...wranglerConfigArgs,
 			"--var",
-			`BUILD_VERSION:${input.expected.version}`,
+			`BUILD_VERSION:${expected.version}`,
 			"--var",
-			`BUILD_GIT_SHA:${input.expected.gitSha}`,
+			`BUILD_GIT_SHA:${expected.gitSha}`,
 			"--var",
-			`BUILD_TIME:${input.expected.buildTime}`,
+			`BUILD_TIME:${expected.buildTime}`,
 			"--tag",
-			candidateTag(input.expected),
+			candidateTag(expected),
 			"--message",
 			encodeCandidateState(state),
 			"--secrets-file",
-			"/dev/stdin",
+			secretsFilePath,
 		],
-		stdin: JSON.stringify({ STATUS_TOKEN: input.productionStatusToken }),
 		timeoutMs: 10 * 60_000,
 	};
+}
+
+async function uploadCandidate(
+	input: ProductionRolloutInput,
+	state: CandidateRecoveryState,
+	dependencies: RolloutDependencies,
+): Promise<void> {
+	const temporaryRoot = await mkdtemp(
+		resolve(tmpdir(), "lemn-ui-showcase-secrets-"),
+	);
+	try {
+		const secretsFilePath = resolve(temporaryRoot, "wrangler-secrets.json");
+		await writeFile(
+			secretsFilePath,
+			JSON.stringify({ STATUS_TOKEN: input.productionStatusToken }),
+			{ encoding: "utf8", flag: "wx", mode: 0o600 },
+		);
+		await dependencies.runCommand(
+			uploadCandidateCommand(input.expected, state, secretsFilePath),
+		);
+	} finally {
+		await rm(temporaryRoot, { recursive: true, force: true });
+	}
 }
 
 export function stageCandidateCommand(
@@ -938,7 +962,7 @@ export async function runProductionRollout(
 	};
 
 	await dependencies.runCommand(buildShowcaseCommand);
-	await dependencies.runCommand(uploadCandidateCommand(input, state));
+	await uploadCandidate(input, state, dependencies);
 	existing = await candidate(input.expected, dependencies);
 	if (!existing) {
 		throw new Error(

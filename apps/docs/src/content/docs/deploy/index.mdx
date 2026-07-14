@@ -88,10 +88,13 @@ The approved `main` workflow then performs this exact order:
 2. Smoke `/_status`, `/_status.json`, and `/health/deep` without a token (`401`)
    and with the retained repository `STATUS_TOKEN` (`200`). If production was
    already rotated, retry with `PRODUCTION_STATUS_TOKEN`.
-3. Build locally and send a JSON secret document only through stdin to
-   `wrangler versions upload --secrets-file /dev/stdin`. This creates an inactive
-   candidate carrying the code, assets, new token, release tag, and recovery
-   metadata; it does not change production traffic.
+3. Build locally and create Wrangler's JSON secret document as a regular file
+   inside a private temporary directory. The file is created exclusively with
+   mode `0600`, only its path is passed to `wrangler versions upload
+   --secrets-file`, and the directory is removed in `finally` after success or
+   failure. The token is never placed in command arguments or logs. This creates
+   an inactive candidate carrying the code, assets, new token, release tag, and
+   recovery metadata; it does not change production traffic.
 4. Deploy the baseline at 100% and candidate at 0% with a release-specific lease
    message. Smoke all public/protected showcase routes against the candidate via
    `Cloudflare-Workers-Version-Overrides`; the new token and exact build identity
@@ -113,9 +116,10 @@ Normal failures after the lease execute `wrangler rollback
 role and identity stored in candidate metadata. Command and smoke rollback
 failures are reported alongside the original error. `SIGTERM`/`SIGINT` terminate
 the active child; a later run resumes from the inactive candidate, zero-traffic
-lease, or already activated candidate. `SIGKILL` cannot run cleanup, which is why
-no secret reaches traffic before candidate smoke and every boundary remains
-discoverable from Cloudflare state.
+lease, or already activated candidate. `SIGKILL` cannot run cleanup; temporary
+data remains private and runner-scoped until runner teardown. No secret reaches
+traffic before candidate smoke, and every boundary remains discoverable from
+Cloudflare state.
 
 Keep all four legacy repository secrets until the approved deploy is stable:
 `CLOUDFLARE_API_KEY`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_EMAIL`, and

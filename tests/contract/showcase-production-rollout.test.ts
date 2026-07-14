@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import test from "node:test";
@@ -68,6 +68,15 @@ type InterruptBoundary =
 	| "stage"
 	| "summary"
 	| "upload";
+
+interface UploadEvidence {
+	readonly command: string;
+	readonly content: string;
+	readonly isRegularFile: boolean;
+	readonly mode: number;
+	readonly path: string;
+	readonly stdin: string | undefined;
+}
 
 function commandLabel(spec: CommandSpec): string {
 	return `${spec.command} ${spec.args.join(" ")}`;
@@ -147,6 +156,7 @@ function fakePlatform(
 		rollbackFailure?: Error;
 		rollbackSmokeFailure?: Error;
 		activeSmokeFailure?: Error;
+		uploadFailure?: Error;
 	} = {},
 ) {
 	let phase = options.phase ?? "baseline";
@@ -155,6 +165,7 @@ function fakePlatform(
 	let timeoutAfter = options.timeoutAfter;
 	const events: string[] = [];
 	const counts = { activate: 0, build: 0, rollback: 0, stage: 0, upload: 0 };
+	const uploads: UploadEvidence[] = [];
 
 	const boundary = (name: InterruptBoundary) => {
 		if (interruptAfter === name) {
@@ -170,6 +181,7 @@ function fakePlatform(
 	return {
 		events,
 		counts,
+		uploads,
 		get phase() {
 			return phase;
 		},
@@ -189,7 +201,21 @@ function fakePlatform(
 				}
 				if (spec.args.includes("upload")) {
 					counts.upload += 1;
+					const secretsFileIndex = spec.args.indexOf("--secrets-file");
+					assert.notEqual(secretsFileIndex, -1);
+					const secretsFilePath = spec.args[secretsFileIndex + 1];
+					assert.ok(secretsFilePath);
+					const secretsFileStat = await stat(secretsFilePath);
+					uploads.push({
+						command: commandLabel(spec),
+						content: await readFile(secretsFilePath, "utf8"),
+						isRegularFile: secretsFileStat.isFile(),
+						mode: secretsFileStat.mode & 0o777,
+						path: secretsFilePath,
+						stdin: spec.stdin,
+					});
 					candidatePresent = true;
+					if (options.uploadFailure) throw options.uploadFailure;
 					boundary("upload");
 					return "";
 				}
@@ -269,15 +295,15 @@ test("deployment JSON requires validated IDs and selects the latest deployment",
 	);
 });
 
-test("candidate upload stages the secret only through stdin and activation is separate", () => {
-	const upload = uploadCandidateCommand(input, state);
+test("candidate upload receives only a secrets file path and activation is separate", () => {
+	const secretsFilePath = resolve(tmpdir(), "wrangler-secrets.json");
+	const upload = uploadCandidateCommand(expected, state, secretsFilePath);
 	assert.match(commandLabel(upload), /wrangler versions upload/u);
-	assert.match(commandLabel(upload), /--secrets-file \/dev\/stdin/u);
+	assert.match(commandLabel(upload), /--secrets-file/u);
+	assert.ok(upload.args.includes(secretsFilePath));
+	assert.ok(!upload.args.includes("/dev/stdin"));
 	assert.doesNotMatch(commandLabel(upload), /new-production-status-token/u);
-	assert.equal(
-		JSON.parse(upload.stdin ?? "{}").STATUS_TOKEN,
-		input.productionStatusToken,
-	);
+	assert.equal(upload.stdin, undefined);
 	assert.doesNotMatch(commandLabel(upload), /secret put|wrangler deploy/u);
 	assert.doesNotMatch(
 		commandLabel(stageCandidateCommand(state, candidateVersionId)),
@@ -296,6 +322,19 @@ test("new rollout persists candidate, acquires zero-traffic lease, smokes, and a
 		stage: 1,
 		upload: 1,
 	});
+	assert.equal(platform.uploads.length, 1);
+	const upload = platform.uploads[0];
+	assert.ok(upload);
+	assert.equal(upload.isRegularFile, true);
+	if (process.platform !== "win32") assert.equal(upload.mode, 0o600);
+	assert.equal(
+		upload.content,
+		JSON.stringify({ STATUS_TOKEN: input.productionStatusToken }),
+	);
+	assert.equal(upload.stdin, undefined);
+	assert.notEqual(upload.path, "/dev/stdin");
+	assert.doesNotMatch(upload.command, /new-production-status-token/u);
+	await assert.rejects(stat(upload.path), { code: "ENOENT" });
 	assert.ok(
 		platform.events.indexOf(
 			`production:${input.productionStatusToken}:${candidateVersionId}`,
@@ -305,6 +344,21 @@ test("new rollout persists candidate, acquires zero-traffic lease, smokes, and a
 			),
 	);
 	assert.equal(platform.events.at(-1), "summary");
+});
+
+test("candidate secrets file is removed when upload fails", async () => {
+	const platform = fakePlatform({
+		uploadFailure: new Error("candidate upload failed"),
+	});
+	await assert.rejects(
+		runProductionRollout(input, platform.dependencies),
+		/candidate upload failed/u,
+	);
+	assert.equal(platform.uploads.length, 1);
+	const upload = platform.uploads[0];
+	assert.ok(upload);
+	await assert.rejects(stat(upload.path), { code: "ENOENT" });
+	assert.equal(platform.counts.rollback, 0);
 });
 
 for (const boundary of [
