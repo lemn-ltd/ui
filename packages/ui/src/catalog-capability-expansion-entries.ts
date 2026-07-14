@@ -1,0 +1,68 @@
+import type { ComponentCatalogEntry } from './catalog-types.js';
+
+export const capabilityExpansionCatalogEntries: readonly ComponentCatalogEntry[] = [
+  {
+    slug: 'select-native',
+    title: 'Select native',
+    area: 'core',
+    group: 'Inputs',
+    status: 'beta',
+    intent: 'A platform-native select for simple forms, mobile UI, and progressive enhancement.',
+  },
+  {
+    slug: 'radio-card-group',
+    title: 'Radio card group',
+    area: 'core',
+    group: 'Inputs',
+    status: 'beta',
+    intent: 'A single-choice radio group whose full labelled options render as selectable cards.',
+  },
+  {
+    slug: 'toggle-group',
+    title: 'Toggle group',
+    area: 'core',
+    group: 'Inputs',
+    status: 'beta',
+    intent: 'A single- or multi-select group of compact command toggles.',
+  },
+  {
+    slug: 'slider',
+    title: 'Slider',
+    area: 'core',
+    group: 'Inputs',
+    status: 'beta',
+    intent: 'A one- or two-thumb numeric input with explicit accessible labels and formatting.',
+  },
+  {
+    slug: 'date-picker',
+    title: 'Date picker',
+    area: 'core',
+    group: 'Inputs',
+    status: 'beta',
+    intent: 'A Field-labelled single-date trigger composed from Button, Popover, and Calendar.',
+  },
+  {
+    slug: 'date-range-picker',
+    title: 'Date range picker',
+    area: 'core',
+    group: 'Inputs',
+    status: 'beta',
+    intent: 'A partial-aware start and end date field composed from the shared Calendar range mode.',
+  },
+  {
+    slug: 'tab-navigation',
+    title: 'Tab navigation',
+    area: 'core',
+    group: 'Navigation',
+    status: 'beta',
+    intent: 'A horizontally scrollable navigation rail of real links with aria-current state.',
+  },
+  {
+    slug: 'separator',
+    title: 'Separator',
+    area: 'core',
+    group: 'Layout',
+    status: 'beta',
+    intent: 'An explicit horizontal or vertical division that is decorative by default.',
+  },
+];

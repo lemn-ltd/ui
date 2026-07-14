@@ -9,7 +9,7 @@ import {
 describe('showcase component registry', () => {
   it('projects every catalog component through its explicit area and family', () => {
     const componentEntries = SHOWCASE_REGISTRY.filter((entry) => entry.kind === 'component');
-    expect(componentEntries).toHaveLength(122);
+    expect(componentEntries).toHaveLength(130);
 
     for (const catalogEntry of componentCatalog) {
       const entry = componentEntries.find((candidate) => candidate.slug === catalogEntry.slug);
@@ -31,7 +31,7 @@ describe('showcase component registry', () => {
       (entry) => entry.kind === 'component',
     );
 
-    expect(coreComponents).toHaveLength(93);
+    expect(coreComponents).toHaveLength(101);
     expect(agentComponents).toHaveLength(29);
     expect(coreComponents.every((entry) => pathFor(entry).startsWith('/core/components/'))).toBe(
       true,

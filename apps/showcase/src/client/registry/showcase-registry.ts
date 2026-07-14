@@ -1,6 +1,7 @@
 import { buildNavGroups, pathFor } from '@lemn-ltd/showcase-kit';
 import { agentsEntries } from './entries/agents.js';
 import { agentPatternsEntries } from './entries/agent-patterns.js';
+import { capabilityExpansionEntries } from './entries/capability-expansion.js';
 import { dataDisplayEntries } from './entries/data-display.js';
 import { feedbackEntries } from './entries/feedback.js';
 import { formsEntries } from './entries/forms.js';
@@ -26,6 +27,7 @@ export const SHOWCASE_REGISTRY: UiShowcaseEntry[] = [
   ...foundationsEntries,
   ...primitivesEntries,
   ...formsEntries,
+  ...capabilityExpansionEntries,
   ...visualizationEntries,
   ...overlaysEntries,
   ...navigationEntries,

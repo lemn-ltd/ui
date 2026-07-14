@@ -34,14 +34,14 @@ const AGENT_GROUP_SET = new Set<string>(AGENT_GROUPS);
 
 const EXPECTED_GROUP_COUNTS: Readonly<Record<CoreComponentGroup | AgentComponentGroup, number>> = {
 	Primitives: 9,
-	Inputs: 11,
+	Inputs: 17,
 	Forms: 9,
 	Visualizations: 13,
 	"Data display": 18,
 	Feedback: 6,
 	Overlays: 10,
-	Navigation: 9,
-	Layout: 8,
+	Navigation: 10,
+	Layout: 9,
 	Conversation: 6,
 	Governance: 6,
 	Approvals: 3,
@@ -75,8 +75,8 @@ describe("component catalog", () => {
 	});
 
 	it("keeps the approved area and family inventory", () => {
-		expect(componentCatalog).toHaveLength(122);
-		expect(componentCatalog.filter((entry) => entry.area === "core")).toHaveLength(93);
+		expect(componentCatalog).toHaveLength(130);
+		expect(componentCatalog.filter((entry) => entry.area === "core")).toHaveLength(101);
 		expect(componentCatalog.filter((entry) => entry.area === "agents")).toHaveLength(29);
 
 		for (const [group, count] of Object.entries(EXPECTED_GROUP_COUNTS)) {

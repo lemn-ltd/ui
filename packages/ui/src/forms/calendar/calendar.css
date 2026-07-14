@@ -66,6 +66,23 @@
   transform: rotate(180deg);
 }
 
+.ui-calendar__months {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.ui-calendar__month {
+  min-width: 0;
+}
+
+.ui-calendar__month-label {
+  padding: var(--space-2) var(--space-1) 0;
+  color: var(--text);
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-semibold);
+  text-align: center;
+}
+
 /* Weekday header row and the day rows share one 7-track grid for alignment. */
 .ui-calendar__weekdays,
 .ui-calendar__week {
@@ -114,6 +131,25 @@
   height: var(--calendar-cell);
 }
 
+.ui-calendar__cell[data-range-middle],
+.ui-calendar__cell[data-range-preview] {
+  background: var(--accent-soft);
+}
+
+.ui-calendar__cell[data-range-start] {
+  border-radius: var(--radius-pill) 0 0 var(--radius-pill);
+  background: var(--accent-soft);
+}
+
+.ui-calendar__cell[data-range-end] {
+  border-radius: 0 var(--radius-pill) var(--radius-pill) 0;
+  background: var(--accent-soft);
+}
+
+.ui-calendar__cell[data-range-start][data-range-end] {
+  border-radius: var(--radius-pill);
+}
+
 .ui-calendar__day {
   display: inline-flex;
   align-items: center;
@@ -158,6 +194,18 @@
 .ui-calendar__day[data-selected]:hover {
   background: var(--accent-strong);
   border-color: var(--accent-strong);
+}
+
+.ui-calendar__cell[data-range-middle] .ui-calendar__day,
+.ui-calendar__cell[data-range-preview] .ui-calendar__day {
+  border-color: transparent;
+  background: transparent;
+  color: var(--text);
+}
+
+.ui-calendar__cell[data-range-preview]:not([data-range-middle]) .ui-calendar__day {
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
 }
 
 .ui-calendar__day[data-disabled] {
@@ -214,5 +262,11 @@
   .ui-calendar__day,
   .ui-calendar__year {
     transition: none;
+  }
+}
+
+@media (max-width: 680px) {
+  .ui-calendar__months {
+    flex-direction: column;
   }
 }

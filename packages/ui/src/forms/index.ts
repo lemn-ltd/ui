@@ -5,7 +5,14 @@ export {
   type AccordionProps,
   type AccordionSingleProps,
 } from './accordion/accordion.js';
-export { Calendar, type CalendarProps, type CalendarView } from './calendar/calendar.js';
+export {
+  Calendar,
+  type CalendarProps,
+  type CalendarRangeProps,
+  type CalendarSingleProps,
+  type CalendarView,
+} from './calendar/calendar.js';
+export type { DateRangeValue } from './calendar/date-helpers.js';
 export {
   Combobox,
   type ComboboxMode,
@@ -20,6 +27,11 @@ export {
   type ComposerStatus,
   type ComposerWidth,
 } from './composer/composer.js';
+export { DatePicker, type DatePickerProps } from './date-picker/date-picker.js';
+export {
+  DateRangePicker,
+  type DateRangePickerProps,
+} from './date-range-picker/date-range-picker.js';
 export {
   Field,
   type FieldControlProps,
@@ -59,6 +71,11 @@ export {
   type MarkdownEditorProps,
 } from './markdown-editor/markdown-editor.js';
 export {
+  RadioCardGroup,
+  type RadioCardGroupProps,
+  type RadioCardOption,
+} from './radio-card-group/radio-card-group.js';
+export {
   SegmentedControl,
   type SegmentedControlProps,
   type SegmentedControlSegment,
@@ -70,3 +87,11 @@ export {
   type SelectionListItemBadge,
   type SelectionListProps,
 } from './selection-list/selection-list.js';
+export { Slider, type SliderProps } from './slider/slider.js';
+export {
+  ToggleGroup,
+  type ToggleGroupItem,
+  type ToggleGroupMultipleProps,
+  type ToggleGroupProps,
+  type ToggleGroupSingleProps,
+} from './toggle-group/toggle-group.js';

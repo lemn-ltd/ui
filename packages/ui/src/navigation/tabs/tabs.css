@@ -4,6 +4,15 @@
   gap: var(--space-1);
 }
 
+.ui-tabs__panel[data-state="inactive"] {
+  display: none;
+}
+
+.ui-tabs__panel:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
 /* Mobile: the tab row scrolls horizontally instead of overflowing the page. */
 @media (max-width: 640px) {
   .ui-tabs {

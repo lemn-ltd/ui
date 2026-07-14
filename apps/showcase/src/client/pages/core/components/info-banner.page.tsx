@@ -5,6 +5,7 @@ import {
 	VariantsGallery,
 } from "@lemn-ltd/showcase-kit";
 import {
+	Button,
 	InfoBanner,
 	type InfoBannerDensity,
 	type InfoBannerVariant,
@@ -34,11 +35,21 @@ function InfoBannerPage(): ReactElement {
 			title="Info banner"
 		>
 			<ExampleBlock
-				code={`<InfoBanner variant="info">
+				code={`<InfoBanner
+  actions={<Button size="sm" variant="outline">Review</Button>}
+  dismissible
+  title="Scheduled sync"
+>
   Sync runs every five minutes; the latest data is already loaded.
 </InfoBanner>`}
 				render={() => (
-					<InfoBanner variant="info">{VARIANT_MESSAGES.info}</InfoBanner>
+					<InfoBanner
+						actions={<Button size="sm" variant="outline">Review</Button>}
+						dismissible
+						title="Scheduled sync"
+					>
+						{VARIANT_MESSAGES.info}
+					</InfoBanner>
 				)}
 			/>
 
@@ -107,6 +118,31 @@ function InfoBannerPage(): ReactElement {
 
 			<PropsTable
 				rows={[
+					{
+						name: "title",
+						type: "ReactNode",
+						description: "Optional heading that labels a region when no stronger live role applies.",
+					},
+					{
+						name: "icon",
+						type: "ReactNode | false",
+						description: "Overrides the system variant glyph or omits it explicitly.",
+					},
+					{
+						name: "actions",
+						type: "ReactNode",
+						description: "Action row rendered after the body.",
+					},
+					{
+						name: "dismissible / onDismiss",
+						type: "boolean / () => void",
+						description: "Adds an accessible dismiss action and optional notification callback.",
+					},
+					{
+						name: "urgency",
+						type: "'none' | 'polite' | 'assertive'",
+						description: "Chooses region, status, or alert semantics independently of color.",
+					},
 					{
 						name: "variant",
 						type: "'info' | 'warn' | 'danger' | 'success'",

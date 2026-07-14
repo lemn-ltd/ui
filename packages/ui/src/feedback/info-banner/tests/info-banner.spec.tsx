@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { cleanup, render } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { cleanup, fireEvent, render } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { InfoBanner, type InfoBannerVariant } from '../info-banner.js';
 
@@ -107,5 +107,37 @@ describe('InfoBanner', () => {
     expect(rule).toContain('overflow-wrap: anywhere');
     expect(rule).toContain('font-size: 11px');
     expect(rule).toContain('line-height: 14px');
+  });
+
+  it('renders a labelled region with title, custom content, and actions', () => {
+    const { getByRole } = render(
+      <InfoBanner actions={<button type="button">Retry</button>} title="Sync failed">
+        Check your connection.
+      </InfoBanner>,
+    );
+    const region = getByRole('region', { name: 'Sync failed' });
+    expect(region.textContent).toContain('Check your connection.');
+    expect(getByRole('button', { name: 'Retry' })).toBeTruthy();
+  });
+
+  it('supports explicit urgency without tying alerts to color', () => {
+    const { getByRole } = render(
+      <InfoBanner urgency="assertive" variant="info">
+        Session expired
+      </InfoBanner>,
+    );
+    expect(getByRole('alert').textContent).toContain('Session expired');
+  });
+
+  it('dismisses only when declared and reports the action', () => {
+    const onDismiss = vi.fn();
+    const { getByRole, queryByText } = render(
+      <InfoBanner dismissible onDismiss={onDismiss}>
+        Temporary notice
+      </InfoBanner>,
+    );
+    fireEvent.click(getByRole('button', { name: 'Dismiss' }));
+    expect(onDismiss).toHaveBeenCalledTimes(1);
+    expect(queryByText('Temporary notice')).toBeNull();
   });
 });

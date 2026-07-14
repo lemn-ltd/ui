@@ -1,0 +1,13 @@
+.ui-date-picker__trigger,
+.ui-date-range-picker__trigger {
+  width: 100%;
+  justify-content: flex-start;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.ui-date-picker__trigger[data-placeholder="true"],
+.ui-date-range-picker__trigger[data-placeholder="true"] {
+  color: var(--text-muted);
+  font-weight: var(--font-weight-regular);
+}

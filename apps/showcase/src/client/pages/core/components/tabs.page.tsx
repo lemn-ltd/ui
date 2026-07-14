@@ -12,20 +12,28 @@ function TabsPage(): ReactElement {
   const [value, setValue] = useState(defaultTabValue);
   const [overflowValue, setOverflowValue] = useState(overflowDefaultTabValue);
   const [railValue, setRailValue] = useState(defaultTabValue);
+  const tabsWithPanels = tabItems.map((item) => ({
+    ...item,
+    content: (
+      <div style={{ padding: 'var(--space-4) 0', color: 'var(--text-muted)' }}>
+        {item.label} panel content remains associated with its trigger.
+      </div>
+    ),
+  }));
 
   return (
     <ComponentPage
       status="stable"
-      summary="A controlled set of triggers. Horizontal by default (an underline row); set orientation='vertical' for a sidebar rail with a left accent bar. Each item carries a value, a label, and an optional count badge."
+      summary="Accessible triggers and real tab panels with stable relationships, controlled or uncontrolled state, and explicit preserve or lazy mounting."
       title="Tabs"
     >
       <ExampleBlock
         code={`const [value, setValue] = useState('overview');
 
-<Tabs items={tabs} value={value} onValueChange={setValue} />`}
+<Tabs items={tabsWithPanels} value={value} onValueChange={setValue} />`}
         render={() => (
           <div style={{ width: '100%' }}>
-            <Tabs items={tabItems} onValueChange={setValue} value={value} />
+            <Tabs aria-label="Entity views" items={tabsWithPanels} onValueChange={setValue} value={value} />
           </div>
         )}
       />
@@ -36,7 +44,7 @@ function TabsPage(): ReactElement {
         render={() => (
           <div style={{ width: 240 }}>
             <Tabs
-              items={tabItems}
+              items={tabsWithPanels}
               onValueChange={setRailValue}
               orientation="vertical"
               value={railValue}
@@ -60,12 +68,23 @@ function TabsPage(): ReactElement {
           {
             name: 'items',
             type: 'readonly TabItem[]',
-            description: 'Triggers. Each has a value, a label, and an optional count badge.',
+            description: 'Triggers and their associated panel content, count, and disabled state.',
           },
           {
             name: 'value',
             type: 'string',
-            description: 'The active tab value (controlled).',
+            description: 'Optional controlled active value.',
+          },
+          {
+            name: 'defaultValue',
+            type: 'string',
+            description: 'Initial active value for uncontrolled state.',
+          },
+          {
+            name: 'mountStrategy',
+            type: "'preserve' | 'lazy'",
+            defaultValue: "'preserve'",
+            description: 'Preserves inactive panel state unless lazy mounting is explicitly requested.',
           },
           {
             name: 'onValueChange',
