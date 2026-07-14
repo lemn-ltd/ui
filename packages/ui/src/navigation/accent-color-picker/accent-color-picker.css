@@ -26,7 +26,8 @@
 
 .ui-accent-color-picker__header,
 .ui-accent-color-picker__footer,
-.ui-accent-color-picker__hue {
+.ui-accent-color-picker__hue,
+.ui-accent-color-picker__hex {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -34,7 +35,8 @@
 }
 
 .ui-accent-color-picker__header strong,
-.ui-accent-color-picker__hue span {
+.ui-accent-color-picker__hue span,
+.ui-accent-color-picker__hex span {
 	font-size: var(--font-size-small);
 	font-weight: var(--font-weight-semibold);
 }
@@ -135,6 +137,20 @@
 	border-radius: var(--radius-pill);
 	background: hsl(var(--ui-accent-picker-hue) 100% 50%);
 	box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.72);
+}
+
+.ui-accent-color-picker__hex .ui-input {
+	width: 180px;
+	height: 34px;
+	font-family: var(--font-mono);
+	text-transform: uppercase;
+}
+
+.ui-accent-color-picker__hex-error {
+	margin-top: calc(var(--space-2) * -1);
+	padding-left: 68px;
+	color: var(--danger);
+	font-size: var(--font-size-caption);
 }
 
 .ui-accent-color-picker__preview {
