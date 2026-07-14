@@ -125,6 +125,21 @@ the `prefers-color-scheme` media block in `tokens.css` governs. Light is the
 default mode. The persisted choice uses a brand-neutral `color-theme` storage
 key.
 
+`AccentColorPicker` is the companion runtime control for product-selected accent
+color. It exposes a pointer palette and keyboard controls, supports controlled
+and uncontrolled use, and derives contrast-conscious light/dark values for
+`--accent`, `--accent-strong`, `--accent-soft`, and `--focus-ring`. By default it
+applies and persists the choice under the brand-neutral `accent-color` key;
+consumers can set `applyToRoot={false}` or `persist={false}` and own the runtime
+with `applyAccentColor`, `setAccentColor`, and `resetAccentColor` instead.
+
+```tsx
+import { AccentColorPicker, ThemeToggle } from '@lemn-ltd/ui';
+
+<AccentColorPicker onValueChange={(hex) => console.info(hex)} />
+<ThemeToggle />
+```
+
 ## Test layout
 
 - Unit specs colocate at `src/<taxonomy>/<component>/tests/<component>.spec.tsx`

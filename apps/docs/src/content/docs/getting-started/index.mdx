@@ -24,6 +24,23 @@ import { Button, Card, componentCatalog } from "@lemn-ltd/ui";
 import "@lemn-ltd/ui/styles.css";
 ```
 
+## Theme controls
+
+`ThemeToggle` switches light and dark mode. `AccentColorPicker` lets a user move
+a pointer through a color palette and updates the shared accent tokens in real
+time; it also supports arrow keys and a Hue range.
+
+```tsx
+import { AccentColorPicker, ThemeToggle } from "@lemn-ltd/ui";
+
+<AccentColorPicker />
+<ThemeToggle />
+```
+
+Use `applyToRoot={false}` or `persist={false}` when the consuming application
+owns theme state. The lower-level `applyAccentColor`, `setAccentColor`, and
+`resetAccentColor` helpers are exported from the same public entrypoint.
+
 ## Rules
 
 - Do not deep-import from `@lemn-ltd/ui/src`, `@lemn-ltd/ui/dist`, or component internals.

@@ -44,6 +44,11 @@ or uncontrolled state. Tabs now owns accessible tab panels with preserved or
 lazy mounting. InfoBanner now supports titles, optional or custom icons,
 actions, dismissal, and urgency semantics.
 
+`AccentColorPicker` is a public theme companion rather than a catalog entry, so
+the catalog remains exactly 130 components. Consumers can expose it next to
+`ThemeToggle`, control its value, or let it persist a selected accent and apply
+the derived semantic tokens to the document root.
+
 ## Catalog contract
 
 The public discriminated types are `ComponentArea`, `CoreComponentGroup`,
@@ -81,6 +86,19 @@ the former broad `ComponentGroup` type with `CoreComponentGroup` or
 `AgentComponentGroup`. Do not import provider types for charts; the public chart
 APIs are owned by Lemn UI. See the [visualization system](../visualization-system/README.md)
 for renderer and bundle boundaries.
+
+Products that want runtime accent selection can opt into the new companion
+without changing existing theme setup:
+
+```tsx
+import { AccentColorPicker, ThemeToggle } from "@lemn-ltd/ui";
+
+<AccentColorPicker />
+<ThemeToggle />
+```
+
+The picker defaults to root application and local persistence. Set
+`applyToRoot={false}` or `persist={false}` when a product owns those concerns.
 
 ## Change checklist
 

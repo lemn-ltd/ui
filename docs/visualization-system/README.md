@@ -70,6 +70,11 @@ themes use the same token names and are verified independently.
 - Empty, loading, and error states are explicit and do not render misleading
   geometry.
 - Motion respects `prefers-reduced-motion`.
+- `animation="auto"` animates only when motion is allowed and at most 200 SVG
+  marks would render; `animation="none"` always disables renderer animation.
+- `BarChart` value labels render only for at most 24 marks whose formatted
+  labels are at most 12 characters, preventing dense and long-label collisions
+  in both orientations. Tooltip, legend, and accessible summary remain present.
 
 ## Performance and bundles
 
@@ -78,8 +83,15 @@ engine; a `LineChart` import contains Recharts and no secondary engine; the
 catalog remains data-only and independently tree-shakeable. The boundary checker
 rejects Recharts imports outside the visualization family.
 
-Before adding a dense or specialized chart, measure render time, interaction
-latency, bundle impact, and visual stability with representative data. A large
+The reproducible benchmark is `pnpm --filter @lemn-ltd/ui-showcase run
+benchmark:visualizations`. It measures the production dashboard pattern with
+four charts across desktop/mobile, Light/Dark, normal/reduced motion, and
+representative/240-row stress data. It records ready time, legend interaction
+latency, layout shift, and a full-page screenshot hash. The current environment
+and results are stored under `docs/visualization-system/benchmarks/`.
+
+Before adding a dense or specialized chart, rerun that benchmark and compare
+render time, interaction latency, bundle impact, and visual stability. A large
 SVG data set is a reason to benchmark alternatives, not permission to bypass the
 adoption threshold.
 

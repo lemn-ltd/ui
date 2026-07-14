@@ -30,6 +30,16 @@ stay aligned with the package version that Changesets writes.
   explicitly instead of inferring it from `group`.
 - Keep `Field` as the accessible form-label solution; no standalone Label
   component is introduced.
+- Add the public `AccentColorPicker` theme companion with controlled and
+  uncontrolled color selection, pointer and keyboard input, live semantic
+  accent tokens, and optional root persistence.
+- Make chart `animation="auto"` honor reduced-motion preferences and a 200-mark
+  SVG density limit; suppress BarChart value labels when mark count or label
+  length would cause collisions.
+- Keep uncontrolled Slider values, visible output, and ARIA values synchronized
+  after keyboard or pointer changes.
+- Complete public API tables for the expanded controls and visualizations, and
+  keep showcase code surfaces dark independently from the page theme.
 
 ## 0.1.2
 

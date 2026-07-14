@@ -44,7 +44,11 @@ function InfoBannerPage(): ReactElement {
 </InfoBanner>`}
 				render={() => (
 					<InfoBanner
-						actions={<Button size="sm" variant="outline">Review</Button>}
+						actions={
+							<Button size="sm" variant="outline">
+								Review
+							</Button>
+						}
 						dismissible
 						title="Scheduled sync"
 					>
@@ -121,12 +125,14 @@ function InfoBannerPage(): ReactElement {
 					{
 						name: "title",
 						type: "ReactNode",
-						description: "Optional heading that labels a region when no stronger live role applies.",
+						description:
+							"Optional heading that labels a region when no stronger live role applies.",
 					},
 					{
 						name: "icon",
 						type: "ReactNode | false",
-						description: "Overrides the system variant glyph or omits it explicitly.",
+						description:
+							"Overrides the system variant glyph or omits it explicitly.",
 					},
 					{
 						name: "actions",
@@ -134,14 +140,28 @@ function InfoBannerPage(): ReactElement {
 						description: "Action row rendered after the body.",
 					},
 					{
-						name: "dismissible / onDismiss",
-						type: "boolean / () => void",
-						description: "Adds an accessible dismiss action and optional notification callback.",
+						name: "dismissible",
+						type: "boolean",
+						defaultValue: "false",
+						description: "Adds an accessible dismiss action.",
+					},
+					{
+						name: "dismissLabel",
+						type: "string",
+						defaultValue: "'Dismiss'",
+						description: "Accessible name for the dismiss action.",
+					},
+					{
+						name: "onDismiss",
+						type: "() => void",
+						description:
+							"Notification callback after the banner dismisses itself.",
 					},
 					{
 						name: "urgency",
 						type: "'none' | 'polite' | 'assertive'",
-						description: "Chooses region, status, or alert semantics independently of color.",
+						description:
+							"Chooses region, status, or alert semantics independently of color.",
 					},
 					{
 						name: "variant",
@@ -168,6 +188,18 @@ function InfoBannerPage(): ReactElement {
 						name: "children",
 						type: "ReactNode",
 						description: "Banner body content.",
+					},
+					{
+						name: "role",
+						type: "AriaRole",
+						description:
+							"Optional explicit landmark or live-region role; inferred from urgency otherwise.",
+					},
+					{
+						name: "aria-label / aria-labelledby",
+						type: "string",
+						description:
+							"Accessible naming for banner regions without relying on visible text alone.",
 					},
 					{
 						name: "…rest",

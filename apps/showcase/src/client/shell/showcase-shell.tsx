@@ -1,4 +1,5 @@
 import {
+	AccentColorPicker,
 	Brand,
 	Breadcrumb,
 	CommandPalette,
@@ -23,7 +24,7 @@ import {
 	useEffect,
 	useState,
 } from "react";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { uiShowcaseAppDescriptor } from "../../app-descriptor";
 import {
 	DEFAULT_SHOWCASE_MODULE_ID,
@@ -176,7 +177,11 @@ export function ShowcaseShell(): ReactElement {
 
 	const sidebar = (
 		<Sidebar
-			brand={<Brand name={uiShowcaseAppDescriptor.displayName} />}
+			brand={
+				<Link aria-label="Showcase home" className="showcase-brand-home" to="/">
+					<Brand name={uiShowcaseAppDescriptor.displayName} />
+				</Link>
+			}
 			groups={sidebarGroups}
 			orgSwitcher={
 				<OrgSwitcher
@@ -216,6 +221,7 @@ export function ShowcaseShell(): ReactElement {
 		<TopBar
 			actions={
 				<div className="showcase-topbar-actions">
+					<AccentColorPicker />
 					<ThemeToggle />
 				</div>
 			}
