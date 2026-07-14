@@ -1,5 +1,25 @@
 # @lemn-ltd/ui
 
+## 0.2.0
+
+### Minor Changes
+
+- Expand the catalog to 130 components across 14 explicit Core and Agents
+  families, including 18 new visualization, input, navigation, and layout
+  components.
+- Add renderer-neutral report visualizations backed by an isolated exact
+  Recharts dependency, shared chart tokens, accessible states, and bundle
+  boundary checks.
+- Extend Calendar with range and multi-month behavior, Tabs with accessible
+  panels and mounting strategies, and InfoBanner with structured content,
+  actions, dismissal, and urgency semantics.
+- Replace the broad catalog group contract with the discriminated
+  `ComponentArea`, `CoreComponentGroup`, `AgentComponentGroup`, and
+  `ComponentCatalogEntry` types. Catalog consumers must read `entry.area`
+  explicitly instead of inferring it from `group`.
+- Keep `Field` as the accessible form-label solution; no standalone Label
+  component is introduced.
+
 ## 0.1.2
 
 ### Patch Changes

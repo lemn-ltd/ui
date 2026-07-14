@@ -7,8 +7,9 @@ Light default + Dark + system theming, responsive reflow, and motion.
 ## Ownership and boundaries
 
 - This package owns tokens, theme runtime, motion primitives, and the
-  presentational component taxonomy (`primitives`, `forms`, `overlays`,
-  `navigation`, `layout`, `data-display`, `feedback`, `agents`).
+  presentational component taxonomy (`primitives`, `inputs`, `forms`,
+  `visualizations`, `data-display`, `feedback`, `overlays`, `navigation`,
+  `layout`, and `agents`).
 - It is a **leaf**: runtime source must not import any `@lemn-ltd/*` sibling,
   any `@cloudflare/*` / `agents` runtime, or Node core APIs. Tests may use Node
   APIs for fixtures and CSS assertions. Allowed runtime externals are `react`,
@@ -17,6 +18,9 @@ Light default + Dark + system theming, responsive reflow, and motion.
   (`@xyflow/react`), and the Markdown rendering stack
   (`react-markdown`, `remark-gfm`, `shiki` with the fine-grained
   `@shikijs/langs` / `@shikijs/themes` bundles, `hast-util-to-jsx-runtime`).
+  Recharts is an exact direct dependency allowed only inside
+  `src/visualizations`; native visualizations and all other families must not
+  import it.
   Enforced by `pnpm validate:boundaries`.
 - It is **brand-neutral**: no product name appears anywhere under `src`.
   Enforced by `pnpm validate:brand-neutrality`.
@@ -72,8 +76,9 @@ Barrel re-exports are `.js`-suffixed for Node16 module resolution.
 
 ## Component catalog and usage guide
 
-`src/catalog.ts` is the single structured source of truth for the component set:
-`slug`, `title`, `group`, `status`, and a one-line `intent`. `apps/showcase`
+`src/catalog.ts` is the single structured source of truth for the 130-component
+set: `area`, `slug`, `title`, `group`, `status`, and a one-line `intent`.
+`apps/showcase`
 consumes `componentCatalog` for its nav titles, summaries, and status, so those
 never drift from the package. `componentCatalog` is data only, so it tree-shakes
 out of product bundles that import components but not the catalog.
@@ -87,6 +92,14 @@ The agent-facing "when to use" guide lives in `docs/`:
 
 `src/tests/catalog.spec.ts` is the drift guard: it fails if a catalogued
 component is missing from `docs/components.md`.
+
+The catalog uses a discriminated area-family contract: 101 Core components in
+nine families and 29 Agents components in five families. Consumers must branch
+on `entry.area`; `group` is the capability family within that area.
+
+Visualization APIs are owned by Lemn UI and do not expose Recharts or another
+renderer's types. The engine decision, token contract, bundle gates, and
+extension workflow are documented in `../../docs/visualization-system/README.md`.
 
 ## Consumer contract
 

@@ -18,10 +18,11 @@ Todas las páginas de componentes restantes, tanto Core como Agents, se
 migrarán al mismo contrato de documentación interactiva validado con Checkbox.
 La página no usará capturas o miniaturas como contenido principal: mostrará el
 componente real, ejecutable e interactivo. La estructura visual seguirá el
-patrón de distribución de las páginas de Checkbox y Calendar de Tremor, pero el
+patrón de distribución de las páginas de Checkbox y Calendar del benchmark
+externo, pero el
 contenido, código, contratos y textos se derivarán de este repositorio y de la
 documentación oficial de las dependencias; no se copiará código o contenido de
-Tremor.
+sitio de referencia.
 
 La uniformidad no dependerá de revisión manual. El template, el límite de
 ejemplos y los gates de catálogo harán que una página incompleta o divergente
@@ -52,7 +53,7 @@ falle antes del commit final.
   cubre.
 - No publicar datos de producto, clientes, credenciales ni fixtures de
   producción.
-- No convertir la referencia de Tremor en una dependencia de runtime.
+- No convertir el benchmark externo en una dependencia de runtime.
 
 ## Autoridades y patrones aplicables
 
@@ -113,7 +114,7 @@ iterar el catálogo en runtime para incluir automáticamente componentes nuevos.
 
 ### Paleta Dark
 
-El modo Dark usa la familia medida en la referencia de Tremor:
+El modo Dark usa la familia medida en el benchmark visual:
 
 | Rol | Valor |
 |---|---|
@@ -125,7 +126,7 @@ El modo Dark usa la familia medida en la referencia de Tremor:
 | Texto secundario | `oklch(0.707 0.022 261.325)` |
 | Texto tenue | `oklch(0.551 0.027 264.364)` |
 
-El acento de marca existente no se reemplaza por el azul de Tremor.
+El acento de marca existente no se reemplaza por el azul del benchmark.
 
 ## Contrato obligatorio de cada página
 
@@ -212,7 +213,7 @@ Reglas:
 - Link `Found a bug?` al issue tracker de `lemn-ltd/ui`.
 - Separador.
 - `© 2026 LEMN. All rights reserved.`
-- No se atribuye copyright propio a Tremor ni Radix.
+- No se atribuye copyright propio al benchmark ni a Radix.
 
 ## Privacidad, licencias y referencias externas
 
@@ -226,7 +227,7 @@ Reglas:
 - Si se distribuye código derivado de una dependencia MIT, sus avisos de licencia
   se preservan en el mecanismo legal del package. Ese control es independiente
   de los links de documentación.
-- No se copia texto, código o fixtures de Tremor. Se replica únicamente la
+- No se copia texto, código o fixtures del benchmark. Se replica únicamente la
   jerarquía de información y el comportamiento visual general.
 
 ## Componentes Core y Agents
