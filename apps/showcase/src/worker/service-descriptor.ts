@@ -20,7 +20,7 @@ export const uiShowcaseServiceDescriptor: UiShowcaseServiceDescriptor = {
 	name: uiShowcaseAppDescriptor.name,
 	displayName: uiShowcaseAppDescriptor.displayName,
 	description: "Serves the @lemn-ltd/ui design-system showcase SPA.",
-	ownerPackage: "@appranks/ui-showcase",
+	ownerPackage: "@lemn-ltd/ui-showcase",
 	workerName: uiShowcaseAppDescriptor.name,
 	accent: uiShowcaseAppDescriptor.accent,
 };

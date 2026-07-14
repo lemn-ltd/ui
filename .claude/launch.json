@@ -4,7 +4,7 @@
     {
       "name": "showcase",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["--filter", "@appranks/ui-showcase", "run", "dev"],
+      "runtimeArgs": ["--filter", "@lemn-ltd/ui-showcase", "run", "dev"],
       "port": 6500,
       "autoPort": false
     }

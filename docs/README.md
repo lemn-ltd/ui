@@ -1,7 +1,7 @@
-# Appranks UI Docs
+# Lemn UI Docs
 
 This folder contains architecture notes, frontend decisions, and cross-project
-patterns for `@appranks/ui`, the showcase, and applications that consume the
+patterns for `@lemn-ltd/ui`, the showcase, and applications that consume the
 system.
 
 ## Documents

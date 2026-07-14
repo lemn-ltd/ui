@@ -60,9 +60,10 @@ describe("ui showcase worker", () => {
 		});
 
 		const summary = await (await worker.fetch(request("/llms.txt"))).text();
-		expect(summary).toContain("# LEMN UI");
+		expect(summary).toContain("# Lemn UI");
 		expect(summary).toContain("https://showcase.ui.le-mn.com/catalog.json");
-		expect(summary).not.toContain("@appranks/ui");
+		const legacyPackage = `@${["app", "ranks"].join("")}/ui`;
+		expect(summary).not.toContain(legacyPackage);
 
 		const full = await (await worker.fetch(request("/llms-full.txt"))).text();
 		expect(full).toContain("from '@lemn-ltd/ui';");
@@ -70,7 +71,7 @@ describe("ui showcase worker", () => {
 			"import { RadioGroup, RadioGroupItem } from '@lemn-ltd/ui';",
 		);
 		expect(full).toContain("import { GraphCanvas } from '@lemn-ltd/ui';");
-		expect(full).not.toContain("from '@appranks/ui';");
+		expect(full).not.toContain(`from '${legacyPackage}';`);
 		expect(full).not.toContain("@latest");
 	});
 

@@ -1,4 +1,4 @@
-import type { AvatarColor } from '@appranks/ui';
+import type { AvatarColor } from '@lemn-ltd/ui';
 import { faker, resetSeed } from './faker-seed.js';
 
 resetSeed();

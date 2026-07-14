@@ -1,6 +1,6 @@
 # Component selection guide
 
-> When to reach for each `@appranks/ui` component. This is the agent-facing
+> When to reach for each `@lemn-ltd/ui` component. This is the agent-facing
 > companion to the live showcase (`apps/showcase`): the showcase renders every
 > component, its variants, and its full props; this guide says **when to use
 > which**, what to use **instead**, and what each pairs with. One section per
@@ -936,7 +936,7 @@ A read-only lane canvas for agent execution evidence, synchronized graph selecti
 **Avoid**
 
 - Editing workflows or automation graph authoring. This component is observability-only; manual layout persistence and mutation controls belong elsewhere.
-- Passing runtime-specific DTOs directly into `@appranks/ui`. Use a product-owned adapter to keep the shared component contract-light.
+- Passing runtime-specific DTOs directly into `@lemn-ltd/ui`. Use a product-owned adapter to keep the shared component contract-light.
 - Replacing domain dashboards that do not expose node/edge/event evidence.
 
 **Pairs with** [`button`](#button), [`input`](#input), [`segmented-control`](#segmented-control), [`badge`](#badge)

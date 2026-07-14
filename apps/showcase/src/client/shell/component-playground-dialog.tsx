@@ -1,4 +1,4 @@
-import { Button, Dialog, Icon, SegmentedControl } from '@appranks/ui';
+import { Button, Dialog, Icon, SegmentedControl } from '@lemn-ltd/ui';
 import { type ReactElement, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { pathFor } from '../registry/showcase-registry';

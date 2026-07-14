@@ -1,5 +1,5 @@
-import { ComponentPage, ExampleBlock, PropsTable } from '@appranks/showcase-kit';
-import { ActiveFiltersRow, FilterChip } from '@appranks/ui';
+import { ComponentPage, ExampleBlock, PropsTable } from '@lemn-ltd/showcase-kit';
+import { ActiveFiltersRow, FilterChip } from '@lemn-ltd/ui';
 import { type ReactElement, useState } from 'react';
 
 interface AppliedFilter {

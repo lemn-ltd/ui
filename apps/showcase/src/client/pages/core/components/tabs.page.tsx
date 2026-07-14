@@ -1,5 +1,5 @@
-import { ComponentPage, ExampleBlock, PropsTable } from '@appranks/showcase-kit';
-import { Tabs } from '@appranks/ui';
+import { ComponentPage, ExampleBlock, PropsTable } from '@lemn-ltd/showcase-kit';
+import { Tabs } from '@lemn-ltd/ui';
 import { type ReactElement, useState } from 'react';
 import {
   defaultTabValue,

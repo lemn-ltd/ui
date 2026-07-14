@@ -1,4 +1,4 @@
-import { Card, ContentLayout, Icon, PageSection, SectionGrid } from '@appranks/ui';
+import { Card, ContentLayout, Icon, PageSection, SectionGrid } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { uiShowcaseAppDescriptor } from '../../app-descriptor';

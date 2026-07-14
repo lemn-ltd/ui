@@ -1,5 +1,5 @@
-import { ComponentPage, ExampleBlock, PropsTable } from '@appranks/showcase-kit';
-import { type EffectiveCapability, EffectiveSurfaceViewer } from '@appranks/ui';
+import { ComponentPage, ExampleBlock, PropsTable } from '@lemn-ltd/showcase-kit';
+import { type EffectiveCapability, EffectiveSurfaceViewer } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 const CAPABILITIES: readonly EffectiveCapability[] = [

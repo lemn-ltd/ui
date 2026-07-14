@@ -1,4 +1,4 @@
-import { SyntaxCodeBlock, Tabs } from "@appranks/ui";
+import { SyntaxCodeBlock, Tabs } from "@lemn-ltd/ui";
 import { type ReactElement, useState } from "react";
 import {
 	ShowcasePreviewCanvas,

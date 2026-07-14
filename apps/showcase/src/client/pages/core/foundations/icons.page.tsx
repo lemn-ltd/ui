@@ -1,5 +1,5 @@
-import { FoundationPage } from '@appranks/showcase-kit';
-import { Icon, iconNames } from '@appranks/ui';
+import { FoundationPage } from '@lemn-ltd/showcase-kit';
+import { Icon, iconNames } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 function IconsPage(): ReactElement {

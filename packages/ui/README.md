@@ -1,4 +1,4 @@
-# @appranks/ui
+# @lemn-ltd/ui
 
 Presentational, brand-neutral, prop-driven component and token library. It is
 the code mirror of `packages/ui/design/ui.pen`: every token, every component variant,
@@ -9,7 +9,7 @@ Light default + Dark + system theming, responsive reflow, and motion.
 - This package owns tokens, theme runtime, motion primitives, and the
   presentational component taxonomy (`primitives`, `forms`, `overlays`,
   `navigation`, `layout`, `data-display`, `feedback`, `agents`).
-- It is a **leaf**: runtime source must not import any `@appranks/*` sibling,
+- It is a **leaf**: runtime source must not import any `@lemn-ltd/*` sibling,
   any `@cloudflare/*` / `agents` runtime, or Node core APIs. Tests may use Node
   APIs for fixtures and CSS assertions. Allowed runtime externals are `react`,
   `react-dom`, the headless component libraries (`radix-ui`,
@@ -35,7 +35,7 @@ proven `tsc`-to-`dist` build (no bundler), with three documented deviations:
 1. **`./styles.css` string export.** `package.json` `exports` maps
    `"./styles.css"` to the literal `"./dist/styles.css"` string (not a
    conditions object). Consumers import the stylesheet once, at their app root:
-   `import "@appranks/ui/styles.css"`.
+   `import "@lemn-ltd/ui/styles.css"`.
 2. **`sideEffects: ["**/\*.css"]`.\*\* This stops bundlers from tree-shaking the
    stylesheet away. Every other export is side-effect-free.
 3. **`happy-dom` unit environment.** `vitest.config.ts` uses
@@ -58,7 +58,7 @@ therefore must copy every `src/**/*.css` file into the same relative path under
 - it keeps the published package compatible with bundlers that resolve CSS from
   emitted JavaScript.
 
-If a consumer reports a missing CSS module from `@appranks/ui/dist`, fix this
+If a consumer reports a missing CSS module from `@lemn-ltd/ui/dist`, fix this
 package and publish a new version. Do not make a permanent consumer-side
 `node_modules` patch.
 
@@ -92,11 +92,11 @@ component is missing from `docs/components.md`.
 
 Consumer applications must:
 
-- install `@appranks/ui` from the GitHub Packages `@appranks` registry;
+- install `@lemn-ltd/ui` from the GitHub Packages `@lemn-ltd` registry;
 - provide compatible `react` and `react-dom` peer dependencies;
-- import `@appranks/ui/styles.css` once at the app root;
-- import components only from `@appranks/ui`, `@appranks/ui/tokens`, or
-  `@appranks/ui/catalog`;
+- import `@lemn-ltd/ui/styles.css` once at the app root;
+- import components only from `@lemn-ltd/ui`, `@lemn-ltd/ui/tokens`, or
+  `@lemn-ltd/ui/catalog`;
 - keep product data mapping, API clients, runtime DTOs, and feature-specific
   composition outside this package.
 
@@ -121,9 +121,9 @@ key.
 ## Commands
 
 ```bash
-pnpm --filter @appranks/ui run build   # rm -rf dist && tsc && copy src/**/*.css
-pnpm --filter @appranks/ui run check   # tsc --noEmit
-pnpm --filter @appranks/ui run test    # vitest run (happy-dom)
+pnpm --filter @lemn-ltd/ui run build   # rm -rf dist && tsc && copy src/**/*.css
+pnpm --filter @lemn-ltd/ui run check   # tsc --noEmit
+pnpm --filter @lemn-ltd/ui run test    # vitest run (happy-dom)
 pnpm validate:brand-neutrality         # scan shared UI source for product names
 pnpm validate:boundaries               # scan shared UI runtime imports
 ```

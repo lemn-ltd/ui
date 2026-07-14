@@ -1,5 +1,5 @@
-import { ComponentPage, ExampleBlock, PropsTable } from '@appranks/showcase-kit';
-import { ScrollToBottomButton } from '@appranks/ui';
+import { ComponentPage, ExampleBlock, PropsTable } from '@lemn-ltd/showcase-kit';
+import { ScrollToBottomButton } from '@lemn-ltd/ui';
 import { type ReactElement, useRef } from 'react';
 
 const LINES = Array.from(

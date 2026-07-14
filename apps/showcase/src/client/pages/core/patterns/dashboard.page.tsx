@@ -1,4 +1,4 @@
-import { ComponentPage } from '@appranks/showcase-kit';
+import { ComponentPage } from '@lemn-ltd/showcase-kit';
 import {
   Card,
   ListShell,
@@ -8,7 +8,7 @@ import {
   Sparkline,
   StatsStrip,
   TopBar,
-} from '@appranks/ui';
+} from '@lemn-ltd/ui';
 import type { CSSProperties, ReactElement } from 'react';
 import { navGroups, sparklinePoints, stats } from '../../../fixtures';
 

@@ -1,5 +1,5 @@
-import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { Toggle } from '@appranks/ui';
+import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@lemn-ltd/showcase-kit';
+import { Toggle } from '@lemn-ltd/ui';
 import { type ReactElement, useState } from 'react';
 
 function TogglePage(): ReactElement {

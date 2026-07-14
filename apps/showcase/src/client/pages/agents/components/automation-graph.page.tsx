@@ -1,4 +1,4 @@
-import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
+import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@lemn-ltd/showcase-kit';
 import {
   GraphCanvas,
   type GraphCanvasEdge,
@@ -7,7 +7,7 @@ import {
   type GraphNodeKind,
   type NodeState,
   NodeStateChip,
-} from '@appranks/ui';
+} from '@lemn-ltd/ui';
 import type { CSSProperties, ReactElement } from 'react';
 
 const SECTION_TITLE: CSSProperties = {

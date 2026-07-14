@@ -5,16 +5,18 @@ export default defineConfig({
   site: 'https://ui.le-mn.com',
   integrations: [
     starlight({
-      title: 'Docs - UI',
+      title: 'UI',
       description:
-        'Human-facing documentation, release notes, and lifecycle guidance for @appranks/ui.',
+        'Documentation, release notes, and lifecycle guidance for Lemn UI (@lemn-ltd/ui).',
       disable404Route: true,
-      logo: {
-        src: './src/assets/agent-icon.svg',
-        alt: 'UI agent icon',
-      },
-      head: [{ tag: 'title', content: 'Docs - UI' }],
-      customCss: ['./src/styles/custom.css'],
+      head: [
+        {
+          tag: 'script',
+          content:
+            "try { if (localStorage.getItem('starlight-theme') === null) localStorage.setItem('starlight-theme', 'light'); } catch {}",
+        },
+      ],
+      customCss: ['../../packages/ui/src/foundations/tokens.css', './src/styles/custom.css'],
       defaultLocale: 'root',
       locales: {
         root: {

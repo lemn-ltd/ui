@@ -1,5 +1,5 @@
-import { ComponentPage, ExampleBlock, PropsTable } from '@appranks/showcase-kit';
-import { Badge, Button, EntityToolbar } from '@appranks/ui';
+import { ComponentPage, ExampleBlock, PropsTable } from '@lemn-ltd/showcase-kit';
+import { Badge, Button, EntityToolbar } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 function EntityToolbarPage(): ReactElement {

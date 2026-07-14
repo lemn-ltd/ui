@@ -1,5 +1,5 @@
-import { ComponentPage } from '@appranks/showcase-kit';
-import { Button, EmptyState, InfoBanner, Skeleton } from '@appranks/ui';
+import { ComponentPage } from '@lemn-ltd/showcase-kit';
+import { Button, EmptyState, InfoBanner, Skeleton } from '@lemn-ltd/ui';
 import type { CSSProperties, ReactElement, ReactNode } from 'react';
 
 // Three states sit side by side so loading, empty, and error read as one

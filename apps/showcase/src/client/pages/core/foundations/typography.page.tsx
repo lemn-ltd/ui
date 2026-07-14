@@ -1,5 +1,5 @@
-import { FoundationPage } from '@appranks/showcase-kit';
-import { PageSection } from '@appranks/ui';
+import { FoundationPage } from '@lemn-ltd/showcase-kit';
+import { PageSection } from '@lemn-ltd/ui';
 import type { CSSProperties, ReactElement } from 'react';
 
 interface Specimen {

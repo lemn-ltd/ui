@@ -1,5 +1,5 @@
-import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { Spinner, type SpinnerSize } from '@appranks/ui';
+import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@lemn-ltd/showcase-kit';
+import { Spinner, type SpinnerSize } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 const SIZES: readonly SpinnerSize[] = ['sm', 'md', 'lg'];

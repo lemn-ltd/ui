@@ -1,5 +1,5 @@
-import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { CodeBlock, type CodeBlockVariant } from '@appranks/ui';
+import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@lemn-ltd/showcase-kit';
+import { CodeBlock, type CodeBlockVariant } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 import { commandSample, inlineSample, tokenSample } from '../../../fixtures';
 

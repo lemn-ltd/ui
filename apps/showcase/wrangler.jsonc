@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "dev-appranks-ui",
+  "name": "dev-lemn-ui-showcase",
   "account_id": "71da6f8791d79c8abe7beea6f03d0162",
   "main": "src/worker/index.ts",
   "compatibility_date": "2026-05-14",
@@ -37,7 +37,7 @@
   },
   "env": {
     "production": {
-      "name": "appranks-ui",
+      "name": "lemn-ui-showcase",
       "routes": [
         {
           "pattern": "showcase.ui.le-mn.com",

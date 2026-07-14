@@ -1,5 +1,5 @@
-import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { type RuntimeMetric, type RuntimeRef, RuntimeRefsPanel } from '@appranks/ui';
+import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@lemn-ltd/showcase-kit';
+import { type RuntimeMetric, type RuntimeRef, RuntimeRefsPanel } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 const REFS: readonly RuntimeRef[] = [

@@ -1,5 +1,5 @@
-import { ComponentPage, ExampleBlock, PropsTable } from '@appranks/showcase-kit';
-import { PresetSelector } from '@appranks/ui';
+import { ComponentPage, ExampleBlock, PropsTable } from '@lemn-ltd/showcase-kit';
+import { PresetSelector } from '@lemn-ltd/ui';
 import { type ReactElement, useState } from 'react';
 
 const PRESETS = [

@@ -1,5 +1,5 @@
-import { ComponentPage, ExampleBlock, PropsTable } from '@appranks/showcase-kit';
-import { Breadcrumb, Button, Icon, IconButton, TopBar } from '@appranks/ui';
+import { ComponentPage, ExampleBlock, PropsTable } from '@lemn-ltd/showcase-kit';
+import { Breadcrumb, Button, Icon, IconButton, TopBar } from '@lemn-ltd/ui';
 import { type ReactElement, useState } from 'react';
 import { shortTrail } from '../../../fixtures';
 

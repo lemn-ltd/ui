@@ -1,5 +1,5 @@
-import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { JsonViewer } from '@appranks/ui';
+import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@lemn-ltd/showcase-kit';
+import { JsonViewer } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 import { jsonSample } from '../../../fixtures';
 

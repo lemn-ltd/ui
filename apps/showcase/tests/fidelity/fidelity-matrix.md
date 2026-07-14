@@ -2,7 +2,7 @@
 
 > **STATUS: `blocked: needs human + patched .pen`.** No row is GREEN yet.
 >
-> Lane A proves each `@appranks/ui` component is 100% faithful to its
+> Lane A proves each `@lemn-ltd/ui` component is 100% faithful to its
 > `packages/ui/design/ui.pen` master. It is a human faithfulness review, not a
 > pixel gate. A row turns GREEN only when (1) the Pencil masters are captured
 > against the canonical `packages/ui/design/ui.pen` (see

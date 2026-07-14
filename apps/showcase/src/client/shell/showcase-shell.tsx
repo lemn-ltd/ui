@@ -1,4 +1,4 @@
-import { ShowcaseRenderModeProvider } from "@appranks/showcase-kit";
+import { ShowcaseRenderModeProvider } from "@lemn-ltd/showcase-kit";
 import {
 	applyTheme,
 	Brand,
@@ -19,7 +19,7 @@ import {
 	SidebarUserRow,
 	ThemeToggle,
 	TopBar,
-} from "@appranks/ui";
+} from "@lemn-ltd/ui";
 import {
 	type CSSProperties,
 	type ReactElement,

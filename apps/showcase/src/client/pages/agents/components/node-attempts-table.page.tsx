@@ -1,5 +1,5 @@
-import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { type NodeAttempt, NodeAttemptsTable } from '@appranks/ui';
+import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@lemn-ltd/showcase-kit';
+import { type NodeAttempt, NodeAttemptsTable } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 const ATTEMPTS: readonly NodeAttempt[] = [

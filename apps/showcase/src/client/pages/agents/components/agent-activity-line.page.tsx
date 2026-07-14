@@ -1,10 +1,10 @@
-import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
+import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@lemn-ltd/showcase-kit';
 import {
   AGENT_ACTIVITY_LINE_STATES,
   AgentActivityLine,
   type AgentActivityLineState,
   type AgentActivityLineTone,
-} from '@appranks/ui';
+} from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 interface ActivityExample {

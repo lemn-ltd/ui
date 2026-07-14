@@ -1,5 +1,5 @@
-import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { Checkbox, Field, Input, InputSelect, Toggle } from '@appranks/ui';
+import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@lemn-ltd/showcase-kit';
+import { Checkbox, Field, Input, InputSelect, Toggle } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 import { formFields } from '../../../fixtures';
 

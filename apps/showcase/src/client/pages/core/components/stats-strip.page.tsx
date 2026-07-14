@@ -1,5 +1,5 @@
-import { ComponentPage, ExampleBlock, PropsTable } from '@appranks/showcase-kit';
-import { StatsStrip } from '@appranks/ui';
+import { ComponentPage, ExampleBlock, PropsTable } from '@lemn-ltd/showcase-kit';
+import { StatsStrip } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 import { stats } from '../../../fixtures';
 

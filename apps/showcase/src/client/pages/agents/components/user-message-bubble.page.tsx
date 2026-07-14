@@ -1,5 +1,5 @@
-import { ComponentPage, ExampleBlock, PropsTable } from '@appranks/showcase-kit';
-import { UserMessageBubble } from '@appranks/ui';
+import { ComponentPage, ExampleBlock, PropsTable } from '@lemn-ltd/showcase-kit';
+import { UserMessageBubble } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 const NOW = Date.parse('2026-06-11T12:25:00.000Z');

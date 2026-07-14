@@ -1,10 +1,10 @@
-import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
+import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@lemn-ltd/showcase-kit';
 import {
   CapabilityChip,
   type CapabilityDecisionEffect,
   type CapabilityDriftState,
   type CapabilityRiskLevel,
-} from '@appranks/ui';
+} from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 const RISKS: readonly CapabilityRiskLevel[] = ['low', 'medium', 'high', 'critical'];

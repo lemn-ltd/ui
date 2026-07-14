@@ -1,11 +1,11 @@
-import { ComponentPage, ExampleBlock, PropsTable } from '@appranks/showcase-kit';
+import { ComponentPage, ExampleBlock, PropsTable } from '@lemn-ltd/showcase-kit';
 import {
   AgentMessageBubble,
   type AgentMessageContentPart,
   AgentReasoningBlock,
   AgentTextBlock,
   CodeBlock,
-} from '@appranks/ui';
+} from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 const DONE_REASONING: readonly AgentMessageContentPart[] = [
@@ -21,7 +21,7 @@ const FINAL_TEXT: readonly AgentMessageContentPart[] = [
     id: 'text-1',
     state: 'done',
     text: [
-      'The reusable component should live in `@appranks/ui`.',
+      'The reusable component should live in `@lemn-ltd/ui`.',
       '',
       '- Product apps consume it.',
       '- Showcase owns examples and docs.',
@@ -59,7 +59,7 @@ const CONTRACT_PREVIEW = JSON.stringify(
       {
         type: 'text',
         id: 'text-1',
-        text: 'The reusable component should live in @appranks/ui.',
+        text: 'The reusable component should live in @lemn-ltd/ui.',
         state: 'done',
       },
     ],

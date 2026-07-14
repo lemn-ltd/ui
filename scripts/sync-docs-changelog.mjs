@@ -46,11 +46,11 @@ assert(
   `packages/ui/CHANGELOG.md is missing the current version ${uiPackage.version}`,
 );
 
-const changelogBody = rawChangelog.replace(/^#\s+@appranks\/ui\s*/u, '').trim();
+const changelogBody = rawChangelog.replace(/^#\s+@lemn-ltd\/ui\s*/u, '').trim();
 
 const enContent = `---
 title: Changelog
-description: Release notes for @appranks/ui.
+description: Release notes for @lemn-ltd/ui.
 sidebar:
   label: Changelog
   order: 6
@@ -66,7 +66,7 @@ ${changelogBody}
 
 const esContent = `---
 title: Historial de cambios
-description: Release notes de @appranks/ui.
+description: Release notes de @lemn-ltd/ui.
 sidebar:
   label: Changelog
   order: 6

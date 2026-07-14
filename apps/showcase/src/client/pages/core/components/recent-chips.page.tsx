@@ -1,5 +1,5 @@
-import { ComponentPage, ExampleBlock, PropsTable } from '@appranks/showcase-kit';
-import { RecentChips } from '@appranks/ui';
+import { ComponentPage, ExampleBlock, PropsTable } from '@lemn-ltd/showcase-kit';
+import { RecentChips } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 const ITEMS = [

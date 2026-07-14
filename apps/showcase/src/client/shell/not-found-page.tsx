@@ -1,4 +1,4 @@
-import { Button, ContentLayout } from '@appranks/ui';
+import { Button, ContentLayout } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 import { useNavigate } from 'react-router-dom';
 

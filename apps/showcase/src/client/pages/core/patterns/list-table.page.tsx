@@ -1,4 +1,4 @@
-import { ComponentPage } from '@appranks/showcase-kit';
+import { ComponentPage } from '@lemn-ltd/showcase-kit';
 import {
   Button,
   DataTable,
@@ -8,7 +8,7 @@ import {
   PageHeader,
   Sidebar,
   TopBar,
-} from '@appranks/ui';
+} from '@lemn-ltd/ui';
 import { type CSSProperties, type ReactElement, useState } from 'react';
 import { columns, filters, navGroups, rowKey, rows } from '../../../fixtures';
 

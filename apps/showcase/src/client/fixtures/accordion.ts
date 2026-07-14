@@ -1,4 +1,4 @@
-import type { AccordionItemData } from '@appranks/ui';
+import type { AccordionItemData } from '@lemn-ltd/ui';
 
 /** 7 disclosure rows; the first is open by default via `accordionDefaultValue`. */
 export const accordionItems: readonly AccordionItemData[] = [

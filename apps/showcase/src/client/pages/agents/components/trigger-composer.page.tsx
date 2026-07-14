@@ -1,10 +1,10 @@
-import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
+import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@lemn-ltd/showcase-kit';
 import {
   type AddableTrigger,
   type ComposerTrigger,
   type ScheduleTriggerValue,
   TriggerComposer,
-} from '@appranks/ui';
+} from '@lemn-ltd/ui';
 import { type ReactElement, useRef, useState } from 'react';
 
 const ADDABLE: readonly AddableTrigger[] = [

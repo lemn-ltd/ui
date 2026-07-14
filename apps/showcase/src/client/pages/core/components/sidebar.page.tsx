@@ -2,7 +2,7 @@ import {
 	ComponentPage,
 	ExampleBlock,
 	PropsTable,
-} from "@appranks/showcase-kit";
+} from "@lemn-ltd/showcase-kit";
 import {
 	MenuItem,
 	MenuSeparator,
@@ -10,7 +10,7 @@ import {
 	Sidebar,
 	SidebarUserRow,
 	VersionTag,
-} from "@appranks/ui";
+} from "@lemn-ltd/ui";
 import {
 	type CSSProperties,
 	type ReactElement,

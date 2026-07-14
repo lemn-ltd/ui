@@ -1,5 +1,5 @@
-import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { Accordion } from '@appranks/ui';
+import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@lemn-ltd/showcase-kit';
+import { Accordion } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 import { accordionDefaultValue, accordionItems } from '../../../fixtures';
 

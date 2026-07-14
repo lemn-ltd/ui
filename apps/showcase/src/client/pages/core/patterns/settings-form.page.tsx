@@ -1,4 +1,4 @@
-import { ComponentPage } from '@appranks/showcase-kit';
+import { ComponentPage } from '@lemn-ltd/showcase-kit';
 import {
   Button,
   Field,
@@ -8,7 +8,7 @@ import {
   Sidebar,
   Toggle,
   VersionTag,
-} from '@appranks/ui';
+} from '@lemn-ltd/ui';
 import type { CSSProperties, ReactElement } from 'react';
 import { drillNavGroups } from '../../../fixtures';
 

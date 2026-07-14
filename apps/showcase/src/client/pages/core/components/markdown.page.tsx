@@ -1,5 +1,5 @@
-import { ComponentPage, ExampleBlock, PropsTable } from '@appranks/showcase-kit';
-import { Markdown } from '@appranks/ui';
+import { ComponentPage, ExampleBlock, PropsTable } from '@lemn-ltd/showcase-kit';
+import { Markdown } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 const DOCUMENT = [

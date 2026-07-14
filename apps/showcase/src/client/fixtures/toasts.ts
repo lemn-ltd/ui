@@ -1,4 +1,4 @@
-import type { ToastTone } from '@appranks/ui';
+import type { ToastTone } from '@lemn-ltd/ui';
 
 export interface ToastDescriptor {
   readonly id: string;

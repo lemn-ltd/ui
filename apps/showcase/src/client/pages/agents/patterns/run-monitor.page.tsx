@@ -1,4 +1,4 @@
-import { ComponentPage } from '@appranks/showcase-kit';
+import { ComponentPage } from '@lemn-ltd/showcase-kit';
 import {
   ApprovalPanel,
   type ApprovalPanelMeta,
@@ -18,7 +18,7 @@ import {
   StatsStrip,
   type StatCardProps,
   TopBar,
-} from '@appranks/ui';
+} from '@lemn-ltd/ui';
 import type { CSSProperties, ReactElement } from 'react';
 
 const FRAME: CSSProperties = {

@@ -1,4 +1,4 @@
-import { ComponentPage } from '@appranks/showcase-kit';
+import { ComponentPage } from '@lemn-ltd/showcase-kit';
 import {
   Badge,
   Button,
@@ -11,7 +11,7 @@ import {
   SectionGrid,
   Sidebar,
   TopBar,
-} from '@appranks/ui';
+} from '@lemn-ltd/ui';
 import { type CSSProperties, type ReactElement, useState } from 'react';
 import { columns, filters, navGroups, rowKey, rows, sectionCards } from '../../../fixtures';
 

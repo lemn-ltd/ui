@@ -1,5 +1,5 @@
-import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { ApprovalCard, type ApprovalRequest } from '@appranks/ui';
+import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@lemn-ltd/showcase-kit';
+import { ApprovalCard, type ApprovalRequest } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 const NOW = '2026-06-20T12:00:00.000Z';

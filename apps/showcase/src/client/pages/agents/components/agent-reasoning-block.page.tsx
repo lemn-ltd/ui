@@ -1,11 +1,11 @@
-import { ComponentPage, ExampleBlock, PropsTable } from '@appranks/showcase-kit';
+import { ComponentPage, ExampleBlock, PropsTable } from '@lemn-ltd/showcase-kit';
 import {
   AgentMessageBubble,
   type AgentMessageContentPart,
   AgentReasoningBlock,
   AgentTextBlock,
   CodeBlock,
-} from '@appranks/ui';
+} from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 const STREAMING_REASONING: readonly AgentMessageContentPart[] = [
@@ -24,7 +24,7 @@ const COMPLETED_REASONING: readonly AgentMessageContentPart[] = [
   {
     id: 'reasoning-1',
     state: 'done',
-    text: 'The workspace already exposes shared agent components from `@appranks/ui`.',
+    text: 'The workspace already exposes shared agent components from `@lemn-ltd/ui`.',
   },
 ];
 

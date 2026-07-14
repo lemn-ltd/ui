@@ -1,5 +1,5 @@
-import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { RetryChip, type RetryState, WaitChip, type WaitState } from '@appranks/ui';
+import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@lemn-ltd/showcase-kit';
+import { RetryChip, type RetryState, WaitChip, type WaitState } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 const WAIT_STATES: readonly WaitState[] = ['pending', 'active', 'completed', 'cancelled'];

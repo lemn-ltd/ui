@@ -1,5 +1,5 @@
-import { ComponentPage, ExampleBlock, PropsTable } from '@appranks/showcase-kit';
-import { Calendar } from '@appranks/ui';
+import { ComponentPage, ExampleBlock, PropsTable } from '@lemn-ltd/showcase-kit';
+import { Calendar } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 // A fixed "today" keeps the rendered grid (and its visual snapshot) deterministic.

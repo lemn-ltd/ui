@@ -44,7 +44,7 @@ export default defineConfig({
     ? {
         // Run the real Worker-backed dev server (Cloudflare Vite plugin) so the
         // lane exercises the deployable Worker, including the /health route.
-        command: 'pnpm --filter @appranks/ui-showcase run dev',
+        command: 'pnpm --filter @lemn-ltd/ui-showcase run dev',
         url: BASE_URL,
         reuseExistingServer: true,
         timeout: 120_000,

@@ -1,5 +1,5 @@
-import { ComponentPage, ExampleBlock, PropsTable } from '@appranks/showcase-kit';
-import { DockPanel, type DockTab, Icon, type IconName } from '@appranks/ui';
+import { ComponentPage, ExampleBlock, PropsTable } from '@lemn-ltd/showcase-kit';
+import { DockPanel, type DockTab, Icon, type IconName } from '@lemn-ltd/ui';
 import type { CSSProperties, ReactElement } from 'react';
 
 // DockPanel fills its container (height: 100%); a fixed-height grid frame caps

@@ -1,7 +1,7 @@
 import {
 	componentCatalog,
 	componentExportsFromSlug,
-} from "@appranks/ui/catalog";
+} from "@lemn-ltd/ui/catalog";
 import { WorkerEntrypoint } from "cloudflare:workers";
 import type { UiShowcaseEnv } from "./env";
 import { buildStatusReport, validateUiShowcaseEnv } from "./service-descriptor";
@@ -100,7 +100,7 @@ function catalogResponse(env: UiShowcaseEnv): Response {
 function llmsResponse(): Response {
 	return new Response(
 		[
-			"# LEMN UI",
+			"# Lemn UI",
 			"",
 			"Use @lemn-ltd/ui as the official company design-system package.",
 			"Import components only from the public package surface.",
@@ -131,7 +131,7 @@ function llmsFullResponse(): Response {
 	]);
 
 	return new Response(
-		["# LEMN UI Component Catalog", "", ...lines].join("\n"),
+		["# Lemn UI Component Catalog", "", ...lines].join("\n"),
 		{
 			headers: { "content-type": "text/plain; charset=utf-8" },
 		},

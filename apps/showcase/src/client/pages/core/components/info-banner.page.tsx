@@ -3,12 +3,12 @@ import {
 	ExampleBlock,
 	PropsTable,
 	VariantsGallery,
-} from "@appranks/showcase-kit";
+} from "@lemn-ltd/showcase-kit";
 import {
 	InfoBanner,
 	type InfoBannerDensity,
 	type InfoBannerVariant,
-} from "@appranks/ui";
+} from "@lemn-ltd/ui";
 import type { ReactElement } from "react";
 
 const VARIANTS: readonly InfoBannerVariant[] = [

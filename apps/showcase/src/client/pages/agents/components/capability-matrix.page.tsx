@@ -1,10 +1,10 @@
-import { ComponentPage, ExampleBlock, PropsTable } from '@appranks/showcase-kit';
+import { ComponentPage, ExampleBlock, PropsTable } from '@lemn-ltd/showcase-kit';
 import {
   CapabilityMatrix,
   type MatrixCapability,
   type MatrixCell,
   type MatrixTarget,
-} from '@appranks/ui';
+} from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 const CAPABILITIES: readonly MatrixCapability[] = [

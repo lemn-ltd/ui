@@ -1,4 +1,4 @@
-import type { SelectionListGroup } from '@appranks/ui';
+import type { SelectionListGroup } from '@lemn-ltd/ui';
 
 /** Categorized catalog with descriptions and tone badges, in the tool-picker shape. */
 export const selectionListGroups: readonly SelectionListGroup[] = [

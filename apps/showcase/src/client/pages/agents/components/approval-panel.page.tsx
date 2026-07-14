@@ -1,5 +1,5 @@
-import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { ApprovalPanel, type ApprovalPanelMeta } from '@appranks/ui';
+import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@lemn-ltd/showcase-kit';
+import { ApprovalPanel, type ApprovalPanelMeta } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 const META: readonly ApprovalPanelMeta[] = [

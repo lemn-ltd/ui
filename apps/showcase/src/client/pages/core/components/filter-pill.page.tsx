@@ -5,8 +5,8 @@ import {
   ExampleBlock,
   PropsTable,
   VariantsGallery,
-} from '@appranks/showcase-kit';
-import { FilterPill } from '@appranks/ui';
+} from '@lemn-ltd/showcase-kit';
+import { FilterPill } from '@lemn-ltd/ui';
 import { type ReactElement, useState } from 'react';
 
 function FilterPillPage(): ReactElement {

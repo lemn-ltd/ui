@@ -50,7 +50,7 @@ test("every catalog component implements the interactive documentation contract"
 					}
 					const visibleCode = await code.innerText();
 					expect(visibleCode, `${entry.route} public snippet`).not.toMatch(
-						/@appranks\/ui|@latest|@lemn-ltd\/ui\//,
+						/@lemn-ltd\/ui|@latest|@lemn-ltd\/ui\//,
 					);
 				}
 

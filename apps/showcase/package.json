@@ -1,5 +1,5 @@
 {
-  "name": "@appranks/ui-showcase",
+  "name": "@lemn-ltd/ui-showcase",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -21,8 +21,8 @@
     "deploy:production": "CLOUDFLARE_ENV=production pnpm run cf:build && wrangler deploy --env production"
   },
   "dependencies": {
-    "@appranks/showcase-kit": "workspace:*",
-    "@appranks/ui": "workspace:*",
+    "@lemn-ltd/showcase-kit": "workspace:*",
+    "@lemn-ltd/ui": "workspace:*",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-router-dom": "catalog:"

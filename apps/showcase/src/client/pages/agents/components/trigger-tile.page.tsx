@@ -1,5 +1,5 @@
-import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { type TriggerStatus, TriggerTile } from '@appranks/ui';
+import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@lemn-ltd/showcase-kit';
+import { type TriggerStatus, TriggerTile } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 const STATUSES: readonly TriggerStatus[] = ['enabled', 'disabled', 'error'];

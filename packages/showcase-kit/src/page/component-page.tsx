@@ -3,7 +3,7 @@ import {
 	componentExportsFromSlug,
 	ContentLayout,
 	SyntaxCodeBlock,
-} from "@appranks/ui";
+} from "@lemn-ltd/ui";
 import {
 	Children,
 	cloneElement,
@@ -193,7 +193,7 @@ export function ComponentPage({
 
 			<DocumentationFooter
 				apiHref="https://github.com/lemn-ltd/ui"
-				apiLabel="LEMN UI API"
+				apiLabel="Lemn UI API"
 				apiRows={propsTable.props.rows.map((row) => ({
 					defaultValue: row.defaultValue,
 					description: row.description,

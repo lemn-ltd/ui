@@ -1,5 +1,5 @@
-import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { Button, ConfirmDialog } from '@appranks/ui';
+import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@lemn-ltd/showcase-kit';
+import { Button, ConfirmDialog } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 function ConfirmDialogPage(): ReactElement {

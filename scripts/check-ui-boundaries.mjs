@@ -105,8 +105,8 @@ for (const file of files) {
       continue;
     }
 
-    if (specifier.startsWith('@appranks/')) {
-      failures.push(`${relativeFile}: @appranks/ui must not import workspace package "${specifier}"`);
+    if (specifier.startsWith('@lemn-ltd/')) {
+      failures.push(`${relativeFile}: @lemn-ltd/ui must not import workspace package "${specifier}"`);
       continue;
     }
 

@@ -1,10 +1,11 @@
 import { execFileSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 
 const root = process.cwd();
 const forbiddenDomains = [
   ['lemn', 'ai'].join('.'),
-  ['appranks', 'com'].join('.'),
+  [['app', 'ranks'].join(''), 'com'].join('.'),
 ];
 
 const files = execFileSync(
@@ -13,7 +14,7 @@ const files = execFileSync(
   { cwd: root, encoding: 'utf8' },
 )
   .split('\0')
-  .filter(Boolean);
+  .filter((file) => file && existsSync(file));
 
 const failures = [];
 

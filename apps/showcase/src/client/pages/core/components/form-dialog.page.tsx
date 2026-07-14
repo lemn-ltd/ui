@@ -1,4 +1,4 @@
-import { ComponentPage, ExampleBlock, PropsTable } from '@appranks/showcase-kit';
+import { ComponentPage, ExampleBlock, PropsTable } from '@lemn-ltd/showcase-kit';
 import {
   Button,
   Field,
@@ -8,7 +8,7 @@ import {
   InputSelect,
   Textarea,
   Toggle,
-} from '@appranks/ui';
+} from '@lemn-ltd/ui';
 import { type ReactElement, useState } from 'react';
 
 const STATUS_OPTIONS = [

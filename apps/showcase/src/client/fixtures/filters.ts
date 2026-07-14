@@ -1,4 +1,4 @@
-import type { FilterOption, FilterSelect } from '@appranks/ui';
+import type { FilterOption, FilterSelect } from '@lemn-ltd/ui';
 
 export interface FilterDescriptor {
   readonly id: string;

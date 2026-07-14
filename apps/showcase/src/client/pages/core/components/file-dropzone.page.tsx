@@ -1,5 +1,5 @@
-import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { FileDropzone, type FileDropzoneItem } from '@appranks/ui';
+import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@lemn-ltd/showcase-kit';
+import { FileDropzone, type FileDropzoneItem } from '@lemn-ltd/ui';
 import { type ReactElement, useState } from 'react';
 
 const uploadedSkill: FileDropzoneItem = {

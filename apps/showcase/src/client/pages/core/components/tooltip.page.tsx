@@ -1,5 +1,5 @@
-import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { Button, Tooltip, type TooltipPlacement } from '@appranks/ui';
+import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@lemn-ltd/showcase-kit';
+import { Button, Tooltip, type TooltipPlacement } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 const PLACEMENTS: readonly TooltipPlacement[] = ['top', 'bottom', 'left', 'right'];

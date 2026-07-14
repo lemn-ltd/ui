@@ -1,7 +1,7 @@
 # Changesets
 
 Add one changeset for every pull request that changes the published
-`@appranks/ui` package.
+`@lemn-ltd/ui` package.
 
 ```bash
 pnpm changeset

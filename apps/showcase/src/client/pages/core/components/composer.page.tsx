@@ -1,5 +1,5 @@
-import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { Composer, Kbd } from '@appranks/ui';
+import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@lemn-ltd/showcase-kit';
+import { Composer, Kbd } from '@lemn-ltd/ui';
 import { type ReactElement, useState } from 'react';
 
 // A fixed width keeps the composer card aligned inside preview cells.

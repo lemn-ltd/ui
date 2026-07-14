@@ -1,4 +1,4 @@
-import { Badge, ContentLayout, Icon } from "@appranks/ui";
+import { Badge, ContentLayout, Icon } from "@lemn-ltd/ui";
 import {
 	Children,
 	isValidElement,

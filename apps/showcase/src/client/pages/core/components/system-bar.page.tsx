@@ -1,5 +1,5 @@
-import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
-import { Button, SystemBar, type SystemBarTone } from '@appranks/ui';
+import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@lemn-ltd/showcase-kit';
+import { Button, SystemBar, type SystemBarTone } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 const TONES: readonly SystemBarTone[] = ['info', 'warn', 'danger'];

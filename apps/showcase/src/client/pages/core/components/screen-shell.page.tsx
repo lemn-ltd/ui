@@ -1,5 +1,5 @@
-import { ComponentPage, ExampleBlock, PropsTable } from '@appranks/showcase-kit';
-import { Card, ScreenShell } from '@appranks/ui';
+import { ComponentPage, ExampleBlock, PropsTable } from '@lemn-ltd/showcase-kit';
+import { Card, ScreenShell } from '@lemn-ltd/ui';
 import type { CSSProperties, ReactElement, ReactNode } from 'react';
 
 // ScreenShell fills 100vh, so it renders inside a fixed-height bordered frame

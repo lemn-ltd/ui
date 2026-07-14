@@ -4,7 +4,7 @@
 
 - Estado: listo para implementación
 - Fecha base: 2026-07-13
-- Owner: LEMN UI
+- Owner: Lemn UI
 - Implementación de referencia: `/core/components/checkbox`
 - Catálogo base: 112 componentes, 83 Core y 29 Agents
 - Alcance pendiente: 111 componentes; Checkbox ya es el piloto
@@ -278,7 +278,7 @@ La implementación debe añadir un gate de contrato que itere todas las entradas
 - tiene menos de uno o más de tres `.showcase-example`;
 - no tiene Preview y Code en el hero;
 - no expone código de import público `@lemn-ltd/ui`;
-- muestra `@appranks/ui`, `@latest` o deep imports en contenido visible;
+- muestra `@lemn-ltd/ui`, `@latest` o deep imports en contenido visible;
 - no tiene `Installation` o `API Reference: <Component>`;
 - no tiene tabla con Prop, Type, Default y Description;
 - contiene un toggle de tema dentro de un ejemplo;
@@ -367,12 +367,12 @@ Como mínimo:
 ```bash
 pnpm check
 pnpm validate
-pnpm --filter @appranks/ui test
-pnpm --filter @appranks/showcase-kit test
-pnpm --filter @appranks/ui-showcase test
-pnpm --filter @appranks/ui-showcase exec playwright test
+pnpm --filter @lemn-ltd/ui test
+pnpm --filter @lemn-ltd/showcase-kit test
+pnpm --filter @lemn-ltd/ui-showcase test
+pnpm --filter @lemn-ltd/ui-showcase exec playwright test
 pnpm build
-pnpm --filter @appranks/ui-showcase run cf:dry-run
+pnpm --filter @lemn-ltd/ui-showcase run cf:dry-run
 ```
 
 Los nombres internos en los comandos reflejan los packages actuales del
@@ -418,7 +418,7 @@ La migración se considera terminada únicamente cuando:
 - Cada página tiene entre uno y tres ejemplos, contando el hero.
 - Todos los ejemplos principales son componentes reales e interactivos.
 - Todas las API tables reflejan tipos públicos reales y defaults correctos.
-- Ningún contenido público recomienda `@appranks/ui`, `@latest` o deep imports.
+- Ningún contenido público recomienda `@lemn-ltd/ui`, `@latest` o deep imports.
 - Core y Agents usan el mismo lenguaje visual y la misma jerarquía.
 - Solo existe un toggle global de tema y la primera visita abre en Light.
 - Dark usa los tokens definidos en esta spec.
@@ -442,7 +442,7 @@ La migración se considera terminada únicamente cuando:
 | Overlays no funcionan en card/playground | Primer ExampleBlock conserva trigger y portal companion |
 | Snapshots ocultan regresiones | Revisar diff visual y repetir suite sin update |
 | Fixtures Agents filtran datos | Solo datos sintéticos, deterministas y brand-neutral |
-| Se confunde package interno con público | Gate visible prohíbe `@appranks/ui`; snippets usan LEMN |
+| Se confunde package interno con público | Gate visible prohíbe `@lemn-ltd/ui`; snippets usan LEMN |
 | Deploy usa cuenta o dominio incorrectos | Whoami contra metadata AgentOps antes de mutar Cloudflare |
 | Tunnel se interpreta como producción | Smoke separado y obligatorio en ambos destinos |
 | Nuevos componentes nacen con formato viejo | Gate itera catálogo completo y falla al crecer sin docs |

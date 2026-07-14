@@ -1,4 +1,4 @@
-import type { BreadcrumbItem } from '@appranks/ui';
+import type { BreadcrumbItem } from '@lemn-ltd/ui';
 
 /** Short 2-item trail. */
 export const shortTrail: readonly BreadcrumbItem[] = [

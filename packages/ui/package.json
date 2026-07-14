@@ -1,5 +1,5 @@
 {
-  "name": "@appranks/ui",
+  "name": "@lemn-ltd/ui",
   "version": "0.1.2",
   "type": "module",
   "main": "./dist/index.js",

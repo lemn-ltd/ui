@@ -1,5 +1,5 @@
-import { ComponentPage, ExampleBlock, PropsTable } from '@appranks/showcase-kit';
-import { ClassificationMatrix, type DataPolicyDraft } from '@appranks/ui';
+import { ComponentPage, ExampleBlock, PropsTable } from '@lemn-ltd/showcase-kit';
+import { ClassificationMatrix, type DataPolicyDraft } from '@lemn-ltd/ui';
 import { type ReactElement, useState } from 'react';
 
 const FIELDS: readonly string[] = ['email', 'full_name', 'account_balance', 'support_notes'];

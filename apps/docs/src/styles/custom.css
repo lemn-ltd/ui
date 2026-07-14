@@ -1,44 +1,11 @@
 /**
- * AppRanks UI token bridge for Starlight.
+ * Lemn UI token bridge for Starlight.
  *
  * The docs shell is Starlight, but its semantic CSS variables are mapped to the
- * same design-token vocabulary used by @appranks/ui.
+ * same design-token vocabulary used by @lemn-ltd/ui.
  */
 
 :root {
-  color-scheme: light dark;
-
-  --bg: light-dark(#ffffff, #06080c);
-  --surface: light-dark(#ffffff, #0e1218);
-  --surface2: light-dark(#f3f5f8, #141923);
-  --border: light-dark(#e3e8ef, #1b2230);
-  --border-strong: light-dark(#cbd3df, #2b3548);
-  --text: light-dark(#0e141b, #e2ecf5);
-  --text-muted: light-dark(#5a6b82, #7585a0);
-  --text-dim: light-dark(#8a98ad, #4f5c75);
-  --accent: light-dark(#0d9488, #5eead4);
-  --accent-strong: light-dark(#0f766e, #2dd4bf);
-  --accent-soft: light-dark(#e6fbf6, #0f2a2a);
-  --accent2: light-dark(#7c3aed, #a78bfa);
-  --accent2-soft: light-dark(#f1ebfd, #1f1a33);
-  --success: light-dark(#16a34a, #34d399);
-  --warn: light-dark(#d97706, #fbbf24);
-  --danger: light-dark(#dc2626, #f87171);
-  --info: light-dark(#2563eb, #60a5fa);
-  --focus-ring: light-dark(rgba(13, 148, 136, 0.45), rgba(94, 234, 212, 0.55));
-  --overlay: light-dark(rgba(14, 20, 27, 0.45), rgba(0, 0, 0, 0.6));
-  --radius-pill: 999px;
-  --font-sans:
-    "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-mono: "SFMono-Regular", ui-monospace, Consolas, "Liberation Mono", monospace;
-  --font-size-body: 14px;
-  --line-height-body: 1.43;
-  --font-weight-semibold: 600;
-  --scrollbar-track: var(--surface2);
-  --scrollbar-thumb: var(--border-strong);
-  --scrollbar-thumb-hover: var(--text-dim);
-  --scrollbar-size: 10px;
-
   --sl-color-accent-low: var(--accent-soft);
   --sl-color-accent: var(--accent-strong);
   --sl-color-accent-high: var(--accent);

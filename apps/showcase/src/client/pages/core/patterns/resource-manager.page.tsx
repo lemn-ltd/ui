@@ -1,4 +1,4 @@
-import { ComponentPage, useShowcaseRenderMode } from '@appranks/showcase-kit';
+import { ComponentPage, useShowcaseRenderMode } from '@lemn-ltd/showcase-kit';
 import {
   ActiveFiltersRow,
   Button,
@@ -23,7 +23,7 @@ import {
   Toaster,
   Toggle,
   TopBar,
-} from '@appranks/ui';
+} from '@lemn-ltd/ui';
 import { type CSSProperties, type ReactElement, useState } from 'react';
 import {
   columns as baseColumns,

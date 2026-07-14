@@ -1,5 +1,5 @@
-import { ComponentPage, ExampleBlock, PropsTable } from '@appranks/showcase-kit';
-import { Button, Menu, MenuItem, MenuLabel, MenuSeparator } from '@appranks/ui';
+import { ComponentPage, ExampleBlock, PropsTable } from '@lemn-ltd/showcase-kit';
+import { Button, Menu, MenuItem, MenuLabel, MenuSeparator } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 
 function MenuPage(): ReactElement {

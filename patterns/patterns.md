@@ -62,8 +62,8 @@ This file defines the default technology stack and what each piece is used for.
 
 | Technology | Use it for | Rule |
 | --- | --- | --- |
-| Appranks Auth/RBAC | Actor, session, organization, tenant scoping, and permissions | Do not build parallel auth |
-| Appranks Billing | Commercial billing, entitlement checks, paid effects | Store authoritative billing state in Postgres |
+| LEMN Auth/RBAC | Actor, session, organization, tenant scoping, and permissions | Do not build parallel auth |
+| LEMN Billing | Commercial billing, entitlement checks, paid effects | Store authoritative billing state in Postgres |
 | Cloudflare Secrets / CI secrets | Provider keys, credentials, tokens, environment-specific secrets | Never commit or log secrets |
 | Structured logs | Correlated operational debugging and incident evidence | Redact secrets, tokens, sensitive provider bodies, and unnecessary PII |
 | Audit events | Durable records for auth, billing, admin, MCP, and state-changing decisions | Raw debug logs or sensitive payload storage |
@@ -2375,7 +2375,7 @@ Scripts are a repository contract, not a scratchpad. Keep root `package.json` as
 
 Use pnpm for workspace package management, but migrate to it only in a dedicated commit after script names, categories, and CI entrypoints are normalized. Until that migration commit lands, treat the current npm state as authoritative: `package-lock.json`, `npm ci`, npm workspaces, and `npm run -w`.
 
-A pnpm migration must change the package-manager surface together: add `pnpm-workspace.yaml`, pin `packageManager`, generate `pnpm-lock.yaml`, update CI to `pnpm install --frozen-lockfile`, update workspace commands to pnpm filters or recursive runs, and verify GitHub Packages auth for the LEMN UI package without committing tokens.
+A pnpm migration must change the package-manager surface together: add `pnpm-workspace.yaml`, pin `packageManager`, generate `pnpm-lock.yaml`, update CI to `pnpm install --frozen-lockfile`, update workspace commands to pnpm filters or recursive runs, and verify GitHub Packages auth for the Lemn UI package without committing tokens.
 
 Use Turborepo only after script governance is clean. Turbo orchestrates and caches deterministic tasks such as `build`, `check`, `test`, and `codegen`; it must not become the catalog for deploys, migrations, live smokes, canaries, or mutable operations. Do not put `turbo run` inside package-level scripts because package scripts are the tasks Turbo discovers; keep Turbo commands at the workspace root.
 
@@ -4670,7 +4670,7 @@ target API surface.
 
 This pattern is project-wide before it is package-local. Before claiming API modular-slice compliance, agents must apply `PAT-CODE-SCRIPT-GOVERNANCE-001` across the repository so package scripts, operational scripts, selftests, smoke tests, generated tooling, and CI entrypoints do not keep product-branded names, direct file invocations, or mixed package-manager behavior around the API migration.
 
-For this repository, npm-to-pnpm migration is allowed only as a separate commit after script normalization. The current npm state must be treated as the migration source of truth until then: `package-lock.json`, `npm ci`, npm workspaces, and `npm run -w` remain active until replaced together by `pnpm-workspace.yaml`, `packageManager`, `pnpm-lock.yaml`, `pnpm install --frozen-lockfile` in CI, and verified GitHub Packages auth for the LEMN UI package. Turborepo may be introduced only after script names and categories are clean; use it for deterministic `build`, `check`, `test`, and `codegen` tasks, not for deploys, migrations, live smokes, or mutable operations.
+For this repository, npm-to-pnpm migration is allowed only as a separate commit after script normalization. The current npm state must be treated as the migration source of truth until then: `package-lock.json`, `npm ci`, npm workspaces, and `npm run -w` remain active until replaced together by `pnpm-workspace.yaml`, `packageManager`, `pnpm-lock.yaml`, `pnpm install --frozen-lockfile` in CI, and verified GitHub Packages auth for the Lemn UI package. Turborepo may be introduced only after script names and categories are clean; use it for deterministic `build`, `check`, `test`, and `codegen` tasks, not for deploys, migrations, live smokes, or mutable operations.
 
 ## Product Naming Precondition
 
@@ -5648,7 +5648,7 @@ MCP tools are product APIs. They must be curated, typed, permissioned, auditable
 ### Must
 
 - Use Zod for tool inputs.
-- Apply Appranks RBAC and tenant scoping.
+- Apply LEMN RBAC and tenant scoping.
 - Audit tool calls and results.
 - Reuse services and policies.
 
@@ -5777,9 +5777,9 @@ await analytics.record(event).catch((cause) => {
 ```
 
 ---
-id: PAT-AUTH-APPRANKS-001
+id: PAT-AUTH-LEMN-001
 domain: AUTH
-category: APPRANKS
+category: LEMN
 version: 1
 description: Use this pattern when implementing auth, sessions, RBAC, or billing-adjacent identity behavior.
 precedence_level: 1
@@ -5791,13 +5791,13 @@ applies_when:
 
 ## Strategy
 
-Use Appranks as the commercial auth and RBAC source. BetterAuth is internal to Appranks and must not become a parallel custom auth system.
+Use LEMN as the commercial auth and RBAC source. BetterAuth is internal to LEMN and must not become a parallel custom auth system.
 
 ## Rules
 
 ### Must
 
-- Resolve actor, session, organization, and permissions through Appranks integration.
+- Resolve actor, session, organization, and permissions through LEMN integration.
 - Enforce policies in services and tenant scope in repositories.
 - Use audit logs for sensitive actions.
 
@@ -5810,8 +5810,8 @@ Use Appranks as the commercial auth and RBAC source. BetterAuth is internal to A
 ## Decision rules
 
 - If route is sensitive, require backend authorization.
-- If MCP tool acts for a user, apply Appranks RBAC.
-- If Appranks API is unclear, inspect internal docs instead of inventing.
+- If MCP tool acts for a user, apply LEMN RBAC.
+- If LEMN API is unclear, inspect internal docs instead of inventing.
 
 ## Allowed exceptions
 
@@ -5834,7 +5834,7 @@ version: 2
 description: Use this pattern when ingesting billing provider events, payment webhooks, subscription state, invoices, or paid account state.
 precedence_level: 1
 depends_on:
-  - PAT-AUTH-APPRANKS-001
+  - PAT-AUTH-LEMN-001
 applies_when:
   - "Ingesting billing provider events, payment webhooks, subscription state, invoices, or paid account state."
 ---
@@ -5842,7 +5842,7 @@ applies_when:
 
 ## Strategy
 
-Use Appranks for commercial billing authority. Verified billing events update an auditable Postgres ledger and derived account state through idempotent processing.
+Use LEMN for commercial billing authority. Verified billing events update an auditable Postgres ledger and derived account state through idempotent processing.
 
 ## Rules
 
@@ -5856,7 +5856,7 @@ Use Appranks for commercial billing authority. Verified billing events update an
 
 ### Must not
 
-- Do not create custom billing when Appranks covers the case.
+- Do not create custom billing when LEMN covers the case.
 - Do not store billing authority only in KV.
 - Do not grant paid access from an unverified webhook.
 - Do not delete billing history required for audit or reconciliation.
@@ -5886,7 +5886,7 @@ version: 1
 description: Use this pattern when checking whether an actor or organization may use a paid feature.
 precedence_level: 3
 depends_on:
-  - PAT-AUTH-APPRANKS-001
+  - PAT-AUTH-LEMN-001
   - PAT-AUTH-BILLING-001
 applies_when:
   - "Checking whether an actor or organization may use a paid feature."
@@ -5895,7 +5895,7 @@ applies_when:
 
 ## Strategy
 
-Entitlement checks are authorization decisions. Resolve them server-side through Appranks and authoritative Postgres state before starting paid or restricted work.
+Entitlement checks are authorization decisions. Resolve them server-side through LEMN and authoritative Postgres state before starting paid or restricted work.
 
 ## Rules
 
@@ -6094,7 +6094,7 @@ version: 1
 description: Use this pattern when implementing sensitive routes, tools, jobs, or data access.
 precedence_level: 3
 depends_on:
-  - PAT-AUTH-APPRANKS-001
+  - PAT-AUTH-LEMN-001
 applies_when:
   - "Implementing sensitive routes, tools, jobs, or data access."
 ---
@@ -7371,8 +7371,8 @@ Use `@lemn-ltd/ui` from `https://ui.le-mn.com` as the required company design-sy
 
 - Registry: `https://npm.pkg.github.com`
 - Package: `@lemn-ltd/ui`
-- Current verified version: `0.1.1`
-- Preflight command in this repo: `npm run ui:lemn:check`
+- Version: use the latest published release approved by the consuming repository.
+- Producer preflight in this repo: `pnpm validate && pnpm check && pnpm test && pnpm build`
 
 ## Example
 
@@ -8043,7 +8043,7 @@ Use Flue Framework and the approved Flue harness pattern for commercial agents d
 const harness = {
   name: 'support-agent',
   tools: curatedTools,
-  policy: appranksRbacPolicy,
+  policy: lemnRbacPolicy,
   observability: brainstaskOtel,
 }
 

@@ -1,4 +1,4 @@
-import type { OrgItem, SidebarNavGroup, SidebarNavItem } from '@appranks/ui';
+import type { OrgItem, SidebarNavGroup, SidebarNavItem } from '@lemn-ltd/ui';
 
 /** Primary sidebar groups: 5 + 4 + 6 = 15 items, with one active item. */
 export const navGroups: readonly SidebarNavGroup[] = [
