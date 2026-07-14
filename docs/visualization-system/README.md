@@ -90,6 +90,12 @@ representative/240-row stress data. It records ready time, legend interaction
 latency, layout shift, and a full-page screenshot hash. The current environment
 and results are stored under `docs/visualization-system/benchmarks/`.
 
+The 2026-07-14 ARM64 baseline for commit `1ecf754` contains 16 distinct visual
+receipts. Ready time was 739.5–824 ms, legend response was 26.5–47.4 ms, and
+maximum cumulative layout shift was 0.0099. See the
+[raw benchmark receipt](./benchmarks/2026-07-14-1ecf754.json) for every scenario,
+environment metadata, and screenshot checksum.
+
 Before adding a dense or specialized chart, rerun that benchmark and compare
 render time, interaction latency, bundle impact, and visual stability. A large
 SVG data set is a reason to benchmark alternatives, not permission to bypass the
