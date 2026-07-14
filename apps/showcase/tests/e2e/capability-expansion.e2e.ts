@@ -39,7 +39,6 @@ function runtimeErrors(page: Page): string[] {
 test("all expanded component routes render without runtime errors", async ({
 	context,
 }, testInfo) => {
-	test.setTimeout(240_000);
 	for (const [slug, title] of EXPANDED_ROUTES) {
 		const route = `/core/components/${slug}`;
 		await test.step(route, async () => {

@@ -96,7 +96,10 @@ jobs:
   showcase-e2e:
     name: Showcase E2E (${{ matrix.shard }}/3)
     needs: validate
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.60.0-noble
+      options: --ipc=host
     timeout-minutes: 35
     permissions:
       contents: read
@@ -133,12 +136,6 @@ jobs:
         run: pnpm install --frozen-lockfile
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Verify E2E runner disk capacity
-        run: node scripts/test/check-e2e-runner-capacity.mjs "$RUNNER_TEMP"
-
-      - name: Install Chromium
-        run: pnpm --filter @lemn-ltd/ui-showcase exec playwright install --with-deps chromium
 
       - name: Run showcase E2E shard
         run: >-

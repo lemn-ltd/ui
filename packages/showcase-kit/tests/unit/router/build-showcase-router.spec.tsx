@@ -2,8 +2,8 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { lazy, type ReactElement } from "react";
 import { Outlet, RouterProvider } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { ShowcaseEntry } from "../../registry/showcase-types.js";
-import { buildShowcaseRouter } from "../build-showcase-router.js";
+import type { ShowcaseEntry } from "../../../src/registry/showcase-types.js";
+import { buildShowcaseRouter } from "../../../src/router/build-showcase-router.js";
 
 function Shell(): ReactElement {
 	return <Outlet />;

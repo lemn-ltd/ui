@@ -95,7 +95,107 @@ test("the module switcher scopes sidebar navigation", async ({ page }) => {
 	await expect(sidebar.getByText("Agent activity line")).toHaveCount(0);
 });
 
-test("an unknown route renders the not-found page", async ({ page }) => {
-	await gotoStable(page, "/core/components/does-not-exist");
+test("route readiness rejects false operational surfaces", async ({ page }) => {
+	const missingRoute = "/core/components/does-not-exist";
+	await expect(gotoStable(page, missingRoute)).rejects.toThrow(
+		/expected operational surface but rendered not-found/u,
+	);
+	await gotoStable(page, missingRoute, { expectedSurface: "not-found" });
 	await expect(page.locator(".showcase-not-found")).toBeVisible();
+
+	await page.route("**/synthetic-document-404", async (route) => {
+		await route.fulfill({
+			body: '<main class="ui-content-layout">False operational surface</main>',
+			contentType: "text/html",
+			status: 404,
+		});
+	});
+	await expect(gotoStable(page, "/synthetic-document-404")).rejects.toThrow(
+		/404 GET .*synthetic-document-404/u,
+	);
+	await page.unroute("**/synthetic-document-404");
+
+	await page.route("**/synthetic-subresource.js", async (route) => {
+		await route.fulfill({
+			body: "throw new Error('should not execute')",
+			contentType: "text/javascript",
+			status: 404,
+		});
+	});
+	await page.route("**/synthetic-subresource-404", async (route) => {
+		await route.fulfill({
+			body: [
+				'<main class="ui-content-layout">False operational surface</main>',
+				'<script src="/synthetic-subresource.js"></script>',
+			].join(""),
+			contentType: "text/html",
+			status: 200,
+		});
+	});
+	await expect(gotoStable(page, "/synthetic-subresource-404")).rejects.toThrow(
+		/404 GET .*synthetic-subresource\.js/u,
+	);
+	await page.unroute("**/synthetic-subresource-404");
+	await page.unroute("**/synthetic-subresource.js");
+
+	await page.route("**/synthetic-failed.js", async (route) => {
+		await route.abort("failed");
+	});
+	await page.route("**/synthetic-request-failure", async (route) => {
+		await route.fulfill({
+			body: [
+				'<main class="ui-content-layout">False operational surface</main>',
+				'<script src="/synthetic-failed.js"></script>',
+			].join(""),
+			contentType: "text/html",
+			status: 200,
+		});
+	});
+	await expect(gotoStable(page, "/synthetic-request-failure")).rejects.toThrow(
+		/GET .*synthetic-failed\.js \(net::ERR_FAILED\)/u,
+	);
+	await page.unroute("**/synthetic-request-failure");
+	await page.unroute("**/synthetic-failed.js");
+
+	await page.route("**/synthetic-browser-errors", async (route) => {
+		await route.fulfill({
+			body: [
+				'<main class="ui-content-layout">False operational surface</main>',
+				"<script>",
+				"console.error('synthetic console failure');",
+				"setTimeout(() => { throw new Error('synthetic page failure'); }, 0);",
+				"</script>",
+			].join(""),
+			contentType: "text/html",
+			status: 200,
+		});
+	});
+	await expect(gotoStable(page, "/synthetic-browser-errors")).rejects.toThrow(
+		/synthetic page failure.*synthetic console failure|synthetic console failure.*synthetic page failure/su,
+	);
+	await page.unroute("**/synthetic-browser-errors");
+
+	await gotoStable(page, "/");
+	await page.setViewportSize({ width: 375, height: 812 });
+	await page.locator("#root").evaluate((root) => {
+		root.innerHTML = [
+			'<section class="showcase-route-error" role="alert">',
+			"<h1>Page unavailable</h1>",
+			"<p>The showcase could not render this route.</p>",
+			`<p class="showcase-route-error__detail">RouteImportError:${"unbroken".repeat(32)}</p>`,
+			'<button type="button">Reload page</button>',
+			"</section>",
+		].join("");
+	});
+	const errorSurface = page.locator(".showcase-route-error");
+	const dimensions = await errorSurface.evaluate((element) => ({
+		clientWidth: element.clientWidth,
+		documentClientWidth: document.documentElement.clientWidth,
+		documentScrollWidth: document.documentElement.scrollWidth,
+		scrollWidth: element.scrollWidth,
+	}));
+	expect(dimensions.clientWidth).toBeGreaterThanOrEqual(dimensions.scrollWidth);
+	expect(dimensions.documentClientWidth).toBeGreaterThanOrEqual(
+		dimensions.documentScrollWidth,
+	);
 });

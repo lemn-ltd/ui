@@ -10,6 +10,8 @@ import {
 
 export type Theme = "light" | "dark";
 
+type DeterministicPage = Pick<Page, "addInitScript" | "close" | "emulateMedia">;
+
 /** The persisted theme key the package theme runtime reads on first mount. */
 const THEME_STORAGE_KEY = "color-theme";
 
@@ -18,7 +20,7 @@ function themeForProject(name: string): Theme {
 }
 
 async function configureDeterministicPage(
-	page: Page,
+	page: DeterministicPage,
 	projectName: string,
 ): Promise<void> {
 	const theme = themeForProject(projectName);
@@ -35,13 +37,32 @@ async function configureDeterministicPage(
 	);
 }
 
+export async function createDeterministicPage<TPage extends DeterministicPage>(
+	createPage: () => Promise<TPage>,
+	projectName: string,
+): Promise<TPage> {
+	const page = await createPage();
+	try {
+		await configureDeterministicPage(page, projectName);
+		return page;
+	} catch (configurationError) {
+		try {
+			await page.close();
+		} catch (cleanupError) {
+			throw new AggregateError(
+				[configurationError, cleanupError],
+				"Deterministic page configuration and cleanup failed",
+			);
+		}
+		throw configurationError;
+	}
+}
+
 export async function newDeterministicPage(
 	context: BrowserContext,
 	projectName: string,
 ): Promise<Page> {
-	const page = await context.newPage();
-	await configureDeterministicPage(page, projectName);
-	return page;
+	return createDeterministicPage(() => context.newPage(), projectName);
 }
 
 /**
@@ -60,8 +81,18 @@ export const test = base.extend({
 export { expect };
 
 const OPERATIONAL_ROUTE_SELECTOR =
-	".ui-content-layout, .showcase-not-found, .showcase-embedded-preview";
+	".ui-content-layout, .showcase-embedded-preview";
+const NOT_FOUND_SELECTOR = ".showcase-not-found";
 const ROUTE_ERROR_SELECTOR = ".showcase-route-error";
+const OBSERVED_ROUTE_SELECTOR = [
+	OPERATIONAL_ROUTE_SELECTOR,
+	NOT_FOUND_SELECTOR,
+	ROUTE_ERROR_SELECTOR,
+].join(", ");
+
+export interface GotoStableOptions {
+	readonly expectedSurface?: "not-found" | "operational";
+}
 
 export interface GotoStableFailure {
 	readonly body: string;
@@ -71,11 +102,14 @@ export interface GotoStableFailure {
 	readonly pageErrors: readonly string[];
 	readonly path: string;
 	readonly readyState: string;
+	readonly reason: string;
 	readonly state:
 		| "blank"
 		| "error"
 		| "loading"
+		| "not-found"
 		| "non-operational"
+		| "operational"
 		| "unavailable";
 	readonly url: string;
 }
@@ -91,6 +125,7 @@ export function formatGotoStableFailure(failure: GotoStableFailure): string {
 		`url=${JSON.stringify(failure.url)}`,
 		`state=${failure.state}`,
 		`readyState=${failure.readyState}`,
+		`reason=${JSON.stringify(failure.reason)}`,
 		`pageErrors=${limited(failure.pageErrors)}`,
 		`consoleErrors=${limited(failure.consoleErrors)}`,
 		`failedRequests=${limited(failure.failedRequests)}`,
@@ -102,6 +137,7 @@ export function formatGotoStableFailure(failure: GotoStableFailure): string {
 async function captureGotoStableFailure(
 	page: Page,
 	path: string,
+	reason: string,
 	observed: Pick<
 		GotoStableFailure,
 		"consoleErrors" | "failedRequests" | "httpErrors" | "pageErrors"
@@ -112,14 +148,22 @@ async function captureGotoStableFailure(
 			const body = document.body?.innerText.replace(/\s+/gu, " ").trim() ?? "";
 			const routeError = document.querySelector(".showcase-route-error");
 			const loading = document.querySelector(".showcase-page-fallback");
+			const notFound = document.querySelector(".showcase-not-found");
+			const operational = document.querySelector(
+				".ui-content-layout, .showcase-embedded-preview",
+			);
 			const root = document.querySelector("#root");
 			const state: GotoStableFailure["state"] = routeError
 				? "error"
 				: loading
 					? "loading"
-					: !root?.hasChildNodes()
-						? "blank"
-						: "non-operational";
+					: notFound
+						? "not-found"
+						: operational
+							? "operational"
+							: !root?.hasChildNodes()
+								? "blank"
+								: "non-operational";
 			return {
 				body: body.slice(0, 500),
 				readyState: document.readyState,
@@ -130,6 +174,7 @@ async function captureGotoStableFailure(
 			...observed,
 			...documentState,
 			path,
+			reason,
 			url: page.url(),
 		};
 	} catch (error) {
@@ -138,6 +183,7 @@ async function captureGotoStableFailure(
 			body: error instanceof Error ? error.message : String(error),
 			path,
 			readyState: "unavailable",
+			reason,
 			state: "unavailable",
 			url: page.url(),
 		};
@@ -145,10 +191,19 @@ async function captureGotoStableFailure(
 }
 
 /**
- * Navigate and wait for the lazily-loaded page to resolve (its ContentLayout or
- * the not-found surface), plus fonts, so assertions and screenshots are stable.
+ * Navigate and wait for a lazily-loaded operational route, plus fonts and two
+ * render frames. Internal not-found routes require an explicit typed opt-in.
  */
-export async function gotoStable(page: Page, path = "/"): Promise<void> {
+export async function gotoStable(
+	page: Page,
+	path = "/",
+	options: GotoStableOptions = {},
+): Promise<void> {
+	const expectedSurface = options.expectedSurface ?? "operational";
+	const expectedSelector =
+		expectedSurface === "not-found"
+			? NOT_FOUND_SELECTOR
+			: OPERATIONAL_ROUTE_SELECTOR;
 	const consoleErrors: string[] = [];
 	const failedRequests: string[] = [];
 	const httpErrors: string[] = [];
@@ -178,21 +233,54 @@ export async function gotoStable(page: Page, path = "/"): Promise<void> {
 	page.on("response", onResponse);
 
 	try {
-		await page.goto(path);
+		const navigationResponse = await page.goto(path);
+		if (navigationResponse && navigationResponse.status() >= 400) {
+			throw new Error(
+				`navigation returned HTTP ${navigationResponse.status()} ${navigationResponse.url()}`,
+			);
+		}
 		await page
-			.locator(`${OPERATIONAL_ROUTE_SELECTOR}, ${ROUTE_ERROR_SELECTOR}`)
+			.locator(OBSERVED_ROUTE_SELECTOR)
 			.first()
 			.waitFor({ timeout: 15_000 });
 		if (await page.locator(ROUTE_ERROR_SELECTOR).first().isVisible()) {
 			throw new Error("route error surface rendered");
 		}
+		const notFoundVisible = await page
+			.locator(NOT_FOUND_SELECTOR)
+			.first()
+			.isVisible();
+		if (notFoundVisible && expectedSurface !== "not-found") {
+			throw new Error(
+				`expected ${expectedSurface} surface but rendered not-found`,
+			);
+		}
+		if (!(await page.locator(expectedSelector).first().isVisible())) {
+			throw new Error(
+				notFoundVisible
+					? `expected ${expectedSurface} surface but rendered not-found`
+					: `expected ${expectedSurface} surface did not render`,
+			);
+		}
 		await page.evaluate(async () => {
 			await document.fonts?.ready;
+			await new Promise<void>((resolve) => {
+				requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+			});
 		});
-	} catch {
+		if (
+			consoleErrors.length > 0 ||
+			failedRequests.length > 0 ||
+			httpErrors.length > 0 ||
+			pageErrors.length > 0
+		) {
+			throw new Error("browser diagnostics reported route failures");
+		}
+	} catch (error) {
+		const reason = error instanceof Error ? error.message : String(error);
 		throw new Error(
 			formatGotoStableFailure(
-				await captureGotoStableFailure(page, path, {
+				await captureGotoStableFailure(page, path, reason, {
 					consoleErrors,
 					failedRequests,
 					httpErrors,
