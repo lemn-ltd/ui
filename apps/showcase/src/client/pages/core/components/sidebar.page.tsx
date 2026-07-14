@@ -25,8 +25,9 @@ import {
 	orgs,
 } from "../../../fixtures";
 
-// Each mode renders inside a fixed-height bordered frame so the shell-scale
-// component reads as a preview rather than taking over the page.
+// Each mode renders inside a stable bordered frame so the shell-scale
+// component reads as a preview rather than taking over the page. Only the
+// canonical visual target expands to show every navigation and footer item.
 function Frame({
 	width,
 	children,
@@ -38,7 +39,7 @@ function Frame({
 }): ReactElement {
 	const style: CSSProperties = {
 		width,
-		height: 420,
+		height: visualTarget ? 1000 : 420,
 		border: "1px solid var(--border)",
 		borderRadius: "var(--radius-lg)",
 		overflow: "hidden",
