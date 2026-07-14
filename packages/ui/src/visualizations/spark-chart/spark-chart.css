@@ -1,0 +1,8 @@
+.ui-spark-chart :where(.ui-chart-visualization) {
+  gap: 0;
+}
+
+.ui-spark-chart :where(.recharts-line-curve, .recharts-area-curve) {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}

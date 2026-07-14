@@ -390,6 +390,10 @@ A read-only pill labelling the scope something applies to.
 
 The canonical form row: label, required asterisk, hint, and error, wired to any control via a render contract.
 
+`Field` is the design-system solution for control labels. Do not add or consume
+a standalone `Label` component: the label must stay coupled to hint, error,
+disabled, required, and `aria-describedby` wiring.
+
 **Use when**
 
 - Wrapping any form control to attach a label, required asterisk, hint line, and error line as one canonical row.
@@ -409,13 +413,16 @@ The canonical form row: label, required asterisk, hint, and error, wired to any 
 
 `/core/components/calendar` · beta
 
-A month-grid date picker with selected/today states, prev/next and quick-year navigation, and min/max/future/past validation that disables out-of-range days.
+A one- or two-month date grid with discriminated single/range state, partial
+range preview, selected/today markers, quick-year navigation, locale-aware
+labels, and shared disabled-date rules.
 
 **Use when**
 
 - Picking a single date from a visible month grid, with today marked and the selection filled in the accent.
 - Enforcing a selectable range: pass minDate/maxDate, disableFuture, disablePast, or shouldDisableDate and out-of-range days render disabled and unselectable.
 - You want controlled or uncontrolled selection plus controlled or uncontrolled visible-month navigation.
+- A date range needs an explicit partial start, hover preview, and one or two adjacent months without duplicating date logic.
 
 **Avoid**
 
@@ -521,6 +528,61 @@ Searchable grouped multi-select: category pills with counts, group select-all wi
 - Don't use it to run commands or navigate. → use [`command-palette`](#command-palette)
 
 **Pairs with** [`field`](#field), [`badge`](#badge), [`checkbox`](#checkbox), [`page-section`](#page-section)
+
+### Select native
+
+`/core/components/select-native` · beta
+
+Use `SelectNative` for short form choices where browser-native mobile UI,
+autofill, form submission, and progressive enhancement are more valuable than
+a custom popup. It supports options, optgroups, disabled values, refs, and
+controlled or uncontrolled native values. Use [`select`](#select) when the
+popup itself must follow the design-system surface.
+
+### Radio card group
+
+`/core/components/radio-card-group` · beta
+
+Use `RadioCardGroup` for a small mutually exclusive choice where every option
+needs a label, description, or icon and the full card should be clickable. It
+keeps Radix radio keyboard semantics and a visible selection marker. Use plain
+[`radio`](#radio) when the card treatment would add unnecessary weight.
+
+### Toggle group
+
+`/core/components/toggle-group` · beta
+
+Use `ToggleGroup` for compact single- or multi-select commands such as editor
+formatting. It is not an on/off setting; use [`toggle`](#toggle) for a switch.
+It is also not peer-view navigation; use [`segmented-control`](#segmented-control)
+for a single compact view choice and [`tabs`](#tabs) for panels.
+
+### Slider
+
+`/core/components/slider` · beta
+
+Use `Slider` for a bounded numeric value or range when direct manipulation is
+more useful than typing. Supply exactly one accessible label per thumb and use
+`valueFormatter` only for display; the emitted values stay numeric. Prefer an
+[`input`](#input) when users need exact or unbounded entry.
+
+### Date picker
+
+`/core/components/date-picker` · beta
+
+Use `DatePicker` for one labelled date field. It composes `Field`, `Button`,
+`Popover`, and the shared single-mode [`calendar`](#calendar), supports
+controlled or uncontrolled state, and can submit a stable local date through a
+hidden form input. Manual text entry is intentionally not implemented.
+
+### Date range picker
+
+`/core/components/date-range-picker` · beta
+
+Use `DateRangePicker` for an explicit start/end field. A partial range remains
+visible and keeps the popover open until the end is selected; one or two months
+reuse the same range-mode [`calendar`](#calendar) logic. Use two separate date
+pickers only when start and end are independent values.
 
 ### Composer
 
@@ -1455,11 +1517,14 @@ A slash-separated navigation trail with link, button, and current-page segments.
 
 `/core/components/tabs` · stable
 
-A controlled set of triggers with optional count badges. Horizontal by default; `orientation="vertical"` renders a sidebar rail with a left accent bar.
+Accessible tab triggers and real associated panels with optional count badges.
+They support controlled or uncontrolled state, stable trigger/panel IDs, and
+preserve inactive panel state unless lazy mounting is requested explicitly.
 
 **Use when**
 
-- You need a controlled row of triggers (value + onValueChange) to switch between peer views of the same scope.
+- You need peer panels in the same document with complete tab/tabpanel relationships.
+- State may be controlled or initialized with `defaultValue`.
 - A trigger benefits from a trailing count badge (e.g. "Open 12").
 - Many tabs may overflow the rail and you want the built-in horizontal scroll behavior.
 - You want a vertical sidebar rail (`orientation="vertical"`) for section navigation, with a left accent bar on the active item.
@@ -1469,10 +1534,20 @@ A controlled set of triggers with optional count badges. Horizontal by default; 
 - Don't use it for a small set of mutually exclusive options inside a form; use a segmented control. → use [`segmented-control`](#segmented-control)
 - Don't use it for hierarchical location; that's the breadcrumb. → use [`breadcrumb`](#breadcrumb)
 - Don't use it for sequential wizard progress; use the stepper. → use [`stepper`](#stepper)
+- Don't use it for URL navigation. → use [`tab-navigation`](#tab-navigation)
 
 **Pairs with** [`badge`](#badge), [`entity-toolbar`](#entity-toolbar), [`content-layout`](#content-layout), [`page-section`](#page-section)
 
 **In patterns** Detail
+
+### Tab navigation
+
+`/core/components/tab-navigation` · beta
+
+Use `TabNavigation` when each peer destination has a real URL. It renders a
+semantic `nav` of links, marks the current page with `aria-current`, and scrolls
+horizontally on narrow screens. It never renders panels and must not replace
+[`tabs`](#tabs), whose triggers control content in the current document.
 
 ### Stepper
 
@@ -1548,6 +1623,88 @@ The right-docked workspace panel — a tabbed header with maximize/hide controls
 - There is no enclosing `ScreenShell`; the panel reads its state from the shell context and is inert standalone. → use [`screen-shell`](#screen-shell)
 
 **Pairs with** [`screen-shell`](#screen-shell), [`tabs`](#tabs), [`icon-button`](#icon-button)
+
+## Visualizations
+
+### Area chart
+
+`/core/components/area-chart` · beta
+
+Use an `AreaChart` to show one or more time series when the filled area helps
+communicate magnitude. Choose normal or stacked layout explicitly; use a
+[`line-chart`](#line-chart) when overlap makes the filled regions ambiguous.
+
+### Bar chart
+
+`/core/components/bar-chart` · beta
+
+Use a `BarChart` to compare discrete categories, with grouped or stacked bars
+and an explicit vertical or horizontal orientation. Use a
+[`bar-list`](#bar-list) for a compact ranked list with readable values.
+
+### Combo chart
+
+`/core/components/combo-chart` · beta
+
+Use a `ComboChart` only when bars and lines share a meaningful index and their
+different encodings clarify the comparison. Declare each series and its axis;
+avoid combining unrelated metrics merely to save space.
+
+### Bar list
+
+`/core/components/bar-list` · beta
+
+Use a `BarList` for ranked category values that must remain easy to scan and
+read. Rows may be static, links, or actions. Use a [`bar-chart`](#bar-chart)
+when axes, grouped series, or stacking carry important meaning.
+
+### Category bar
+
+`/core/components/category-bar` · beta
+
+Use a `CategoryBar` for one part-to-whole distribution in a compact surface.
+Its labels and segment patterns preserve meaning beyond color. Use a
+[`donut-chart`](#donut-chart) when the distribution needs a focal total.
+
+### Donut chart
+
+`/core/components/donut-chart` · beta
+
+Use a `DonutChart` for a small labelled part-to-whole dataset and optional
+center value. Avoid it for many similar slices; use a
+[`bar-chart`](#bar-chart) when precise comparison matters more than the total.
+
+### Line chart
+
+`/core/components/line-chart` · beta
+
+Use a `LineChart` for one or more ordered trends. Give it an accessible name,
+declare every series, and provide stable deterministic data. Use a
+[`spark-chart`](#spark-chart) when the chart must fit a dense metric card.
+
+### Progress circle
+
+`/core/components/progress-circle` · beta
+
+Use a `ProgressCircle` for compact determinate or indeterminate task progress.
+Always supply an accessible name. Use [`progress-bar`](#progress-bar) when a
+linear indicator makes the remaining distance easier to understand.
+
+### Spark chart
+
+`/core/components/spark-chart` · beta
+
+Use a `SparkChart` for a compact interactive line, area, or bar trend with an
+optional tooltip. Use [`sparkline`](#sparkline) for a lighter non-interactive
+trend where the surrounding text already communicates the value.
+
+### Tracker
+
+`/core/components/tracker` · beta
+
+Use a `Tracker` for an ordered sequence of complete, active, pending, or error
+states. Each item keeps visible or assistive text so status never depends on
+color alone. Use a [`stepper`](#stepper) for user-controlled navigation.
 
 ## Data display
 
@@ -1973,7 +2130,8 @@ The mounted toast stack region that owns the viewport, queue, and auto-dismiss.
 
 `/core/components/info-banner` · stable
 
-In-content tinted banner with a tone left border across four variants.
+An in-content callout with optional title, system or custom icon, body, actions,
+dismissal, and urgency semantics independent of its visual tone.
 
 **Use when**
 
@@ -1982,6 +2140,7 @@ In-content tinted banner with a tone left border across four variants.
 - Annotate a section, form, or panel with inline status next to the content it describes.
 - Use `density="compact"` for short row-level status details such as tool-call errors.
 - Keep a service/load error visible while the page scrolls: render it as the last content element with `floating`, which sticks it to the bottom edge of the scrolling region.
+- Add a title and actions for a complete callout, declare `dismissible` only when the notice may be removed, and choose urgency from behavior rather than color.
 
 **Avoid**
 
@@ -2215,6 +2374,14 @@ The centered single-card auth screen: a full-viewport surface holding one elevat
 - Don't put the field wiring inside it; pass `field`/`input`/`info-banner`/`button` as children. → use [`field`](#field)
 
 **Pairs with** [`card`](#card), [`field`](#field), [`input`](#input), [`info-banner`](#info-banner), [`button`](#button)
+
+### Separator
+
+`/core/components/separator` · beta
+
+Use `Separator` to draw an explicit horizontal or vertical division without
+adding layout. It is decorative by default; set `decorative={false}` only when
+the division carries document structure and should expose `role="separator"`.
 
 ### Version tag
 

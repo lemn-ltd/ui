@@ -4,9 +4,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { type TabItem, Tabs } from '../tabs.js';
 
 const ITEMS: readonly TabItem[] = [
-  { value: 'overview', label: 'Overview' },
-  { value: 'issues', label: 'Issues', count: 7 },
-  { value: 'settings', label: 'Settings' },
+  { value: 'overview', label: 'Overview', content: <p>Overview panel</p> },
+  { value: 'issues', label: 'Issues', count: 7, content: <p>Issues panel</p> },
+  { value: 'settings', label: 'Settings', content: <p>Settings panel</p> },
 ];
 
 describe('Tabs', () => {
@@ -51,5 +51,33 @@ describe('Tabs', () => {
     const triggers = Array.from(container.querySelectorAll('.ui-tabs__tab'));
     expect(triggers).toHaveLength(3);
     expect(triggers.every((tab) => tab.getAttribute('data-orientation') === 'vertical')).toBe(true);
+  });
+
+  it('renders real labelled panels with stable trigger relationships', () => {
+    const { getByRole } = render(
+      <Tabs aria-label="Project views" id="project" items={ITEMS} value="issues" />,
+    );
+    const tab = getByRole('tab', { name: /Issues/ });
+    const panel = getByRole('tabpanel');
+    expect(tab.getAttribute('aria-controls')).toBe('project-panel-1');
+    expect(panel.id).toBe('project-panel-1');
+    expect(panel.getAttribute('aria-labelledby')).toBe('project-tab-1');
+    expect(panel.textContent).toContain('Issues panel');
+  });
+
+  it('supports uncontrolled selection and keeps inactive panels mounted by default', () => {
+    const { getByRole, container } = render(
+      <Tabs defaultValue="overview" items={ITEMS} onValueChange={vi.fn()} />,
+    );
+    fireEvent.mouseDown(getByRole('tab', { name: /Settings/ }), { button: 0 });
+    expect(getByRole('tabpanel').textContent).toContain('Settings panel');
+    expect(container.querySelectorAll('.ui-tabs__panel')).toHaveLength(3);
+  });
+
+  it('lazy mounts panels only when requested', () => {
+    const { container } = render(
+      <Tabs items={ITEMS} mountStrategy="lazy" value="overview" />,
+    );
+    expect(container.querySelectorAll('.ui-tabs__panel')).toHaveLength(1);
   });
 });

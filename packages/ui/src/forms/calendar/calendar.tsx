@@ -11,19 +11,28 @@ import {
 } from 'react';
 import { Icon } from '../../primitives/icon/icon.js';
 import { IconButton } from '../../primitives/icon-button/icon-button.js';
+import {
+  addDays,
+  addMonths,
+  calendarWeeks,
+  type DateRangeValue,
+  isDateInRange,
+  isDateInVisibleMonths,
+  isSameDay,
+  isSameMonth,
+  nextDateRangeSelection,
+  normalizeDateRange,
+  orderedDateRange,
+  startOfDay,
+  startOfMonth,
+  toDateKey,
+} from './date-helpers.js';
 import './calendar.css';
 
 /** Which picker surface is showing: the day grid or the quick year list. */
 export type CalendarView = 'day' | 'year';
 
-export interface CalendarProps {
-  /** Controlled selected date. Pass `null` for "no selection" in controlled mode. */
-  readonly value?: Date | null;
-  /** Uncontrolled initial selection. */
-  readonly defaultValue?: Date | null;
-  /** Fires with the chosen date (floored to midnight) when a day is picked. */
-  readonly onChange?: (date: Date) => void;
-
+interface CalendarCommonProps {
   /** Controlled visible month (any day within it). */
   readonly month?: Date;
   /** Uncontrolled initial visible month. Falls back to the selection, then `today`. */
@@ -49,38 +58,31 @@ export interface CalendarProps {
   /** BCP-47 locale for the month and weekday labels. */
   readonly locale?: string;
 
+  /** One or two adjacent months. */
+  readonly numberOfMonths?: 1 | 2;
+
   /** Accessible name for the grid. */
   readonly 'aria-label'?: string;
   readonly className?: string;
 }
 
-function startOfDay(date: Date): Date {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+export interface CalendarSingleProps extends CalendarCommonProps {
+  readonly mode?: 'single';
+  /** Controlled selected date. Pass `null` for no selection. */
+  readonly value?: Date | null;
+  readonly defaultValue?: Date | null;
+  readonly onChange?: (date: Date) => void;
 }
 
-function startOfMonth(date: Date): Date {
-  return new Date(date.getFullYear(), date.getMonth(), 1);
+export interface CalendarRangeProps extends CalendarCommonProps {
+  readonly mode: 'range';
+  /** Controlled partial or complete range. */
+  readonly value?: DateRangeValue;
+  readonly defaultValue?: DateRangeValue;
+  readonly onChange?: (range: DateRangeValue) => void;
 }
 
-function addMonths(date: Date, amount: number): Date {
-  return new Date(date.getFullYear(), date.getMonth() + amount, 1);
-}
-
-function addDays(date: Date, amount: number): Date {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + amount);
-}
-
-function isSameDay(a: Date, b: Date): boolean {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
-}
-
-function isSameMonth(a: Date, b: Date): boolean {
-  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth();
-}
+export type CalendarProps = CalendarSingleProps | CalendarRangeProps;
 
 /** The day that should own roving focus for a month: selection, else today, else day 1. */
 function pickFocusDate(month: Date, selected: Date | null, today: Date): Date {
@@ -89,31 +91,25 @@ function pickFocusDate(month: Date, selected: Date | null, today: Date): Date {
   return month;
 }
 
-/** Stable `YYYY-MM-DD` key, used both for React keys and focus targeting. */
-function toKey(date: Date): string {
-  const month = `${date.getMonth() + 1}`.padStart(2, '0');
-  const day = `${date.getDate()}`.padStart(2, '0');
-  return `${date.getFullYear()}-${month}-${day}`;
-}
-
-export function Calendar({
-  value,
-  defaultValue,
-  onChange,
-  month,
-  defaultMonth,
-  onMonthChange,
-  minDate,
-  maxDate,
-  disableFuture,
-  disablePast,
-  shouldDisableDate,
-  today: todayProp,
-  weekStartsOn = 0,
-  locale = 'en-US',
-  'aria-label': ariaLabel,
-  className,
-}: CalendarProps): ReactElement {
+export function Calendar(props: CalendarProps): ReactElement {
+  const {
+    month,
+    defaultMonth,
+    onMonthChange,
+    minDate,
+    maxDate,
+    disableFuture,
+    disablePast,
+    shouldDisableDate,
+    today: todayProp,
+    weekStartsOn = 0,
+    locale = 'en-US',
+    numberOfMonths = 1,
+    'aria-label': ariaLabel,
+    className,
+  } = props;
+  const rangeProps = props.mode === 'range' ? props : undefined;
+  const singleProps = props.mode !== 'range' ? props : undefined;
   const labelId = useId();
   const gridRef = useRef<HTMLDivElement>(null);
   // Set when keyboard/year navigation should move DOM focus after the next paint.
@@ -121,17 +117,35 @@ export function Calendar({
 
   const today = useMemo(() => startOfDay(todayProp ?? new Date()), [todayProp]);
 
-  // Selection: controlled by `value`, otherwise locally held from `defaultValue`.
-  const isValueControlled = value !== undefined;
+  // Both modes keep their hooks mounted; the discriminant chooses the active contract.
+  const isSingleControlled = singleProps?.value !== undefined;
   const [selectedState, setSelectedState] = useState<Date | null>(
-    defaultValue ? startOfDay(defaultValue) : null,
+    singleProps?.defaultValue ? startOfDay(singleProps.defaultValue) : null,
   );
-  const selected = isValueControlled ? (value ? startOfDay(value) : null) : selectedState;
+  const singleSelected = isSingleControlled
+    ? singleProps?.value
+      ? startOfDay(singleProps.value)
+      : null
+    : selectedState;
+
+  const isRangeControlled = rangeProps?.value !== undefined;
+  const [rangeState, setRangeState] = useState<DateRangeValue>(() =>
+    normalizeDateRange(rangeProps?.defaultValue),
+  );
+  const range = isRangeControlled ? normalizeDateRange(rangeProps?.value) : rangeState;
+  const [hoveredDate, setHoveredDate] = useState<Date | null>(null);
+  const selected = rangeProps ? range.start : singleSelected;
+
+  const initialSelection =
+    singleProps?.value ??
+    singleProps?.defaultValue ??
+    rangeProps?.value?.start ??
+    rangeProps?.defaultValue?.start;
 
   // Visible month: controlled by `month`, otherwise locally held.
   const isMonthControlled = month !== undefined;
   const [monthState, setMonthState] = useState<Date>(() =>
-    startOfMonth(month ?? defaultMonth ?? defaultValue ?? value ?? today),
+    startOfMonth(month ?? defaultMonth ?? initialSelection ?? today),
   );
   const visibleMonth = isMonthControlled ? startOfMonth(month) : monthState;
 
@@ -164,32 +178,25 @@ export function Calendar({
     );
   }, [locale, weekStartsOn]);
 
-  const monthLabel = useMemo(
-    () => new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(visibleMonth),
-    [locale, visibleMonth],
+  const visibleMonths = useMemo(
+    () => Array.from({ length: numberOfMonths }, (_, index) => addMonths(visibleMonth, index)),
+    [numberOfMonths, visibleMonth],
   );
-
-  // The visible month laid out as weeks, with leading blanks before day 1.
-  const weeks = useMemo(() => {
-    const first = startOfMonth(visibleMonth);
-    const lead = (first.getDay() - weekStartsOn + 7) % 7;
-    const total = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 0).getDate();
-    const cells: Array<Date | null> = [];
-    for (let i = 0; i < lead; i += 1) cells.push(null);
-    for (let d = 1; d <= total; d += 1) {
-      cells.push(new Date(visibleMonth.getFullYear(), visibleMonth.getMonth(), d));
-    }
-    while (cells.length % 7 !== 0) cells.push(null);
-    const rows: Array<Array<Date | null>> = [];
-    for (let i = 0; i < cells.length; i += 7) rows.push(cells.slice(i, i + 7));
-    return rows;
-  }, [visibleMonth, weekStartsOn]);
+  const monthFormatter = useMemo(
+    () => new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }),
+    [locale],
+  );
+  const monthLabel = useMemo(() => {
+    const first = monthFormatter.format(visibleMonth);
+    if (numberOfMonths === 1) return first;
+    return `${first} – ${monthFormatter.format(addMonths(visibleMonth, 1))}`;
+  }, [monthFormatter, numberOfMonths, visibleMonth]);
 
   // When the month changes, re-pin roving focus (selection > today > first enabled day).
   // Navigation within the current month is preserved, so keyboard motion isn't clobbered.
   useEffect(() => {
     setFocusDate((current) => {
-      if (isSameMonth(current, visibleMonth)) return current;
+      if (isDateInVisibleMonths(current, visibleMonth, numberOfMonths)) return current;
       const base = pickFocusDate(visibleMonth, selected, today);
       if (!isDisabled(base)) return base;
       const total = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 0).getDate();
@@ -199,14 +206,14 @@ export function Calendar({
       }
       return base;
     });
-  }, [visibleMonth, selected, today, isDisabled]);
+  }, [visibleMonth, numberOfMonths, selected, today, isDisabled]);
 
   // Move real DOM focus only after an explicit keyboard/year navigation.
   useLayoutEffect(() => {
     if (!pendingFocus.current) return;
     pendingFocus.current = false;
     const target = gridRef.current?.querySelector<HTMLButtonElement>(
-      `[data-date="${toKey(focusDate)}"]`,
+      `[data-date="${toDateKey(focusDate)}"]`,
     );
     target?.focus();
   }, [focusDate]);
@@ -223,11 +230,29 @@ export function Calendar({
   const selectDay = useCallback(
     (day: Date) => {
       if (isDisabled(day)) return;
-      if (!isValueControlled) setSelectedState(day);
-      if (!isSameMonth(day, visibleMonth)) changeMonth(day);
-      onChange?.(day);
+      if (rangeProps) {
+        const next = nextDateRangeSelection(range, day);
+        if (!isRangeControlled) setRangeState(next);
+        rangeProps.onChange?.(next);
+        setHoveredDate(null);
+      } else {
+        const next = startOfDay(day);
+        if (!isSingleControlled) setSelectedState(next);
+        singleProps?.onChange?.(next);
+      }
+      if (!isDateInVisibleMonths(day, visibleMonth, numberOfMonths)) changeMonth(day);
     },
-    [isDisabled, isValueControlled, visibleMonth, changeMonth, onChange],
+    [
+      isDisabled,
+      rangeProps,
+      range,
+      isRangeControlled,
+      singleProps,
+      isSingleControlled,
+      visibleMonth,
+      numberOfMonths,
+      changeMonth,
+    ],
   );
 
   // Whole-month bounds let us grey out a chevron when no day past it is reachable.
@@ -282,9 +307,9 @@ export function Calendar({
       event.preventDefault();
       pendingFocus.current = true;
       setFocusDate(next);
-      if (!isSameMonth(next, visibleMonth)) changeMonth(next);
+      if (!isDateInVisibleMonths(next, visibleMonth, numberOfMonths)) changeMonth(next);
     },
-    [focusDate, weekStartsOn, visibleMonth, selectDay, changeMonth],
+    [focusDate, weekStartsOn, visibleMonth, numberOfMonths, selectDay, changeMonth],
   );
 
   // Quick year list: bounded by min/max, capped at today when future is disabled.
@@ -306,8 +331,18 @@ export function Calendar({
     [changeMonth, visibleMonth],
   );
 
+  const previewRange =
+    rangeProps && range.start && !range.end && hoveredDate
+      ? orderedDateRange(range.start, hoveredDate)
+      : undefined;
+
   return (
-    <div className={['ui-calendar', className].filter(Boolean).join(' ')} data-view={view}>
+    <div
+      className={['ui-calendar', className].filter(Boolean).join(' ')}
+      data-mode={rangeProps ? 'range' : 'single'}
+      data-months={numberOfMonths}
+      data-view={view}
+    >
       <div className="ui-calendar__header">
         <button
           aria-expanded={view === 'year'}
@@ -359,72 +394,116 @@ export function Calendar({
           })}
         </div>
       ) : (
-        <>
-          <div aria-hidden="true" className="ui-calendar__weekdays">
-            {weekdayLabels.map((label, index) => (
-              // Narrow labels repeat (S/T twice) so the index disambiguates the key.
-              <span className="ui-calendar__weekday" key={`${label}-${index}`}>
-                {label}
-              </span>
-            ))}
-          </div>
-
-          <div
-            aria-labelledby={ariaLabel ? undefined : labelId}
-            aria-label={ariaLabel}
-            className="ui-calendar__grid"
-            onKeyDown={handleGridKeyDown}
-            ref={gridRef}
-            role="grid"
-          >
-            <span className="ui-calendar__sr-label" id={labelId}>
-              {monthLabel}
-            </span>
-            {weeks.map((week, weekIndex) => (
-              // Weeks have no stable id of their own; the index is the natural key.
-              <div className="ui-calendar__week" key={weekIndex} role="row">
-                {week.map((day, dayIndex) => {
-                  if (!day) {
-                    return (
-                      <span
-                        className="ui-calendar__cell"
-                        key={`blank-${weekIndex}-${dayIndex}`}
-                        role="gridcell"
-                      />
-                    );
-                  }
-                  const disabled = isDisabled(day);
-                  const isSelected = selected ? isSameDay(day, selected) : false;
-                  const isToday = isSameDay(day, today);
-                  const isFocusTarget = isSameDay(day, focusDate);
-                  return (
-                    <span
-                      aria-selected={isSelected}
-                      className="ui-calendar__cell"
-                      key={toKey(day)}
-                      role="gridcell"
-                    >
-                      <button
-                        aria-current={isToday ? 'date' : undefined}
-                        aria-disabled={disabled || undefined}
-                        className="ui-calendar__day"
-                        data-date={toKey(day)}
-                        data-disabled={disabled || undefined}
-                        data-selected={isSelected || undefined}
-                        data-today={isToday || undefined}
-                        onClick={() => selectDay(day)}
-                        tabIndex={isFocusTarget ? 0 : -1}
-                        type="button"
-                      >
-                        {day.getDate()}
-                      </button>
+        <div
+          className="ui-calendar__months"
+          onMouseLeave={() => setHoveredDate(null)}
+          ref={gridRef}
+        >
+          {visibleMonths.map((calendarMonth, monthIndex) => {
+            const currentMonthLabel = monthFormatter.format(calendarMonth);
+            const currentLabelId = `${labelId}-${monthIndex}`;
+            const weeks = calendarWeeks(calendarMonth, weekStartsOn);
+            return (
+              <div className="ui-calendar__month" key={toDateKey(calendarMonth)}>
+                {numberOfMonths > 1 ? (
+                  <div aria-hidden="true" className="ui-calendar__month-label">
+                    {currentMonthLabel}
+                  </div>
+                ) : null}
+                <div aria-hidden="true" className="ui-calendar__weekdays">
+                  {weekdayLabels.map((label, index) => (
+                    <span className="ui-calendar__weekday" key={`${label}-${index}`}>
+                      {label}
                     </span>
-                  );
-                })}
+                  ))}
+                </div>
+
+                <div
+                  aria-labelledby={ariaLabel ? undefined : currentLabelId}
+                  aria-label={
+                    ariaLabel && numberOfMonths > 1
+                      ? `${ariaLabel}, ${currentMonthLabel}`
+                      : ariaLabel
+                  }
+                  className="ui-calendar__grid"
+                  onKeyDown={handleGridKeyDown}
+                  role="grid"
+                >
+                  <span className="ui-calendar__sr-label" id={currentLabelId}>
+                    {currentMonthLabel}
+                  </span>
+                  {weeks.map((week, weekIndex) => (
+                    <div className="ui-calendar__week" key={weekIndex} role="row">
+                      {week.map((day, dayIndex) => {
+                        if (!day) {
+                          return (
+                            <span
+                              className="ui-calendar__cell"
+                              key={`blank-${weekIndex}-${dayIndex}`}
+                              role="gridcell"
+                            />
+                          );
+                        }
+                        const disabled = isDisabled(day);
+                        const isRangeSelected = rangeProps ? isDateInRange(day, range) : false;
+                        const isSelected = rangeProps
+                          ? isRangeSelected
+                          : singleSelected
+                            ? isSameDay(day, singleSelected)
+                            : false;
+                        const isRangeStart = Boolean(
+                          rangeProps && range.start && isSameDay(day, range.start),
+                        );
+                        const isRangeEnd = Boolean(
+                          rangeProps && range.end && isSameDay(day, range.end),
+                        );
+                        const isRangeMiddle = isRangeSelected && !isRangeStart && !isRangeEnd;
+                        const isPreview = previewRange
+                          ? isDateInRange(day, previewRange) && !isRangeStart
+                          : false;
+                        const isToday = isSameDay(day, today);
+                        const isFocusTarget = isSameDay(day, focusDate);
+                        const key = toDateKey(day);
+                        return (
+                          <span
+                            aria-selected={isSelected}
+                            className="ui-calendar__cell"
+                            data-range-end={isRangeEnd || undefined}
+                            data-range-middle={isRangeMiddle || undefined}
+                            data-range-preview={isPreview || undefined}
+                            data-range-start={isRangeStart || undefined}
+                            key={key}
+                            role="gridcell"
+                          >
+                            <button
+                              aria-current={isToday ? 'date' : undefined}
+                              aria-disabled={disabled || undefined}
+                              className="ui-calendar__day"
+                              data-date={key}
+                              data-disabled={disabled || undefined}
+                              data-selected={isSelected || undefined}
+                              data-today={isToday || undefined}
+                              onClick={() => selectDay(day)}
+                              onMouseEnter={() => {
+                                if (!disabled && rangeProps && range.start && !range.end) {
+                                  setHoveredDate(day);
+                                }
+                              }}
+                              tabIndex={isFocusTarget ? 0 : -1}
+                              type="button"
+                            >
+                              {day.getDate()}
+                            </button>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
               </div>
-            ))}
-          </div>
-        </>
+            );
+          })}
+        </div>
       )}
     </div>
   );

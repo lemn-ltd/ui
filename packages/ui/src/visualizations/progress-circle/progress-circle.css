@@ -1,0 +1,41 @@
+.ui-progress-circle {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+}
+
+.ui-progress-circle svg {
+  transform: rotate(-90deg);
+}
+
+.ui-progress-circle__track {
+  stroke: var(--surface2);
+}
+
+.ui-progress-circle__indicator {
+  stroke: var(--accent);
+  stroke-linecap: round;
+  transition: stroke-dashoffset var(--duration-normal) var(--easing-standard);
+}
+
+.ui-progress-circle[data-indeterminate="true"] svg {
+  animation: ui-progress-circle-spin 900ms var(--easing-linear) infinite;
+}
+
+.ui-progress-circle__label {
+  position: absolute;
+  color: var(--text);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes ui-progress-circle-spin {
+  to { transform: rotate(270deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-progress-circle__indicator { transition: none; }
+  .ui-progress-circle[data-indeterminate="true"] svg { animation: none; }
+}

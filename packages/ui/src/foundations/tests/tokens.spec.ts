@@ -8,6 +8,55 @@ import { tokens } from '../../tokens.js';
 const here = dirname(fileURLToPath(import.meta.url));
 const tokensCss = readFileSync(join(here, '..', 'tokens.css'), 'utf8');
 
+function cssCustomProperty(name: string): string {
+  const match = tokensCss.match(new RegExp(`--${name}:\\s*([^;]+);`));
+  if (!match?.[1]) throw new Error(`Missing CSS custom property --${name}`);
+  return match[1].trim();
+}
+
+function lightDarkValues(name: string): readonly [light: string, dark: string] {
+  const value = cssCustomProperty(name);
+  const prefix = 'light-dark(';
+  if (!value.startsWith(prefix) || !value.endsWith(')')) {
+    throw new Error(`Expected --${name} to use light-dark()`);
+  }
+
+  const body = value.slice(prefix.length, -1);
+  let depth = 0;
+  for (let index = 0; index < body.length; index += 1) {
+    const character = body[index];
+    if (character === '(') depth += 1;
+    if (character === ')') depth -= 1;
+    if (character === ',' && depth === 0) {
+      return [body.slice(0, index).trim(), body.slice(index + 1).trim()];
+    }
+  }
+
+  throw new Error(`Could not split light-dark() values for --${name}`);
+}
+
+function cssName(name: string): string {
+  return name.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+}
+
+function expectColorGroupToMatchCss(group: {
+  readonly light: Readonly<Record<string, string>>;
+  readonly dark: Readonly<Record<string, string>>;
+}, prefix = '', hyphenateDigits = false): void {
+  expect(Object.keys(group.dark)).toEqual(Object.keys(group.light));
+  for (const name of Object.keys(group.light)) {
+    const normalizedName = hyphenateDigits
+      ? cssName(name).replace(/([a-z])([0-9])/g, '$1-$2')
+      : cssName(name);
+    const variableName = `${prefix}${normalizedName}`;
+    const [light, dark] = lightDarkValues(variableName);
+    expect({ light, dark }, `--${variableName}`).toEqual({
+      light: group.light[name],
+      dark: group.dark[name],
+    });
+  }
+}
+
 describe('typed token mirror', () => {
   it('exposes line-heights as unitless numeric ratios', () => {
     const lineHeights = Object.values(tokens.typography.lineHeight);
@@ -61,6 +110,21 @@ describe('typed token mirror', () => {
 });
 
 describe('tokens.css mirror', () => {
+  it('exactly matches every theme-dependent color in the typed mirror', () => {
+    for (const group of [
+      tokens.color.surfaces,
+      tokens.color.text,
+      tokens.color.accents,
+      tokens.color.status,
+      tokens.color.softStatus,
+      tokens.color.interaction,
+      tokens.color.decorative,
+    ]) {
+      expectColorGroupToMatchCss(group);
+    }
+    expectColorGroupToMatchCss(tokens.color.chart, 'chart-', true);
+  });
+
   it('never declares a px line-height', () => {
     const lineHeightDeclarations = tokensCss.match(/--line-height-[a-z]+:\s*[^;]+;/g) ?? [];
     expect(lineHeightDeclarations.length).toBeGreaterThan(0);

@@ -1,0 +1,78 @@
+.ui-chart-frame {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+  color: var(--text);
+}
+
+.ui-chart-frame__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.ui-chart-frame__heading {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.ui-chart-frame__title,
+.ui-chart-frame__description {
+  margin: 0;
+}
+
+.ui-chart-frame__title {
+  font-size: var(--font-size-heading);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-heading);
+}
+
+.ui-chart-frame__description {
+  color: var(--text-muted);
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-small);
+}
+
+.ui-chart-frame__action {
+  flex: none;
+}
+
+.ui-chart-frame__body {
+  min-width: 0;
+}
+
+.ui-chart-frame__state {
+  display: flex;
+  min-height: 160px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.ui-chart-frame__loading {
+  width: 60%;
+  height: 12px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(90deg, var(--surface2), var(--chart-hover), var(--surface2));
+  background-size: 200% 100%;
+  animation: ui-chart-frame-loading var(--duration-slow) var(--easing-linear) infinite;
+}
+
+@keyframes ui-chart-frame-loading {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-chart-frame__loading {
+    animation: none;
+  }
+}

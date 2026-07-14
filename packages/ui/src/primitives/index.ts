@@ -38,6 +38,13 @@ export {
 } from "./radio/radio.js";
 export { ScopePill } from "./scope-pill/scope-pill.js";
 export {
+  SelectNative,
+  type SelectNativeItem,
+  type SelectNativeOption,
+  type SelectNativeOptionGroup,
+  type SelectNativeProps,
+} from "./select-native/select-native.js";
+export {
   ScrollToBottomButton,
   type ScrollToBottomButtonProps,
 } from "./scroll-to-bottom-button/scroll-to-bottom-button.js";

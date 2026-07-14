@@ -1,0 +1,173 @@
+{
+  "baseUrl": "http://127.0.0.1:6500",
+  "environment": {
+    "arch": "arm64",
+    "node": "v24.14.0",
+    "platform": "darwin",
+    "playwright": "1.60.0"
+  },
+  "reviewedSha": "1ecf7549137cebddb3622bcb5971945a4f1431c7",
+  "route": "/core/patterns/dashboard",
+  "scenarios": [
+    {
+      "dataset": "representative",
+      "interactionMs": 28.5,
+      "layoutShift": 0,
+      "readyMs": 760.3,
+      "reducedMotion": "no-preference",
+      "screenshotSha256": "865970a839d06cfc154c153bd552accfca0c5064a2904a2267d653560446ecb4",
+      "theme": "light",
+      "viewport": "desktop"
+    },
+    {
+      "dataset": "stress",
+      "interactionMs": 44.4,
+      "layoutShift": 0,
+      "readyMs": 764.7,
+      "reducedMotion": "no-preference",
+      "screenshotSha256": "fdadfdf4334ea0804d6e90e2c8cac9083a6d4bc1b57115bc2c30facd4c937b88",
+      "theme": "light",
+      "viewport": "desktop"
+    },
+    {
+      "dataset": "representative",
+      "interactionMs": 32,
+      "layoutShift": 0.0063,
+      "readyMs": 768.7,
+      "reducedMotion": "reduce",
+      "screenshotSha256": "72151a2fae9bcd7f59d071b5f3c3e543e0c98fb689e22d470b4df832d138cc49",
+      "theme": "light",
+      "viewport": "desktop"
+    },
+    {
+      "dataset": "stress",
+      "interactionMs": 36.4,
+      "layoutShift": 0.0063,
+      "readyMs": 778.7,
+      "reducedMotion": "reduce",
+      "screenshotSha256": "a26e27c3bc3cdf5a48cc48813eb9c4595cebfe1197139d76dd84e601c398c759",
+      "theme": "light",
+      "viewport": "desktop"
+    },
+    {
+      "dataset": "representative",
+      "interactionMs": 31.1,
+      "layoutShift": 0,
+      "readyMs": 784.3,
+      "reducedMotion": "no-preference",
+      "screenshotSha256": "b3c05db1caa870ed636890dacc4f95f65b5d946c24168d8a510f4b1395bf67d5",
+      "theme": "dark",
+      "viewport": "desktop"
+    },
+    {
+      "dataset": "stress",
+      "interactionMs": 39.7,
+      "layoutShift": 0,
+      "readyMs": 779,
+      "reducedMotion": "no-preference",
+      "screenshotSha256": "34ee8ab5ce64f3e604d361cca1d0fbf4b3d74afa67a9b50634ed4e9606285ddd",
+      "theme": "dark",
+      "viewport": "desktop"
+    },
+    {
+      "dataset": "representative",
+      "interactionMs": 42,
+      "layoutShift": 0.0063,
+      "readyMs": 824,
+      "reducedMotion": "reduce",
+      "screenshotSha256": "a6a6ee2b3745194ffcc441a49f3ff96872d98787499bc14724f42a3e8ddbd5a4",
+      "theme": "dark",
+      "viewport": "desktop"
+    },
+    {
+      "dataset": "stress",
+      "interactionMs": 44.5,
+      "layoutShift": 0.0063,
+      "readyMs": 816.6,
+      "reducedMotion": "reduce",
+      "screenshotSha256": "03e3d042bf8d034a3b6fa6ed44750f78ba0f5ddda3e2ebaa80430efdb22feb08",
+      "theme": "dark",
+      "viewport": "desktop"
+    },
+    {
+      "dataset": "representative",
+      "interactionMs": 26.5,
+      "layoutShift": 0,
+      "readyMs": 756.3,
+      "reducedMotion": "no-preference",
+      "screenshotSha256": "3e191afa84836bc99f3568260506eeeabc97f66bbc6cb3b2e1142f6612b03d04",
+      "theme": "light",
+      "viewport": "mobile"
+    },
+    {
+      "dataset": "stress",
+      "interactionMs": 32.2,
+      "layoutShift": 0,
+      "readyMs": 739.5,
+      "reducedMotion": "no-preference",
+      "screenshotSha256": "422a21e3a7fc0d43f93e63afad6007b0e77cb4ffa259cd92bfe95773e0165926",
+      "theme": "light",
+      "viewport": "mobile"
+    },
+    {
+      "dataset": "representative",
+      "interactionMs": 36.3,
+      "layoutShift": 0.0099,
+      "readyMs": 748.8,
+      "reducedMotion": "reduce",
+      "screenshotSha256": "c438b6699c74df6fcc74c5e7d296ce74b2f7bdf30351899b8447ece65ab8901b",
+      "theme": "light",
+      "viewport": "mobile"
+    },
+    {
+      "dataset": "stress",
+      "interactionMs": 47.4,
+      "layoutShift": 0.0099,
+      "readyMs": 765.3,
+      "reducedMotion": "reduce",
+      "screenshotSha256": "7e42ebdfe8d958ae6ccf63c7e385db15f05e30968ce01fda5f65659102d5d433",
+      "theme": "light",
+      "viewport": "mobile"
+    },
+    {
+      "dataset": "representative",
+      "interactionMs": 30.1,
+      "layoutShift": 0,
+      "readyMs": 756.1,
+      "reducedMotion": "no-preference",
+      "screenshotSha256": "b800ce5aa84053d972fa07ecb46a192072017bf007be3bd77fbb2ce5dd3adb7c",
+      "theme": "dark",
+      "viewport": "mobile"
+    },
+    {
+      "dataset": "stress",
+      "interactionMs": 40.1,
+      "layoutShift": 0,
+      "readyMs": 795.3,
+      "reducedMotion": "no-preference",
+      "screenshotSha256": "76b4dd8bce7d42b859e786424edab88511eccdab6f70595707b707729ee2d511",
+      "theme": "dark",
+      "viewport": "mobile"
+    },
+    {
+      "dataset": "representative",
+      "interactionMs": 38.4,
+      "layoutShift": 0.0099,
+      "readyMs": 776.8,
+      "reducedMotion": "reduce",
+      "screenshotSha256": "9dbf6d042512d463283cd94002eaea46be0e598a2ee184c6874d76232aa1e228",
+      "theme": "dark",
+      "viewport": "mobile"
+    },
+    {
+      "dataset": "stress",
+      "interactionMs": 30.7,
+      "layoutShift": 0.0099,
+      "readyMs": 773.2,
+      "reducedMotion": "reduce",
+      "screenshotSha256": "724aec1bf424e7dfc10da4b3aa8b78fb69dcc755c03afa56275499599a90666c",
+      "theme": "dark",
+      "viewport": "mobile"
+    }
+  ]
+}

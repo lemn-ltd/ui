@@ -116,7 +116,7 @@ test("feature, hero, and catalog links preserve detailed routes", async ({
 	await gotoStable(page, "/");
 	await page
 		.locator(".showcase-home__catalog-grid")
-		.getByRole("link", { name: /Agents/ })
+		.getByRole("link", { name: /Conversation/ })
 		.click();
 	await expect(page).toHaveURL(/\/agents\/components\//);
 });

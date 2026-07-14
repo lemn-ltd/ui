@@ -125,4 +125,68 @@ describe('Calendar', () => {
     const selectedYear = years?.querySelector('[data-selected="true"]');
     expect(selectedYear?.textContent).toBe('2026');
   });
+
+  it('selects a partial then complete range and marks its middle days', () => {
+    const onChange = vi.fn();
+    render(
+      <Calendar
+        defaultMonth={new Date(2026, 5, 1)}
+        mode="range"
+        onChange={onChange}
+        today={TODAY}
+      />,
+    );
+    fireEvent.click(day('2026-06-10') as HTMLButtonElement);
+    expect(onChange.mock.calls[0]?.[0]).toEqual({
+      start: new Date(2026, 5, 10),
+      end: null,
+    });
+    fireEvent.mouseEnter(day('2026-06-12') as HTMLButtonElement);
+    expect(day('2026-06-11')?.closest('[role="gridcell"]')?.getAttribute('data-range-preview')).toBe(
+      'true',
+    );
+    fireEvent.click(day('2026-06-12') as HTMLButtonElement);
+    expect(onChange.mock.calls[1]?.[0]).toEqual({
+      start: new Date(2026, 5, 10),
+      end: new Date(2026, 5, 12),
+    });
+    expect(day('2026-06-11')?.closest('[role="gridcell"]')?.getAttribute('data-range-middle')).toBe(
+      'true',
+    );
+  });
+
+  it('keeps a controlled range fixed while reporting the next selection', () => {
+    const onChange = vi.fn();
+    render(
+      <Calendar
+        mode="range"
+        onChange={onChange}
+        today={TODAY}
+        value={{ start: new Date(2026, 5, 8), end: null }}
+      />,
+    );
+    fireEvent.click(day('2026-06-14') as HTMLButtonElement);
+    expect(onChange).toHaveBeenCalledWith({
+      start: new Date(2026, 5, 8),
+      end: new Date(2026, 5, 14),
+    });
+    expect(day('2026-06-14')?.getAttribute('data-selected')).toBeNull();
+  });
+
+  it('renders two adjacent labelled month grids', () => {
+    const { getAllByRole } = render(
+      <Calendar
+        aria-label="Travel range"
+        defaultMonth={new Date(2026, 5, 1)}
+        mode="range"
+        numberOfMonths={2}
+        today={TODAY}
+      />,
+    );
+    const grids = getAllByRole('grid');
+    expect(grids).toHaveLength(2);
+    expect(grids[0]?.getAttribute('aria-label')).toBe('Travel range, June 2026');
+    expect(grids[1]?.getAttribute('aria-label')).toBe('Travel range, July 2026');
+    expect(day('2026-07-01')).not.toBeNull();
+  });
 });

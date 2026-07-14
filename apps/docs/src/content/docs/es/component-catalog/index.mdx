@@ -6,8 +6,21 @@ sidebar:
   order: 3
 ---
 
-El catalogo de componentes vive en `packages/ui/src/catalog*.ts`. Alimenta la
-navegacion del showcase, docs para agentes y checks contra drift.
+El catalogo de componentes vive en `packages/ui/src/catalog*.ts`. Contiene
+exactamente 130 componentes: 101 en Core y 29 en Agents. Cada entrada declara su
+area y familia de capacidad, y alimenta la navegacion del showcase, las docs para
+agentes y los checks contra drift.
+
+## Areas y familias
+
+Core contiene Primitives, Inputs, Forms, Visualizations, Data display, Feedback,
+Overlays, Navigation y Layout. Agents contiene Conversation, Governance,
+Approvals, Automation y Runtime & evidence.
+
+La familia de visualizaciones incluye graficos de lineas, areas, barras,
+combinaciones, donuts, tendencias compactas, progreso, categorias y tracking.
+Sus APIs publicas son neutrales respecto al renderer; los detalles del proveedor
+permanecen internos a Lemn UI.
 
 ## Catalogo runtime
 
@@ -23,4 +36,5 @@ navegacion del showcase, docs para agentes y checks contra drift.
 - Paginas del showcase: `apps/showcase/src/client/pages`
 
 Cuando agregues o cambies un componente, actualiza catalogo, docs, showcase,
-exports y tests en el mismo cambio.
+exports y tests en el mismo cambio. Las paginas del showcase usan componentes
+reales interactivos y contienen como maximo tres ejemplos.

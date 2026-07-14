@@ -28,11 +28,34 @@
 }
 
 .ui-info-banner__body {
+  display: grid;
+  gap: var(--space-2);
   flex: 1 1 auto;
   min-width: 0;
   color: var(--text);
   font-size: var(--font-size-small);
   line-height: var(--line-height-small);
+}
+
+.ui-info-banner__title {
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-body);
+}
+
+.ui-info-banner__content {
+  min-width: 0;
+}
+
+.ui-info-banner__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.ui-info-banner__dismiss {
+  flex: none;
+  margin: calc(var(--space-1) * -1);
 }
 
 .ui-info-banner[data-variant="info"] {
@@ -84,9 +107,15 @@
 }
 
 .ui-info-banner[data-density="compact"] .ui-info-banner__body {
+  gap: var(--space-1);
   overflow-wrap: anywhere;
   font-size: 11px;
   line-height: 14px;
+}
+
+.ui-info-banner[data-density="compact"] .ui-info-banner__dismiss {
+  width: 24px;
+  height: 24px;
 }
 
 .ui-info-banner[data-density="compact"][data-variant="info"] {

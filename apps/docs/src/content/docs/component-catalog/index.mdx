@@ -7,8 +7,19 @@ sidebar:
 ---
 
 The component catalog is data-first and lives in `packages/ui/src/catalog*.ts`.
-It drives the showcase navigation, the agent-facing docs, and catalog drift
-checks.
+It contains exactly 130 components: 101 in Core and 29 in Agents. Every entry
+declares its area and capability family, and drives showcase navigation,
+agent-facing docs, and catalog drift checks.
+
+## Areas and families
+
+Core contains Primitives, Inputs, Forms, Visualizations, Data display, Feedback,
+Overlays, Navigation, and Layout. Agents contains Conversation, Governance,
+Approvals, Automation, and Runtime & evidence.
+
+The visualization family includes charts for lines, areas, bars, combinations,
+donuts, compact trends, progress, categories, and tracking. Their public APIs
+are renderer-neutral; provider details remain internal to Lemn UI.
 
 ## Runtime catalog
 
@@ -24,4 +35,5 @@ checks.
 - Showcase pages: `apps/showcase/src/client/pages`
 
 When adding or changing a component, update the catalog, docs, showcase page,
-exports, and tests in the same change.
+exports, and tests in the same change. Showcase pages use real interactive
+components and contain no more than three examples.

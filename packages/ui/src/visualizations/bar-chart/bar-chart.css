@@ -1,0 +1,3 @@
+.ui-bar-chart :where(.recharts-rectangle) {
+  shape-rendering: geometricPrecision;
+}

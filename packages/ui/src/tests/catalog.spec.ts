@@ -3,21 +3,51 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import * as publicUi from "../index.js";
 import {
-	type ComponentGroup,
+	type AgentComponentGroup,
+	type CoreComponentGroup,
 	componentCatalog,
 	componentExportsFromSlug,
 } from "../catalog.js";
 
-const GROUPS: readonly ComponentGroup[] = [
+const CORE_GROUPS: readonly CoreComponentGroup[] = [
 	"Primitives",
+	"Inputs",
 	"Forms",
-	"Overlays",
-	"Navigation",
+	"Visualizations",
 	"Data display",
 	"Feedback",
+	"Overlays",
+	"Navigation",
 	"Layout",
-	"Agents",
 ];
+
+const AGENT_GROUPS: readonly AgentComponentGroup[] = [
+	"Conversation",
+	"Governance",
+	"Approvals",
+	"Automation",
+	"Runtime & evidence",
+];
+
+const CORE_GROUP_SET = new Set<string>(CORE_GROUPS);
+const AGENT_GROUP_SET = new Set<string>(AGENT_GROUPS);
+
+const EXPECTED_GROUP_COUNTS: Readonly<Record<CoreComponentGroup | AgentComponentGroup, number>> = {
+	Primitives: 9,
+	Inputs: 17,
+	Forms: 9,
+	Visualizations: 13,
+	"Data display": 18,
+	Feedback: 6,
+	Overlays: 10,
+	Navigation: 10,
+	Layout: 9,
+	Conversation: 6,
+	Governance: 6,
+	Approvals: 3,
+	Automation: 6,
+	"Runtime & evidence": 8,
+};
 
 // Resolved from the package root (vitest cwd); happy-dom's import.meta.url is not a file: URL.
 const COMPONENTS_DOC = resolve(process.cwd(), "docs/components.md");
@@ -32,9 +62,28 @@ describe("component catalog", () => {
 		for (const entry of componentCatalog) {
 			expect(entry.slug).toMatch(/^[a-z][a-z0-9-]*$/);
 			expect(entry.title.trim().length).toBeGreaterThan(0);
-			expect(GROUPS).toContain(entry.group);
+			if (entry.area === "core") {
+				expect(CORE_GROUP_SET.has(entry.group)).toBe(true);
+				expect(AGENT_GROUP_SET.has(entry.group)).toBe(false);
+			} else {
+				expect(AGENT_GROUP_SET.has(entry.group)).toBe(true);
+				expect(CORE_GROUP_SET.has(entry.group)).toBe(false);
+			}
 			expect(["stable", "beta"]).toContain(entry.status);
 			expect(entry.intent.trim().length).toBeGreaterThan(0);
+		}
+	});
+
+	it("keeps the approved area and family inventory", () => {
+		expect(componentCatalog).toHaveLength(130);
+		expect(componentCatalog.filter((entry) => entry.area === "core")).toHaveLength(101);
+		expect(componentCatalog.filter((entry) => entry.area === "agents")).toHaveLength(29);
+
+		for (const [group, count] of Object.entries(EXPECTED_GROUP_COUNTS)) {
+			expect(
+				componentCatalog.filter((entry) => entry.group === group).length,
+				group,
+			).toBe(count);
 		}
 	});
 

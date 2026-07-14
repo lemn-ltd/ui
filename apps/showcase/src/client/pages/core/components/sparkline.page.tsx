@@ -11,8 +11,8 @@ function SparklinePage(): ReactElement {
       title="Sparkline"
     >
       <ExampleBlock
-        code={`<Sparkline points={hourlyPoints} />`}
-        render={() => <Sparkline points={sparklinePoints} />}
+        code={`<Sparkline aria-label="Hourly activity trend" points={hourlyPoints} />`}
+        render={() => <Sparkline aria-label="Hourly activity trend" points={sparklinePoints} />}
       />
 
       <VariantsGallery
@@ -20,15 +20,30 @@ function SparklinePage(): ReactElement {
         items={[
           {
             label: 'rising',
-            render: () => <Sparkline points={[4, 9, 16, 25, 36, 49, 64, 81, 100]} />,
+            render: () => (
+              <Sparkline
+                aria-label="Rising trend"
+                points={[4, 9, 16, 25, 36, 49, 64, 81, 100]}
+              />
+            ),
           },
           {
             label: 'volatile',
-            render: () => <Sparkline points={[40, 8, 70, 20, 95, 12, 60, 4, 88]} />,
+            render: () => (
+              <Sparkline
+                aria-label="Volatile trend"
+                points={[40, 8, 70, 20, 95, 12, 60, 4, 88]}
+              />
+            ),
           },
           {
             label: 'flat',
-            render: () => <Sparkline points={[50, 50, 50, 50, 50, 50, 50, 50, 50]} />,
+            render: () => (
+              <Sparkline
+                aria-label="Flat trend"
+                points={[50, 50, 50, 50, 50, 50, 50, 50, 50]}
+              />
+            ),
           },
         ]}
       />
@@ -41,9 +56,11 @@ function SparklinePage(): ReactElement {
             description: 'The numeric series; each value becomes one bar scaled to the maximum.',
           },
           {
-            name: '…rest',
-            type: "Omit<HTMLAttributes<HTMLDivElement>, 'children'>",
-            description: 'Native div props spread onto the root (role defaults to "img").',
+            name: 'decorative',
+            type: 'boolean',
+            defaultValue: 'false',
+            description:
+              'Removes image semantics and sets aria-hidden. Informative sparklines require aria-label or aria-labelledby.',
           },
         ]}
       />

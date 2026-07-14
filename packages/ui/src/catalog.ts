@@ -11,16 +11,25 @@
  */
 
 import { automationComponentCatalogEntries } from "./catalog-automation-entries.js";
+import { capabilityExpansionCatalogEntries } from "./catalog-capability-expansion-entries.js";
 import { primaryComponentCatalogEntries } from "./catalog-primary-entries.js";
 import { secondaryComponentCatalogEntries } from "./catalog-secondary-entries.js";
+import { visualizationComponentCatalogEntries } from "./catalog-visualization-entries.js";
 import type { ComponentCatalogEntry } from "./catalog-types.js";
 
-export type { ComponentCatalogEntry, ComponentGroup } from "./catalog-types.js";
+export type {
+	AgentComponentGroup,
+	ComponentArea,
+	ComponentCatalogEntry,
+	CoreComponentGroup,
+} from "./catalog-types.js";
 
 export const componentCatalog: readonly ComponentCatalogEntry[] = [
 	...primaryComponentCatalogEntries,
 	...secondaryComponentCatalogEntries,
 	...automationComponentCatalogEntries,
+	...visualizationComponentCatalogEntries,
+	...capabilityExpansionCatalogEntries,
 ];
 
 const COMPONENT_EXPORT_EXCEPTIONS: Readonly<Record<string, readonly string[]>> =

@@ -6,6 +6,8 @@ system.
 
 ## Documents
 
+- [Component capability expansion](./component-capability-expansion/README.md)
+- [Visualization system](./visualization-system/README.md)
 - [Showcase component documentation migration spec](./showcase-component-documentation-migration/SPEC.md)
 - [Frontend Performance On Cloudflare Workers](./frontend-performance/README.md)
 
@@ -14,6 +16,10 @@ system.
 ```text
 docs/
   README.md
+  component-capability-expansion/
+    README.md
+  visualization-system/
+    README.md
   showcase-component-documentation-migration/
     SPEC.md
   frontend-performance/

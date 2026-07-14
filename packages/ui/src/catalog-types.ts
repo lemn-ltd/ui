@@ -1,20 +1,40 @@
-/** The eight presentational component taxonomies (Foundations and Patterns are showcase-only). */
-export type ComponentGroup =
+/** The distributed module that owns a component and its public route namespace. */
+export type ComponentArea = 'core' | 'agents';
+
+/** Functional families available only to Core components. */
+export type CoreComponentGroup =
   | 'Primitives'
+  | 'Inputs'
   | 'Forms'
-  | 'Overlays'
-  | 'Navigation'
+  | 'Visualizations'
   | 'Data display'
   | 'Feedback'
-  | 'Layout'
-  | 'Agents';
+  | 'Overlays'
+  | 'Navigation'
+  | 'Layout';
 
-export interface ComponentCatalogEntry {
-  slug: string;
-  title: string;
-  group: ComponentGroup;
+/** Functional families available only to Agents components. */
+export type AgentComponentGroup =
+  | 'Conversation'
+  | 'Governance'
+  | 'Approvals'
+  | 'Automation'
+  | 'Runtime & evidence';
 
-  status: 'stable' | 'beta';
-
-  intent: string;
+interface BaseCatalogEntry {
+  readonly slug: string;
+  readonly title: string;
+  readonly status: 'stable' | 'beta';
+  readonly intent: string;
 }
+
+/** Area-discriminated catalog entry; invalid cross-module families cannot compile. */
+export type ComponentCatalogEntry =
+  | (BaseCatalogEntry & {
+      readonly area: 'core';
+      readonly group: CoreComponentGroup;
+    })
+  | (BaseCatalogEntry & {
+      readonly area: 'agents';
+      readonly group: AgentComponentGroup;
+    });

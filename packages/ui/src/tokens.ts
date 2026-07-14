@@ -18,17 +18,21 @@ const surfaces = {
     borderStrong: '#cbd3df',
   },
   dark: {
-    bg: '#06080c',
-    surface: '#0e1218',
-    surface2: '#141923',
-    border: '#1b2230',
-    borderStrong: '#2b3548',
+    bg: 'oklch(0.13 0.028 261.692)',
+    surface: 'oklch(0.13 0.028 261.692)',
+    surface2: '#090e1a',
+    border: 'oklch(0.278 0.033 256.848)',
+    borderStrong: 'oklch(0.373 0.034 259.733)',
   },
 } as const;
 
 const text = {
   light: { text: '#0e141b', textMuted: '#5a6b82', textDim: '#8a98ad' },
-  dark: { text: '#e2ecf5', textMuted: '#7585a0', textDim: '#4f5c75' },
+  dark: {
+    text: 'oklch(0.985 0.002 247.839)',
+    textMuted: 'oklch(0.707 0.022 261.325)',
+    textDim: 'oklch(0.551 0.027 264.364)',
+  },
 } as const;
 
 const accents = {
@@ -65,6 +69,47 @@ const softStatus = {
     warnSoft: '#2a2310',
     dangerSoft: '#2a1414',
     infoSoft: '#112038',
+  },
+} as const;
+
+const chart = {
+  light: {
+    series1: '#2563eb',
+    series2: '#0f766e',
+    series3: '#d97706',
+    series4: '#7c3aed',
+    series5: '#e11d48',
+    series6: '#15803d',
+    series7: '#0369a1',
+    series8: '#a16207',
+    grid: '#e3e8ef',
+    axis: '#5a6b82',
+    cursor: 'rgba(37, 99, 235, 0.08)',
+    hover: 'rgba(13, 148, 136, 0.12)',
+    selection: 'rgba(37, 99, 235, 0.18)',
+    tooltipSurface: '#ffffff',
+    tooltipBorder: '#cbd3df',
+    positive: '#15803d',
+    negative: '#dc2626',
+  },
+  dark: {
+    series1: '#60a5fa',
+    series2: '#2dd4bf',
+    series3: '#fbbf24',
+    series4: '#a78bfa',
+    series5: '#fb7185',
+    series6: '#4ade80',
+    series7: '#38bdf8',
+    series8: '#f59e0b',
+    grid: 'oklch(0.278 0.033 256.848)',
+    axis: 'oklch(0.707 0.022 261.325)',
+    cursor: 'rgba(96, 165, 250, 0.12)',
+    hover: 'rgba(94, 234, 212, 0.14)',
+    selection: 'rgba(96, 165, 250, 0.2)',
+    tooltipSurface: '#090e1a',
+    tooltipBorder: 'oklch(0.373 0.034 259.733)',
+    positive: '#4ade80',
+    negative: '#f87171',
   },
 } as const;
 
@@ -150,7 +195,7 @@ const breakpoints = { sm: 640, md: 768, lg: 1024, xl: 1280 } as const;
 const contentMax = '1200px' as const;
 
 export const tokens = {
-  color: { surfaces, text, accents, status, softStatus, interaction, decorative },
+  color: { surfaces, text, accents, status, softStatus, chart, interaction, decorative },
   space,
   radii,
   typography,

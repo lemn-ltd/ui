@@ -5,6 +5,7 @@ export {
   type ResizableSplitProps,
 } from './resizable-split/resizable-split.js';
 export { ScreenShell, type ScreenShellProps } from './screen-shell/screen-shell.js';
+export { Separator, type SeparatorProps } from './separator/separator.js';
 export {
   type DockMode,
   type ShellContextValue,
