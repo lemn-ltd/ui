@@ -9,12 +9,14 @@ test("no critical accessibility violations across non-component registry pages",
 
 	await gotoStable(page, "/");
 	const hrefs = await page
-		.locator("article.showcase-overview-card h3 a")
-		.evaluateAll((els) =>
-			els
-				.map((el) => (el as HTMLAnchorElement).getAttribute("href"))
-				.filter((href): href is string => Boolean(href)),
-		);
+		.locator('.showcase-home a[href^="/"]')
+		.evaluateAll((els) => [
+			...new Set(
+				els
+					.map((el) => (el as HTMLAnchorElement).getAttribute("href"))
+					.filter((href): href is string => Boolean(href)),
+			),
+		]);
 
 	const routes = [
 		"/",
@@ -74,17 +76,16 @@ test("every component page has no critical Axe violations in Light or Dark", asy
 	expect(offenders, offenders.join(" | ")).toEqual([]);
 });
 
-test("the live playground has no critical accessibility violations", async ({
+test("the homepage dialog preserves accessible modal behavior", async ({
 	page,
 }) => {
-	await gotoStable(page, "/?preview=%2Fcore%2Fcomponents%2Fpopover");
+	await gotoStable(page, "/");
+	await page
+		.locator('[data-home-feature="overlays"]')
+		.getByRole("button", { name: "Open dialog" })
+		.click();
 	await expect(
-		page.getByRole("dialog", { name: "Popover playground" }),
-	).toBeVisible();
-	await expect(
-		page
-			.frameLocator("iframe.showcase-playground__frame")
-			.locator("[data-showcase-preview-content]"),
+		page.getByRole("dialog", { name: "Review report access" }),
 	).toBeVisible();
 
 	const results = await new AxeBuilder({ page }).analyze();

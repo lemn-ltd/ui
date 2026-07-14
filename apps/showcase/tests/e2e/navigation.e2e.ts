@@ -1,3 +1,4 @@
+import { componentRoutesFromCatalog } from "../helpers/component-catalog";
 import {
 	expect,
 	gotoStable,
@@ -5,24 +6,33 @@ import {
 	test,
 } from "../helpers/deterministic";
 
-test("every registry entry resolves to a rendered page", async ({
-	page: overviewPage,
+test("every catalog and homepage documentation link resolves to a rendered page", async ({
+	page: homePage,
 	context,
 }, testInfo) => {
 	test.setTimeout(900_000);
-	await gotoStable(overviewPage, "/");
+	await gotoStable(homePage, "/");
 
-	const hrefs = await overviewPage
-		.locator("article.showcase-overview-card h3 a")
-		.evaluateAll((els) =>
-			els
-				.map((el) => (el as HTMLAnchorElement).getAttribute("href"))
-				.filter((href): href is string => Boolean(href)),
-		);
+	const homepageHrefs = await homePage
+		.locator('.showcase-home a[href^="/"]')
+		.evaluateAll((els) => [
+			...new Set(
+				els
+					.map((el) => (el as HTMLAnchorElement).getAttribute("href"))
+					.filter((href): href is string => Boolean(href)),
+			),
+		]);
+	expect(homepageHrefs.length).toBeGreaterThanOrEqual(12);
 
-	// Foundations (6) + core components + agent components + core and agent patterns.
-	expect(hrefs.length).toBeGreaterThanOrEqual(90);
-	await overviewPage.close();
+	const catalogRoutes = await componentRoutesFromCatalog(homePage);
+	const hrefs = [
+		...new Set([
+			...homepageHrefs,
+			...catalogRoutes.map((entry) => entry.route),
+		]),
+	];
+	expect(hrefs.length).toBeGreaterThanOrEqual(112);
+	await homePage.close();
 
 	const broken: string[] = [];
 	for (const href of hrefs) {
@@ -56,40 +66,6 @@ test("every registry entry resolves to a rendered page", async ({
 	}
 
 	expect(broken, `failed routes: ${broken.join(" | ")}`).toEqual([]);
-});
-
-test("the overview exposes lazy live previews instead of image thumbnails", async ({
-	page,
-}) => {
-	await gotoStable(page, "/");
-
-	expect(
-		await page.locator("article.showcase-overview-card").count(),
-	).toBeGreaterThanOrEqual(90);
-	await expect(page.locator("article.showcase-overview-card img")).toHaveCount(
-		0,
-	);
-
-	const buttonPreview = page.getByRole("button", {
-		name: "Open Button interactive playground",
-	});
-	await buttonPreview.scrollIntoViewIfNeeded();
-	await expect(
-		buttonPreview.locator("[data-showcase-preview-content]"),
-	).toHaveCount(0);
-	const previewFrame = buttonPreview.locator("..");
-	await expect(
-		previewFrame.locator("[data-showcase-preview-content]"),
-	).toBeVisible();
-	await expect(previewFrame.locator('[data-preview-ready="true"]')).toHaveCount(
-		1,
-	);
-
-	const activePreviewCount = await page
-		.locator('.showcase-live-preview[data-preview-active="true"]')
-		.count();
-	expect(activePreviewCount).toBeGreaterThan(0);
-	expect(activePreviewCount).toBeLessThan(30);
 });
 
 test("a deep link restores the target component page", async ({ page }) => {

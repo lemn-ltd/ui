@@ -14,7 +14,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 const defaultRoot = resolve(fileURLToPath(new URL("../..", import.meta.url)));
 const image = "mcr.microsoft.com/playwright:v1.60.0-noble";
-const expectedSnapshotCount = 78;
+const expectedSnapshotCount = 90;
 
 function commandLabel(command, args) {
 	return [command, ...args].join(" ");
@@ -246,7 +246,7 @@ async function main(args = []) {
 			"corepack enable --install-directory /tmp/home/bin",
 			"export PATH=/tmp/home/bin:$PATH",
 			"corepack prepare pnpm@11.8.0 --activate",
-			"pnpm install --frozen-lockfile",
+			"pnpm install --frozen-lockfile --child-concurrency=1 --network-concurrency=4",
 			"pnpm --filter @lemn-ltd/ui-showcase exec playwright test --config playwright.linux-snapshots.config.ts --grep 'visual: ' --update-snapshots",
 			"find apps/showcase/tests/e2e/visual.e2e.ts-snapshots -type f -name '*-linux.png' -exec cp {} /output/ \\;",
 		].join("\n");

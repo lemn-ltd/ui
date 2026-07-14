@@ -288,16 +288,9 @@ jobs:
           PUBLIC_BUILD_GIT_SHA: ${{ steps.release.outputs.sha }}
           PUBLIC_BUILD_TIME: ${{ steps.release.outputs.time }}
 
-      - name: Deploy showcase
-        run: pnpm deploy:showcase:prod
-        env:
-          BUILD_VERSION: ${{ steps.release.outputs.version }}
-          BUILD_GIT_SHA: ${{ steps.release.outputs.sha }}
-          BUILD_TIME: ${{ steps.release.outputs.time }}
-          CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
-          CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ steps.cloudflare.outputs.showcase_account_id }}
-
+      # Updating a Worker secret creates a new version. Do it before the
+      # metadata-bearing deploy so the final active version always carries the
+      # current build SHA instead of restoring metadata from the prior deploy.
       - name: Set showcase runtime secret
         run: |
           pnpm guard:release:mutation
@@ -307,6 +300,16 @@ jobs:
           CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
           CLOUDFLARE_ACCOUNT_ID: ${{ steps.cloudflare.outputs.showcase_account_id }}
           STATUS_TOKEN: ${{ secrets.STATUS_TOKEN }}
+
+      - name: Deploy showcase
+        run: pnpm deploy:showcase:prod
+        env:
+          BUILD_VERSION: ${{ steps.release.outputs.version }}
+          BUILD_GIT_SHA: ${{ steps.release.outputs.sha }}
+          BUILD_TIME: ${{ steps.release.outputs.time }}
+          CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
+          CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ steps.cloudflare.outputs.showcase_account_id }}
 
       - name: Smoke Cloudflare deployment mappings
         run: pnpm smoke:cloudflare:release

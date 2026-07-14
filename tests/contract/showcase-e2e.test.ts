@@ -106,7 +106,7 @@ test("Darwin and Linux visual baselines have exact platform parity", async () =>
 			.sort();
 	const darwin = platformBaselines("darwin");
 	const linux = platformBaselines("linux");
-	assert.equal(darwin.length, 78);
+	assert.equal(darwin.length, 90);
 	assert.deepEqual(linux, darwin);
 	const expectConfig = record(playwrightConfig.expect, "Playwright expect");
 	const screenshots = record(
@@ -162,7 +162,10 @@ test("Linux baselines use the pinned official Playwright runtime", async () => {
 	);
 	assert.match(generator, /mcr\.microsoft\.com\/playwright:v1\.60\.0-noble/u);
 	assert.match(generator, /corepack prepare pnpm@11\.8\.0 --activate/u);
-	assert.match(generator, /pnpm install --frozen-lockfile/u);
+	assert.match(
+		generator,
+		/pnpm install --frozen-lockfile --child-concurrency=1 --network-concurrency=4/u,
+	);
 	assert.match(generator, /"write-tree"/u);
 	assert.match(generator, /"archive"[\s\S]*--output/u);
 	assert.match(generator, /set -euo pipefail/u);

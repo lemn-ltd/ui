@@ -68,11 +68,11 @@ test("every catalog component implements the interactive documentation contract"
 					}
 					const visibleCode = await code.innerText();
 					expect(visibleCode, `${entry.route} public snippet`).not.toMatch(
-					LEGACY_UI_PACKAGE_PATTERN,
-				);
+						LEGACY_UI_PACKAGE_PATTERN,
+					);
 					expect(visibleCode, `${entry.route} public snippet`).not.toMatch(
-					/@latest|@lemn-ltd\/ui\//u,
-				);
+						/@latest|@lemn-ltd\/ui\//u,
+					);
 				}
 
 				await hero.getByRole("button", { name: "Copy code" }).click();
@@ -140,11 +140,6 @@ test("every catalog component implements the interactive documentation contract"
 					`${entry.route} horizontal overflow`,
 				).toBeLessThanOrEqual(1);
 
-				await page.goto(`${entry.route}?embed=playground&theme=light`);
-				await expect(
-					page.locator("[data-showcase-preview-content]"),
-				).toBeVisible();
-				await expect(page.locator(".showcase-docs-page")).toHaveCount(0);
 				checkedRoutes.push(entry.route);
 			} catch (error) {
 				offenders.push(

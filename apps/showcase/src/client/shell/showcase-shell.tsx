@@ -195,9 +195,9 @@ export function ShowcaseShell(): ReactElement {
 	);
 
 	const sidebar = (
-    <Sidebar
-      brand={<Brand name={uiShowcaseAppDescriptor.displayName} />}
-      groups={sidebarGroups}
+		<Sidebar
+			brand={<Brand name={uiShowcaseAppDescriptor.displayName} />}
+			groups={sidebarGroups}
 			orgSwitcher={
 				<OrgSwitcher
 					currentOrgId={moduleId}

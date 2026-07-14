@@ -142,21 +142,6 @@ for (const [name, route] of PAGES) {
 		if (route === "/core/components/checkbox") {
 			await page.locator(".showcase-docs-page .shiki").first().waitFor();
 		}
-		if (route === "/") {
-			await expect
-				.poll(async () => {
-					const active = await page
-						.locator('.showcase-live-preview[data-preview-active="true"]')
-						.count();
-					const ready = await page
-						.locator(
-							'.showcase-live-preview[data-preview-active="true"][data-preview-ready="true"]',
-						)
-						.count();
-					return active > 0 && active === ready;
-				})
-				.toBe(true);
-		}
 		if (name === "sidebar") {
 			const target = page.getByTestId("sidebar-visual-target");
 			await expect(target).toHaveCount(1);
@@ -167,6 +152,19 @@ for (const [name, route] of PAGES) {
 		}
 	});
 }
+
+test("visual: overview bento", async ({ page }) => {
+	await gotoStable(page, "/");
+	await page
+		.locator('[data-home-feature="reporting"]')
+		.scrollIntoViewIfNeeded();
+	await expect(page).toHaveScreenshot("overview-bento.png");
+
+	await page
+		.locator('[data-home-feature="data-display"]')
+		.scrollIntoViewIfNeeded();
+	await expect(page).toHaveScreenshot("overview-bento-compact.png");
+});
 
 test("visual contract: every component is responsive in the active viewport and theme", async ({
 	page: catalogPage,

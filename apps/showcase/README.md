@@ -98,7 +98,7 @@ Visual assertions keep paired Darwin and Linux baselines at the unchanged 1%
 pixel threshold. Regenerate the Linux side reproducibly with the pinned
 Playwright container. The generator archives the immutable Git index, rejects
 unstaged or untracked source, and replaces existing Linux images only after all
-78 outputs have exact filename parity with Darwin. Stage the intended source
+90 outputs have exact filename parity with Darwin. Stage the intended source
 tree before running it:
 
 ```bash
