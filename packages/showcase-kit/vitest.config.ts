@@ -27,7 +27,7 @@ export default defineConfig({
 	},
 	test: {
 		environment: "happy-dom",
-		include: ["tests/**/*.spec.tsx", "tests/**/*.spec.ts"],
+		include: ["tests/**/*.spec.{ts,tsx}"],
 		mockReset: true,
 		restoreMocks: true,
 		clearMocks: true,

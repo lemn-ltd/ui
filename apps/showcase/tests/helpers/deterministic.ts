@@ -1,5 +1,7 @@
 import {
+	type Browser,
 	type BrowserContext,
+	type BrowserContextOptions,
 	test as base,
 	type ConsoleMessage,
 	expect,
@@ -22,8 +24,9 @@ function themeForProject(name: string): Theme {
 async function configureDeterministicPage(
 	page: DeterministicPage,
 	projectName: string,
+	themeOverride?: Theme,
 ): Promise<void> {
-	const theme = themeForProject(projectName);
+	const theme = themeOverride ?? themeForProject(projectName);
 	await page.emulateMedia({ colorScheme: theme, reducedMotion: "reduce" });
 	await page.addInitScript(
 		([key, value]) => {
@@ -40,10 +43,11 @@ async function configureDeterministicPage(
 export async function createDeterministicPage<TPage extends DeterministicPage>(
 	createPage: () => Promise<TPage>,
 	projectName: string,
+	themeOverride?: Theme,
 ): Promise<TPage> {
 	const page = await createPage();
 	try {
-		await configureDeterministicPage(page, projectName);
+		await configureDeterministicPage(page, projectName, themeOverride);
 		return page;
 	} catch (configurationError) {
 		try {
@@ -61,8 +65,55 @@ export async function createDeterministicPage<TPage extends DeterministicPage>(
 export async function newDeterministicPage(
 	context: BrowserContext,
 	projectName: string,
+	themeOverride?: Theme,
 ): Promise<Page> {
-	return createDeterministicPage(() => context.newPage(), projectName);
+	return createDeterministicPage(
+		() => context.newPage(),
+		projectName,
+		themeOverride,
+	);
+}
+
+export interface IsolatedDeterministicPage {
+	readonly context: BrowserContext;
+	readonly page: Page;
+}
+
+export interface IsolatedDeterministicPageOptions {
+	readonly baseURL: string;
+	readonly projectName: string;
+	readonly theme: Theme;
+	readonly viewport?: BrowserContextOptions["viewport"];
+}
+
+export async function newIsolatedDeterministicPage(
+	browser: Browser,
+	options: IsolatedDeterministicPageOptions,
+): Promise<IsolatedDeterministicPage> {
+	const context = await browser.newContext({
+		baseURL: options.baseURL,
+		colorScheme: options.theme,
+		reducedMotion: "reduce",
+		viewport: options.viewport,
+	});
+	try {
+		const page = await newDeterministicPage(
+			context,
+			options.projectName,
+			options.theme,
+		);
+		return { context, page };
+	} catch (creationError) {
+		try {
+			await context.close();
+		} catch (cleanupError) {
+			throw new AggregateError(
+				[creationError, cleanupError],
+				"Isolated deterministic page creation and cleanup failed",
+			);
+		}
+		throw creationError;
+	}
 }
 
 /**
@@ -87,6 +138,227 @@ const OPERATIONAL_ROUTE_SELECTOR = [
 ].join(", ");
 const NOT_FOUND_SELECTOR = ".showcase-not-found";
 const ROUTE_ERROR_SELECTOR = ".showcase-route-error";
+
+// Covers delayed browser failures scheduled 500 ms after operational DOM.
+const POST_READY_DIAGNOSTIC_QUIET_MS = 750;
+const DIAGNOSTIC_FAILURE_DRAIN_QUIET_MS = 50;
+const DIAGNOSTIC_FAILURE_DRAIN_MAX_MS = 250;
+
+interface DiagnosticWindow {
+	readonly token: symbol;
+}
+
+interface PageDiagnostics {
+	activeWindow?: symbol;
+	activityRevision: number;
+	readonly consoleErrors: string[];
+	disposed: boolean;
+	readonly failedRequests: string[];
+	readonly httpErrors: string[];
+	readonly pageErrors: string[];
+	readonly waiters: Set<() => void>;
+}
+
+const pageDiagnostics = new WeakMap<Page, PageDiagnostics>();
+
+export interface RouteDiagnosticLifecycle {
+	readonly activeWindowCount: 0 | 1;
+	readonly listenerSetCount: 0 | 1;
+	readonly pendingWaiterCount: number;
+	readonly retainedFailureCount: number;
+}
+
+export function routeDiagnosticLifecycle(page: Page): RouteDiagnosticLifecycle {
+	const diagnostics = pageDiagnostics.get(page);
+	if (!diagnostics) {
+		return {
+			activeWindowCount: 0,
+			listenerSetCount: 0,
+			pendingWaiterCount: 0,
+			retainedFailureCount: 0,
+		};
+	}
+	return {
+		activeWindowCount: diagnostics.activeWindow ? 1 : 0,
+		listenerSetCount: diagnostics.disposed ? 0 : 1,
+		pendingWaiterCount: diagnostics.waiters.size,
+		retainedFailureCount:
+			diagnostics.consoleErrors.length +
+			diagnostics.failedRequests.length +
+			diagnostics.httpErrors.length +
+			diagnostics.pageErrors.length,
+	};
+}
+
+function hasDiagnosticFailures(
+	observed: Pick<
+		GotoStableFailure,
+		"consoleErrors" | "failedRequests" | "httpErrors" | "pageErrors"
+	>,
+): boolean {
+	return (
+		observed.consoleErrors.length > 0 ||
+		observed.failedRequests.length > 0 ||
+		observed.httpErrors.length > 0 ||
+		observed.pageErrors.length > 0
+	);
+}
+
+function signalDiagnosticActivity(diagnostics: PageDiagnostics): void {
+	diagnostics.activityRevision += 1;
+	for (const wake of [...diagnostics.waiters]) wake();
+}
+
+function diagnosticsFor(page: Page): PageDiagnostics {
+	const existing = pageDiagnostics.get(page);
+	if (existing) return existing;
+
+	const diagnostics: PageDiagnostics = {
+		activityRevision: 0,
+		consoleErrors: [],
+		disposed: false,
+		failedRequests: [],
+		httpErrors: [],
+		pageErrors: [],
+		waiters: new Set(),
+	};
+	const onConsole = (message: ConsoleMessage): void => {
+		if (message.type() !== "error") return;
+		diagnostics.consoleErrors.push(message.text());
+		signalDiagnosticActivity(diagnostics);
+	};
+	const onPageError = (error: Error): void => {
+		diagnostics.pageErrors.push(error.message);
+		signalDiagnosticActivity(diagnostics);
+	};
+	const onRequestFailed = (request: Request): void => {
+		diagnostics.failedRequests.push(
+			`${request.method()} ${request.url()} (${request.failure()?.errorText ?? "unknown failure"})`,
+		);
+		signalDiagnosticActivity(diagnostics);
+	};
+	const onResponse = (response: Response): void => {
+		if (response.status() < 400) return;
+		diagnostics.httpErrors.push(
+			`${response.status()} ${response.request().method()} ${response.url()}`,
+		);
+		signalDiagnosticActivity(diagnostics);
+	};
+	const onClose = (): void => {
+		if (diagnostics.disposed) return;
+		diagnostics.disposed = true;
+		page.off("console", onConsole);
+		page.off("pageerror", onPageError);
+		page.off("requestfailed", onRequestFailed);
+		page.off("response", onResponse);
+		page.off("close", onClose);
+		signalDiagnosticActivity(diagnostics);
+		diagnostics.consoleErrors.length = 0;
+		diagnostics.failedRequests.length = 0;
+		diagnostics.httpErrors.length = 0;
+		diagnostics.pageErrors.length = 0;
+	};
+
+	page.on("console", onConsole);
+	page.on("pageerror", onPageError);
+	page.on("requestfailed", onRequestFailed);
+	page.on("response", onResponse);
+	page.on("close", onClose);
+	pageDiagnostics.set(page, diagnostics);
+	return diagnostics;
+}
+
+function beginDiagnosticWindow(diagnostics: PageDiagnostics): DiagnosticWindow {
+	if (diagnostics.disposed) {
+		throw new Error("cannot navigate a closed deterministic page");
+	}
+	if (diagnostics.activeWindow) {
+		throw new Error("gotoStable already owns this page diagnostics lifecycle");
+	}
+	const token = Symbol("gotoStable diagnostics");
+	diagnostics.activeWindow = token;
+	return { token };
+}
+
+function observedDiagnostics(
+	diagnostics: PageDiagnostics,
+): Pick<
+	GotoStableFailure,
+	"consoleErrors" | "failedRequests" | "httpErrors" | "pageErrors"
+> {
+	return {
+		consoleErrors: [...diagnostics.consoleErrors],
+		failedRequests: [...diagnostics.failedRequests],
+		httpErrors: [...diagnostics.httpErrors],
+		pageErrors: [...diagnostics.pageErrors],
+	};
+}
+
+function finishDiagnosticWindow(
+	diagnostics: PageDiagnostics,
+	window: DiagnosticWindow,
+): void {
+	if (diagnostics.activeWindow !== window.token) return;
+	diagnostics.consoleErrors.length = 0;
+	diagnostics.failedRequests.length = 0;
+	diagnostics.httpErrors.length = 0;
+	diagnostics.pageErrors.length = 0;
+	diagnostics.activeWindow = undefined;
+}
+
+async function waitForDiagnosticActivity(
+	diagnostics: PageDiagnostics,
+	revision: number,
+	timeoutMs: number,
+): Promise<"activity" | "timeout"> {
+	if (diagnostics.activityRevision !== revision || diagnostics.disposed) {
+		return "activity";
+	}
+	return new Promise((resolve) => {
+		let settled = false;
+		const finish = (result: "activity" | "timeout"): void => {
+			if (settled) return;
+			settled = true;
+			clearTimeout(timer);
+			diagnostics.waiters.delete(onActivity);
+			resolve(result);
+		};
+		const onActivity = (): void => finish("activity");
+		const timer = setTimeout(() => finish("timeout"), timeoutMs);
+		diagnostics.waiters.add(onActivity);
+		if (diagnostics.activityRevision !== revision || diagnostics.disposed) {
+			finish("activity");
+		}
+	});
+}
+
+async function waitForPostReadyDiagnosticQuiet(
+	diagnostics: PageDiagnostics,
+): Promise<void> {
+	if (!hasDiagnosticFailures(observedDiagnostics(diagnostics))) {
+		await waitForDiagnosticActivity(
+			diagnostics,
+			diagnostics.activityRevision,
+			POST_READY_DIAGNOSTIC_QUIET_MS,
+		);
+	}
+	if (!hasDiagnosticFailures(observedDiagnostics(diagnostics))) return;
+
+	const startedAt = Date.now();
+	let revision = diagnostics.activityRevision;
+	while (!diagnostics.disposed) {
+		const boundedRemaining =
+			DIAGNOSTIC_FAILURE_DRAIN_MAX_MS - (Date.now() - startedAt);
+		if (boundedRemaining <= 0) return;
+		const result = await waitForDiagnosticActivity(
+			diagnostics,
+			revision,
+			Math.min(DIAGNOSTIC_FAILURE_DRAIN_QUIET_MS, boundedRemaining),
+		);
+		if (result === "timeout") return;
+		revision = diagnostics.activityRevision;
+	}
+}
 
 export interface GotoStableOptions {
 	readonly expectedSurface?: "not-found" | "operational";
@@ -136,7 +408,7 @@ async function captureGotoStableFailure(
 	page: Page,
 	path: string,
 	reason: string,
-	observed: Pick<
+	observed: () => Pick<
 		GotoStableFailure,
 		"consoleErrors" | "failedRequests" | "httpErrors" | "pageErrors"
 	>,
@@ -167,7 +439,7 @@ async function captureGotoStableFailure(
 			};
 		}, OPERATIONAL_ROUTE_SELECTOR);
 		return {
-			...observed,
+			...observed(),
 			...documentState,
 			path,
 			reason,
@@ -175,7 +447,7 @@ async function captureGotoStableFailure(
 		};
 	} catch (error) {
 		return {
-			...observed,
+			...observed(),
 			body: error instanceof Error ? error.message : String(error),
 			path,
 			readyState: "unavailable",
@@ -187,8 +459,10 @@ async function captureGotoStableFailure(
 }
 
 /**
- * Navigate and wait for a lazily-loaded operational route, plus fonts and two
- * render frames. Internal not-found routes require an explicit typed opt-in.
+ * Navigate and wait for a lazily-loaded operational route, fonts, render
+ * frames, and a bounded post-ready diagnostics quiet period. Page listeners
+ * remain installed until close so delayed work cannot escape between routes.
+ * Internal not-found routes require an explicit typed opt-in.
  */
 export async function gotoStable(
 	page: Page,
@@ -200,33 +474,8 @@ export async function gotoStable(
 		expectedSurface === "not-found"
 			? NOT_FOUND_SELECTOR
 			: OPERATIONAL_ROUTE_SELECTOR;
-	const consoleErrors: string[] = [];
-	const failedRequests: string[] = [];
-	const httpErrors: string[] = [];
-	const pageErrors: string[] = [];
-	const onConsole = (message: ConsoleMessage): void => {
-		if (message.type() === "error") consoleErrors.push(message.text());
-	};
-	const onPageError = (error: Error): void => {
-		pageErrors.push(error.message);
-	};
-	const onRequestFailed = (request: Request): void => {
-		failedRequests.push(
-			`${request.method()} ${request.url()} (${request.failure()?.errorText ?? "unknown failure"})`,
-		);
-	};
-	const onResponse = (response: Response): void => {
-		if (response.status() >= 400) {
-			httpErrors.push(
-				`${response.status()} ${response.request().method()} ${response.url()}`,
-			);
-		}
-	};
-
-	page.on("console", onConsole);
-	page.on("pageerror", onPageError);
-	page.on("requestfailed", onRequestFailed);
-	page.on("response", onResponse);
+	const diagnostics = diagnosticsFor(page);
+	const diagnosticWindow = beginDiagnosticWindow(diagnostics);
 
 	try {
 		const navigationResponse = await page.goto(path);
@@ -280,30 +529,21 @@ export async function gotoStable(
 				requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
 			});
 		});
-		if (
-			consoleErrors.length > 0 ||
-			failedRequests.length > 0 ||
-			httpErrors.length > 0 ||
-			pageErrors.length > 0
-		) {
+		await waitForPostReadyDiagnosticQuiet(diagnostics);
+		if (diagnostics.disposed) return;
+		if (hasDiagnosticFailures(observedDiagnostics(diagnostics))) {
 			throw new Error("browser diagnostics reported route failures");
 		}
 	} catch (error) {
 		const reason = error instanceof Error ? error.message : String(error);
 		throw new Error(
 			formatGotoStableFailure(
-				await captureGotoStableFailure(page, path, reason, {
-					consoleErrors,
-					failedRequests,
-					httpErrors,
-					pageErrors,
-				}),
+				await captureGotoStableFailure(page, path, reason, () =>
+					observedDiagnostics(diagnostics),
+				),
 			),
 		);
 	} finally {
-		page.off("console", onConsole);
-		page.off("pageerror", onPageError);
-		page.off("requestfailed", onRequestFailed);
-		page.off("response", onResponse);
+		finishDiagnosticWindow(diagnostics, diagnosticWindow);
 	}
 }

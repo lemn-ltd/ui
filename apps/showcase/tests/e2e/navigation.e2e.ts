@@ -3,6 +3,7 @@ import {
 	expect,
 	gotoStable,
 	newDeterministicPage,
+	routeDiagnosticLifecycle,
 	test,
 } from "../helpers/deterministic";
 
@@ -250,4 +251,209 @@ test("route readiness rejects false operational surfaces", async ({ page }) => {
 	expect(dimensions.documentClientWidth).toBeGreaterThanOrEqual(
 		dimensions.documentScrollWidth,
 	);
+});
+
+test("route diagnostics reject failures emitted 500ms after operational DOM", async ({
+	context,
+}, testInfo) => {
+	interface ProbeResource {
+		readonly abort?: boolean;
+		readonly body?: string;
+		readonly path: string;
+		readonly status?: number;
+	}
+	interface LateFailureProbe {
+		readonly expected: readonly RegExp[];
+		readonly name: string;
+		readonly path: string;
+		readonly resources?: readonly ProbeResource[];
+		readonly script: string;
+	}
+
+	const delay = 500;
+	const probes: readonly LateFailureProbe[] = [
+		{
+			expected: [
+				/GET .*synthetic-late-abort \(net::ERR_FAILED\)/u,
+				/500 GET .*synthetic-late-http-500/u,
+			],
+			name: "late failed request and response",
+			path: "/synthetic-late-request",
+			resources: [
+				{ abort: true, path: "/synthetic-late-abort" },
+				{
+					body: "synthetic late server failure",
+					path: "/synthetic-late-http-500",
+					status: 500,
+				},
+			],
+			script: `setTimeout(() => {
+				void fetch("/synthetic-late-abort").catch(() => {});
+				void fetch("/synthetic-late-http-500").catch(() => {});
+			}, ${delay});`,
+		},
+		{
+			expected: [/synthetic late console failure/u],
+			name: "late console error",
+			path: "/synthetic-late-console",
+			script: `setTimeout(() => console.error("synthetic late console failure"), ${delay});`,
+		},
+		{
+			expected: [/synthetic late page failure/u],
+			name: "late page error",
+			path: "/synthetic-late-pageerror",
+			script: `setTimeout(() => { throw new Error("synthetic late page failure"); }, ${delay});`,
+		},
+		{
+			expected: [/synthetic late lazy failure/u],
+			name: "late lazy module failure",
+			path: "/synthetic-late-lazy",
+			resources: [
+				{
+					body: 'throw new Error("synthetic late lazy failure");',
+					path: "/synthetic-late-lazy-module.js",
+				},
+			],
+			script: `setTimeout(() => {
+				const lazyModule = document.createElement("script");
+				lazyModule.type = "module";
+				lazyModule.src = "/synthetic-late-lazy-module.js";
+				document.body.append(lazyModule);
+			}, ${delay});`,
+		},
+	];
+
+	for (const probe of probes) {
+		await test.step(probe.name, async () => {
+			const page = await newDeterministicPage(context, testInfo.project.name);
+			const lifecycleBefore = routeDiagnosticLifecycle(page);
+			try {
+				for (const resource of probe.resources ?? []) {
+					await page.route(`**${resource.path}`, async (route) => {
+						if (resource.abort) {
+							await route.abort("failed");
+							return;
+						}
+						await route.fulfill({
+							body: resource.body ?? "",
+							contentType: "text/javascript",
+							status: resource.status ?? 200,
+						});
+					});
+				}
+				await page.route(`**${probe.path}`, async (route) => {
+					await route.fulfill({
+						body: [
+							'<main class="ui-content-layout">Operational before delayed work</main>',
+							`<script>${probe.script}</script>`,
+						].join(""),
+						contentType: "text/html",
+						status: 200,
+					});
+				});
+
+				const startedAt = Date.now();
+				let rejectedAt = 0;
+				const navigation = gotoStable(page, probe.path).catch(
+					(error: unknown) => {
+						rejectedAt = Date.now();
+						throw error;
+					},
+				);
+				for (const expected of probe.expected) {
+					await expect(navigation).rejects.toThrow(expected);
+				}
+				expect(rejectedAt - startedAt).toBeGreaterThanOrEqual(delay);
+				expect(rejectedAt - startedAt).toBeLessThan(delay + 1_000);
+
+				expect(routeDiagnosticLifecycle(page)).toEqual({
+					activeWindowCount: 0,
+					listenerSetCount: 1,
+					pendingWaiterCount: 0,
+					retainedFailureCount: 0,
+				});
+				await gotoStable(page, "/");
+				expect(routeDiagnosticLifecycle(page)).toEqual({
+					activeWindowCount: 0,
+					listenerSetCount: 1,
+					pendingWaiterCount: 0,
+					retainedFailureCount: 0,
+				});
+			} finally {
+				await page.close();
+				expect(routeDiagnosticLifecycle(page)).toEqual(lifecycleBefore);
+			}
+		});
+	}
+});
+
+test("route diagnostic listeners retain failures between stable windows until close", async ({
+	context,
+}, testInfo) => {
+	const page = await newDeterministicPage(context, testInfo.project.name);
+	try {
+		await page.route("**/synthetic-diagnostics-idle", async (route) => {
+			await route.fulfill({
+				body: '<main class="ui-content-layout">Stable diagnostics window</main>',
+				contentType: "text/html",
+				status: 200,
+			});
+		});
+		await gotoStable(page, "/synthetic-diagnostics-idle");
+		expect(routeDiagnosticLifecycle(page)).toEqual({
+			activeWindowCount: 0,
+			listenerSetCount: 1,
+			pendingWaiterCount: 0,
+			retainedFailureCount: 0,
+		});
+
+		await page.evaluate(() => {
+			console.error("synthetic failure between stable windows");
+		});
+		expect(routeDiagnosticLifecycle(page).retainedFailureCount).toBe(1);
+		await expect(gotoStable(page, "/")).rejects.toThrow(
+			/synthetic failure between stable windows/u,
+		);
+		expect(routeDiagnosticLifecycle(page)).toEqual({
+			activeWindowCount: 0,
+			listenerSetCount: 1,
+			pendingWaiterCount: 0,
+			retainedFailureCount: 0,
+		});
+	} finally {
+		await page.close();
+	}
+	expect(routeDiagnosticLifecycle(page)).toEqual({
+		activeWindowCount: 0,
+		listenerSetCount: 0,
+		pendingWaiterCount: 0,
+		retainedFailureCount: 0,
+	});
+});
+
+test("route diagnostics teardown settles an active quiet period without a false failure", async ({
+	context,
+}, testInfo) => {
+	const page = await newDeterministicPage(context, testInfo.project.name);
+	await page.route("**/synthetic-diagnostics-teardown", async (route) => {
+		await route.fulfill({
+			body: '<main class="ui-content-layout">Ready for teardown</main>',
+			contentType: "text/html",
+			status: 200,
+		});
+	});
+	const navigation = gotoStable(page, "/synthetic-diagnostics-teardown");
+	await page.getByText("Ready for teardown").waitFor();
+	await expect
+		.poll(() => routeDiagnosticLifecycle(page).pendingWaiterCount)
+		.toBe(1);
+	await page.close();
+
+	await expect(navigation).resolves.toBeUndefined();
+	expect(routeDiagnosticLifecycle(page)).toEqual({
+		activeWindowCount: 0,
+		listenerSetCount: 0,
+		pendingWaiterCount: 0,
+		retainedFailureCount: 0,
+	});
 });

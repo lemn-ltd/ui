@@ -316,18 +316,36 @@ test("Linux snapshot CLI preserves aggregate baselines when Git archive fails", 
 
 test("test architecture keeps pages isolated, timeouts fixed, and package tests canonical", async () => {
 	const [
+		accessibility,
 		capabilityExpansion,
+		deterministic,
 		documentation,
+		livePagePreview,
 		navigation,
 		visual,
 		showcaseKitVitestConfig,
 	] = await Promise.all([
 		readFile(
+			resolve(root, "apps/showcase/tests/e2e/accessibility.e2e.ts"),
+			"utf8",
+		),
+		readFile(
 			resolve(root, "apps/showcase/tests/e2e/capability-expansion.e2e.ts"),
 			"utf8",
 		),
 		readFile(
+			resolve(root, "apps/showcase/tests/helpers/deterministic.ts"),
+			"utf8",
+		),
+		readFile(
 			resolve(root, "apps/showcase/tests/e2e/documentation-contract.e2e.ts"),
+			"utf8",
+		),
+		readFile(
+			resolve(
+				root,
+				"packages/showcase-kit/tests/unit/page/live-page-preview.spec.tsx",
+			),
 			"utf8",
 		),
 		readFile(
@@ -346,6 +364,25 @@ test("test architecture keeps pages isolated, timeouts fixed, and package tests 
 		assert.match(source, /newDeterministicPage/u);
 		assert.match(source, /finally\s*\{[\s\S]*await page\.close\(\)/u);
 	}
+	assert.match(accessibility, /newIsolatedDeterministicPage/u);
+	assert.doesNotMatch(accessibility, /newDeterministicPage/u);
+	assert.match(
+		accessibility,
+		/for \(const route of routes\) \{[\s\S]*newAccessibilityPage\([\s\S]*await context\.close\(\)/u,
+	);
+	assert.match(
+		accessibility,
+		/for \(const entry of routes\) \{[\s\S]*for \(const theme of \["light", "dark"\][\s\S]*newAccessibilityPage\([\s\S]*theme[\s\S]*await context\.close\(\)/u,
+	);
+	assert.match(accessibility, /showcase-accessibility-isolation-probe/u);
+	assert.doesNotMatch(accessibility, /Switch to dark theme/u);
+	assert.match(deterministic, /browser\.newContext\(/u);
+	assert.match(deterministic, /page\.on\("close", onClose\)/u);
+	assert.match(deterministic, /POST_READY_DIAGNOSTIC_QUIET_MS = 750/u);
+	assert.doesNotMatch(deterministic, /page\.on\("request"/u);
+	assert.doesNotMatch(deterministic, /ROUTE_DIAGNOSTIC_PROBE_DELAY_MS/u);
+	assert.match(navigation, /const delay = 500/u);
+	assert.match(navigation, /synthetic failure between stable windows/u);
 	assert.doesNotMatch(capabilityExpansion, /test\.setTimeout\(/u);
 	assert.match(documentation, /test\.setTimeout\(900_000\)/u);
 	assert.match(navigation, /test\.setTimeout\(900_000\)/u);
@@ -370,9 +407,34 @@ test("test architecture keeps pages isolated, timeouts fixed, and package tests 
 		"tests/unit/page/documentation-page.spec.tsx",
 		"tests/unit/page/live-page-preview.spec.tsx",
 		"tests/unit/registry/nav-groups.spec.ts",
-		"tests/unit/router/build-showcase-router.spec.tsx",
 	]);
-	assert.match(showcaseKitVitestConfig, /"tests\/\*\*\/\*\.spec\.tsx"/u);
-	assert.match(showcaseKitVitestConfig, /"tests\/\*\*\/\*\.spec\.ts"/u);
+	assert.equal(canonicalSuites.length, 6);
+	const collectedSuites = execFileSync(
+		process.execPath,
+		[resolve(root, "node_modules/vitest/vitest.mjs"), "list", "--filesOnly"],
+		{
+			cwd: showcaseKitRoot,
+			encoding: "utf8",
+			env: { ...process.env, NO_COLOR: "1" },
+		},
+	)
+		.trim()
+		.split("\n")
+		.filter(Boolean)
+		.sort();
+	assert.deepEqual(collectedSuites, canonicalSuites);
+	assert.equal(collectedSuites.length, 6);
+	assert.equal(new Set(collectedSuites).size, 6);
+	assert.match(livePagePreview, /data-showcase-route-state/u);
+	assert.match(livePagePreview, /fixture lazy import failed/u);
+	assert.match(livePagePreview, /Reload page/u);
+	assert.match(
+		showcaseKitVitestConfig,
+		/include: \["tests\/\*\*\/\*\.spec\.\{ts,tsx\}"\]/u,
+	);
+	assert.equal(
+		showcaseKitVitestConfig.match(/tests\/\*\*\/\*\.spec\./gu)?.length,
+		1,
+	);
 	assert.doesNotMatch(showcaseKitVitestConfig, /"src\/\*\*\/\*\.spec\./u);
 });
