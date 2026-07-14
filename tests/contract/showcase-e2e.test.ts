@@ -12,7 +12,7 @@ import {
 	writeFile,
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { resolve } from "node:path";
+import { relative, resolve } from "node:path";
 import test from "node:test";
 import playwrightConfig, {
 	showcaseE2ePortForCheckout,
@@ -35,6 +35,26 @@ async function aggregateSnapshotHash(directory: string): Promise<string> {
 		hash.update(await readFile(resolve(directory, file)));
 	}
 	return hash.digest("hex");
+}
+
+async function filesUnder(directory: string): Promise<string[]> {
+	const entries = await readdir(directory, { withFileTypes: true });
+	const files = await Promise.all(
+		entries.map(async (entry) => {
+			const path = resolve(directory, entry.name);
+			return entry.isDirectory() ? filesUnder(path) : [path];
+		}),
+	);
+	return files.flat();
+}
+
+function isTestArtifact(path: string): boolean {
+	const segments = path.split("/");
+	return (
+		segments.includes("tests") ||
+		segments.includes("__tests__") ||
+		/\.(?:spec|test)\.[cm]?[jt]sx?$/u.test(path)
+	);
 }
 
 function shellQuote(value: string): string {
@@ -294,23 +314,29 @@ test("Linux snapshot CLI preserves aggregate baselines when Git archive fails", 
 	}
 });
 
-test("catalog-scale E2E closes isolated pages without extending shared timeouts", async () => {
-	const [capabilityExpansion, documentation, navigation, visual] =
-		await Promise.all([
-			readFile(
-				resolve(root, "apps/showcase/tests/e2e/capability-expansion.e2e.ts"),
-				"utf8",
-			),
-			readFile(
-				resolve(root, "apps/showcase/tests/e2e/documentation-contract.e2e.ts"),
-				"utf8",
-			),
-			readFile(
-				resolve(root, "apps/showcase/tests/e2e/navigation.e2e.ts"),
-				"utf8",
-			),
-			readFile(resolve(root, "apps/showcase/tests/e2e/visual.e2e.ts"), "utf8"),
-		]);
+test("test architecture keeps pages isolated, timeouts fixed, and package tests canonical", async () => {
+	const [
+		capabilityExpansion,
+		documentation,
+		navigation,
+		visual,
+		showcaseKitVitestConfig,
+	] = await Promise.all([
+		readFile(
+			resolve(root, "apps/showcase/tests/e2e/capability-expansion.e2e.ts"),
+			"utf8",
+		),
+		readFile(
+			resolve(root, "apps/showcase/tests/e2e/documentation-contract.e2e.ts"),
+			"utf8",
+		),
+		readFile(
+			resolve(root, "apps/showcase/tests/e2e/navigation.e2e.ts"),
+			"utf8",
+		),
+		readFile(resolve(root, "apps/showcase/tests/e2e/visual.e2e.ts"), "utf8"),
+		readFile(resolve(root, "packages/showcase-kit/vitest.config.ts"), "utf8"),
+	]);
 	for (const source of [
 		capabilityExpansion,
 		documentation,
@@ -324,4 +350,29 @@ test("catalog-scale E2E closes isolated pages without extending shared timeouts"
 	assert.match(documentation, /test\.setTimeout\(900_000\)/u);
 	assert.match(navigation, /test\.setTimeout\(900_000\)/u);
 	assert.match(visual, /test\.setTimeout\(900_000\)/u);
+
+	const showcaseKitRoot = resolve(root, "packages/showcase-kit");
+	const sourceViolations = (await filesUnder(resolve(showcaseKitRoot, "src")))
+		.map((path) => relative(showcaseKitRoot, path))
+		.filter(isTestArtifact)
+		.sort();
+	assert.deepEqual(sourceViolations, []);
+	const canonicalSuites = (
+		await filesUnder(resolve(showcaseKitRoot, "tests/unit"))
+	)
+		.map((path) => relative(showcaseKitRoot, path))
+		.filter((path) => /\.spec\.[cm]?[jt]sx?$/u.test(path))
+		.sort();
+	assert.deepEqual(canonicalSuites, [
+		"tests/unit/example/example-block.spec.tsx",
+		"tests/unit/example/variants-gallery.spec.tsx",
+		"tests/unit/page/component-page-documentation.spec.tsx",
+		"tests/unit/page/documentation-page.spec.tsx",
+		"tests/unit/page/live-page-preview.spec.tsx",
+		"tests/unit/registry/nav-groups.spec.ts",
+		"tests/unit/router/build-showcase-router.spec.tsx",
+	]);
+	assert.match(showcaseKitVitestConfig, /"tests\/\*\*\/\*\.spec\.tsx"/u);
+	assert.match(showcaseKitVitestConfig, /"tests\/\*\*\/\*\.spec\.ts"/u);
+	assert.doesNotMatch(showcaseKitVitestConfig, /"src\/\*\*\/\*\.spec\./u);
 });

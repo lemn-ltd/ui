@@ -175,6 +175,58 @@ test("route readiness rejects false operational surfaces", async ({ page }) => {
 	);
 	await page.unroute("**/synthetic-browser-errors");
 
+	let successfulChunkReleasedAt = 0;
+	await page.route("**/button.page.*", async (route) => {
+		await new Promise<void>((resolve) => setTimeout(resolve, 500));
+		successfulChunkReleasedAt = Date.now();
+		await route.continue();
+	});
+	const successfulNavigation = gotoStable(
+		page,
+		"/core/components/button?embed=playground",
+	).then(() => Date.now());
+	await expect
+		.poll(() => successfulChunkReleasedAt, {
+			message: "the delayed lazy chunk should be requested",
+		})
+		.toBeGreaterThan(0);
+	const successfulNavigationResolvedAt = await successfulNavigation;
+	expect(successfulNavigationResolvedAt).toBeGreaterThanOrEqual(
+		successfulChunkReleasedAt,
+	);
+	await expect(
+		page.getByRole("button", { name: "Save changes" }),
+	).toBeVisible();
+	await page.unroute("**/button.page.*");
+
+	let failedChunkReleasedAt = 0;
+	await page.route("**/badge.page.*", async (route) => {
+		await new Promise<void>((resolve) => setTimeout(resolve, 500));
+		failedChunkReleasedAt = Date.now();
+		await route.abort("failed");
+	});
+	const failedNavigation = gotoStable(
+		page,
+		"/core/components/badge?embed=playground",
+	).then(
+		() => ({ resolvedAt: Date.now(), error: undefined }),
+		(error: unknown) => ({ resolvedAt: Date.now(), error }),
+	);
+	await expect
+		.poll(() => failedChunkReleasedAt, {
+			message: "the failing lazy chunk should be requested",
+		})
+		.toBeGreaterThan(0);
+	const failedOutcome = await failedNavigation;
+	expect(failedOutcome.resolvedAt).toBeGreaterThanOrEqual(
+		failedChunkReleasedAt,
+	);
+	expect(failedOutcome.error).toBeInstanceOf(Error);
+	expect((failedOutcome.error as Error).message).toMatch(
+		/GET .*badge\.page\..* \(net::ERR_FAILED\)/u,
+	);
+	await page.unroute("**/badge.page.*");
+
 	await gotoStable(page, "/");
 	await page.setViewportSize({ width: 375, height: 812 });
 	await page.locator("#root").evaluate((root) => {

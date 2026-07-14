@@ -80,15 +80,13 @@ export const test = base.extend({
 
 export { expect };
 
-const OPERATIONAL_ROUTE_SELECTOR =
-	".ui-content-layout, .showcase-embedded-preview";
+const PAGE_FALLBACK_SELECTOR = ".showcase-page-fallback";
+const OPERATIONAL_ROUTE_SELECTOR = [
+	".ui-content-layout",
+	`.showcase-embedded-preview > :not(${PAGE_FALLBACK_SELECTOR}):not(.showcase-route-error)`,
+].join(", ");
 const NOT_FOUND_SELECTOR = ".showcase-not-found";
 const ROUTE_ERROR_SELECTOR = ".showcase-route-error";
-const OBSERVED_ROUTE_SELECTOR = [
-	OPERATIONAL_ROUTE_SELECTOR,
-	NOT_FOUND_SELECTOR,
-	ROUTE_ERROR_SELECTOR,
-].join(", ");
 
 export interface GotoStableOptions {
 	readonly expectedSurface?: "not-found" | "operational";
@@ -144,14 +142,12 @@ async function captureGotoStableFailure(
 	>,
 ): Promise<GotoStableFailure> {
 	try {
-		const documentState = await page.evaluate(() => {
+		const documentState = await page.evaluate((operationalSelector) => {
 			const body = document.body?.innerText.replace(/\s+/gu, " ").trim() ?? "";
 			const routeError = document.querySelector(".showcase-route-error");
 			const loading = document.querySelector(".showcase-page-fallback");
 			const notFound = document.querySelector(".showcase-not-found");
-			const operational = document.querySelector(
-				".ui-content-layout, .showcase-embedded-preview",
-			);
+			const operational = document.querySelector(operationalSelector);
 			const root = document.querySelector("#root");
 			const state: GotoStableFailure["state"] = routeError
 				? "error"
@@ -169,7 +165,7 @@ async function captureGotoStableFailure(
 				readyState: document.readyState,
 				state,
 			};
-		});
+		}, OPERATIONAL_ROUTE_SELECTOR);
 		return {
 			...observed,
 			...documentState,
@@ -239,10 +235,23 @@ export async function gotoStable(
 				`navigation returned HTTP ${navigationResponse.status()} ${navigationResponse.url()}`,
 			);
 		}
-		await page
-			.locator(OBSERVED_ROUTE_SELECTOR)
-			.first()
-			.waitFor({ timeout: 15_000 });
+		await page.waitForFunction(
+			({ fallback, notFound, operational, routeError }) => {
+				if (document.querySelector(routeError)) return true;
+				if (document.querySelector(notFound)) return true;
+				return (
+					document.querySelector(fallback) === null &&
+					document.querySelector(operational) !== null
+				);
+			},
+			{
+				fallback: PAGE_FALLBACK_SELECTOR,
+				notFound: NOT_FOUND_SELECTOR,
+				operational: OPERATIONAL_ROUTE_SELECTOR,
+				routeError: ROUTE_ERROR_SELECTOR,
+			},
+			{ timeout: 15_000 },
+		);
 		if (await page.locator(ROUTE_ERROR_SELECTOR).first().isVisible()) {
 			throw new Error("route error surface rendered");
 		}
@@ -254,6 +263,9 @@ export async function gotoStable(
 			throw new Error(
 				`expected ${expectedSurface} surface but rendered not-found`,
 			);
+		}
+		if (await page.locator(PAGE_FALLBACK_SELECTOR).first().isVisible()) {
+			throw new Error("route remained on its loading surface");
 		}
 		if (!(await page.locator(expectedSelector).first().isVisible())) {
 			throw new Error(
