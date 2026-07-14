@@ -9,7 +9,7 @@ Derived audit-state projection: `patterns/pattern-audit.md`
 ## Inventory Basis
 
 This profile is based on the Lemn UI repository inventory as of
-2026-07-13.
+2026-07-14.
 
 Lemn UI is not a product backend or the full AgentOps control plane. It is
 the shared graphical UI system and release workspace for LEMN products,
@@ -37,11 +37,10 @@ requirements merely because they exist in the organization-wide catalog.
   `precedence_level <= target_level` only when its `applies_when` condition
   matches this repository inventory.
 - Treat this repository as the producer and source of truth for
-  `@lemn-ltd/ui`. Where organization-level `PAT-UI-LEMN-001` or
-  `PAT-UI-SYSTEM-001` examples name `@lemn-ltd/ui`, apply their design-system
-  control intent through the current package, registry, catalog, docs, and
-  showcase contracts declared by this repository. A package-scope rename is
-  not implied by this profile.
+  `@lemn-ltd/ui`. Apply organization-level `PAT-UI-LEMN-001` and
+  `PAT-UI-SYSTEM-001` through that exact package identity across the manifest,
+  registry, workspace, catalog, docs, showcase, tests, and release automation.
+  Compatibility aliases are not part of the public package contract.
 - Treat package exports, tokens, CSS, component props, catalog metadata,
   changesets, and published versions as public contracts. HTTP-specific Hono,
   OpenAPI, Problem Details, CORS, webhook, and MCP requirements are not
@@ -163,7 +162,7 @@ The following are not required by this profile for the current project shape:
   execution runtimes
 - product-specific data fetching, routing, telemetry, or business-policy
   components inside the shared UI package
-- future package-scope changes without an explicit identity migration decision
+- compatibility aliases or alternate public package names for `@lemn-ltd/ui`
 
 If future work introduces one of these capabilities, update this profile first
 or record a scoped exception in `patterns/pattern-audit.md`.
