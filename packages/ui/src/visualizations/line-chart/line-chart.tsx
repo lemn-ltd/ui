@@ -38,7 +38,7 @@ export type LineChartProps<TDatum extends ChartDatum> = ChartAccessibleName &
     readonly showTooltip?: boolean;
   };
 
-/** Responsive multi-series line chart with keyboard-aware Recharts semantics. */
+/** Responsive multi-series line chart with keyboard-aware interaction semantics. */
 export function LineChart<TDatum extends ChartDatum>({
   animation = 'auto',
   className,
