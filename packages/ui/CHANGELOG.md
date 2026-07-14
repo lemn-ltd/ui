@@ -1,5 +1,11 @@
 # @lemn-ltd/ui
 
+## 0.2.1
+
+### Patch Changes
+
+- e7184b7: Make the AccentColorPicker hue control an explicit interactive color spectrum and cover live hue selection with a regression test.
+
 ## 0.2.0
 
 ### Minor Changes
