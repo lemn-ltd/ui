@@ -78,7 +78,11 @@ function DashboardPage(): ReactElement {
                   <Card key={trend.id} title={trend.label}>
                     <div style={TREND}>
                       <span style={TREND_VALUE}>{trend.value}</span>
-                      <Sparkline points={sparklinePoints} style={TREND_CHART} />
+                      <Sparkline
+                        aria-label={`${trend.label} trend`}
+                        points={sparklinePoints}
+                        style={TREND_CHART}
+                      />
                     </div>
                   </Card>
                 ))}

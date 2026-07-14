@@ -14,7 +14,7 @@
     "validate:domains": "node scripts/check-public-domains.mjs",
     "validate:release": "node scripts/sync-docs-changelog.mjs --check",
     "validate:brand-neutrality": "node scripts/check-brand-neutrality.mjs",
-    "validate:boundaries": "node scripts/check-ui-boundaries.mjs",
+    "validate:boundaries": "node scripts/check-ui-boundaries.mjs && pnpm --dir packages/ui run validate:boundaries",
     "sync:docs-changelog": "node scripts/sync-docs-changelog.mjs",
     "dev:showcase": "pnpm --filter @lemn-ltd/ui-showcase run dev",
     "dev:docs": "pnpm --filter @lemn-ltd/ui-docs run dev",

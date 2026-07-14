@@ -18,17 +18,21 @@ const surfaces = {
     borderStrong: '#cbd3df',
   },
   dark: {
-    bg: '#06080c',
-    surface: '#0e1218',
-    surface2: '#141923',
-    border: '#1b2230',
-    borderStrong: '#2b3548',
+    bg: 'oklch(0.13 0.028 261.692)',
+    surface: 'oklch(0.13 0.028 261.692)',
+    surface2: '#090e1a',
+    border: 'oklch(0.278 0.033 256.848)',
+    borderStrong: 'oklch(0.373 0.034 259.733)',
   },
 } as const;
 
 const text = {
   light: { text: '#0e141b', textMuted: '#5a6b82', textDim: '#8a98ad' },
-  dark: { text: '#e2ecf5', textMuted: '#7585a0', textDim: '#4f5c75' },
+  dark: {
+    text: 'oklch(0.985 0.002 247.839)',
+    textMuted: 'oklch(0.707 0.022 261.325)',
+    textDim: 'oklch(0.551 0.027 264.364)',
+  },
 } as const;
 
 const accents = {
