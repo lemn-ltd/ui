@@ -222,7 +222,7 @@ async function main(args = []) {
 			"pnpm",
 			[
 				"--filter",
-				"@appranks/ui-showcase",
+				"@lemn-ltd/ui-showcase",
 				"exec",
 				"vite",
 				"dev",
@@ -247,7 +247,7 @@ async function main(args = []) {
 			"export PATH=/tmp/home/bin:$PATH",
 			"corepack prepare pnpm@11.8.0 --activate",
 			"pnpm install --frozen-lockfile",
-			"pnpm --filter @appranks/ui-showcase exec playwright test --config playwright.linux-snapshots.config.ts --grep 'visual: ' --update-snapshots",
+			"pnpm --filter @lemn-ltd/ui-showcase exec playwright test --config playwright.linux-snapshots.config.ts --grep 'visual: ' --update-snapshots",
 			"find apps/showcase/tests/e2e/visual.e2e.ts-snapshots -type f -name '*-linux.png' -exec cp {} /output/ \\;",
 		].join("\n");
 

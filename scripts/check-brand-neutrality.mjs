@@ -6,7 +6,7 @@ const targets = process.argv.slice(2);
 const scanRoots = targets.length > 0 ? targets : ['packages/ui/src', 'apps/showcase/src'];
 
 const publicBrandPattern = /\blemn\b/i;
-const canonicalPackageName = '@lemn-ltd/ui';
+const officialPackageScopePattern = /@lemn-ltd\//i;
 const forbiddenPatterns = [
   /brainsforce/i,
   /brainstask/i,
@@ -68,13 +68,13 @@ for (const scanRoot of scanRoots) {
     const lines = content.split(/\r?\n/);
 
     lines.forEach((line, index) => {
-      const contentWithoutCanonicalPackage = line.replaceAll(canonicalPackageName, '');
-      const match = forbiddenPatterns.find((pattern) => pattern.test(contentWithoutCanonicalPackage));
+      const match = forbiddenPatterns.find((pattern) => pattern.test(line));
       if (!match) return;
 
       if (
         match === publicBrandPattern &&
-        publicBrandSurfacePrefixes.some((prefix) => relativeFile.startsWith(prefix))
+        (officialPackageScopePattern.test(line) ||
+          publicBrandSurfacePrefixes.some((prefix) => relativeFile.startsWith(prefix)))
       ) {
         return;
       }

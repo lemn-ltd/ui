@@ -1,4 +1,4 @@
-import { ComponentPage, useShowcaseRenderMode } from '@appranks/showcase-kit';
+import { ComponentPage, useShowcaseRenderMode } from '@lemn-ltd/showcase-kit';
 import {
   ActiveFiltersRow,
   Button,

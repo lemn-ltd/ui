@@ -1,4 +1,4 @@
-import type { ShowcaseArea } from '@appranks/showcase-kit';
+import type { ShowcaseArea } from '@lemn-ltd/showcase-kit';
 import type { UiShowcaseEntry } from './showcase-types.js';
 
 export type ShowcaseModuleId = ShowcaseArea;

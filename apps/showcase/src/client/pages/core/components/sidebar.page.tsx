@@ -2,7 +2,7 @@ import {
 	ComponentPage,
 	ExampleBlock,
 	PropsTable,
-} from "@appranks/showcase-kit";
+} from "@lemn-ltd/showcase-kit";
 import {
 	MenuItem,
 	MenuSeparator,

@@ -8,8 +8,8 @@ sidebar:
 
 Produccion tiene dos dominios publicos:
 
-- `ui.lemn.ai` sirve este sitio Starlight de docs.
-- `showcase.ui.lemn.ai` sirve el showcase interactivo como Worker SPA.
+- `ui.le-mn.com` sirve este sitio Starlight de docs.
+- `showcase.ui.le-mn.com` sirve el showcase interactivo como Worker SPA.
 
 CI valida pull requests con typecheck, tests, build, metadata de release y
 changeset status. Los pushes a `main` ejecutan el release workflow:
@@ -37,12 +37,3 @@ Secrets y variables requeridas:
 Los dos `wrangler.jsonc` son la fuente de verdad de cuenta y Worker. No uses ni
 derives `CLOUDFLARE_API_TOKEN` desde la Global API Key: Wrangler requiere el par
 `CLOUDFLARE_API_KEY` y `CLOUDFLARE_EMAIL` en este repositorio.
-
-## Blocker actual de Cloudflare
-
-La Global API Key configurada para Lemn DEV no expone actualmente la zona
-`lemn.ai`. Los dominios activos `ui.lemn.ai` y `showcase.ui.lemn.ai` fueron
-desplegados desde otra cuenta de Cloudflare. El workflow falla intencionalmente
-en el preflight, antes de Changesets, push o npm publish, hasta que se resuelva
-explicitamente el ownership/acceso de cuenta y zona. No debe mover ownership,
-reescribir account IDs ni recrear dominios como workaround implicito.

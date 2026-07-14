@@ -1,4 +1,4 @@
-import { entryFromMeta } from '@appranks/showcase-kit';
+import { entryFromMeta } from '@lemn-ltd/showcase-kit';
 import { componentCatalog } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 import type { ShowcaseGroup, UiShowcaseEntry } from './showcase-types.js';

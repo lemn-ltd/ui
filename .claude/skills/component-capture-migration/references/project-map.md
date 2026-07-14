@@ -10,8 +10,8 @@ Read this reference when using `component-capture-migration`, then inspect the c
 - Showcase app: `apps/showcase`
 - Showcase kit helpers: `packages/showcase-kit`
 - Component docs: `packages/ui/docs/components.md`
-- Public docs domain: `https://ui.lemn.ai`
-- Public showcase domain: `https://showcase.ui.lemn.ai`
+- Public docs domain: `https://ui.le-mn.com`
+- Public showcase domain: `https://showcase.ui.le-mn.com`
 
 ## Core Design-System Files
 
@@ -85,8 +85,8 @@ Read this reference when using `component-capture-migration`, then inspect the c
 pnpm dev:showcase
 pnpm --filter @lemn-ltd/ui run test
 pnpm --filter @lemn-ltd/ui run check
-pnpm --filter @appranks/ui-showcase run test
-pnpm --filter @appranks/ui-showcase run test:e2e
+pnpm --filter @lemn-ltd/ui-showcase run test
+pnpm --filter @lemn-ltd/ui-showcase run test:e2e
 pnpm run check
 pnpm run build
 ```

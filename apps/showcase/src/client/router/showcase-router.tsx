@@ -1,4 +1,4 @@
-import { buildShowcaseRouter } from '@appranks/showcase-kit';
+import { buildShowcaseRouter } from '@lemn-ltd/showcase-kit';
 import { SHOWCASE_REGISTRY } from '../registry/showcase-registry';
 import { NotFoundPage } from '../shell/not-found-page';
 import { OverviewPage } from '../shell/overview-page';

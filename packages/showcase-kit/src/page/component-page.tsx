@@ -35,7 +35,11 @@ export interface ComponentPageProps {
 	readonly children: ReactNode;
 }
 
-const LEGACY_UI_PACKAGE_PATTERN = /@appranks\/ui(?![-A-Za-z0-9])/u;
+const legacyUiPackage = `@${["app", "ranks"].join("")}/ui`;
+const LEGACY_UI_PACKAGE_PATTERN = new RegExp(
+	`${legacyUiPackage}(?![-A-Za-z0-9])`,
+	"u",
+);
 
 function withPublicImport(
 	code: string,
@@ -200,7 +204,7 @@ export function ComponentPage({
 
 			<DocumentationFooter
 				apiHref="https://github.com/lemn-ltd/ui"
-				apiLabel="LEMN UI API"
+				apiLabel="Lemn UI API"
 				apiRows={propsTable.props.rows.map((row) => ({
 					defaultValue: row.defaultValue,
 					description: row.description,

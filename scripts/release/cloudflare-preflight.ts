@@ -5,7 +5,7 @@ import { type ParseError, parse, printParseErrorCode } from "jsonc-parser";
 
 const CLOUDFLARE_API = "https://api.cloudflare.com/client/v4";
 const EXPECTED_ACCOUNT_NAME = "Lemn DEV";
-const EXPECTED_ZONE_NAME = "lemn.ai";
+const EXPECTED_ZONE_NAME = "le-mn.com";
 
 interface WranglerRoute {
 	pattern?: string;

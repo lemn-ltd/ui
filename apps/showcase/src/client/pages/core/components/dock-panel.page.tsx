@@ -1,4 +1,4 @@
-import { ComponentPage, ExampleBlock, PropsTable } from '@appranks/showcase-kit';
+import { ComponentPage, ExampleBlock, PropsTable } from '@lemn-ltd/showcase-kit';
 import { DockPanel, type DockTab, Icon, type IconName } from '@lemn-ltd/ui';
 import type { CSSProperties, ReactElement } from 'react';
 

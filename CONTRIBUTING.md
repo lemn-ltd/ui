@@ -1,6 +1,6 @@
 # Contributing
 
-This repository is the source of truth for shared Appranks UI. Keep changes
+This repository is the source of truth for shared Lemn UI. Keep changes
 small, neutral, documented, and releasable.
 
 ## Scope
@@ -71,6 +71,8 @@ Run the narrowest relevant checks while iterating, then run the package gate
 before release:
 
 ```bash
+pnpm validate:identity
+pnpm validate:domains
 pnpm validate:package-identity
 pnpm validate:brand-neutrality
 pnpm validate:boundaries
@@ -82,8 +84,8 @@ pnpm --filter @lemn-ltd/ui run build
 For showcase or docs behavior, also run:
 
 ```bash
-pnpm --filter @appranks/ui-showcase run check
-pnpm --filter @appranks/ui-showcase run test
+pnpm --filter @lemn-ltd/ui-showcase run check
+pnpm --filter @lemn-ltd/ui-showcase run test
 pnpm dev:showcase
 ```
 
@@ -110,9 +112,9 @@ pnpm dev:showcase
 - `pnpm version:packages`, `pnpm publish:ui`, `pnpm deploy:docs:prod`,
   `pnpm deploy:showcase:prod`, and `pnpm release` are production mutation
   entrypoints. They require branch `main` and the non-mutating Cloudflare
-  account/`lemn.ai` preflight; a credentialed feature checkout still fails
+  account and production-domain preflight; a credentialed feature checkout still fails
   before versioning, publishing, or deploying.
-- The CI workflow deploys docs to `ui.lemn.ai` and the interactive showcase
-  to `showcase.ui.lemn.ai` after the release automation has run.
+- The CI workflow deploys docs to `ui.le-mn.com` and the interactive showcase
+  to `showcase.ui.le-mn.com` after the release automation has run.
 - After publish, update consuming repos to the new version and regenerate their
   lockfiles.

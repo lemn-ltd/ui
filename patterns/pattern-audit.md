@@ -1,6 +1,6 @@
 # Pattern Audit
 
-Current derived audit state for Appranks UI.
+Current derived audit state for Lemn UI.
 
 Source system: `patterns/pattern-system.md`
 Pattern profile: `patterns/pattern-profile.md`

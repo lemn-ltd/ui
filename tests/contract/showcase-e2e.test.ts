@@ -88,7 +88,7 @@ test("the documented canonical E2E command exists and runs the full suite", asyn
 	assert.match(readme, /make test-e2e-ui-showcase/u);
 	assert.match(
 		makefile,
-		/^test-e2e-ui-showcase:\n\t\$\(PNPM\) --filter @appranks\/ui-showcase run test:e2e$/mu,
+		/^test-e2e-ui-showcase:\n\t\$\(PNPM\) --filter @lemn-ltd\/ui-showcase run test:e2e$/mu,
 	);
 	assert.equal(scripts["test:e2e"], "playwright test");
 });

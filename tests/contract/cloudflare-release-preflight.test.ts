@@ -14,14 +14,14 @@ const targets: CloudflareReleaseTarget[] = [
 	{
 		id: "docs",
 		accountId,
-		workerName: "appranks-ui-docs",
-		hostname: "ui.lemn.ai",
+		workerName: "lemn-ui-docs",
+		hostname: "ui.le-mn.com",
 	},
 	{
 		id: "showcase",
 		accountId,
-		workerName: "appranks-ui",
-		hostname: "showcase.ui.lemn.ai",
+		workerName: "lemn-ui-showcase",
+		hostname: "showcase.ui.le-mn.com",
 	},
 ];
 
@@ -87,7 +87,7 @@ function cloudflareFixture(
 			return response(
 				options.missingZone
 					? []
-					: [{ id: "zone-id", name: "lemn.ai", account: { id: accountId } }],
+					: [{ id: "zone-id", name: "le-mn.com", account: { id: accountId } }],
 			);
 		}
 		if (url.endsWith(`/accounts/${accountId}/workers/scripts`)) {
@@ -97,8 +97,8 @@ function cloudflareFixture(
 			if (options.malformedWorkerItem) return response([{}]);
 			return response(
 				options.missingResources
-					? [{ id: "appranks-ui" }]
-					: [{ id: "appranks-ui-docs" }, { id: "appranks-ui" }],
+					? [{ id: "lemn-ui-showcase" }]
+					: [{ id: "lemn-ui-docs" }, { id: "lemn-ui-showcase" }],
 			);
 		}
 		if (url.includes("/workers/domains?")) {
@@ -110,9 +110,9 @@ function cloudflareFixture(
 					hostname: requestUrl.searchParams.get("hostname"),
 					service: options.conflictingDomain
 						? "different-worker"
-						: requestUrl.searchParams.get("hostname") === "ui.lemn.ai"
-							? "appranks-ui-docs"
-							: "appranks-ui",
+						: requestUrl.searchParams.get("hostname") === "ui.le-mn.com"
+							? "lemn-ui-docs"
+								: "lemn-ui-showcase",
 				},
 			]);
 		}
@@ -213,7 +213,7 @@ test("post-deploy resource smoke requires both Workers and exact domain mappings
 			fetchImplementation: fixture.fetchImplementation,
 			requireResources: true,
 		}),
-		/does not contain Worker appranks-ui-docs/u,
+		/does not contain Worker lemn-ui-docs/u,
 	);
 });
 
@@ -230,7 +230,7 @@ test("preflight rejects a conflicting existing custom-domain mapping", async () 
 	);
 });
 
-test("preflight fails closed when Lemn DEV cannot manage the lemn.ai zone", async () => {
+test("preflight fails closed when Lemn DEV cannot manage the le-mn.com zone", async () => {
 	const fixture = cloudflareFixture({ missingZone: true });
 	await assert.rejects(
 		verifyCloudflareReleaseAccess({
@@ -239,7 +239,7 @@ test("preflight fails closed when Lemn DEV cannot manage the lemn.ai zone", asyn
 			targets,
 			fetchImplementation: fixture.fetchImplementation,
 		}),
-		/cannot manage the lemn\.ai zone/u,
+			/cannot manage the le-mn\.com zone/u,
 	);
 });
 

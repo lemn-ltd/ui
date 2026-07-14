@@ -24,10 +24,10 @@ export default defineConfig({
       { find: '@lemn-ltd/ui/tokens', replacement: uiSrc('tokens.ts') },
       { find: '@lemn-ltd/ui', replacement: uiSrc('index.ts') },
       {
-        find: '@appranks/showcase-kit/styles.css',
+        find: '@lemn-ltd/showcase-kit/styles.css',
         replacement: showcaseKitSrc('styles.css'),
       },
-      { find: '@appranks/showcase-kit', replacement: showcaseKitSrc('index.ts') },
+      { find: '@lemn-ltd/showcase-kit', replacement: showcaseKitSrc('index.ts') },
     ],
   },
   build: {
@@ -35,7 +35,7 @@ export default defineConfig({
   },
   plugins: [
     {
-      name: 'appranks-ui-html',
+      name: 'lemn-ui-html',
       transformIndexHtml(html) {
         return html.replace(/%APP_NAME%/g, uiShowcaseAppDescriptor.displayName);
       },

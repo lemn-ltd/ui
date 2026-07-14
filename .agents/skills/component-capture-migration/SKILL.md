@@ -118,8 +118,8 @@ Use these commands as the default validation ladder:
 ```bash
 pnpm --filter @lemn-ltd/ui run test
 pnpm --filter @lemn-ltd/ui run check
-pnpm --filter @appranks/ui-showcase run test
-pnpm --filter @appranks/ui-showcase run test:e2e
+pnpm --filter @lemn-ltd/ui-showcase run test
+pnpm --filter @lemn-ltd/ui-showcase run test:e2e
 pnpm run check
 pnpm run build
 ```

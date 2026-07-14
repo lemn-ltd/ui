@@ -1,9 +1,9 @@
-# Appranks UI
+# Lemn UI
 
-Shared, brand-neutral UI system for Appranks projects. The repository owns the
+Shared, brand-neutral UI system for LEMN projects. The repository owns the
 published `@lemn-ltd/ui` React package, its public component catalog, the docs
-site at `https://ui.lemn.ai`, and the showcase site at
-`https://showcase.ui.lemn.ai`.
+site at `https://ui.le-mn.com`, and the showcase site at
+`https://showcase.ui.le-mn.com`.
 
 `@lemn-ltd/ui` is the source of truth for shared styles. If a consuming product
 needs a reusable component, token, layout, or style migration, make that change
@@ -14,9 +14,9 @@ apps as a permanent fix.
 ## Packages
 
 - `@lemn-ltd/ui` - public component and token package, published to GitHub Packages.
-- `@appranks/showcase-kit` - internal workspace package for showcase page chrome.
-- `@appranks/ui-docs` - Astro Starlight docs deployed to `https://ui.lemn.ai`.
-- `@appranks/ui-showcase` - Cloudflare Worker SPA deployed to `https://showcase.ui.lemn.ai`.
+- `@lemn-ltd/showcase-kit` - internal workspace package for showcase page chrome.
+- `@lemn-ltd/ui-docs` - Astro Starlight docs deployed to `https://ui.le-mn.com`.
+- `@lemn-ltd/ui-showcase` - Cloudflare Worker SPA deployed to `https://showcase.ui.le-mn.com`.
 
 ## Requirements
 
@@ -77,9 +77,9 @@ product apps.
 
 Agents should discover available components through:
 
-- `https://showcase.ui.lemn.ai/catalog.json`
-- `https://showcase.ui.lemn.ai/llms.txt`
-- `https://showcase.ui.lemn.ai/llms-full.txt`
+- `https://showcase.ui.le-mn.com/catalog.json`
+- `https://showcase.ui.le-mn.com/llms.txt`
+- `https://showcase.ui.le-mn.com/llms-full.txt`
 
 Rules:
 
@@ -103,6 +103,8 @@ Useful package commands:
 pnpm --filter @lemn-ltd/ui run build
 pnpm --filter @lemn-ltd/ui run check
 pnpm --filter @lemn-ltd/ui run test
+pnpm validate:identity
+pnpm validate:domains
 pnpm validate:package-identity
 pnpm validate:brand-neutrality
 pnpm validate:boundaries
@@ -132,17 +134,10 @@ pnpm validate:boundaries
 7. Update each consuming repo to the newly published version and regenerate its
    lockfile.
 
-The current Lemn DEV credential does not expose the `lemn.ai` zone. The active
-`ui.lemn.ai` and `showcase.ui.lemn.ai` domains were deployed from a different
-Cloudflare account. Release therefore fails closed during preflight, before a
-version commit, push, or package publish, until zone ownership/access is
-resolved explicitly. Do not change account IDs or domain ownership merely to
-bypass this gate.
-
 ## Documentation
 
 - [Package usage guide](packages/ui/README.md)
 - [Agent-facing component guide](packages/ui/docs/README.md)
 - [Contribution rules](CONTRIBUTING.md)
-- [Human docs](https://ui.lemn.ai)
-- [Interactive showcase](https://showcase.ui.lemn.ai)
+- [Human docs](https://ui.le-mn.com)
+- [Interactive showcase](https://showcase.ui.le-mn.com)

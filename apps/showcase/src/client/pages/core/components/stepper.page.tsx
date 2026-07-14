@@ -1,4 +1,4 @@
-import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
+import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@lemn-ltd/showcase-kit';
 import { Stepper, type StepStatus } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 import { steps } from '../../../fixtures';

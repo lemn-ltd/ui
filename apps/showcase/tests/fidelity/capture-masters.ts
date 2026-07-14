@@ -12,7 +12,7 @@
  * Capture MUST run against the canonical `packages/ui/design/ui.pen`. Until the
  * manifest's `capturedAgainstPatchedPen` flag is set, Lane A stays BLOCKED.
  *
- * Run: `pnpm --filter @appranks/ui-showcase run fidelity:capture-masters`
+ * Run: `pnpm --filter @lemn-ltd/ui-showcase run fidelity:capture-masters`
  */
 import { createHash } from 'node:crypto';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';

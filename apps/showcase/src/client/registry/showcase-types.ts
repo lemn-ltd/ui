@@ -1,4 +1,4 @@
-import type { ShowcaseEntry as KitShowcaseEntry } from '@appranks/showcase-kit';
+import type { ShowcaseEntry as KitShowcaseEntry } from '@lemn-ltd/showcase-kit';
 
 export type ShowcaseGroup =
   | 'Foundations'

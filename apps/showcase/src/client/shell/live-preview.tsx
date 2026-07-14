@@ -1,7 +1,7 @@
 import {
 	ShowcaseEntryProvider,
 	ShowcaseRenderModeProvider,
-} from "@appranks/showcase-kit";
+} from "@lemn-ltd/showcase-kit";
 import {
 	Component,
 	type ErrorInfo,

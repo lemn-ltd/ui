@@ -7,14 +7,18 @@ const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const canonicalPackageName = '@lemn-ltd/ui';
 const canonicalRegistry = 'https://npm.pkg.github.com';
 const canonicalRepositoryUrl = 'https://github.com/lemn-ltd/ui';
-const canonicalDocsHost = 'ui.lemn.ai';
-const canonicalShowcaseHost = 'showcase.ui.lemn.ai';
-const canonicalCatalogTitle = 'LEMN UI Component Catalog';
-const legacyPackageName = ['@appranks', 'ui'].join('/');
+const canonicalDocsHost = 'ui.le-mn.com';
+const canonicalShowcaseHost = 'showcase.ui.le-mn.com';
+const canonicalCatalogTitle = 'Lemn UI Component Catalog';
+const legacyOrganization = ['app', 'ranks'].join('');
+const legacyPackageName = `@${legacyOrganization}/ui`;
 const legacyPackagePattern = new RegExp(`${legacyPackageName}(?![-A-Za-z0-9])`, 'u');
-const legacyRepositoryPattern = /https:\/\/github\.com\/appranks\/ui(?![-A-Za-z0-9])/iu;
+const legacyRepositoryPattern = new RegExp(
+  `https://github\\.com/${legacyOrganization}/ui(?![-A-Za-z0-9])`,
+  'iu',
+);
 const legacyProductDomainPattern = new RegExp(
-  `[A-Za-z0-9.-]*${['appranks', 'com'].join('\\.')}`,
+  `[A-Za-z0-9.-]*${[legacyOrganization, 'com'].join('\\.')}`,
   'iu',
 );
 const canonicalRepositoryFiles = [

@@ -17,11 +17,11 @@ export default defineConfig({
         '../../packages/ui/src/tokens.ts',
       ),
       '@lemn-ltd/ui': path.resolve(import.meta.dirname, '../../packages/ui/src/index.ts'),
-      '@appranks/showcase-kit/styles.css': path.resolve(
+      '@lemn-ltd/showcase-kit/styles.css': path.resolve(
         import.meta.dirname,
         '../../packages/showcase-kit/src/styles.css',
       ),
-      '@appranks/showcase-kit': path.resolve(
+      '@lemn-ltd/showcase-kit': path.resolve(
         import.meta.dirname,
         '../../packages/showcase-kit/src/index.ts',
       ),

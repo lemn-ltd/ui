@@ -1,4 +1,4 @@
-import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
+import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@lemn-ltd/showcase-kit';
 import { InputSelect } from '@lemn-ltd/ui';
 import { type ReactElement, useState } from 'react';
 import { selectOptions } from '../../../fixtures';

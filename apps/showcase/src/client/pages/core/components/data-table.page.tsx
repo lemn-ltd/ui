@@ -1,4 +1,4 @@
-import { ComponentPage, ExampleBlock, PropsTable } from '@appranks/showcase-kit';
+import { ComponentPage, ExampleBlock, PropsTable } from '@lemn-ltd/showcase-kit';
 import { Button, DataTable, Icon, IconButton, Menu, MenuItem } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 import { columns, rowKey, rows } from '../../../fixtures';

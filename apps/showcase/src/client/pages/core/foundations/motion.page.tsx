@@ -1,4 +1,4 @@
-import { FoundationPage } from '@appranks/showcase-kit';
+import { FoundationPage } from '@lemn-ltd/showcase-kit';
 import { PageSection, ProgressBar, Skeleton, Spinner } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 

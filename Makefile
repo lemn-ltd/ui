@@ -3,13 +3,14 @@ SHELL := /bin/bash
 
 PNPM ?= pnpm
 
-.PHONY: help install dev dev-docs validate-package-identity validate-brand-neutrality validate-boundaries validate-release-preconditions validate check test test-e2e-ui-showcase test-e2e-ui-showcase-shard build pack-ui release-preflight clean
+.PHONY: help install dev dev-docs validate-identity validate-package-identity validate-brand-neutrality validate-boundaries validate-release-preconditions validate check test test-e2e-ui-showcase test-e2e-ui-showcase-shard build pack-ui release-preflight clean
 
 help:
 	@printf 'Useful targets:\n'
 	@printf '  make install                  Install workspace dependencies with the lockfile frozen.\n'
 	@printf '  make dev                      Restart the local UI Showcase at http://localhost:6500.\n'
 	@printf '  make dev-docs                 Start the local docs site at http://localhost:6600.\n'
+	@printf '  make validate-identity        Verify workspace scopes, docs identity, and legacy-name removal.\n'
 	@printf '  make validate-package-identity Verify the canonical package and registry contract.\n'
 	@printf '  make validate-brand-neutrality Scan shared UI and showcase source for product-specific names.\n'
 	@printf '  make validate-boundaries      Scan @lemn-ltd/ui runtime imports for boundary violations.\n'
@@ -33,6 +34,9 @@ dev:
 dev-docs:
 	$(PNPM) dev:docs
 
+validate-identity:
+	$(PNPM) validate:identity
+
 validate-package-identity:
 	$(PNPM) validate:package-identity
 
@@ -55,11 +59,11 @@ test:
 	$(PNPM) test
 
 test-e2e-ui-showcase:
-	$(PNPM) --filter @appranks/ui-showcase run test:e2e
+	$(PNPM) --filter @lemn-ltd/ui-showcase run test:e2e
 
 test-e2e-ui-showcase-shard:
 	@test -n "$(SHARD)" || { printf 'SHARD is required (for example, 1/3).\n' >&2; exit 2; }
-	$(PNPM) --filter @appranks/ui-showcase exec playwright test --shard=$(SHARD)
+	$(PNPM) --filter @lemn-ltd/ui-showcase exec playwright test --shard=$(SHARD)
 
 build:
 	$(PNPM) build

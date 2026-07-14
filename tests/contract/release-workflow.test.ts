@@ -353,7 +353,7 @@ test("the successful validation gate runs complete showcase E2E before release",
 	assert.equal(
 		shard.run,
 		[
-			"pnpm --filter @appranks/ui-showcase exec playwright test --shard=",
+			"pnpm --filter @lemn-ltd/ui-showcase exec playwright test --shard=",
 			expression("matrix.shard"),
 			"/3",
 		].join(""),

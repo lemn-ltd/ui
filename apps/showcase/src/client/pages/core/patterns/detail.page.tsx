@@ -1,4 +1,4 @@
-import { ComponentPage } from '@appranks/showcase-kit';
+import { ComponentPage } from '@lemn-ltd/showcase-kit';
 import { Badge, Button, Card, EntityToolbar, StatsStrip, Tabs } from '@lemn-ltd/ui';
 import { type CSSProperties, type ReactElement, useState } from 'react';
 import { stats, tabs } from '../../../fixtures';

@@ -9,8 +9,8 @@ Light default + Dark + system theming, responsive reflow, and motion.
 - This package owns tokens, theme runtime, motion primitives, and the
   presentational component taxonomy (`primitives`, `forms`, `overlays`,
   `navigation`, `layout`, `data-display`, `feedback`, `agents`).
-- It is a **leaf**: runtime source must not import any `@appranks/*` or
-  `@lemn-ltd/*` sibling, any `@cloudflare/*` / `agents` runtime, or Node core
+- It is a **leaf**: runtime source must not import any `@lemn-ltd/*` sibling,
+  any `@cloudflare/*` / `agents` runtime, or Node core
   APIs. Tests may use Node APIs for fixtures and CSS assertions. Allowed runtime
   externals are `react`,
   `react-dom`, the headless component libraries (`radix-ui`,

@@ -1,4 +1,4 @@
-import { ComponentPage, ExampleBlock, PropsTable } from '@appranks/showcase-kit';
+import { ComponentPage, ExampleBlock, PropsTable } from '@lemn-ltd/showcase-kit';
 import { type DateRange, Filter, type NumberRange } from '@lemn-ltd/ui';
 import { type ReactElement, useState } from 'react';
 import { filters } from '../../../fixtures';

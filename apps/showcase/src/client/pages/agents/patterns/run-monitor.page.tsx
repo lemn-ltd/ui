@@ -1,4 +1,4 @@
-import { ComponentPage } from '@appranks/showcase-kit';
+import { ComponentPage } from '@lemn-ltd/showcase-kit';
 import {
   ApprovalPanel,
   type ApprovalPanelMeta,

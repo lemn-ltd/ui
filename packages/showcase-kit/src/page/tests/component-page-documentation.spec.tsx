@@ -11,8 +11,11 @@ import { PropsTable } from "../../example/props-table.js";
 import { ShowcaseEntryProvider } from "../../registry/entry-context.js";
 import { ComponentPage } from "../component-page.js";
 
-const LEGACY_UI_PACKAGE_PATTERN = /@appranks\/ui(?![-A-Za-z0-9])/u;
-const LEGACY_UI_PACKAGE_NAME = ["@appranks", "ui"].join("/");
+const LEGACY_UI_PACKAGE_NAME = `@${["app", "ranks"].join("")}/ui`;
+const LEGACY_UI_PACKAGE_PATTERN = new RegExp(
+	`${LEGACY_UI_PACKAGE_NAME}(?![-A-Za-z0-9])`,
+	"u",
+);
 
 function CatalogPage(): React.ReactElement {
 	return (

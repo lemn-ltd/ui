@@ -4,7 +4,7 @@ import {
 	DocumentationSection,
 	DocumentationSteps,
 	ExampleBlock,
-} from "@appranks/showcase-kit";
+} from "@lemn-ltd/showcase-kit";
 import { Checkbox, SyntaxCodeBlock } from "@lemn-ltd/ui";
 import { type ReactElement, useState } from "react";
 

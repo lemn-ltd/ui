@@ -11,7 +11,7 @@
  * server running at the configured base URL). Masters that have not been
  * captured yet render as a BLOCKED placeholder.
  *
- * Run: `pnpm --filter @appranks/ui-showcase run fidelity:contact-sheets`
+ * Run: `pnpm --filter @lemn-ltd/ui-showcase run fidelity:contact-sheets`
  */
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, relative, resolve } from 'node:path';

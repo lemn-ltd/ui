@@ -1,4 +1,4 @@
-# @appranks/ui-showcase
+# @lemn-ltd/ui-showcase
 
 `apps/showcase` is a static Cloudflare Worker SPA that renders the whole
 `@lemn-ltd/ui` catalog as a functional docs site. It owns no backend: no D1,
@@ -9,13 +9,13 @@ bindings. It owns only the `ASSETS` binding that serves the Vite client bundle.
 
 | Field | Value |
 | --- | --- |
-| Package | `@appranks/ui-showcase` |
+| Package | `@lemn-ltd/ui-showcase` |
 | Local URL | `http://localhost:6500` |
 | Dev command | `make dev-ui-showcase` |
-| Package dev | `pnpm --filter @appranks/ui-showcase run dev` |
+| Package dev | `pnpm --filter @lemn-ltd/ui-showcase run dev` |
 | Status | `/health`, `/health/ready`, `/_status`, `/_status.json` |
 | Local Explorer | `http://localhost:6500/cdn-cgi/explorer` |
-| Local Explorer API | `pnpm --filter @appranks/ui-showcase run observe:local:explorer-api` |
+| Local Explorer API | `pnpm --filter @lemn-ltd/ui-showcase run observe:local:explorer-api` |
 
 ## Ownership And Boundaries
 
@@ -67,7 +67,7 @@ routes. Local secrets live in the versioned encrypted `.dev.vars`; `.env.keys`
 owns the local `DOTENV_PRIVATE_KEY_VARS` and stays ignored. Start through
 `make dev-ui-showcase` or `pnpm env:with --service ui-showcase -- <command>` so
 `.dev.vars` is decrypted only for the local process and re-encrypted on exit.
-Production uses the `appranks-ui` Worker and `showcase.ui.lemn.ai`.
+Production uses the `lemn-ui-showcase` Worker and `showcase.ui.le-mn.com`.
 
 ## Fidelity
 
@@ -81,11 +81,11 @@ Lane B is the automated regression lane.
 ## Testing And Observability
 
 ```bash
-pnpm --filter @appranks/ui-showcase run check
-pnpm --filter @appranks/ui-showcase run test
-pnpm --filter @appranks/ui-showcase run cf:dry-run
+pnpm --filter @lemn-ltd/ui-showcase run check
+pnpm --filter @lemn-ltd/ui-showcase run test
+pnpm --filter @lemn-ltd/ui-showcase run cf:dry-run
 make test-e2e-ui-showcase
-pnpm --filter @appranks/ui-showcase run observe:production:tail
+pnpm --filter @lemn-ltd/ui-showcase run observe:production:tail
 ```
 
 The worker unit spec covers `/health` 200, SPA asset fallback, and readiness

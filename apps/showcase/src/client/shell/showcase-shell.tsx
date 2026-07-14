@@ -1,4 +1,4 @@
-import { ShowcaseRenderModeProvider } from "@appranks/showcase-kit";
+import { ShowcaseRenderModeProvider } from "@lemn-ltd/showcase-kit";
 import {
 	applyTheme,
 	Brand,

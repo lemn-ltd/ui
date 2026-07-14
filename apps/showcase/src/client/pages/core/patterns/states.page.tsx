@@ -1,4 +1,4 @@
-import { ComponentPage } from '@appranks/showcase-kit';
+import { ComponentPage } from '@lemn-ltd/showcase-kit';
 import { Button, EmptyState, InfoBanner, Skeleton } from '@lemn-ltd/ui';
 import type { CSSProperties, ReactElement, ReactNode } from 'react';
 

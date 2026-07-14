@@ -1,4 +1,4 @@
-import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@appranks/showcase-kit';
+import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@lemn-ltd/showcase-kit';
 import {
   AGENT_ACTIVITY_LINE_STATES,
   AgentActivityLine,

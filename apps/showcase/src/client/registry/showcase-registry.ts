@@ -1,4 +1,4 @@
-import { buildNavGroups, pathFor } from '@appranks/showcase-kit';
+import { buildNavGroups, pathFor } from '@lemn-ltd/showcase-kit';
 import { agentsEntries } from './entries/agents.js';
 import { agentPatternsEntries } from './entries/agent-patterns.js';
 import { dataDisplayEntries } from './entries/data-display.js';

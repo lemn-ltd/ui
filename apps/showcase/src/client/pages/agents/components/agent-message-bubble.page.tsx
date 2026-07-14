@@ -1,4 +1,4 @@
-import { ComponentPage, ExampleBlock, PropsTable } from '@appranks/showcase-kit';
+import { ComponentPage, ExampleBlock, PropsTable } from '@lemn-ltd/showcase-kit';
 import { AgentMessageBubble, Badge, Card, CodeBlock } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 

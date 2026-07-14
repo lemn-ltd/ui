@@ -1,4 +1,4 @@
-import { FoundationPage } from '@appranks/showcase-kit';
+import { FoundationPage } from '@lemn-ltd/showcase-kit';
 import type { ReactElement } from 'react';
 
 const LEVELS = [

@@ -5,7 +5,7 @@ import {
   ExampleBlock,
   PropsTable,
   VariantsGallery,
-} from '@appranks/showcase-kit';
+} from '@lemn-ltd/showcase-kit';
 import { FilterPill } from '@lemn-ltd/ui';
 import { type ReactElement, useState } from 'react';
 

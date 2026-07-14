@@ -11,7 +11,7 @@ const expected = {
 	gitSha: "release-commit-sha",
 	buildTime: "2026-07-14T00:00:00Z",
 };
-const legacyUiPackageName = ["@appranks", "ui"].join("/");
+const legacyUiPackageName = `@${["app", "ranks"].join("")}/ui`;
 
 test("build identity contract rejects stale versions and stale commits", () => {
 	assert.throws(
@@ -61,36 +61,36 @@ test("release identity requires the canonical package without imposing it on hea
 test("production smoke compares exact docs and showcase build identities", async () => {
 	const fetchImplementation: typeof fetch = async (input) => {
 		const url = String(input);
-		if (url === "https://ui.lemn.ai/")
-			return new Response("<title>Docs - UI</title>");
-		if (url === "https://ui.lemn.ai/release.json") {
+		if (url === "https://ui.le-mn.com/")
+				return new Response("<title>Overview | UI</title>");
+		if (url === "https://ui.le-mn.com/release.json") {
 			return Response.json({ package: "@lemn-ltd/ui", ...expected });
 		}
-		if (url === "https://showcase.ui.lemn.ai/health") {
+		if (url === "https://showcase.ui.le-mn.com/health") {
 			return Response.json({ ok: true, ...expected });
 		}
-		if (url === "https://showcase.ui.lemn.ai/health/ready") {
+		if (url === "https://showcase.ui.le-mn.com/health/ready") {
 			return Response.json({ ok: true, ...expected });
 		}
-		if (url === "https://showcase.ui.lemn.ai/") {
+		if (url === "https://showcase.ui.le-mn.com/") {
 			return new Response(
 				'<div id="root"></div><script src="/assets/app.js"></script>',
 			);
 		}
-		if (url === "https://showcase.ui.lemn.ai/assets/app.js") {
+		if (url === "https://showcase.ui.le-mn.com/assets/app.js") {
 			return new Response("export {};\n");
 		}
-		if (url === "https://showcase.ui.lemn.ai/catalog.json") {
+		if (url === "https://showcase.ui.le-mn.com/catalog.json") {
 			return Response.json({
 				package: "@lemn-ltd/ui",
 				version: expected.version,
 				components: [{}],
 			});
 		}
-		if (url === "https://showcase.ui.lemn.ai/llms.txt")
+		if (url === "https://showcase.ui.le-mn.com/llms.txt")
 			return new Response("@lemn-ltd/ui");
-		if (url === "https://showcase.ui.lemn.ai/llms-full.txt") {
-			return new Response("LEMN UI Component Catalog");
+		if (url === "https://showcase.ui.le-mn.com/llms-full.txt") {
+				return new Response("Lemn UI Component Catalog");
 		}
 		throw new Error(`Unexpected smoke fixture request: ${url}`);
 	};

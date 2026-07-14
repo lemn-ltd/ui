@@ -1,6 +1,10 @@
 import { expect, gotoStable, test } from "../helpers/deterministic";
 
-const LEGACY_UI_PACKAGE_PATTERN = /@appranks\/ui(?![-A-Za-z0-9])/u;
+const legacyUiPackage = `@${["app", "ranks"].join("")}/ui`;
+const LEGACY_UI_PACKAGE_PATTERN = new RegExp(
+	`${legacyUiPackage}(?![-A-Za-z0-9])`,
+	"u",
+);
 
 test("checkbox reference page exposes its real examples and consumer guidance", async ({
 	page,

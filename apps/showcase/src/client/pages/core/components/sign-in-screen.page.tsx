@@ -1,4 +1,4 @@
-import { ComponentPage, ExampleBlock, PropsTable } from '@appranks/showcase-kit';
+import { ComponentPage, ExampleBlock, PropsTable } from '@lemn-ltd/showcase-kit';
 import { Button, Field, InfoBanner, Input, SignInScreen } from '@lemn-ltd/ui';
 import type { CSSProperties, ReactElement } from 'react';
 

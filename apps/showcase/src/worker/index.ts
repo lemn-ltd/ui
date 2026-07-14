@@ -104,14 +104,14 @@ function catalogResponse(env: UiShowcaseEnv): Response {
 function llmsResponse(): Response {
 	return new Response(
 		[
-			"# LEMN UI",
+			"# Lemn UI",
 			"",
 			"Use @lemn-ltd/ui as the official company design-system package.",
 			"Import components only from the public package surface.",
 			"",
 			"Catalog:",
-			"- JSON: https://showcase.ui.lemn.ai/catalog.json",
-			"- Full agent guide: https://showcase.ui.lemn.ai/llms-full.txt",
+			"- JSON: https://showcase.ui.le-mn.com/catalog.json",
+			"- Full agent guide: https://showcase.ui.le-mn.com/llms-full.txt",
 			"",
 			"Rules:",
 			"- Prefer existing catalog components before creating UI.",
@@ -135,7 +135,7 @@ function llmsFullResponse(): Response {
 	]);
 
 	return new Response(
-		["# LEMN UI Component Catalog", "", ...lines].join("\n"),
+		["# Lemn UI Component Catalog", "", ...lines].join("\n"),
 		{
 			headers: { "content-type": "text/plain; charset=utf-8" },
 		},

@@ -4,7 +4,7 @@ import {
   PropsTable,
   useShowcaseRenderMode,
   VariantsGallery,
-} from '@appranks/showcase-kit';
+} from '@lemn-ltd/showcase-kit';
 import { Button, dismissToasts, notify, Toast, Toaster, type ToasterPosition } from '@lemn-ltd/ui';
 import type { ReactElement } from 'react';
 import { toastStack, toasts } from '../../../fixtures';

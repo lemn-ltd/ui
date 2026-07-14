@@ -1,6 +1,6 @@
 {
   "$schema": "../../node_modules/wrangler/config-schema.json",
-  "name": "appranks-ui-docs",
+  "name": "lemn-ui-docs",
   "account_id": "71da6f8791d79c8abe7beea6f03d0162",
   "compatibility_date": "2026-06-24",
   "workers_dev": true,
@@ -11,7 +11,7 @@
   },
   "routes": [
     {
-      "pattern": "ui.lemn.ai",
+      "pattern": "ui.le-mn.com",
       "custom_domain": true,
     },
   ],

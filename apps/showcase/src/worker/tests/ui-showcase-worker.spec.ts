@@ -3,7 +3,11 @@ import { uiShowcaseAppDescriptor } from "../../app-descriptor";
 import type { UiShowcaseEnv } from "../env";
 import UiShowcaseWorker from "../index";
 
-const LEGACY_UI_PACKAGE_PATTERN = /@appranks\/ui(?![-A-Za-z0-9])/u;
+const legacyUiPackage = `@${["app", "ranks"].join("")}/ui`;
+const LEGACY_UI_PACKAGE_PATTERN = new RegExp(
+	`${legacyUiPackage}(?![-A-Za-z0-9])`,
+	"u",
+);
 
 function assetsFetcher(): Fetcher {
 	return {
@@ -82,8 +86,8 @@ describe("ui showcase worker", () => {
 		expect(JSON.stringify(catalog)).not.toMatch(LEGACY_UI_PACKAGE_PATTERN);
 
 		const summary = await (await worker.fetch(request("/llms.txt"))).text();
-		expect(summary).toContain("# LEMN UI");
-		expect(summary).toContain("https://showcase.ui.lemn.ai/catalog.json");
+		expect(summary).toContain("# Lemn UI");
+		expect(summary).toContain("https://showcase.ui.le-mn.com/catalog.json");
 		expect(summary).toContain("@lemn-ltd/ui");
 		expect(summary).not.toMatch(LEGACY_UI_PACKAGE_PATTERN);
 

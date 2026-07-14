@@ -30,11 +30,11 @@ forced into `@lemn-ltd/ui`.
 
 Options:
 
-- `@appranks/app-runtime`: application state, local status, cross-app bootstrap.
-- `@appranks/baked-data-client`: common baked-data client if the contract is
+- `@lemn-ltd/app-runtime`: application state, local status, cross-app bootstrap.
+- `@lemn-ltd/baked-data-client`: common baked-data client if the contract is
   stable.
-- `@appranks/frontend-observability`: Web Vitals, route transitions, error reporting.
-- `@appranks/worker-bff`: BFF helpers if several Workers share conventions.
+- `@lemn-ltd/frontend-observability`: Web Vitals, route transitions, error reporting.
+- `@lemn-ltd/worker-bff`: BFF helpers if several Workers share conventions.
 
 ## Migration Rule
 

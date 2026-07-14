@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-const DOCS_ORIGIN = "https://ui.lemn.ai";
-const SHOWCASE_ORIGIN = "https://showcase.ui.lemn.ai";
+const DOCS_ORIGIN = "https://ui.le-mn.com";
+const SHOWCASE_ORIGIN = "https://showcase.ui.le-mn.com";
 const UI_PACKAGE_NAME = "@lemn-ltd/ui";
 
 interface BuildIdentity {
@@ -101,10 +101,7 @@ export async function smokeProductionDeployment(input: {
 		const text = await (
 			await fetchResponse(`${DOCS_ORIGIN}/`, fetchImplementation)
 		).text();
-		assert(
-			text.includes("Docs - UI"),
-			"docs home is missing its canonical title",
-		);
+		assert(text.includes("Overview | UI"), "docs home is missing its canonical title");
 	});
 	await retry("docs-release", async () => {
 		const payload = await (
@@ -183,7 +180,7 @@ export async function smokeProductionDeployment(input: {
 			)
 		).text();
 		assert(
-			text.includes("LEMN UI Component Catalog"),
+			text.includes("Lemn UI Component Catalog"),
 			"llms-full.txt has the wrong catalog title",
 		);
 	});

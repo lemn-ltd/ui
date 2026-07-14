@@ -1,6 +1,6 @@
 # Pattern Profile
 
-Project-specific required domains and target levels for Appranks UI.
+Project-specific required domains and target levels for Lemn UI.
 
 Source system: `patterns/pattern-system.md`
 Pattern catalog: `patterns/patterns.md`
@@ -8,17 +8,17 @@ Derived audit-state projection: `patterns/pattern-audit.md`
 
 ## Inventory Basis
 
-This profile is based on the Appranks UI repository inventory as of
+This profile is based on the Lemn UI repository inventory as of
 2026-07-14.
 
-Appranks UI is not a product backend or the full AgentOps control plane. It is
-the shared graphical UI system and release workspace for Appranks products,
+Lemn UI is not a product backend or the full AgentOps control plane. It is
+the shared graphical UI system and release workspace for LEMN products,
 with:
 
 - a Node.js 22+, pnpm, and Turborepo workspace
 - the published `@lemn-ltd/ui` React package, including components, design
   tokens, styles, catalog metadata, package docs, and public exports
-- the internal `@appranks/showcase-kit` package for reusable showcase chrome
+- the internal `@lemn-ltd/showcase-kit` package for reusable showcase chrome
 - a React/Vite showcase deployed as a Cloudflare Worker SPA
 - an Astro/Starlight documentation site deployed through Cloudflare
 - Vitest, React Testing Library, Playwright, axe, and fidelity-capture coverage
