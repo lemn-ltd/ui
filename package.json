@@ -1,6 +1,7 @@
 {
   "name": "lemn-ui-workspace",
   "private": true,
+  "type": "module",
   "packageManager": "pnpm@11.8.0",
   "engines": {
     "node": ">=22"
@@ -9,10 +10,16 @@
     "build": "turbo run build",
     "check": "turbo run check",
     "test": "turbo run test",
-    "validate": "pnpm validate:identity && pnpm validate:domains && pnpm validate:brand-neutrality && pnpm validate:boundaries && pnpm validate:bundles && pnpm validate:release",
+    "visual:update:linux": "node scripts/test/update-linux-visual-snapshots.mjs",
+    "validate": "pnpm validate:agentops && pnpm validate:identity && pnpm validate:domains && pnpm validate:package-identity && pnpm validate:brand-neutrality && pnpm validate:boundaries && pnpm validate:bundles && pnpm validate:release && pnpm validate:release-contracts",
+    "validate:agentops": "node scripts/check-agentops-managed-files.mjs",
     "validate:identity": "node scripts/check-repository-identity.mjs",
     "validate:domains": "node scripts/check-public-domains.mjs",
+    "validate:package-identity": "node scripts/check-package-identity.mjs",
     "validate:release": "node scripts/sync-docs-changelog.mjs --check",
+    "validate:release-contracts": "node --test tests/contract/*.test.ts",
+    "validate:release-hosts": "node scripts/check-release-hosts.mjs",
+    "validate:release-preconditions": "pnpm validate && pnpm validate:release-hosts",
     "validate:bundles": "node scripts/check-ui-bundles.mjs",
     "validate:brand-neutrality": "node scripts/check-brand-neutrality.mjs",
     "validate:boundaries": "node scripts/check-ui-boundaries.mjs && pnpm --dir packages/ui run validate:boundaries",
@@ -22,12 +29,27 @@
     "kill:showcase": "pnpm --filter @lemn-ltd/ui-showcase run kill",
     "build:docs": "pnpm --filter @lemn-ltd/ui-docs run build",
     "check:docs": "pnpm --filter @lemn-ltd/ui-docs run check",
-    "deploy:docs": "pnpm --filter @lemn-ltd/ui-docs run deploy:production",
-    "deploy:showcase": "pnpm --filter @lemn-ltd/ui-showcase run deploy:production",
-    "publish:ui": "pnpm --filter @lemn-ltd/ui publish --access restricted --no-git-checks",
-    "changeset": "changeset",
-    "version:packages": "changeset version && pnpm sync:docs-changelog",
-    "release": "pnpm build && pnpm publish:ui"
+    "deploy:docs": "pnpm deploy:docs:prod",
+    "deploy:showcase": "pnpm deploy:showcase:prod",
+    "deploy:docs:prod": "pnpm guard:release:mutation && test -n \"$PUBLIC_BUILD_VERSION\" && test -n \"$PUBLIC_BUILD_GIT_SHA\" && test -n \"$PUBLIC_BUILD_TIME\" && pnpm --filter @lemn-ltd/ui-docs run build && pnpm --dir apps/docs exec wrangler deploy --config wrangler.jsonc",
+    "deploy:showcase:prod": "pnpm guard:release:mutation && node scripts/release/showcase-production-rollout.ts",
+    "rollout:showcase:prod": "pnpm guard:release:mutation && node scripts/release/showcase-production-rollout.ts",
+    "pack:ui": "pnpm validate:package-identity && node scripts/smoke-package-tarball.mjs",
+    "preflight:cloudflare:release": "node scripts/release/cloudflare-preflight.ts",
+    "guard:release:mutation": "node scripts/release/release-mutation-guard.ts",
+    "release:preflight": "pnpm guard:release:mutation && pnpm validate:release-preconditions",
+    "publish:ui:verify": "pnpm guard:release:mutation && node scripts/release/verify-ui-dist.mjs && pnpm pack:ui",
+    "publish:ui": "pnpm guard:release:mutation && pnpm --filter @lemn-ltd/ui run build && pnpm --filter @lemn-ltd/ui publish --access restricted --no-git-checks",
+    "publish:ui:release": "pnpm guard:release:mutation && node scripts/release/publish-ui-release.ts",
+    "prepare:ui:release": "pnpm guard:release:mutation && node scripts/release/prepare-ui-release.ts",
+    "smoke:showcase:local": "CLOUDFLARE_ENV=production pnpm --filter @lemn-ltd/ui-showcase run cf:build && node scripts/release/showcase-assets-smoke.ts",
+    "smoke:cloudflare:release": "node scripts/release/cloudflare-preflight.ts --require-resources",
+    "smoke:release:production": "node scripts/release/deployment-smoke.ts",
+    "changeset": "node scripts/release/changeset-command.ts",
+    "changeset:add": "pnpm changeset add",
+    "changeset:status": "pnpm changeset status",
+    "version:packages": "pnpm changeset version && pnpm sync:docs-changelog",
+    "release": "pnpm release:preflight && pnpm check && pnpm test && pnpm publish:ui:release"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.7",
@@ -36,9 +58,11 @@
     "@vitejs/plugin-react": "6.0.1",
     "@vitest/coverage-v8": "catalog:",
     "happy-dom": "20.9.0",
+    "jsonc-parser": "3.3.1",
     "turbo": "catalog:",
     "typescript": "catalog:",
     "vite": "8.0.16",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "yaml": "2.9.0"
   }
 }

@@ -19,17 +19,35 @@ release. La automatizacion convierte los changesets mergeados en un commit de
 metadata de release que actualiza `packages/ui/package.json` y
 `packages/ui/CHANGELOG.md`.
 
-CI publica el paquete cuando la version generada todavia no existe y el
-owner/token del registry puede publicar el package scope. Si GitHub Packages no
-esta alineado con el scope del paquete, CI registra un warning y aun asi
-despliega docs mas showcase.
+Todas las operaciones de Changesets usan el wrapper catalogado
+`pnpm changeset ...`. El wrapper protege `version` antes de cualquier mutacion.
+`pnpm exec changeset version` invoca el binario de la dependencia fuera de la
+gobernanza de package scripts y no es una ruta de release soportada.
+
+El workflow de produccion completa el preflight no mutante del API token de
+cuenta de Cloudflare con scope limitado antes de que Changesets pueda versionar,
+pushear o publicar. El token solo tiene `Workers Scripts: Edit` sobre Account
+`Lemn DEV` y `Zone: Read` sobre Zone `le-mn.com`. Luego captura el SHA del commit
+de release y despliega ese SHA y version exactos. El mismo guard exclusivo de
+`main` protege los entrypoints CLI directos, por lo que las credenciales en un
+feature checkout no autorizan versionado, publicacion ni deploy.
+
+CI publica el paquete solo cuando una lista autenticada de GitHub Packages omite
+la version generada exacta y el package scope coincide con el owner del
+repositorio. Un estado de registry no verificable falla cerrado antes de la
+publicacion.
 
 ## Comandos
 
 ```bash
-pnpm changeset
+pnpm changeset:add
 pnpm version:packages
 pnpm release
 ```
+
+Ejecuta comandos mutantes de produccion solo desde `main`. `pnpm publish:ui`
+builda el paquete y `prepublishOnly` exige todos los exports y completa el smoke
+estricto del tarball instalado, TypeScript y Vite antes de que npm pueda
+publicar metadata inmutable.
 
 Usa prereleases solo para rollouts staged explicitos.

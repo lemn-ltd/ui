@@ -1,8 +1,8 @@
+import { WorkerEntrypoint } from "cloudflare:workers";
 import {
 	componentCatalog,
 	componentExportsFromSlug,
 } from "@lemn-ltd/ui/catalog";
-import { WorkerEntrypoint } from "cloudflare:workers";
 import type { UiShowcaseEnv } from "./env";
 import { buildStatusReport, validateUiShowcaseEnv } from "./service-descriptor";
 
@@ -51,6 +51,7 @@ function healthResponse(env: UiShowcaseEnv): Response {
 		environment: env.DEPLOYMENT_ENVIRONMENT ?? "local",
 		version: env.BUILD_VERSION ?? "0.0.0",
 		gitSha: env.BUILD_GIT_SHA ?? "local",
+		buildTime: env.BUILD_TIME ?? "local",
 	});
 }
 
@@ -61,6 +62,9 @@ function readyResponse(env: UiShowcaseEnv): Response {
 			ok: validation.ready,
 			service: "ui-showcase",
 			environment: env.DEPLOYMENT_ENVIRONMENT ?? "local",
+			version: env.BUILD_VERSION ?? "0.0.0",
+			gitSha: env.BUILD_GIT_SHA ?? "local",
+			buildTime: env.BUILD_TIME ?? "local",
 			missingBindings: validation.missingBindings,
 			missingConfiguration: validation.missingConfiguration,
 		},
@@ -68,24 +72,49 @@ function readyResponse(env: UiShowcaseEnv): Response {
 	);
 }
 
-function protectedStatusResponse(
+async function protectedStatusResponse(
 	request: Request,
 	env: UiShowcaseEnv,
-): Response {
-	if (!isAuthorized(request, env)) {
+): Promise<Response> {
+	if (!(await isAuthorized(request, env))) {
 		return Response.json({ error: "unauthorized" }, { status: 401 });
 	}
 
 	return Response.json(buildStatusReport(env));
 }
 
-function isAuthorized(request: Request, env: UiShowcaseEnv): boolean {
+async function isAuthorized(
+	request: Request,
+	env: UiShowcaseEnv,
+): Promise<boolean> {
 	if (!env.STATUS_TOKEN) return env.DEPLOYMENT_ENVIRONMENT !== "production";
 
 	const authorization = request.headers.get("authorization");
-	if (authorization === `Bearer ${env.STATUS_TOKEN}`) return true;
+	const match = authorization?.match(/^Bearer ([^\s]+)$/u);
+	if (!match?.[1]) return false;
 
-	return new URL(request.url).searchParams.get("token") === env.STATUS_TOKEN;
+	return secureTokenEquals(match[1], env.STATUS_TOKEN);
+}
+
+async function secureTokenEquals(
+	candidate: string,
+	expected: string,
+): Promise<boolean> {
+	const encoder = new TextEncoder();
+	const [candidateDigest, expectedDigest] = await Promise.all([
+		crypto.subtle.digest("SHA-256", encoder.encode(candidate)),
+		crypto.subtle.digest("SHA-256", encoder.encode(expected)),
+	]);
+	const candidateBytes = new DataView(candidateDigest);
+	const expectedBytes = new DataView(expectedDigest);
+	let difference = candidateBytes.byteLength ^ expectedBytes.byteLength;
+
+	for (let index = 0; index < candidateBytes.byteLength; index += 1) {
+		difference |=
+			candidateBytes.getUint8(index) ^ expectedBytes.getUint8(index);
+	}
+
+	return difference === 0;
 }
 
 function catalogResponse(env: UiShowcaseEnv): Response {

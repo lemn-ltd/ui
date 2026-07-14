@@ -3,7 +3,8 @@
 `apps/showcase` is a static Cloudflare Worker SPA that renders the whole
 `@lemn-ltd/ui` catalog as a functional docs site. It owns no backend: no D1,
 PostgreSQL, Hyperdrive, R2, KV, Durable Objects, Queues, Workflows, or service
-bindings. It owns only the `ASSETS` binding that serves the Vite client bundle.
+bindings. Its only non-secret platform binding is `ASSETS`, which serves the
+Vite client bundle; production also binds the protected-route `STATUS_TOKEN`.
 
 ## Local Cloudflare Surface
 
@@ -13,7 +14,7 @@ bindings. It owns only the `ASSETS` binding that serves the Vite client bundle.
 | Local URL | `http://localhost:6500` |
 | Dev command | `make dev-ui-showcase` |
 | Package dev | `pnpm --filter @lemn-ltd/ui-showcase run dev` |
-| Status | `/health`, `/health/ready`, `/_status`, `/_status.json` |
+| Status | `/health`, `/health/ready`, `/_status`, `/_status.json`, `/health/deep` |
 | Local Explorer | `http://localhost:6500/cdn-cgi/explorer` |
 | Local Explorer API | `pnpm --filter @lemn-ltd/ui-showcase run observe:local:explorer-api` |
 
@@ -37,11 +38,15 @@ bindings. It owns only the `ASSETS` binding that serves the Vite client bundle.
 
 ## Runtime Bindings
 
-- `ASSETS` - serves the Vite client bundle. This is the only binding.
+- `ASSETS` serves the Vite client bundle and is the only non-secret platform binding.
+- `STATUS_TOKEN` is a required production secret binding used only by the three
+  protected status routes. Build identity uses versioned Worker vars.
 
 ## Service Graph
 
-Inbound consumers: none.
+Inbound consumers: none. Confirmed on 2026-07-14 by an exhaustive search of 79
+local repositories/worktrees, 14 GitHub repositories, LaunchAgents and running
+processes, and both Monitor D1 databases.
 
 Outbound service dependencies: none.
 
@@ -61,13 +66,20 @@ entries.
 
 ## Environment
 
-`DEPLOYMENT_ENVIRONMENT` selects local, staging, production, or test.
-`STATUS_TOKEN` is optional locally and required in staging for deep status
-routes. Local secrets live in the versioned encrypted `.dev.vars`; `.env.keys`
-owns the local `DOTENV_PRIVATE_KEY_VARS` and stays ignored. Start through
-`make dev-ui-showcase` or `pnpm env:with --service ui-showcase -- <command>` so
+`DEPLOYMENT_ENVIRONMENT` selects local, production, or test. `STATUS_TOKEN` is
+optional outside production and mandatory in production. `/_status`,
+`/_status.json`, and `/health/deep` accept only an exact `Authorization: Bearer
+<token>` header; query-parameter authentication is not supported. Local secrets
+live in the versioned encrypted `.dev.vars`; `.env.keys` owns the local
+`DOTENV_PRIVATE_KEY_VARS` and stays ignored. Start through `make
+dev-ui-showcase` or `pnpm env:with --service ui-showcase -- <command>` so
 `.dev.vars` is decrypted only for the local process and re-encrypted on exit.
-Production uses the `lemn-ui` Worker and `showcase.ui.le-mn.com`.
+Production uses the `lemn-ui-showcase` Worker and `showcase.ui.le-mn.com`.
+Production release uploads code, assets, build identity, and the new token as one
+inactive version. CI leases that candidate at 0% traffic, smokes it through a
+Cloudflare version override, verifies the unchanged lease, and only then moves
+traffic to it. Release-tagged candidate metadata preserves the baseline version
+and identity so interrupted runs resume without repeating secret mutation.
 
 ## Fidelity
 
@@ -89,5 +101,18 @@ pnpm --filter @lemn-ltd/ui-showcase run observe:production:tail
 ```
 
 The worker unit spec covers `/health` 200, SPA asset fallback, and readiness
-503 when `ASSETS` is missing. `make test-e2e-ui-showcase` runs the standalone
-Playwright lane for behavior, visual baselines, and axe.
+503 when `ASSETS` is missing. `make test-e2e-ui-showcase` is the canonical
+complete Playwright lane for behavior, visual baselines, and axe. It starts and
+cleans up its own strict-port server isolated by checkout; it never reuses the
+development server on port 6500 or a server from another worktree.
+
+Visual assertions keep paired Darwin and Linux baselines at the unchanged 1%
+pixel threshold. Regenerate the Linux side reproducibly with the pinned
+Playwright container. The generator archives the immutable Git index, rejects
+unstaged or untracked source, and replaces existing Linux images only after all
+90 outputs have exact filename parity with Darwin. Stage the intended source
+tree before running it:
+
+```bash
+pnpm visual:update:linux
+```

@@ -25,24 +25,34 @@ import {
 	orgs,
 } from "../../../fixtures";
 
-// Each mode renders inside a fixed-height bordered frame so the shell-scale
-// component reads as a preview rather than taking over the page.
+// Each mode renders inside a stable bordered frame so the shell-scale
+// component reads as a preview rather than taking over the page. Only the
+// canonical visual target expands to show every navigation and footer item.
 function Frame({
 	width,
 	children,
+	visualTarget = false,
 }: {
 	readonly width: number;
 	readonly children: ReactNode;
+	readonly visualTarget?: boolean;
 }): ReactElement {
 	const style: CSSProperties = {
 		width,
-		height: 420,
+		height: visualTarget ? 1000 : 420,
 		border: "1px solid var(--border)",
 		borderRadius: "var(--radius-lg)",
 		overflow: "hidden",
 		display: "flex",
 	};
-	return <div style={style}>{children}</div>;
+	return (
+		<div
+			data-testid={visualTarget ? "sidebar-visual-target" : undefined}
+			style={style}
+		>
+			{children}
+		</div>
+	);
 }
 
 function userRow(collapsed: boolean): ReactElement {
@@ -84,7 +94,7 @@ function SidebarPage(): ReactElement {
   versionTag={<VersionTag version="v1.4.0" env="local" />}
 />`}
 				render={() => (
-					<Frame width={264}>
+					<Frame visualTarget width={264}>
 						<Sidebar
 							groups={navGroups}
 							mode="expanded"

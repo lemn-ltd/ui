@@ -29,6 +29,12 @@
 	gap: var(--space-3);
 }
 
+.showcase-embedded-preview {
+	min-height: 100vh;
+	background: var(--surface2);
+	color: var(--text);
+}
+
 /* Documentation navigation: quiet section headings and indented text rows. */
 #root
 	> .ui-screen-shell

@@ -14,21 +14,134 @@ The production deployment has two public domains:
 CI validates pull requests with typecheck, tests, build, release metadata, and
 changeset status. Pushes to `main` run the release workflow:
 
-1. If changesets are pending, create a release metadata commit with the SemVer bump and changelog.
-2. Publish any unpublished `@lemn-ltd/ui` version when the registry owner/token can publish the package scope.
-3. Deploy docs to `ui.le-mn.com`.
-4. Deploy showcase to `showcase.ui.le-mn.com`.
-5. Smoke public docs and showcase endpoints.
+1. Validate that the scoped Cloudflare account API token is active for the configured account, can read the required zone, and can inspect the target Workers and custom-domain mappings without mutating Cloudflare.
+2. Fetch protected `main`. A stale rerun may resume only the unique release
+   commit carrying its `Release-Origin` trailer; otherwise it stops instead of
+   creating a sibling or attempting a non-fast-forward push.
+3. If changesets remain, create and push one fast-forward release commit. The
+   package version, full commit SHA, commit timestamp, and resulting release ID
+   are immutable inputs for every later retry.
+4. Pack the exact package and calculate its `sha512` integrity. Publish only when
+   the version is absent. When it already exists, require registry package,
+   version, and immutable tarball integrity to match before resuming.
+5. Deploy docs with the immutable release identity.
+6. Upload showcase code, assets, build identity, and `PRODUCTION_STATUS_TOKEN`
+   together as an inactive, release-tagged Worker version. Its metadata durably
+   records the baseline version, baseline build identity, and token role.
+7. Create a zero-traffic lease (`baseline=100%`, `candidate=0%`), smoke the
+   candidate through Cloudflare version override, re-check the unchanged lease,
+   and then activate that exact candidate at 100%.
+8. Smoke the active deployment. A normal failure restores and verifies the
+   captured baseline; interruption leaves the inactive, leased, or pre-smoked
+   active state discoverable by release ID for the next retry.
 
-With GitHub Packages, `GITHUB_TOKEN` can publish package scopes owned by the
-repository owner. If the package scope is owned elsewhere, CI records a publish
-warning and continues the docs/showcase deployment; configure a dedicated
-registry token or align the package scope before publishing.
+CI checks the authenticated GitHub Packages version list before publishing and
+the npm registry metadata after publishing. Only a successful lookup that omits
+the exact version permits publication. A present version is never republished:
+its `dist.integrity` must equal the locally packed `sha512` or the release fails
+closed. Authentication, authorization, lookup, network, or identity failures
+are not treated as an unpublished version.
 
-Required secrets and variables:
+The `Release And Deploy` job is the only job that can resolve production
+credentials. It uses the `production` GitHub Environment, which requires the
+`angelllemn` reviewer and permits deployments only from the `main` branch.
 
-- `CLOUDFLARE_API_KEY` (Cloudflare Global API Key)
-- `CLOUDFLARE_EMAIL`
-- `CLOUDFLARE_ACCOUNT_ID` (GitHub Actions variable for the Lemn DEV account)
-- `STATUS_TOKEN`
-- `GITHUB_TOKEN` from GitHub Actions
+The only custom secret names in the `production` Environment are:
+
+- `PRODUCTION_CLOUDFLARE_API_TOKEN` containing an account-owned API token
+- `PRODUCTION_STATUS_TOKEN`
+
+`GITHUB_TOKEN` is supplied by GitHub Actions and is not a configured Environment
+secret. The distinct `PRODUCTION_*` names make a missing Environment secret fail
+closed instead of silently resolving a repository credential.
+
+Create the Cloudflare token with exactly these resource grants:
+
+- Account resource: include only `Lemn DEV`; permission `Workers Scripts: Edit`.
+- Zone resource: include only `le-mn.com`; permission `Zone: Read`.
+
+The token is used as `CLOUDFLARE_API_TOKEN`. The release preflight rejects a
+missing, disabled, expired, or legacy key/email authentication mode. `Workers
+Scripts: Edit` (called `Workers Scripts Write` by the API) covers Worker uploads,
+versions, deployments, secrets, and custom domains for this release; `Zone:
+Read` is used only by the non-mutating zone scope check. Do not add user-level,
+account-settings, KV, R2, Workers Routes, or broader account/zone grants.
+
+## Status Token Rotation And Rollback
+
+The showcase has no inbound status consumers. This was confirmed on 2026-07-14
+by searching 79 local repositories/worktrees, 14 GitHub repositories,
+LaunchAgents and running processes, and both Monitor D1 databases. `STATUS_TOKEN`
+is mandatory in production; there is no staging deployment.
+
+Rotate the GitHub Environment value without exposing it to the shell history,
+filesystem, logs, or command arguments:
+
+```bash
+openssl rand -hex 32 | gh secret set PRODUCTION_STATUS_TOKEN --env production --repo lemn-ltd/ui
+```
+
+The approved `main` workflow then performs this exact order:
+
+1. Read `wrangler deployments list --json` plus release-tagged versions. A retry resumes the matching
+   candidate; a new release requires one baseline version at 100% traffic.
+2. Smoke `/_status`, `/_status.json`, and `/health/deep` without a token (`401`)
+   and with the retained repository `STATUS_TOKEN` (`200`). If production was
+   already rotated, retry with `PRODUCTION_STATUS_TOKEN`.
+3. Build locally and send a JSON secret document only through stdin to
+   `wrangler versions upload --secrets-file /dev/stdin`. This creates an inactive
+   candidate carrying the code, assets, new token, release tag, and recovery
+   metadata; it does not change production traffic.
+4. Deploy the baseline at 100% and candidate at 0% with a release-specific lease
+   message. Smoke all public/protected showcase routes against the candidate via
+   `Cloudflare-Workers-Version-Overrides`; the new token and exact build identity
+   must work while normal traffic still uses the baseline.
+5. Re-read deployments and require the same lease deployment ID and traffic
+   split. Activate only that candidate at 100%, then verify mappings and repeat
+   the full smoke without an override.
+6. Write the summary only after all checks pass.
+
+The workflow concurrency group uses `cancel-in-progress: false`; compliant
+release attempts serialize and recognize the durable lease. Cloudflare's create
+deployment API does not expose an atomic conditional update, so out-of-band
+operators must not deploy this Worker while the lease is present. Any observed
+deployment ID, traffic, or release-message change stops without overwriting the
+concurrent deployment.
+
+Normal failures after the lease execute `wrangler rollback
+<captured-version-id> --yes`, then repeat protected smoke with the baseline token
+role and identity stored in candidate metadata. Command and smoke rollback
+failures are reported alongside the original error. `SIGTERM`/`SIGINT` terminate
+the active child; a later run resumes from the inactive candidate, zero-traffic
+lease, or already activated candidate. `SIGKILL` cannot run cleanup, which is why
+no secret reaches traffic before candidate smoke and every boundary remains
+discoverable from Cloudflare state.
+
+Keep all four legacy repository secrets until the approved deploy is stable:
+`CLOUDFLARE_API_KEY`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_EMAIL`, and
+`STATUS_TOKEN`. Stable means the target `main` SHA completed `Release And Deploy`
+without rollback, Cloudflare mapping and public smokes passed, each protected
+route passed authenticated and unauthenticated checks, and the operator reviewed
+the final job summary.
+
+Only then remove repository secrets in this order, verifying names and timestamps
+after each operation and never reading values:
+
+```bash
+gh secret delete CLOUDFLARE_API_TOKEN --repo lemn-ltd/ui
+gh secret delete CLOUDFLARE_API_KEY --repo lemn-ltd/ui
+gh secret delete CLOUDFLARE_EMAIL --repo lemn-ltd/ui
+gh secret delete STATUS_TOKEN --repo lemn-ltd/ui
+```
+
+`STATUS_TOKEN` is last because it is the first-rollout rollback credential. Do
+not delete or rename the two `PRODUCTION_*` Environment secrets.
+
+Both `wrangler.jsonc` files are the account and Worker source of truth. Do not
+derive `CLOUDFLARE_API_TOKEN` from a Global API Key or configure
+`CLOUDFLARE_API_KEY`/`CLOUDFLARE_EMAIL`; the release guard accepts only the
+scoped account API token.
+
+This runbook applies `PAT-SEC-SECRETS-001`, `PAT-SEC-RISK-001`,
+`PAT-SEC-LOGGING-001`, `PAT-OPS-LEAST-PRIVILEGE-001`,
+`PAT-CLOUDFLARE-WRANGLER-CONFIG-001`, and `PAT-TEST-EVIDENCE-001`.

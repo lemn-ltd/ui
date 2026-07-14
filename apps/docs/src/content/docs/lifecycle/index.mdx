@@ -18,17 +18,34 @@ Feature authors or agents add a changeset to describe the release intent. The
 release automation turns merged changesets into a release metadata commit that
 updates `packages/ui/package.json` and `packages/ui/CHANGELOG.md`.
 
-CI publishes the package when the generated version is not already present and
-the registry owner/token can publish the package scope. If GitHub Packages
-ownership is not aligned with the package scope, CI records a warning and still
-deploys docs plus showcase.
+All Changesets operations use the catalogued `pnpm changeset ...` wrapper. The
+wrapper guards `version` before mutation. `pnpm exec changeset version` invokes
+the dependency binary outside package-script governance and is not a supported
+release path.
+
+The production workflow completes its non-mutating, scoped Cloudflare account
+API token preflight before Changesets can version, push, or publish anything.
+The token has only `Workers Scripts: Edit` on Account `Lemn DEV` and
+`Zone: Read` on Zone `le-mn.com`. It then captures the release commit SHA and deploys
+that exact SHA and package version. The same main-only guard protects direct CLI
+entrypoints, so credentials in a feature checkout cannot authorize a version,
+package publication, or deploy.
+
+CI publishes the package only when an authenticated GitHub Packages version
+list omits the exact generated version and package scope matches repository
+ownership. An unverifiable registry state fails closed before publication.
 
 ## Commands
 
 ```bash
-pnpm changeset
+pnpm changeset:add
 pnpm version:packages
 pnpm release
 ```
+
+Run production mutation commands only from `main`. `pnpm publish:ui` builds the
+package, then `prepublishOnly` requires all export targets and completes the
+strict tarball install, TypeScript, and Vite consumer smoke before npm can
+publish immutable package metadata.
 
 Use prerelease versions only for explicit staged rollouts.

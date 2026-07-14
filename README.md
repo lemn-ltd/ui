@@ -34,17 +34,28 @@ pnpm install
 
 ## Install In A Consumer Repo
 
-Add the package registry to the consuming repository:
+Keep only the package scope mapping in the consuming repository:
 
 ```ini
 # .npmrc
 @lemn-ltd:registry=https://npm.pkg.github.com
 ```
 
-Authenticate locally with a package-readable GitHub token:
+Configure authentication in the user's `~/.npmrc`, which must never be
+committed to a repository:
+
+```ini
+# ~/.npmrc
+@lemn-ltd:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}
+```
+
+Load a classic GitHub personal access token with `read:packages` and repository
+access into `NODE_AUTH_TOKEN` through the local secret manager. The registry
+mapping alone, or `NODE_AUTH_TOKEN` without the user-level `_authToken` entry,
+does not authenticate npm or pnpm.
 
 ```bash
-export NODE_AUTH_TOKEN=<github-token>
 pnpm add @lemn-ltd/ui@<published-version>
 ```
 
@@ -93,6 +104,8 @@ pnpm --filter @lemn-ltd/ui run build
 pnpm --filter @lemn-ltd/ui run check
 pnpm --filter @lemn-ltd/ui run test
 pnpm validate:identity
+pnpm validate:domains
+pnpm validate:package-identity
 pnpm validate:brand-neutrality
 pnpm validate:boundaries
 ```
@@ -104,16 +117,21 @@ pnpm validate:boundaries
 3. Run `pnpm validate:brand-neutrality`, `pnpm validate:boundaries`,
    `pnpm --filter @lemn-ltd/ui run check`, `pnpm --filter @lemn-ltd/ui run test`,
    and `pnpm --filter @lemn-ltd/ui run build`.
-4. Add a changeset with `pnpm changeset` for every publishable package change.
+4. Add a changeset with `pnpm changeset:add` for every publishable package change.
    The release workflow turns merged changesets into a release metadata commit
    that updates `packages/ui/package.json`, `packages/ui/CHANGELOG.md`, and the
    docs changelog.
-5. CI publishes `@lemn-ltd/ui` only when the package version is not already
-   available and the registry owner/token can publish the package scope. With
-   GitHub Packages, a repo-owned `GITHUB_TOKEN` can publish scopes owned by the
-   repo owner; otherwise CI records a publish warning and still deploys docs and
-   showcase.
-6. Update each consuming repo to the newly published version and regenerate its
+5. Before versioning, pushing, or publishing, CI validates the scoped,
+   account-owned Cloudflare API token without mutating Cloudflare. The
+   `production` Environment secret is `PRODUCTION_CLOUDFLARE_API_TOKEN`; its
+   only grants are Account `Lemn DEV` -> `Workers Scripts: Edit` and Zone
+   `le-mn.com` -> `Zone: Read`. Legacy key/email authentication fails closed.
+6. CI publishes `@lemn-ltd/ui` only when the package version is not already
+   available in the authenticated GitHub Packages version list and the package
+   scope matches the repository owner. Authentication, authorization, package
+   lookup, or network failures stop the release instead of being treated as an
+   unpublished version.
+7. Update each consuming repo to the newly published version and regenerate its
    lockfile.
 
 ## Documentation

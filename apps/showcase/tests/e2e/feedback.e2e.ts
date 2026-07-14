@@ -1,5 +1,17 @@
 import { expect, gotoStable, test } from "../helpers/deterministic";
 
+test("info banner showcase fixture preserves the reviewed structured example", async ({
+	page,
+}) => {
+	await gotoStable(page, "/core/components/info-banner");
+	const banner = page.locator(".ui-info-banner").first();
+	await expect(
+		banner.getByText("Scheduled sync", { exact: true }),
+	).toBeVisible();
+	await expect(banner.getByRole("button", { name: "Review" })).toBeVisible();
+	await expect(banner.getByRole("button", { name: "Dismiss" })).toBeVisible();
+});
+
 test("feedback component pages expose canonical visual error primitives", async ({
 	page,
 }) => {

@@ -6,11 +6,23 @@ sidebar:
   order: 2
 ---
 
-Configura GitHub Packages para el scope `@lemn-ltd`:
+Deja en el repositorio consumidor solamente el mapeo del scope de GitHub Packages:
 
 ```ini
 @lemn-ltd:registry=https://npm.pkg.github.com
 ```
+
+Configura la autenticacion en el `~/.npmrc` del usuario. Nunca commitees esta
+entrada de auth ni el valor del token en un repositorio:
+
+```ini
+# ~/.npmrc
+//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}
+```
+
+Carga mediante el gestor local de secrets un personal access token clasico de
+GitHub con `read:packages` y acceso al repositorio en `NODE_AUTH_TOKEN`. El mapeo
+del scope o la variable de entorno por separado no autentican npm/pnpm.
 
 ```bash
 pnpm add @lemn-ltd/ui@<published-version>

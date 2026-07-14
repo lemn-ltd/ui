@@ -1,5 +1,11 @@
 import { expect, gotoStable, test } from "../helpers/deterministic";
 
+const legacyUiPackage = `@${["app", "ranks"].join("")}/ui`;
+const LEGACY_UI_PACKAGE_PATTERN = new RegExp(
+	`${legacyUiPackage}(?![-A-Za-z0-9])`,
+	"u",
+);
+
 test("checkbox reference page exposes its real examples and consumer guidance", async ({
 	page,
 }) => {
@@ -12,6 +18,10 @@ test("checkbox reference page exposes its real examples and consumer guidance", 
 		page.getByRole("heading", { name: "Installation" }),
 	).toBeVisible();
 	await expect(page.getByText("pnpm add @lemn-ltd/ui")).toBeVisible();
+	expect(
+		await page.locator(".showcase-docs-page").innerText(),
+		"checkbox visible content",
+	).not.toMatch(LEGACY_UI_PACKAGE_PATTERN);
 
 	const examples = page.locator(".showcase-example");
 	await expect(examples).toHaveCount(3);
@@ -30,6 +40,11 @@ test("checkbox reference page exposes its real examples and consumer guidance", 
 	await expect(
 		examples.nth(0).getByRole("button", { name: "Copied" }),
 	).toBeVisible();
+	const clipboardText = await page.evaluate(() =>
+		navigator.clipboard.readText(),
+	);
+	expect(clipboardText).toContain("from '@lemn-ltd/ui';");
+	expect(clipboardText).not.toMatch(LEGACY_UI_PACKAGE_PATTERN);
 
 	const defaultChecked = page.locator("#sms-updates-default");
 	await expect(defaultChecked).toHaveAttribute("data-state", "checked");

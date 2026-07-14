@@ -1,14 +1,13 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const checkOnly = process.argv.includes('--check');
+const defaultRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const semver =
   /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
 
-function readJson(relativePath) {
+function readJson(root, relativePath) {
   return JSON.parse(fs.readFileSync(path.join(root, relativePath), 'utf8'));
 }
 
@@ -18,7 +17,29 @@ function assert(condition, message) {
   }
 }
 
-function writeIfChanged(relativePath, content) {
+export function validateVersionedChangelog(rawChangelog, currentVersion) {
+  const headings = [...rawChangelog.matchAll(/^##\s+(.+?)\s*$/gmu)].map((match) => match[1]);
+  assert(headings.length > 0, 'packages/ui/CHANGELOG.md has no release headings');
+  assert(
+    !headings.some((heading) => heading.toLowerCase() === 'unreleased'),
+    'packages/ui/CHANGELOG.md must not contain an Unreleased section; pending notes belong in a changeset',
+  );
+  for (const heading of headings) {
+    assert(semver.test(heading), `packages/ui/CHANGELOG.md has a non-version release heading: ${heading}`);
+  }
+  assert(
+    headings[0] === currentVersion,
+    `packages/ui/CHANGELOG.md must start with current version ${currentVersion}; found ${headings[0]}`,
+  );
+  const duplicates = headings.filter((heading, index) => headings.indexOf(heading) !== index);
+  assert(
+    duplicates.length === 0,
+    `packages/ui/CHANGELOG.md repeats release version ${duplicates[0]}`,
+  );
+  return headings;
+}
+
+function writeIfChanged(root, checkOnly, relativePath, content) {
   const filePath = path.join(root, relativePath);
   const current = fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf8') : '';
 
@@ -33,22 +54,20 @@ function writeIfChanged(relativePath, content) {
   return true;
 }
 
-const uiPackage = readJson('packages/ui/package.json');
+export function syncDocsChangelog({ repositoryRoot = defaultRoot, checkOnly = false } = {}) {
+  const uiPackage = readJson(repositoryRoot, 'packages/ui/package.json');
 
-assert(semver.test(uiPackage.version), `packages/ui/package.json version is not SemVer: ${uiPackage.version}`);
+  assert(semver.test(uiPackage.version), `packages/ui/package.json version is not SemVer: ${uiPackage.version}`);
 
-const changelogPath = path.join(root, 'packages/ui/CHANGELOG.md');
-assert(fs.existsSync(changelogPath), 'packages/ui/CHANGELOG.md is missing');
+  const changelogPath = path.join(repositoryRoot, 'packages/ui/CHANGELOG.md');
+  assert(fs.existsSync(changelogPath), 'packages/ui/CHANGELOG.md is missing');
 
-const rawChangelog = fs.readFileSync(changelogPath, 'utf8').trim();
-assert(
-  rawChangelog.includes(`## ${uiPackage.version}`),
-  `packages/ui/CHANGELOG.md is missing the current version ${uiPackage.version}`,
-);
+  const rawChangelog = fs.readFileSync(changelogPath, 'utf8').trim();
+  validateVersionedChangelog(rawChangelog, uiPackage.version);
 
-const changelogBody = rawChangelog.replace(/^#\s+@lemn-ltd\/ui\s*/u, '').trim();
+  const changelogBody = rawChangelog.replace(/^#\s+@lemn-ltd\/ui\s*/u, '').trim();
 
-const enContent = `---
+  const enContent = `---
 title: Changelog
 description: Release notes for @lemn-ltd/ui.
 sidebar:
@@ -64,7 +83,7 @@ stay aligned with the package version that Changesets writes.
 ${changelogBody}
 `;
 
-const esContent = `---
+  const esContent = `---
 title: Historial de cambios
 description: Release notes de @lemn-ltd/ui.
 sidebar:
@@ -80,13 +99,33 @@ publicados se mantienen alineados con la version que escribe Changesets.
 ${changelogBody}
 `;
 
-const changed = [
-  writeIfChanged('apps/docs/src/content/docs/changelog/index.mdx', enContent),
-  writeIfChanged('apps/docs/src/content/docs/es/changelog/index.mdx', esContent),
-].some(Boolean);
+  const changed = [
+    writeIfChanged(
+      repositoryRoot,
+      checkOnly,
+      'apps/docs/src/content/docs/changelog/index.mdx',
+      enContent,
+    ),
+    writeIfChanged(
+      repositoryRoot,
+      checkOnly,
+      'apps/docs/src/content/docs/es/changelog/index.mdx',
+      esContent,
+    ),
+  ].some(Boolean);
 
-if (changed) {
-  console.log('Synced docs changelog pages.');
-} else {
-  console.log('Docs changelog pages are current.');
+  return changed;
+}
+
+function main() {
+  const changed = syncDocsChangelog({ checkOnly: process.argv.includes('--check') });
+  if (changed) {
+    console.log('Synced docs changelog pages.');
+  } else {
+    console.log('Docs changelog pages are current.');
+  }
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main();
 }

@@ -72,6 +72,8 @@ before release:
 
 ```bash
 pnpm validate:identity
+pnpm validate:domains
+pnpm validate:package-identity
 pnpm validate:brand-neutrality
 pnpm validate:boundaries
 pnpm --filter @lemn-ltd/ui run check
@@ -89,7 +91,12 @@ pnpm dev:showcase
 
 ## Release Rules
 
-- Add a changeset with `pnpm changeset` for every publishable package change.
+- Add a changeset with `pnpm changeset:add` for every publishable package change.
+- Use the catalogued `pnpm changeset ...` wrapper for Changesets operations. Its
+  generic `version` route enforces the same main-only Cloudflare guard as
+  `pnpm version:packages`. `pnpm exec changeset version` calls the dependency
+  binary directly, bypasses package scripts, and is therefore an unsupported
+  and prohibited release path for contributors and automation.
 - Let CI generate the release metadata commit that updates
   `packages/ui/package.json` and `packages/ui/CHANGELOG.md`; do not hand-edit
   package versions in feature PRs.
@@ -97,10 +104,16 @@ pnpm dev:showcase
   version to fix packaging or CSS output.
 - Commit and push only reviewed source changes. Avoid mixing unrelated worktree
   changes into the release commit.
-- The CI workflow publishes `@lemn-ltd/ui` when the pushed version is not already
-  present and the registry owner/token can publish the package scope. If the
-  package scope and GitHub repo owner are not aligned, CI records a warning and
-  continues the docs/showcase deploy.
+- The CI workflow publishes `@lemn-ltd/ui` only after it verifies the pushed
+  version, registry owner/token, a complete built tarball in a clean consumer,
+  and Cloudflare release access. A scope, owner, authentication, version,
+  package-content, or Cloudflare mismatch fails closed before package
+  publication or docs/showcase deployment.
+- `pnpm version:packages`, `pnpm publish:ui`, `pnpm deploy:docs:prod`,
+  `pnpm deploy:showcase:prod`, and `pnpm release` are production mutation
+  entrypoints. They require branch `main` and the non-mutating Cloudflare
+  account and production-domain preflight; a credentialed feature checkout still fails
+  before versioning, publishing, or deploying.
 - The CI workflow deploys docs to `ui.le-mn.com` and the interactive showcase
   to `showcase.ui.le-mn.com` after the release automation has run.
 - After publish, update consuming repos to the new version and regenerate their

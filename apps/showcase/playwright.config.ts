@@ -1,7 +1,18 @@
+import { createHash } from 'node:crypto';
+import { realpathSync } from 'node:fs';
 import { defineConfig, devices } from '@playwright/test';
 
-const BASE_URL = process.env.BASE_URL ?? 'http://localhost:6500';
-const shouldStartLocalServer = process.env.BASE_URL === undefined;
+const E2E_PORT_MIN = 20_000;
+const E2E_PORT_SPAN = 20_000;
+
+export function showcaseE2ePortForCheckout(checkoutPath: string): number {
+  const digest = createHash('sha256').update(checkoutPath).digest();
+  return E2E_PORT_MIN + (digest.readUInt16BE(0) % E2E_PORT_SPAN);
+}
+
+const SHOWCASE_ROOT = realpathSync(import.meta.dirname);
+const E2E_PORT = showcaseE2ePortForCheckout(SHOWCASE_ROOT);
+const BASE_URL = `http://127.0.0.1:${E2E_PORT}`;
 
 const VIEWPORTS = {
   mobile: { width: 375, height: 812 },
@@ -12,6 +23,7 @@ const VIEWPORTS = {
 const THEMES = ['light', 'dark'] as const;
 
 const VISUAL_MATCH = /visual\.e2e\.ts/;
+const ACCESSIBILITY_MATCH = /accessibility\.e2e\.ts/;
 
 // Light/Dark x {375,768,1280} = 6 deterministic visual projects; the theme is
 // applied per project by the deterministic test base (keyed off the name).
@@ -31,6 +43,7 @@ const visualProjects = THEMES.flatMap((theme) =>
 export default defineConfig({
   testDir: './tests/e2e',
   testMatch: ['**/*.e2e.ts'],
+  snapshotPathTemplate: '{testDir}/{testFilePath}-snapshots/{arg}-{projectName}-{platform}{ext}',
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
@@ -40,16 +53,14 @@ export default defineConfig({
   expect: {
     toHaveScreenshot: { maxDiffPixelRatio: 0.01, animations: 'disabled' },
   },
-  webServer: shouldStartLocalServer
-    ? {
-        // Run the real Worker-backed dev server (Cloudflare Vite plugin) so the
-        // lane exercises the deployable Worker, including the /health route.
-        command: 'pnpm --filter @lemn-ltd/ui-showcase run dev',
-        url: BASE_URL,
-        reuseExistingServer: true,
-        timeout: 120_000,
-      }
-    : undefined,
+  webServer: {
+    command: `pnpm exec vite dev --host 127.0.0.1 --port ${E2E_PORT} --strictPort`,
+    cwd: SHOWCASE_ROOT,
+    url: BASE_URL,
+    reuseExistingServer: false,
+    gracefulShutdown: { signal: 'SIGTERM', timeout: 5_000 },
+    timeout: 120_000,
+  },
   use: {
     ...devices['Desktop Chrome'],
     baseURL: BASE_URL,
@@ -61,7 +72,17 @@ export default defineConfig({
   projects: [
     {
       name: 'behavior',
-      testIgnore: VISUAL_MATCH,
+      testIgnore: [VISUAL_MATCH, ACCESSIBILITY_MATCH],
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: VIEWPORTS.desktop,
+        colorScheme: 'light',
+        deviceScaleFactor: 1,
+      },
+    },
+    {
+      name: 'accessibility',
+      testMatch: ACCESSIBILITY_MATCH,
       use: {
         ...devices['Desktop Chrome'],
         viewport: VIEWPORTS.desktop,

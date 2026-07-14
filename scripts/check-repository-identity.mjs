@@ -5,7 +5,10 @@ import { readFile } from 'node:fs/promises';
 const root = process.cwd();
 const legacyBrand = ['app', 'ranks'].join('');
 const retiredDocsLabel = ['docs', 'ui'].join(' - ');
-const manifestException = '.agentops/project.json';
+const legacyBrandExceptions = new Set([
+  '.agentops/project.json',
+  'docs/showcase-component-documentation-migration/SPEC.md',
+]);
 
 const expectedPackageNames = new Map([
   ['package.json', 'lemn-ui-workspace'],
@@ -26,14 +29,12 @@ const files = execFileSync(
 const failures = [];
 
 for (const file of files) {
-  if (file === manifestException) continue;
-
   const content = await readFile(file);
   if (content.includes(0)) continue;
 
   const text = content.toString('utf8');
   const normalizedText = text.toLowerCase();
-  if (normalizedText.includes(legacyBrand)) {
+  if (normalizedText.includes(legacyBrand) && !legacyBrandExceptions.has(file)) {
     failures.push(`${file}: contains the legacy organization name`);
   }
   if (normalizedText.includes(retiredDocsLabel)) {

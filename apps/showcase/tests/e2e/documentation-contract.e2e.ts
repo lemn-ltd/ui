@@ -1,22 +1,38 @@
 import { componentRoutesFromCatalog } from "../helpers/component-catalog";
-import { expect, gotoStable, test } from "../helpers/deterministic";
+import {
+	expect,
+	gotoStable,
+	newDeterministicPage,
+	test,
+} from "../helpers/deterministic";
 
-const retiredPackageScope = ["@app", "ranks/ui"].join("");
+const legacyUiPackage = `@${["app", "ranks"].join("")}/ui`;
+const LEGACY_UI_PACKAGE_PATTERN = new RegExp(
+	`${legacyUiPackage}(?![-A-Za-z0-9])`,
+	"u",
+);
 
 test("every catalog component implements the interactive documentation contract", async ({
-	page,
-}) => {
+	page: catalogPage,
+	context,
+}, testInfo) => {
 	test.setTimeout(900_000);
-	const routes = await componentRoutesFromCatalog(page);
+	const routes = await componentRoutesFromCatalog(catalogPage);
+	await catalogPage.close();
 	const checkedRoutes: string[] = [];
 	const offenders: string[] = [];
 
 	for (const entry of routes) {
 		await test.step(entry.route, async () => {
+			const page = await newDeterministicPage(context, testInfo.project.name);
 			try {
 				await gotoStable(page, entry.route);
 				const docs = page.locator(".showcase-docs-page");
 				await expect(docs).toBeVisible();
+				expect(
+					await docs.innerText(),
+					`${entry.route} visible content`,
+				).not.toMatch(LEGACY_UI_PACKAGE_PATTERN);
 				await expect(
 					docs.locator(".showcase-docs-page__title-row > h1"),
 				).toHaveCount(1);
@@ -51,14 +67,11 @@ test("every catalog component implements the interactive documentation contract"
 						await expect(code).toContainText("from '@lemn-ltd/ui';");
 					}
 					const visibleCode = await code.innerText();
-					expect(visibleCode, `${entry.route} public snippet`).not.toContain(
-						retiredPackageScope,
+					expect(visibleCode, `${entry.route} public snippet`).not.toMatch(
+						LEGACY_UI_PACKAGE_PATTERN,
 					);
-					expect(visibleCode, `${entry.route} pinned package`).not.toContain(
-						"@latest",
-					);
-					expect(visibleCode, `${entry.route} public entrypoint`).not.toMatch(
-						/@lemn-ltd\/ui\//,
+					expect(visibleCode, `${entry.route} public snippet`).not.toMatch(
+						/@latest|@lemn-ltd\/ui\//u,
 					);
 				}
 
@@ -71,6 +84,9 @@ test("every catalog component implements the interactive documentation contract"
 				);
 				expect(clipboardText, `${entry.route} clipboard`).toContain(
 					"from '@lemn-ltd/ui';",
+				);
+				expect(clipboardText, `${entry.route} clipboard`).not.toMatch(
+					LEGACY_UI_PACKAGE_PATTERN,
 				);
 				await expect(
 					docs.getByRole("heading", { name: "Installation" }),
@@ -129,6 +145,8 @@ test("every catalog component implements the interactive documentation contract"
 				offenders.push(
 					`${entry.route}: ${error instanceof Error ? error.message.split("\n")[0] : String(error)}`,
 				);
+			} finally {
+				await page.close();
 			}
 		});
 	}

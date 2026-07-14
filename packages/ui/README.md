@@ -11,8 +11,9 @@ Light default + Dark + system theming, responsive reflow, and motion.
   `visualizations`, `data-display`, `feedback`, `overlays`, `navigation`,
   `layout`, and `agents`).
 - It is a **leaf**: runtime source must not import any `@lemn-ltd/*` sibling,
-  any `@cloudflare/*` / `agents` runtime, or Node core APIs. Tests may use Node
-  APIs for fixtures and CSS assertions. Allowed runtime externals are `react`,
+  any `@cloudflare/*` / `agents` runtime, or Node core
+  APIs. Tests may use Node APIs for fixtures and CSS assertions. Allowed runtime
+  externals are `react`,
   `react-dom`, the headless component libraries (`radix-ui`,
   `cmdk`, `sonner`, `lucide-react`), the canvas/view graph runtime
   (`@xyflow/react`), and the Markdown rendering stack
@@ -70,6 +71,7 @@ package and publish a new version. Do not make a permanent consumer-side
 
 - `.` → the public component + theme + `tokens` + `componentCatalog` surface.
 - `./tokens` → the typed token mirror only (`src/tokens.ts`).
+- `./catalog` → the typed component catalog and catalog lookup helpers (`src/catalog.ts`).
 - `./styles.css` → the aggregated stylesheet (tokens, reset, globals, motion).
 
 Barrel re-exports are `.js`-suffixed for Node16 module resolution.
@@ -102,6 +104,21 @@ renderer's types. The engine decision, token contract, bundle gates, and
 extension workflow are documented in `../../docs/visualization-system/README.md`.
 
 ## Consumer contract
+
+Private GitHub Packages installs require the committed scope mapping plus a
+user-level auth entry. Keep the credential outside every repository:
+
+```ini
+# consuming repo .npmrc
+@lemn-ltd:registry=https://npm.pkg.github.com
+
+# ~/.npmrc
+//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}
+```
+
+Load a classic GitHub personal access token with `read:packages` and repository
+access into `NODE_AUTH_TOKEN` through the local secret manager before running
+pnpm. Do not commit the user-level auth entry or a token value.
 
 Consumer applications must:
 

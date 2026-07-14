@@ -1,11 +1,19 @@
-import { expect, gotoStable, test } from "../helpers/deterministic";
+import { componentRoutesFromCatalog } from "../helpers/component-catalog";
+import {
+	expect,
+	gotoStable,
+	newDeterministicPage,
+	test,
+} from "../helpers/deterministic";
 
-test("every homepage documentation link resolves to a rendered page", async ({
-	page,
-}) => {
-	await gotoStable(page, "/");
+test("every catalog and homepage documentation link resolves to a rendered page", async ({
+	page: homePage,
+	context,
+}, testInfo) => {
+	test.setTimeout(900_000);
+	await gotoStable(homePage, "/");
 
-	const hrefs = await page
+	const homepageHrefs = await homePage
 		.locator('.showcase-home a[href^="/"]')
 		.evaluateAll((els) => [
 			...new Set(
@@ -14,31 +22,47 @@ test("every homepage documentation link resolves to a rendered page", async ({
 					.filter((href): href is string => Boolean(href)),
 			),
 		]);
+	expect(homepageHrefs.length).toBeGreaterThanOrEqual(12);
 
-	expect(hrefs.length).toBeGreaterThanOrEqual(12);
+	const catalogRoutes = await componentRoutesFromCatalog(homePage);
+	const hrefs = [
+		...new Set([
+			...homepageHrefs,
+			...catalogRoutes.map((entry) => entry.route),
+		]),
+	];
+	expect(hrefs.length).toBeGreaterThanOrEqual(112);
+	await homePage.close();
 
 	const broken: string[] = [];
 	for (const href of hrefs) {
-		const errors: string[] = [];
-		const onError = (error: Error): void => {
-			errors.push(error.message);
-		};
-		page.on("pageerror", onError);
-		await gotoStable(page, href);
-		const notFound = await page.locator(".showcase-not-found").count();
-		const content = await page.locator(".ui-content-layout").count();
-		page.off("pageerror", onError);
+		await test.step(href, async () => {
+			const page = await newDeterministicPage(context, testInfo.project.name);
+			const errors: string[] = [];
+			const onError = (error: Error): void => {
+				errors.push(error.message);
+			};
+			page.on("pageerror", onError);
+			try {
+				await gotoStable(page, href);
+				const notFound = await page.locator(".showcase-not-found").count();
+				const content = await page.locator(".ui-content-layout").count();
 
-		if (notFound > 0 || content === 0 || errors.length > 0) {
-			const reasons = [
-				notFound > 0 ? "not-found" : "",
-				content === 0 ? "no content-layout" : "",
-				errors.length > 0 ? `error: ${errors[0]}` : "",
-			]
-				.filter(Boolean)
-				.join(", ");
-			broken.push(`${href} (${reasons})`);
-		}
+				if (notFound > 0 || content === 0 || errors.length > 0) {
+					const reasons = [
+						notFound > 0 ? "not-found" : "",
+						content === 0 ? "no content-layout" : "",
+						errors.length > 0 ? `error: ${errors[0]}` : "",
+					]
+						.filter(Boolean)
+						.join(", ");
+					broken.push(`${href} (${reasons})`);
+				}
+			} finally {
+				page.off("pageerror", onError);
+				await page.close();
+			}
+		});
 	}
 
 	expect(broken, `failed routes: ${broken.join(" | ")}`).toEqual([]);
