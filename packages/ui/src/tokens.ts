@@ -72,6 +72,47 @@ const softStatus = {
   },
 } as const;
 
+const chart = {
+  light: {
+    series1: '#2563eb',
+    series2: '#0f766e',
+    series3: '#d97706',
+    series4: '#7c3aed',
+    series5: '#e11d48',
+    series6: '#15803d',
+    series7: '#0369a1',
+    series8: '#a16207',
+    grid: '#e3e8ef',
+    axis: '#5a6b82',
+    cursor: 'rgba(37, 99, 235, 0.08)',
+    hover: 'rgba(13, 148, 136, 0.12)',
+    selection: 'rgba(37, 99, 235, 0.18)',
+    tooltipSurface: '#ffffff',
+    tooltipBorder: '#cbd3df',
+    positive: '#15803d',
+    negative: '#dc2626',
+  },
+  dark: {
+    series1: '#60a5fa',
+    series2: '#2dd4bf',
+    series3: '#fbbf24',
+    series4: '#a78bfa',
+    series5: '#fb7185',
+    series6: '#4ade80',
+    series7: '#38bdf8',
+    series8: '#f59e0b',
+    grid: 'oklch(0.278 0.033 256.848)',
+    axis: 'oklch(0.707 0.022 261.325)',
+    cursor: 'rgba(96, 165, 250, 0.12)',
+    hover: 'rgba(94, 234, 212, 0.14)',
+    selection: 'rgba(96, 165, 250, 0.2)',
+    tooltipSurface: '#090e1a',
+    tooltipBorder: 'oklch(0.373 0.034 259.733)',
+    positive: '#4ade80',
+    negative: '#f87171',
+  },
+} as const;
+
 const interaction = {
   light: { focusRing: 'rgba(13, 148, 136, 0.45)', overlay: 'rgba(14, 20, 27, 0.45)' },
   dark: { focusRing: 'rgba(94, 234, 212, 0.55)', overlay: 'rgba(0, 0, 0, 0.6)' },
@@ -154,7 +195,7 @@ const breakpoints = { sm: 640, md: 768, lg: 1024, xl: 1280 } as const;
 const contentMax = '1200px' as const;
 
 export const tokens = {
-  color: { surfaces, text, accents, status, softStatus, interaction, decorative },
+  color: { surfaces, text, accents, status, softStatus, chart, interaction, decorative },
   space,
   radii,
   typography,

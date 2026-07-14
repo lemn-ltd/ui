@@ -46,6 +46,7 @@ const allowedRuntimePackages = new Set([
   'react-dom/client',
   'react/jsx-runtime',
   'react-markdown',
+  'recharts',
   'remark-gfm',
   'shiki',
   'sonner',
@@ -114,6 +115,11 @@ for (const file of files) {
 
     if (specifier.startsWith('@cloudflare/') || specifier === 'agents') {
       failures.push(`${relativeFile}: shared UI must not import runtime package "${specifier}"`);
+      continue;
+    }
+
+    if (basePackage === 'recharts' && !relativeFile.startsWith('packages/ui/src/visualizations/')) {
+      failures.push(`${relativeFile}: Recharts imports are confined to packages/ui/src/visualizations`);
       continue;
     }
 

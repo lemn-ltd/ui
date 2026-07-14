@@ -1549,6 +1549,88 @@ The right-docked workspace panel — a tabbed header with maximize/hide controls
 
 **Pairs with** [`screen-shell`](#screen-shell), [`tabs`](#tabs), [`icon-button`](#icon-button)
 
+## Visualizations
+
+### Area chart
+
+`/core/components/area-chart` · beta
+
+Use an `AreaChart` to show one or more time series when the filled area helps
+communicate magnitude. Choose normal or stacked layout explicitly; use a
+[`line-chart`](#line-chart) when overlap makes the filled regions ambiguous.
+
+### Bar chart
+
+`/core/components/bar-chart` · beta
+
+Use a `BarChart` to compare discrete categories, with grouped or stacked bars
+and an explicit vertical or horizontal orientation. Use a
+[`bar-list`](#bar-list) for a compact ranked list with readable values.
+
+### Combo chart
+
+`/core/components/combo-chart` · beta
+
+Use a `ComboChart` only when bars and lines share a meaningful index and their
+different encodings clarify the comparison. Declare each series and its axis;
+avoid combining unrelated metrics merely to save space.
+
+### Bar list
+
+`/core/components/bar-list` · beta
+
+Use a `BarList` for ranked category values that must remain easy to scan and
+read. Rows may be static, links, or actions. Use a [`bar-chart`](#bar-chart)
+when axes, grouped series, or stacking carry important meaning.
+
+### Category bar
+
+`/core/components/category-bar` · beta
+
+Use a `CategoryBar` for one part-to-whole distribution in a compact surface.
+Its labels and segment patterns preserve meaning beyond color. Use a
+[`donut-chart`](#donut-chart) when the distribution needs a focal total.
+
+### Donut chart
+
+`/core/components/donut-chart` · beta
+
+Use a `DonutChart` for a small labelled part-to-whole dataset and optional
+center value. Avoid it for many similar slices; use a
+[`bar-chart`](#bar-chart) when precise comparison matters more than the total.
+
+### Line chart
+
+`/core/components/line-chart` · beta
+
+Use a `LineChart` for one or more ordered trends. Give it an accessible name,
+declare every series, and provide stable deterministic data. Use a
+[`spark-chart`](#spark-chart) when the chart must fit a dense metric card.
+
+### Progress circle
+
+`/core/components/progress-circle` · beta
+
+Use a `ProgressCircle` for compact determinate or indeterminate task progress.
+Always supply an accessible name. Use [`progress-bar`](#progress-bar) when a
+linear indicator makes the remaining distance easier to understand.
+
+### Spark chart
+
+`/core/components/spark-chart` · beta
+
+Use a `SparkChart` for a compact interactive line, area, or bar trend with an
+optional tooltip. Use [`sparkline`](#sparkline) for a lighter non-interactive
+trend where the surrounding text already communicates the value.
+
+### Tracker
+
+`/core/components/tracker` · beta
+
+Use a `Tracker` for an ordered sequence of complete, active, pending, or error
+states. Each item keeps visible or assistive text so status never depends on
+color alone. Use a [`stepper`](#stepper) for user-controlled navigation.
+
 ## Data display
 
 ### Card

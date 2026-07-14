@@ -1,0 +1,4 @@
+.ui-combo-chart :where(.recharts-line-curve) {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}

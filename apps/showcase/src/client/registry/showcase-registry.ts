@@ -10,6 +10,7 @@ import { navigationEntries } from './entries/navigation.js';
 import { overlaysEntries } from './entries/overlays.js';
 import { patternsEntries } from './entries/patterns.js';
 import { primitivesEntries } from './entries/primitives.js';
+import { visualizationEntries } from './entries/visualizations.js';
 import { SHOWCASE_GROUPS, type ShowcaseGroup, type UiShowcaseEntry } from './showcase-types.js';
 
 export { SHOWCASE_GROUPS, type ShowcaseEntry, type ShowcaseGroup } from './showcase-types.js';
@@ -25,6 +26,7 @@ export const SHOWCASE_REGISTRY: UiShowcaseEntry[] = [
   ...foundationsEntries,
   ...primitivesEntries,
   ...formsEntries,
+  ...visualizationEntries,
   ...overlaysEntries,
   ...navigationEntries,
   ...dataDisplayEntries,

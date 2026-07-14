@@ -19,3 +19,4 @@ export * from './table-rows.js';
 export * from './tabs.js';
 export * from './timezones.js';
 export * from './toasts.js';
+export * from './visualizations.js';

@@ -1,0 +1,4 @@
+.ui-area-chart :where(.recharts-area-curve) {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}

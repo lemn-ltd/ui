@@ -42,11 +42,15 @@ function cssName(name: string): string {
 function expectColorGroupToMatchCss(group: {
   readonly light: Readonly<Record<string, string>>;
   readonly dark: Readonly<Record<string, string>>;
-}): void {
+}, prefix = '', hyphenateDigits = false): void {
   expect(Object.keys(group.dark)).toEqual(Object.keys(group.light));
   for (const name of Object.keys(group.light)) {
-    const [light, dark] = lightDarkValues(cssName(name));
-    expect({ light, dark }, `--${cssName(name)}`).toEqual({
+    const normalizedName = hyphenateDigits
+      ? cssName(name).replace(/([a-z])([0-9])/g, '$1-$2')
+      : cssName(name);
+    const variableName = `${prefix}${normalizedName}`;
+    const [light, dark] = lightDarkValues(variableName);
+    expect({ light, dark }, `--${variableName}`).toEqual({
       light: group.light[name],
       dark: group.dark[name],
     });
@@ -118,6 +122,7 @@ describe('tokens.css mirror', () => {
     ]) {
       expectColorGroupToMatchCss(group);
     }
+    expectColorGroupToMatchCss(tokens.color.chart, 'chart-', true);
   });
 
   it('never declares a px line-height', () => {

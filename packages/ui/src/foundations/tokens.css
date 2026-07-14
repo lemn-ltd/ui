@@ -48,6 +48,25 @@
   --danger-soft: light-dark(#fdeaea, #2a1414);
   --info-soft: light-dark(#e8f0fd, #112038);
 
+  /* Charts — categorical series are independent from semantic status colors. */
+  --chart-series-1: light-dark(#2563eb, #60a5fa);
+  --chart-series-2: light-dark(#0f766e, #2dd4bf);
+  --chart-series-3: light-dark(#d97706, #fbbf24);
+  --chart-series-4: light-dark(#7c3aed, #a78bfa);
+  --chart-series-5: light-dark(#e11d48, #fb7185);
+  --chart-series-6: light-dark(#15803d, #4ade80);
+  --chart-series-7: light-dark(#0369a1, #38bdf8);
+  --chart-series-8: light-dark(#a16207, #f59e0b);
+  --chart-grid: light-dark(#e3e8ef, oklch(0.278 0.033 256.848));
+  --chart-axis: light-dark(#5a6b82, oklch(0.707 0.022 261.325));
+  --chart-cursor: light-dark(rgba(37, 99, 235, 0.08), rgba(96, 165, 250, 0.12));
+  --chart-hover: light-dark(rgba(13, 148, 136, 0.12), rgba(94, 234, 212, 0.14));
+  --chart-selection: light-dark(rgba(37, 99, 235, 0.18), rgba(96, 165, 250, 0.2));
+  --chart-tooltip-surface: light-dark(#ffffff, #090e1a);
+  --chart-tooltip-border: light-dark(#cbd3df, oklch(0.373 0.034 259.733));
+  --chart-positive: light-dark(#15803d, #4ade80);
+  --chart-negative: light-dark(#dc2626, #f87171);
+
   /* Interaction */
   --focus-ring: light-dark(rgba(13, 148, 136, 0.45), rgba(94, 234, 212, 0.55));
   --overlay: light-dark(rgba(14, 20, 27, 0.45), rgba(0, 0, 0, 0.6));

@@ -60,7 +60,9 @@
     "hast-util-to-jsx-runtime": "2.3.6",
     "lucide-react": "catalog:",
     "radix-ui": "catalog:",
+    "react-is": "catalog:",
     "react-markdown": "10.1.0",
+    "recharts": "catalog:",
     "remark-gfm": "4.0.1",
     "shiki": "4.2.0",
     "sonner": "catalog:"
