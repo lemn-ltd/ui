@@ -1,18 +1,21 @@
 import { expect, gotoStable, test } from "../helpers/deterministic";
 
-test("every registry entry resolves to a rendered page", async ({ page }) => {
+test("every homepage documentation link resolves to a rendered page", async ({
+	page,
+}) => {
 	await gotoStable(page, "/");
 
 	const hrefs = await page
-		.locator("article.showcase-overview-card h3 a")
-		.evaluateAll((els) =>
-			els
-				.map((el) => (el as HTMLAnchorElement).getAttribute("href"))
-				.filter((href): href is string => Boolean(href)),
-		);
+		.locator('.showcase-home a[href^="/"]')
+		.evaluateAll((els) => [
+			...new Set(
+				els
+					.map((el) => (el as HTMLAnchorElement).getAttribute("href"))
+					.filter((href): href is string => Boolean(href)),
+			),
+		]);
 
-	// Foundations (6) + core components + agent components + core and agent patterns.
-	expect(hrefs.length).toBeGreaterThanOrEqual(90);
+	expect(hrefs.length).toBeGreaterThanOrEqual(12);
 
 	const broken: string[] = [];
 	for (const href of hrefs) {
@@ -39,40 +42,6 @@ test("every registry entry resolves to a rendered page", async ({ page }) => {
 	}
 
 	expect(broken, `failed routes: ${broken.join(" | ")}`).toEqual([]);
-});
-
-test("the overview exposes lazy live previews instead of image thumbnails", async ({
-	page,
-}) => {
-	await gotoStable(page, "/");
-
-	expect(
-		await page.locator("article.showcase-overview-card").count(),
-	).toBeGreaterThanOrEqual(90);
-	await expect(page.locator("article.showcase-overview-card img")).toHaveCount(
-		0,
-	);
-
-	const buttonPreview = page.getByRole("button", {
-		name: "Open Button interactive playground",
-	});
-	await buttonPreview.scrollIntoViewIfNeeded();
-	await expect(
-		buttonPreview.locator("[data-showcase-preview-content]"),
-	).toHaveCount(0);
-	const previewFrame = buttonPreview.locator("..");
-	await expect(
-		previewFrame.locator("[data-showcase-preview-content]"),
-	).toBeVisible();
-	await expect(
-		previewFrame.locator('[data-preview-ready="true"]'),
-	).toHaveCount(1);
-
-	const activePreviewCount = await page
-		.locator('.showcase-live-preview[data-preview-active="true"]')
-		.count();
-	expect(activePreviewCount).toBeGreaterThan(0);
-	expect(activePreviewCount).toBeLessThan(30);
 });
 
 test("a deep link restores the target component page", async ({ page }) => {

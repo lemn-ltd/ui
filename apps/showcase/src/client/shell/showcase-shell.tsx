@@ -1,13 +1,10 @@
-import { ShowcaseRenderModeProvider } from "@lemn-ltd/showcase-kit";
 import {
-	applyTheme,
 	Brand,
 	Breadcrumb,
 	CommandPalette,
 	type CommandPaletteGroup,
 	DockPanel,
 	type DockTab,
-	getTheme,
 	Icon,
 	type IconName,
 	MenuItem,
@@ -125,32 +122,15 @@ const DOCK_TABS: readonly DockTab[] = [
 export function ShowcaseShell(): ReactElement {
 	const location = useLocation();
 	const navigate = useNavigate();
-	const searchParams = new URLSearchParams(location.search);
-	const embeddedPlayground = searchParams.get("embed") === "playground";
-	const embeddedTheme = searchParams.get("theme") === "dark" ? "dark" : "light";
 	const [paletteOpen, setPaletteOpen] = useState(false);
 	const [moduleId, setModuleId] = useState<ShowcaseModuleId>(() =>
 		moduleIdForPathname(location.pathname),
 	);
 
 	useEffect(() => {
-		applyTheme(embeddedPlayground ? embeddedTheme : getTheme());
-	}, [embeddedPlayground, embeddedTheme]);
-
-	useEffect(() => {
 		if (location.pathname !== "/")
 			setModuleId(moduleIdForPathname(location.pathname));
 	}, [location.pathname]);
-
-	if (embeddedPlayground) {
-		return (
-			<ShowcaseRenderModeProvider mode="playground">
-				<main className="showcase-embedded-preview">
-					<Outlet />
-				</main>
-			</ShowcaseRenderModeProvider>
-		);
-	}
 
 	const moduleEntries = entriesForModule(SHOWCASE_REGISTRY, moduleId);
 	const sections = navGroups(moduleEntries);
@@ -195,9 +175,9 @@ export function ShowcaseShell(): ReactElement {
 	);
 
 	const sidebar = (
-    <Sidebar
-      brand={<Brand name={uiShowcaseAppDescriptor.displayName} />}
-      groups={sidebarGroups}
+		<Sidebar
+			brand={<Brand name={uiShowcaseAppDescriptor.displayName} />}
+			groups={sidebarGroups}
 			orgSwitcher={
 				<OrgSwitcher
 					currentOrgId={moduleId}

@@ -1,6 +1,8 @@
 import { componentRoutesFromCatalog } from "../helpers/component-catalog";
 import { expect, gotoStable, test } from "../helpers/deterministic";
 
+const retiredPackageScope = ["@app", "ranks/ui"].join("");
+
 test("every catalog component implements the interactive documentation contract", async ({
 	page,
 }) => {
@@ -49,8 +51,14 @@ test("every catalog component implements the interactive documentation contract"
 						await expect(code).toContainText("from '@lemn-ltd/ui';");
 					}
 					const visibleCode = await code.innerText();
-					expect(visibleCode, `${entry.route} public snippet`).not.toMatch(
-						/@lemn-ltd\/ui|@latest|@lemn-ltd\/ui\//,
+					expect(visibleCode, `${entry.route} public snippet`).not.toContain(
+						retiredPackageScope,
+					);
+					expect(visibleCode, `${entry.route} pinned package`).not.toContain(
+						"@latest",
+					);
+					expect(visibleCode, `${entry.route} public entrypoint`).not.toMatch(
+						/@lemn-ltd\/ui\//,
 					);
 				}
 
@@ -116,11 +124,6 @@ test("every catalog component implements the interactive documentation contract"
 					`${entry.route} horizontal overflow`,
 				).toBeLessThanOrEqual(1);
 
-				await page.goto(`${entry.route}?embed=playground&theme=light`);
-				await expect(
-					page.locator("[data-showcase-preview-content]"),
-				).toBeVisible();
-				await expect(page.locator(".showcase-docs-page")).toHaveCount(0);
 				checkedRoutes.push(entry.route);
 			} catch (error) {
 				offenders.push(
