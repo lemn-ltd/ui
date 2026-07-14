@@ -119,8 +119,8 @@ assert(
 );
 assert(uiPackage.publishConfig?.access === 'restricted', 'UI package publish access must be restricted');
 assert(
-  uiPackage.scripts?.prepublishOnly === 'node ../../scripts/check-package-identity.mjs',
-  'UI package must run the package identity contract before publish',
+  uiPackage.scripts?.prepublishOnly === 'pnpm --dir ../.. publish:ui:verify',
+  'UI package must run the guarded dist and consumer smoke before publish',
 );
 assert(
   rootPackage.scripts?.['pack:ui'] ===
@@ -129,18 +129,22 @@ assert(
 );
 assert(
   rootPackage.scripts?.['publish:ui'] ===
-    'pnpm release:preflight && pnpm publish:ui:internal',
-  'publish:ui must run the full release preflight before the internal publisher',
+    'pnpm guard:release:mutation && pnpm --filter @lemn-ltd/ui run build && pnpm --filter @lemn-ltd/ui publish --access restricted --no-git-checks',
+  'publish:ui must guard main, build, and invoke the lifecycle-protected publisher',
 );
 assert(
-  rootPackage.scripts?.['publish:ui:internal'] ===
-    'pnpm --filter @lemn-ltd/ui publish --access restricted --no-git-checks',
-  'publish:ui:internal must publish the canonical package name',
+  rootPackage.scripts?.['publish:ui:verify'] ===
+    'pnpm guard:release:mutation && node scripts/release/verify-ui-dist.mjs && pnpm pack:ui',
+  'publish:ui:verify must guard main and smoke an existing built package',
 );
 assert(
   rootPackage.scripts?.release ===
-    'pnpm release:preflight && pnpm build && pnpm publish:ui:internal',
-  'release must run one full release preflight before build and internal publish',
+    'pnpm release:preflight && pnpm check && pnpm test && pnpm publish:ui',
+  'release must use the guarded canonical publisher after validation',
+);
+assert(
+  !rootPackage.scripts?.['publish:ui:internal'],
+  'An unguarded internal publisher must not exist',
 );
 assert(
   makefile.includes('pack-ui:\n\t$(PNPM) pack:ui'),

@@ -40,7 +40,7 @@
     "validate:brand-neutrality": "node ../../scripts/check-brand-neutrality.mjs src",
     "validate:boundaries": "node ../../scripts/check-ui-boundaries.mjs",
     "test:coverage": "vitest run --coverage",
-    "prepublishOnly": "node ../../scripts/check-package-identity.mjs"
+    "prepublishOnly": "pnpm --dir ../.. publish:ui:verify"
   },
   "peerDependencies": {
     "react": "catalog:",

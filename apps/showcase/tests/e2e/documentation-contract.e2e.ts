@@ -1,18 +1,26 @@
 import { componentRoutesFromCatalog } from "../helpers/component-catalog";
-import { expect, gotoStable, test } from "../helpers/deterministic";
+import {
+	expect,
+	gotoStable,
+	newDeterministicPage,
+	test,
+} from "../helpers/deterministic";
 
 const LEGACY_UI_PACKAGE_PATTERN = /@appranks\/ui(?![-A-Za-z0-9])/u;
 
 test("every catalog component implements the interactive documentation contract", async ({
-	page,
-}) => {
+	page: catalogPage,
+	context,
+}, testInfo) => {
 	test.setTimeout(900_000);
-	const routes = await componentRoutesFromCatalog(page);
+	const routes = await componentRoutesFromCatalog(catalogPage);
+	await catalogPage.close();
 	const checkedRoutes: string[] = [];
 	const offenders: string[] = [];
 
 	for (const entry of routes) {
 		await test.step(entry.route, async () => {
+			const page = await newDeterministicPage(context, testInfo.project.name);
 			try {
 				await gotoStable(page, entry.route);
 				const docs = page.locator(".showcase-docs-page");
@@ -135,6 +143,8 @@ test("every catalog component implements the interactive documentation contract"
 				offenders.push(
 					`${entry.route}: ${error instanceof Error ? error.message.split("\n")[0] : String(error)}`,
 				);
+			} finally {
+				await page.close();
 			}
 		});
 	}

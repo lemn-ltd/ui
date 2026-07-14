@@ -98,9 +98,15 @@ pnpm dev:showcase
 - Commit and push only reviewed source changes. Avoid mixing unrelated worktree
   changes into the release commit.
 - The CI workflow publishes `@lemn-ltd/ui` only after it verifies the pushed
-  version, registry owner/token, and Cloudflare release access. A scope, owner,
-  authentication, version, or Cloudflare mismatch fails closed before package
+  version, registry owner/token, a complete built tarball in a clean consumer,
+  and Cloudflare release access. A scope, owner, authentication, version,
+  package-content, or Cloudflare mismatch fails closed before package
   publication or docs/showcase deployment.
+- `pnpm version:packages`, `pnpm publish:ui`, `pnpm deploy:docs:prod`,
+  `pnpm deploy:showcase:prod`, and `pnpm release` are production mutation
+  entrypoints. They require branch `main` and the non-mutating Cloudflare
+  account/`lemn.ai` preflight; a credentialed feature checkout still fails
+  before versioning, publishing, or deploying.
 - The CI workflow deploys docs to `ui.lemn.ai` and the interactive showcase
   to `showcase.ui.lemn.ai` after the release automation has run.
 - After publish, update consuming repos to the new version and regenerate their

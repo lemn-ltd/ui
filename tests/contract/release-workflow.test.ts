@@ -84,28 +84,26 @@ test("Global API Key preflight runs before every release mutation and package pu
 	);
 });
 
-test("package publication entrypoints run one Cloudflare preflight before internal publish", () => {
+test("package publication entrypoints use the main-only guard and strict publish lifecycle", () => {
 	const scripts = record(rootPackage.scripts, "root package scripts");
 	assert.equal(
 		scripts["release:preflight"],
-		"pnpm validate:release-preconditions && pnpm preflight:cloudflare:release",
+		"pnpm guard:release:mutation && pnpm validate:release-preconditions",
 	);
 	assert.equal(
 		scripts["publish:ui"],
-		"pnpm release:preflight && pnpm publish:ui:internal",
+		"pnpm guard:release:mutation && pnpm --filter @lemn-ltd/ui run build && pnpm --filter @lemn-ltd/ui publish --access restricted --no-git-checks",
 	);
 	assert.equal(
 		scripts.release,
-		"pnpm release:preflight && pnpm build && pnpm publish:ui:internal",
+		"pnpm release:preflight && pnpm check && pnpm test && pnpm publish:ui",
 	);
 	assert.equal(
-		scripts["publish:ui:internal"],
-		"pnpm --filter @lemn-ltd/ui publish --access restricted --no-git-checks",
+		scripts["publish:ui:verify"],
+		"pnpm guard:release:mutation && node scripts/release/verify-ui-dist.mjs && pnpm pack:ui",
 	);
-	assert.equal(
-		step("Publish package if needed").run,
-		"pnpm publish:ui:internal",
-	);
+	assert.equal(scripts["publish:ui:internal"], undefined);
+	assert.equal(step("Publish package if needed").run, "pnpm publish:ui");
 });
 
 test("direct main pushes re-run the fail-closed changeset and version guard", () => {
@@ -188,11 +186,15 @@ test("deploys, smokes, and summary use the release commit outputs instead of tri
 			stepIndex("Publish package if needed"),
 	);
 	assert.match(
-		String(step("Deploy showcase").run),
+		String(
+			record(step("Deploy showcase").env, "Deploy showcase env").BUILD_VERSION,
+		),
 		/steps\.release\.outputs\.version/u,
 	);
 	assert.match(
-		String(step("Deploy showcase").run),
+		String(
+			record(step("Deploy showcase").env, "Deploy showcase env").BUILD_GIT_SHA,
+		),
 		/steps\.release\.outputs\.sha/u,
 	);
 
@@ -210,8 +212,10 @@ test("deploys, smokes, and summary use the release commit outputs instead of tri
 		expression("steps.release.outputs.time"),
 	);
 	assert.match(
-		String(step("Deploy showcase").run),
-		/BUILD_TIME:\$\{\{ steps\.release\.outputs\.time \}\}/u,
+		String(
+			record(step("Deploy showcase").env, "Deploy showcase env").BUILD_TIME,
+		),
+		/steps\.release\.outputs\.time/u,
 	);
 
 	const smokeEnv = record(step("Smoke public endpoints").env, "Smoke env");
@@ -273,6 +277,35 @@ test("all deploy commands receive the Global API Key pair and preflight account 
 	);
 });
 
+test("workflow mutations use guarded root entrypoints instead of direct publishers or deploys", () => {
+	assert.equal(
+		step("Version packages from changesets").run,
+		"pnpm version:packages",
+	);
+	assert.equal(step("Publish package if needed").run, "pnpm publish:ui");
+	assert.equal(step("Deploy docs").run, "pnpm deploy:docs:prod");
+	assert.equal(step("Deploy showcase").run, "pnpm deploy:showcase:prod");
+	assert.match(
+		String(step("Set showcase runtime secret").run),
+		/^pnpm guard:release:mutation\n/u,
+	);
+	assert.doesNotMatch(
+		workflowSource,
+		/publish:ui:internal|run:\s*pnpm --dir apps\/(?:docs|showcase) exec wrangler deploy/u,
+	);
+	for (const name of [
+		"Version packages from changesets",
+		"Publish package if needed",
+	]) {
+		const env = record(step(name).env, `${name} env`);
+		assert.equal(
+			env.CLOUDFLARE_API_KEY,
+			expression("secrets.CLOUDFLARE_API_KEY"),
+		);
+		assert.equal(env.CLOUDFLARE_EMAIL, expression("secrets.CLOUDFLARE_EMAIL"));
+	}
+});
+
 test("CI and release smoke the exact local showcase asset deployment before publish", () => {
 	const validationJob = record(jobs.validate, "validate job");
 	const validationSteps = validationJob.steps as UnknownRecord[];
@@ -328,7 +361,7 @@ test("the successful validation gate runs complete showcase E2E before release",
 test("contributor release guidance documents fail-closed behavior", () => {
 	assert.match(
 		contributing,
-		/A scope, owner,\s+authentication, version, or Cloudflare mismatch fails closed/u,
+		/A scope, owner, authentication, version,\s+package-content, or Cloudflare mismatch fails closed/u,
 	);
 	assert.doesNotMatch(contributing, /records a warning and\s+continues/u);
 });

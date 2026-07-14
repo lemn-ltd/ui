@@ -21,6 +21,8 @@ updates `packages/ui/package.json` and `packages/ui/CHANGELOG.md`.
 The production workflow completes its non-mutating Cloudflare Global API Key
 preflight before Changesets can version, push, or publish anything. It then
 captures the release commit SHA and deploys that exact SHA and package version.
+The same main-only guard protects direct CLI entrypoints, so credentials in a
+feature checkout cannot authorize a version, package publication, or deploy.
 
 CI publishes the package only when an authenticated GitHub Packages version
 list omits the exact generated version and package scope matches repository
@@ -33,5 +35,10 @@ pnpm changeset
 pnpm version:packages
 pnpm release
 ```
+
+Run production mutation commands only from `main`. `pnpm publish:ui` builds the
+package, then `prepublishOnly` requires all export targets and completes the
+strict tarball install, TypeScript, and Vite consumer smoke before npm can
+publish immutable package metadata.
 
 Use prerelease versions only for explicit staged rollouts.

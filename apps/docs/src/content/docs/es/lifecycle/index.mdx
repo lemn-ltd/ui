@@ -22,6 +22,9 @@ metadata de release que actualiza `packages/ui/package.json` y
 El workflow de produccion completa el preflight no mutante de la Global API Key
 de Cloudflare antes de que Changesets pueda versionar, pushear o publicar. Luego
 captura el SHA del commit de release y despliega ese SHA y version exactos.
+El mismo guard exclusivo de `main` protege los entrypoints CLI directos, por lo
+que las credenciales en un feature checkout no autorizan versionado,
+publicacion ni deploy.
 
 CI publica el paquete solo cuando una lista autenticada de GitHub Packages omite
 la version generada exacta y el package scope coincide con el owner del
@@ -35,5 +38,10 @@ pnpm changeset
 pnpm version:packages
 pnpm release
 ```
+
+Ejecuta comandos mutantes de produccion solo desde `main`. `pnpm publish:ui`
+builda el paquete y `prepublishOnly` exige todos los exports y completa el smoke
+estricto del tarball instalado, TypeScript y Vite antes de que npm pueda
+publicar metadata inmutable.
 
 Usa prereleases solo para rollouts staged explicitos.

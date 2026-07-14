@@ -93,3 +93,11 @@ The worker unit spec covers `/health` 200, SPA asset fallback, and readiness
 complete Playwright lane for behavior, visual baselines, and axe. It starts and
 cleans up its own strict-port server isolated by checkout; it never reuses the
 development server on port 6500 or a server from another worktree.
+
+Visual assertions keep paired Darwin and Linux baselines at the unchanged 1%
+pixel threshold. Regenerate the Linux side reproducibly with the pinned
+Playwright container:
+
+```bash
+pnpm visual:update:linux
+```

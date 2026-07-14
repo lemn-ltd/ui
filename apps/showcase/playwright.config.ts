@@ -13,6 +13,7 @@ export function showcaseE2ePortForCheckout(checkoutPath: string): number {
 const SHOWCASE_ROOT = realpathSync(import.meta.dirname);
 const E2E_PORT = showcaseE2ePortForCheckout(SHOWCASE_ROOT);
 const BASE_URL = `http://127.0.0.1:${E2E_PORT}`;
+const STATIC_PREVIEW = process.env.SHOWCASE_E2E_STATIC_PREVIEW === '1';
 
 const VIEWPORTS = {
   mobile: { width: 375, height: 812 },
@@ -42,6 +43,7 @@ const visualProjects = THEMES.flatMap((theme) =>
 export default defineConfig({
   testDir: './tests/e2e',
   testMatch: ['**/*.e2e.ts'],
+  snapshotPathTemplate: '{testDir}/{testFilePath}-snapshots/{arg}-{projectName}-{platform}{ext}',
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
@@ -52,9 +54,9 @@ export default defineConfig({
     toHaveScreenshot: { maxDiffPixelRatio: 0.01, animations: 'disabled' },
   },
   webServer: {
-    // The strict checkout-derived port and disabled reuse ensure Playwright
-    // owns the Worker-backed Vite server it tests and then shuts down.
-    command: `pnpm exec vite dev --host 127.0.0.1 --port ${E2E_PORT} --strictPort`,
+    // The canonical command is Worker-backed; the pinned Linux baseline
+    // generator alone opts into static preview. Both remain Playwright-owned.
+    command: `pnpm exec vite ${STATIC_PREVIEW ? 'preview' : 'dev'} --host 127.0.0.1 --port ${E2E_PORT} --strictPort`,
     cwd: SHOWCASE_ROOT,
     url: BASE_URL,
     reuseExistingServer: false,

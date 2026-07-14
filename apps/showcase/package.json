@@ -18,7 +18,7 @@
     "observe:production:tail": "wrangler tail --env production --format json",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "deploy:production": "CLOUDFLARE_ENV=production pnpm run cf:build && wrangler deploy --env production"
+    "deploy:production": "pnpm --dir ../.. deploy:showcase:prod"
   },
   "dependencies": {
     "@appranks/showcase-kit": "workspace:*",

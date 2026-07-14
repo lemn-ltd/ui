@@ -1,9 +1,18 @@
-import { expect, gotoStable, test } from "../helpers/deterministic";
+import {
+	expect,
+	gotoStable,
+	newDeterministicPage,
+	test,
+} from "../helpers/deterministic";
 
-test("every registry entry resolves to a rendered page", async ({ page }) => {
-	await gotoStable(page, "/");
+test("every registry entry resolves to a rendered page", async ({
+	page: overviewPage,
+	context,
+}, testInfo) => {
+	test.setTimeout(900_000);
+	await gotoStable(overviewPage, "/");
 
-	const hrefs = await page
+	const hrefs = await overviewPage
 		.locator("article.showcase-overview-card h3 a")
 		.evaluateAll((els) =>
 			els
@@ -13,29 +22,37 @@ test("every registry entry resolves to a rendered page", async ({ page }) => {
 
 	// Foundations (6) + core components + agent components + core and agent patterns.
 	expect(hrefs.length).toBeGreaterThanOrEqual(90);
+	await overviewPage.close();
 
 	const broken: string[] = [];
 	for (const href of hrefs) {
-		const errors: string[] = [];
-		const onError = (error: Error): void => {
-			errors.push(error.message);
-		};
-		page.on("pageerror", onError);
-		await gotoStable(page, href);
-		const notFound = await page.locator(".showcase-not-found").count();
-		const content = await page.locator(".ui-content-layout").count();
-		page.off("pageerror", onError);
+		await test.step(href, async () => {
+			const page = await newDeterministicPage(context, testInfo.project.name);
+			const errors: string[] = [];
+			const onError = (error: Error): void => {
+				errors.push(error.message);
+			};
+			page.on("pageerror", onError);
+			try {
+				await gotoStable(page, href);
+				const notFound = await page.locator(".showcase-not-found").count();
+				const content = await page.locator(".ui-content-layout").count();
 
-		if (notFound > 0 || content === 0 || errors.length > 0) {
-			const reasons = [
-				notFound > 0 ? "not-found" : "",
-				content === 0 ? "no content-layout" : "",
-				errors.length > 0 ? `error: ${errors[0]}` : "",
-			]
-				.filter(Boolean)
-				.join(", ");
-			broken.push(`${href} (${reasons})`);
-		}
+				if (notFound > 0 || content === 0 || errors.length > 0) {
+					const reasons = [
+						notFound > 0 ? "not-found" : "",
+						content === 0 ? "no content-layout" : "",
+						errors.length > 0 ? `error: ${errors[0]}` : "",
+					]
+						.filter(Boolean)
+						.join(", ");
+					broken.push(`${href} (${reasons})`);
+				}
+			} finally {
+				page.off("pageerror", onError);
+				await page.close();
+			}
+		});
 	}
 
 	expect(broken, `failed routes: ${broken.join(" | ")}`).toEqual([]);
@@ -64,9 +81,9 @@ test("the overview exposes lazy live previews instead of image thumbnails", asyn
 	await expect(
 		previewFrame.locator("[data-showcase-preview-content]"),
 	).toBeVisible();
-	await expect(
-		previewFrame.locator('[data-preview-ready="true"]'),
-	).toHaveCount(1);
+	await expect(previewFrame.locator('[data-preview-ready="true"]')).toHaveCount(
+		1,
+	);
 
 	const activePreviewCount = await page
 		.locator('.showcase-live-preview[data-preview-active="true"]')

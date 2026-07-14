@@ -182,6 +182,9 @@ jobs:
       - name: Version packages from changesets
         if: steps.changesets.outputs.has_pending == 'true'
         run: pnpm version:packages
+        env:
+          CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
+          CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
 
       - name: Commit release metadata
         if: steps.changesets.outputs.has_pending == 'true'
@@ -222,8 +225,10 @@ jobs:
 
       - name: Publish package if needed
         if: steps.package-version.outputs.published == 'false'
-        run: pnpm publish:ui:internal
+        run: pnpm publish:ui
         env:
+          CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
+          CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build docs
@@ -234,25 +239,29 @@ jobs:
           PUBLIC_BUILD_TIME: ${{ steps.release.outputs.time }}
 
       - name: Deploy docs
-        run: pnpm --dir apps/docs exec wrangler deploy --config wrangler.jsonc
+        run: pnpm deploy:docs:prod
         env:
           CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
           CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
           CLOUDFLARE_ACCOUNT_ID: ${{ steps.cloudflare.outputs.docs_account_id }}
+          PUBLIC_BUILD_VERSION: ${{ steps.release.outputs.version }}
+          PUBLIC_BUILD_GIT_SHA: ${{ steps.release.outputs.sha }}
+          PUBLIC_BUILD_TIME: ${{ steps.release.outputs.time }}
 
       - name: Deploy showcase
-        run: >-
-          pnpm --dir apps/showcase exec wrangler deploy --config wrangler.jsonc --env production
-          --var BUILD_VERSION:${{ steps.release.outputs.version }}
-          --var BUILD_GIT_SHA:${{ steps.release.outputs.sha }}
-          --var BUILD_TIME:${{ steps.release.outputs.time }}
+        run: pnpm deploy:showcase:prod
         env:
+          BUILD_VERSION: ${{ steps.release.outputs.version }}
+          BUILD_GIT_SHA: ${{ steps.release.outputs.sha }}
+          BUILD_TIME: ${{ steps.release.outputs.time }}
           CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
           CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
           CLOUDFLARE_ACCOUNT_ID: ${{ steps.cloudflare.outputs.showcase_account_id }}
 
       - name: Set showcase runtime secret
-        run: printf '%s' "$STATUS_TOKEN" | pnpm --dir apps/showcase exec wrangler secret put STATUS_TOKEN --config wrangler.jsonc --env production
+        run: |
+          pnpm guard:release:mutation
+          printf '%s' "$STATUS_TOKEN" | pnpm --dir apps/showcase exec wrangler secret put STATUS_TOKEN --config wrangler.jsonc --env production
         env:
           CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
           CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
