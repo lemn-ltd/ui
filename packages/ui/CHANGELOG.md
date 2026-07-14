@@ -1,5 +1,11 @@
 # @lemn-ltd/ui
 
+## 0.2.3
+
+### Patch Changes
+
+- 22f9d34: Render AccentColorPicker swatches with the exact selected color while keeping contrast-adjusted theme tokens for product UI.
+
 ## 0.2.2
 
 ### Patch Changes
