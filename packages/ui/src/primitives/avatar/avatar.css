@@ -68,6 +68,7 @@
 
 .ui-avatar[data-color="teal"] {
   background: var(--accent);
+  color: var(--accent-foreground);
 }
 .ui-avatar[data-color="purple"] {
   background: var(--accent2);

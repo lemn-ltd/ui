@@ -128,13 +128,14 @@ key.
 `AccentColorPicker` is the companion runtime control for product-selected accent
 color. It exposes a live pointer palette, a Hue spectrum, keyboard controls, and
 validated hexadecimal entry applied with Enter. It supports controlled and
-uncontrolled use and derives contrast-conscious light/dark values for
-`--accent`, `--accent-strong`, `--accent-soft`, and `--focus-ring`. By default it
-applies and persists the choice under the brand-neutral `accent-color` key;
-consumers can set `applyToRoot={false}` or `persist={false}` and own the runtime
-with `applyAccentColor`, `setAccentColor`, and `resetAccentColor` instead.
-The picker swatches always show the exact selected hexadecimal value; the theme
-tokens remain contrast-adjusted for readable product UI.
+uncontrolled use. A custom choice is applied exactly to `--accent`, while
+`--accent-foreground`, `--accent-strong`, `--accent-soft`, and `--focus-ring`
+are derived to keep content readable in both themes. By default it applies and
+persists the choice under the brand-neutral `accent-color` key; consumers can
+set `applyToRoot={false}` or `persist={false}` and own the runtime with
+`applyAccentColor`, `setAccentColor`, and `resetAccentColor` instead. The picker
+swatches and every surface backed by `--accent` therefore use the same selected
+hexadecimal value.
 
 ```tsx
 import { AccentColorPicker, ThemeToggle } from '@lemn-ltd/ui';

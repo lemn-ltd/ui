@@ -14,18 +14,27 @@ describe("AccentColorPicker", () => {
 		resetAccentColor();
 	});
 
-	it("derives live theme tokens from a normalized color", () => {
+	it("applies the normalized color exactly and derives supporting tokens", () => {
 		expect(applyAccentColor("#7C3AED")).toBe("#7c3aed");
 		expect(document.documentElement.dataset.accentColor).toBe("#7c3aed");
+		expect(document.documentElement.style.getPropertyValue("--accent")).toBe(
+			"#7c3aed",
+		);
 		expect(
-			document.documentElement.style.getPropertyValue("--accent"),
-		).toContain("light-dark(");
+			document.documentElement.style.getPropertyValue("--accent-foreground"),
+		).toBe("#ffffff");
+		expect(
+			document.documentElement.style.getPropertyValue("--accent-soft"),
+		).toContain("#7c3aed");
 
 		resetAccentColor();
 		expect(document.documentElement.dataset.accentColor).toBeUndefined();
 		expect(document.documentElement.style.getPropertyValue("--accent")).toBe(
 			"",
 		);
+		expect(
+			document.documentElement.style.getPropertyValue("--accent-foreground"),
+		).toBe("");
 	});
 
 	it("updates uncontrolled color from keyboard and reports it in real time", async () => {
@@ -142,6 +151,12 @@ describe("AccentColorPicker", () => {
 		expect(triggerSwatch?.style.backgroundColor).toBe("#000000");
 		expect(previewSwatch?.style.backgroundColor).toBe("#000000");
 		expect(document.documentElement.dataset.accentColor).toBe("#000000");
+		expect(document.documentElement.style.getPropertyValue("--accent")).toBe(
+			"#000000",
+		);
+		expect(
+			document.documentElement.style.getPropertyValue("--accent-foreground"),
+		).toBe("#ffffff");
 	});
 
 	it("rejects an invalid hexadecimal color without changing the accent", async () => {

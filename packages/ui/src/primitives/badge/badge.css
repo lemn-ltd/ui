@@ -81,6 +81,10 @@
   color: var(--surface);
 }
 
+.ui-badge[data-variant="solid"][data-tone="accent"] {
+  color: var(--accent-foreground);
+}
+
 /* Accent tones keep their soft surface in the default subtle variant. */
 .ui-badge[data-variant="subtle"][data-tone="accent"],
 .ui-badge[data-variant="subtle"][data-tone="accent2"] {

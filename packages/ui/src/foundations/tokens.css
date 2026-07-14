@@ -31,6 +31,7 @@
 
   /* Accents */
   --accent: light-dark(#0d9488, #5eead4);
+  --accent-foreground: light-dark(#ffffff, #0e141b);
   --accent-strong: light-dark(#0f766e, #2dd4bf);
   --accent-soft: light-dark(#e6fbf6, #0f2a2a);
   --accent2: light-dark(#7c3aed, #a78bfa);

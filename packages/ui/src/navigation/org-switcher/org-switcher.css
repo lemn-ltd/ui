@@ -119,7 +119,7 @@
  * Declared after the base mark rule so specificity ascends in source order. */
 .ui-org-switcher__active-row .ui-org-switcher__row-mark {
   background: var(--accent);
-  color: var(--surface);
+  color: var(--accent-foreground);
 }
 
 .ui-org-switcher__name {
