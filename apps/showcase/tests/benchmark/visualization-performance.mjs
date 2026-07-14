@@ -70,6 +70,16 @@ try {
 		const layoutShift = await page.evaluate(
 			() => window.__visualizationBenchmarkLayoutShift ?? 0,
 		);
+		await page
+			.locator(".ui-chart-visualization")
+			.first()
+			.scrollIntoViewIfNeeded();
+		await page.evaluate(
+			() =>
+				new Promise((resolve) =>
+					requestAnimationFrame(() => requestAnimationFrame(resolve)),
+				),
+		);
 		const screenshot = await page.screenshot({ fullPage: true });
 		results.push({
 			dataset: scenario.dataset,
