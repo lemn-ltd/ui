@@ -79,7 +79,7 @@ test("manual production release is main-only and workflow concurrency never canc
 test("production credentials remain exclusive to the protected environment job", () => {
 	assert.equal(releaseJob.environment, "production");
 	const productionSecretPattern =
-		/secrets\.PRODUCTION_(?:CLOUDFLARE_API_KEY|CLOUDFLARE_EMAIL|STATUS_TOKEN)/u;
+		/secrets\.PRODUCTION_(?:CLOUDFLARE_API_TOKEN|STATUS_TOKEN)/u;
 	for (const [jobName, job] of Object.entries(jobs)) {
 		if (jobName === "release-and-deploy") continue;
 		assert.doesNotMatch(JSON.stringify(job), productionSecretPattern);
@@ -103,13 +103,14 @@ test("production credentials remain exclusive to the protected environment job",
 		"preflight env",
 	);
 	assert.equal(
-		preflightEnv.CLOUDFLARE_API_KEY,
-		productionSecret("CLOUDFLARE_API_KEY"),
+		preflightEnv.CLOUDFLARE_API_TOKEN,
+		productionSecret("CLOUDFLARE_API_TOKEN"),
 	);
-	assert.equal(
-		preflightEnv.CLOUDFLARE_EMAIL,
-		productionSecret("CLOUDFLARE_EMAIL"),
+	assert.match(
+		String(step("Preflight Cloudflare release access").run),
+		/PRODUCTION_CLOUDFLARE_API_TOKEN[\s\S]*Workers Scripts: Edit[\s\S]*Zone: Read/u,
 	);
+	assert.doesNotMatch(workflowSource, /CLOUDFLARE_API_KEY|CLOUDFLARE_EMAIL/u);
 	assert.equal(
 		preflightEnv.PRODUCTION_STATUS_TOKEN,
 		productionSecret("STATUS_TOKEN"),
@@ -158,12 +159,24 @@ test("preflight precedes the single stateful release preparation and package gat
 });
 
 test("package release receives explicit API and registry authentication", () => {
+	const prepareEnv = record(
+		step("Prepare or resume release metadata").env,
+		"release preparation env",
+	);
 	const publishEnv = record(
 		step("Publish or verify exact package").env,
 		"package publish env",
 	);
 	assert.equal(publishEnv.GITHUB_TOKEN, expression("secrets.GITHUB_TOKEN"));
 	assert.equal(publishEnv.NODE_AUTH_TOKEN, expression("secrets.GITHUB_TOKEN"));
+	assert.equal(
+		prepareEnv.CLOUDFLARE_API_TOKEN,
+		productionSecret("CLOUDFLARE_API_TOKEN"),
+	);
+	assert.equal(
+		publishEnv.CLOUDFLARE_API_TOKEN,
+		productionSecret("CLOUDFLARE_API_TOKEN"),
+	);
 });
 
 test("package and release entrypoints share main-only guarded implementations", () => {
@@ -229,17 +242,18 @@ test("docs and showcase consume one immutable release identity", () => {
 	assert.doesNotMatch(rolloutSource, /GITHUB_SHA/u);
 });
 
-test("all production deploys receive only the Environment credential pair", () => {
+test("all production deploys receive only the scoped Environment API token", () => {
 	for (const name of [
 		"Deploy docs",
 		"Roll out showcase with protected rollback",
 	]) {
 		const env = record(step(name).env, `${name} env`);
 		assert.equal(
-			env.CLOUDFLARE_API_KEY,
-			productionSecret("CLOUDFLARE_API_KEY"),
+			env.CLOUDFLARE_API_TOKEN,
+			productionSecret("CLOUDFLARE_API_TOKEN"),
 		);
-		assert.equal(env.CLOUDFLARE_EMAIL, productionSecret("CLOUDFLARE_EMAIL"));
+		assert.equal(env.CLOUDFLARE_API_KEY, undefined);
+		assert.equal(env.CLOUDFLARE_EMAIL, undefined);
 		assert.match(
 			String(env.CLOUDFLARE_ACCOUNT_ID),
 			/steps\.cloudflare\.outputs\.(?:docs|showcase)_account_id/u,
@@ -297,7 +311,7 @@ test("CI and release smoke local showcase assets before package publication", ()
 	);
 });
 
-test("the validation gate requires all three complete showcase E2E shards", () => {
+test("the validation gate isolates accessibility pressure from all three complete E2E shards", () => {
 	const e2eJob = record(jobs["showcase-e2e"], "showcase E2E job");
 	const strategy = record(e2eJob.strategy, "showcase E2E strategy");
 	const matrix = record(strategy.matrix, "showcase E2E matrix");
@@ -312,7 +326,42 @@ test("the validation gate requires all three complete showcase E2E shards", () =
 	assert.equal(strategy["fail-fast"], false);
 	assert.deepEqual(matrix.shard, [1, 2, 3]);
 	assert.doesNotMatch(String(shard.run), /--grep|visual\.e2e/u);
-	assert.deepEqual(releaseJob.needs, ["validate", "showcase-e2e"]);
+	assert.match(String(shard.run), /--project=behavior/u);
+	for (const project of [
+		"visual-light-mobile",
+		"visual-light-tablet",
+		"visual-light-desktop",
+		"visual-dark-mobile",
+		"visual-dark-tablet",
+		"visual-dark-desktop",
+	]) {
+		assert.match(String(shard.run), new RegExp(`--project=${project}`, "u"));
+	}
+	assert.doesNotMatch(String(shard.run), /accessibility/u);
+
+	const accessibilityJob = record(
+		jobs["showcase-accessibility"],
+		"showcase accessibility job",
+	);
+	assert.equal(accessibilityJob.needs, "validate");
+	assert.equal(accessibilityJob.container, undefined);
+	const accessibilitySteps = accessibilityJob.steps as UnknownRecord[];
+	const browserInstall = accessibilitySteps.find(
+		(candidate) => candidate.name === "Install Chromium",
+	);
+	const crawl = accessibilitySteps.find(
+		(candidate) => candidate.name === "Run showcase accessibility crawl",
+	);
+	assert.ok(browserInstall);
+	assert.ok(crawl);
+	assert.match(String(browserInstall.run), /install --with-deps chromium/u);
+	assert.match(String(crawl.run), /--project=accessibility/u);
+	assert.doesNotMatch(String(crawl.run), /--shard|--grep/u);
+	assert.deepEqual(releaseJob.needs, [
+		"validate",
+		"showcase-e2e",
+		"showcase-accessibility",
+	]);
 });
 
 test("contributor release guidance remains fail closed", () => {

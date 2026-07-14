@@ -121,11 +121,11 @@ pnpm validate:boundaries
    The release workflow turns merged changesets into a release metadata commit
    that updates `packages/ui/package.json`, `packages/ui/CHANGELOG.md`, and the
    docs changelog.
-5. Before versioning, pushing, or publishing, CI validates the configured
-   Cloudflare Global API Key, account membership, Worker write permissions, and
-   access to the production DNS zone without changing ownership or domains. This repository uses
-   `CLOUDFLARE_API_KEY` with `CLOUDFLARE_EMAIL`; it must not map the Global API
-   Key to `CLOUDFLARE_API_TOKEN`.
+5. Before versioning, pushing, or publishing, CI validates the scoped,
+   account-owned Cloudflare API token without mutating Cloudflare. The
+   `production` Environment secret is `PRODUCTION_CLOUDFLARE_API_TOKEN`; its
+   only grants are Account `Lemn DEV` -> `Workers Scripts: Edit` and Zone
+   `le-mn.com` -> `Zone: Read`. Legacy key/email authentication fails closed.
 6. CI publishes `@lemn-ltd/ui` only when the package version is not already
    available in the authenticated GitHub Packages version list and the package
    scope matches the repository owner. Authentication, authorization, package

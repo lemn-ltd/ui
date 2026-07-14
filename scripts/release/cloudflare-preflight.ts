@@ -7,6 +7,11 @@ const CLOUDFLARE_API = "https://api.cloudflare.com/client/v4";
 const EXPECTED_ACCOUNT_NAME = "Lemn DEV";
 const EXPECTED_ZONE_NAME = "le-mn.com";
 
+export const CLOUDFLARE_PRODUCTION_SECRET =
+	"PRODUCTION_CLOUDFLARE_API_TOKEN";
+export const CLOUDFLARE_TOKEN_GRANTS =
+	'Account "Lemn DEV" -> Workers Scripts: Edit; Zone "le-mn.com" -> Zone: Read';
+
 interface WranglerRoute {
 	pattern?: string;
 	custom_domain?: boolean;
@@ -35,30 +40,40 @@ interface CloudflareEnvelope<T> {
 	errors?: Array<{ code?: number; message?: string }>;
 }
 
-interface MembershipPolicy {
-	access?: string;
-	permission_groups?: Array<{ name?: string }>;
-}
-
-interface Membership {
-	id?: string;
-	account?: { id?: string };
-	api_access_enabled?: boolean;
-	policies?: MembershipPolicy[];
-	roles?: Array<string | { name?: string }>;
-	status?: string;
-}
-
-interface CloudflareAuth {
-	apiKey: string;
-	email: string;
+export interface CloudflareAuth {
+	apiToken: string;
 }
 
 type FetchImplementation = typeof fetch;
 
 function requireValue(value: string | undefined, description: string): string {
-	if (!value) throw new Error(`Missing ${description}`);
-	return value;
+	if (!value?.trim()) throw new Error(`Missing ${description}`);
+	return value.trim();
+}
+
+function productionTokenGuidance(): string {
+	return `Configure production Environment secret ${CLOUDFLARE_PRODUCTION_SECRET} with an account-owned API token granting exactly ${CLOUDFLARE_TOKEN_GRANTS}`;
+}
+
+export function cloudflareAuthFromEnvironment(
+	environment: NodeJS.ProcessEnv,
+): CloudflareAuth {
+	const legacyVariables = ["CLOUDFLARE_API_KEY", "CLOUDFLARE_EMAIL"].filter(
+		(name) => environment[name]?.trim(),
+	);
+	if (legacyVariables.length > 0) {
+		throw new Error(
+			`Legacy Cloudflare authentication is forbidden; unset ${legacyVariables.join(" and ")}. ${productionTokenGuidance()}`,
+		);
+	}
+	const apiToken = environment.CLOUDFLARE_API_TOKEN?.trim();
+	if (!apiToken) {
+		throw new Error(
+			`Missing CLOUDFLARE_API_TOKEN. ${productionTokenGuidance()}`,
+		);
+	}
+
+	return { apiToken };
 }
 
 async function readWranglerConfig(path: string): Promise<WranglerConfig> {
@@ -126,9 +141,7 @@ export async function loadCloudflareReleaseTargets(
 }
 
 function redact(message: string, auth: CloudflareAuth): string {
-	return message
-		.replaceAll(auth.apiKey, "[REDACTED]")
-		.replaceAll(auth.email, "[REDACTED]");
+	return message.replaceAll(auth.apiToken, "[REDACTED]");
 }
 
 function requireArrayResult(value: unknown, description: string): unknown[] {
@@ -189,14 +202,13 @@ async function cloudflareRequest<T>(
 	try {
 		response = await fetchImplementation(`${CLOUDFLARE_API}${path}`, {
 			headers: {
-				"X-Auth-Email": auth.email,
-				"X-Auth-Key": auth.apiKey,
+				Authorization: `Bearer ${auth.apiToken}`,
 			},
 			signal: AbortSignal.timeout(15_000),
 		});
 	} catch (error) {
 		throw new Error(
-			`Cloudflare preflight request failed for ${path}: ${redact(String(error), auth)}`,
+			`Cloudflare preflight request failed for ${path}: ${redact(String(error), auth)}. ${productionTokenGuidance()}`,
 		);
 	}
 
@@ -205,7 +217,7 @@ async function cloudflareRequest<T>(
 		envelope = (await response.json()) as CloudflareEnvelope<T>;
 	} catch {
 		throw new Error(
-			`Cloudflare preflight returned non-JSON HTTP ${response.status} for ${path}`,
+			`Cloudflare preflight returned non-JSON HTTP ${response.status} for ${path}. ${productionTokenGuidance()}`,
 		);
 	}
 
@@ -221,56 +233,21 @@ async function cloudflareRequest<T>(
 			)
 			.join("; ");
 		throw new Error(
-			`Cloudflare preflight rejected ${path} with HTTP ${response.status}${errors ? `: ${redact(errors, auth)}` : ""}`,
+			`Cloudflare preflight rejected ${path} with HTTP ${response.status}${errors ? `: ${redact(errors, auth)}` : ""}. ${productionTokenGuidance()}`,
 		);
 	}
 
 	return envelope.result;
 }
 
-function membershipRoleNames(membership: Membership): string[] {
-	return (membership.roles ?? []).flatMap((role) => {
-		if (typeof role === "string") return [role];
-		return role.name ? [role.name] : [];
-	});
-}
-
-function assertDeploymentPermissions(membership: Membership): void {
-	const allowed = (membership.policies ?? [])
-		.filter((policy) => policy.access?.toLowerCase() === "allow")
-		.flatMap((policy) => policy.permission_groups ?? [])
-		.flatMap((group) => (group.name ? [group.name] : []));
-	const denied = (membership.policies ?? [])
-		.filter((policy) => policy.access?.toLowerCase() === "deny")
-		.flatMap((policy) => policy.permission_groups ?? [])
-		.flatMap((group) => (group.name ? [group.name] : []));
-	const adminRole = membershipRoleNames(membership).some((name) =>
-		/(?:super|account) administrator/iu.test(name),
-	);
-	const scriptsWrite = allowed.some((name) =>
-		/^Workers Scripts (?:Write|Edit)$/iu.test(name),
-	);
-	const scriptsDenied = denied.some((name) =>
-		/^Workers Scripts (?:Write|Edit)$/iu.test(name),
-	);
-
-	if (scriptsDenied || (!adminRole && !scriptsWrite)) {
-		throw new Error(
-			"Cloudflare account membership lacks Workers Scripts Write permission",
-		);
-	}
-}
-
 export async function verifyCloudflareReleaseAccess(input: {
-	apiKey: string;
-	email: string;
+	apiToken: string;
 	targets: CloudflareReleaseTarget[];
 	fetchImplementation?: FetchImplementation;
 	requireResources?: boolean;
 }): Promise<void> {
 	const auth = {
-		apiKey: requireValue(input.apiKey, "CLOUDFLARE_API_KEY"),
-		email: requireValue(input.email, "CLOUDFLARE_EMAIL"),
+		apiToken: requireValue(input.apiToken, "CLOUDFLARE_API_TOKEN"),
 	};
 	const fetchImplementation = input.fetchImplementation ?? fetch;
 	const accounts = new Set(input.targets.map((target) => target.accountId));
@@ -281,53 +258,14 @@ export async function verifyCloudflareReleaseAccess(input: {
 	}
 	const accountId = requireValue([...accounts][0], "release account id");
 
-	const user = await cloudflareRequest<{ email?: string }>(
-		"/user",
+	const token = await cloudflareRequest<{ status?: string }>(
+		`/accounts/${encodeURIComponent(accountId)}/tokens/verify`,
 		auth,
 		fetchImplementation,
 	);
-	if (user.email?.toLowerCase() !== auth.email.toLowerCase()) {
-		throw new Error("CLOUDFLARE_EMAIL does not match the Global API Key owner");
-	}
-
-	const memberships = requireArrayResult(
-		await cloudflareRequest<Membership[]>(
-			"/memberships",
-			auth,
-			fetchImplementation,
-		),
-		"membership list",
-	);
-	const membership = (memberships as Membership[]).find(
-		(candidate) => candidate.account?.id === accountId,
-	);
-	const membershipId = requireValue(
-		membership?.id,
-		`accepted membership for account ${accountId}`,
-	);
-	if (
-		membership?.status !== "accepted" ||
-		membership.api_access_enabled === false
-	) {
+	if (token.status !== "active") {
 		throw new Error(
-			`Cloudflare API access is not active for account ${accountId}`,
-		);
-	}
-
-	const membershipDetails = await cloudflareRequest<Membership>(
-		`/memberships/${encodeURIComponent(membershipId)}`,
-		auth,
-		fetchImplementation,
-	);
-	assertDeploymentPermissions(membershipDetails);
-	const account = await cloudflareRequest<{ id?: string; name?: string }>(
-		`/accounts/${encodeURIComponent(accountId)}`,
-		auth,
-		fetchImplementation,
-	);
-	if (account.id !== accountId || account.name !== EXPECTED_ACCOUNT_NAME) {
-		throw new Error(
-			`Configured Cloudflare account is not ${EXPECTED_ACCOUNT_NAME}`,
+			`Cloudflare API token is not active for account ${accountId}. ${productionTokenGuidance()}`,
 		);
 	}
 
@@ -351,7 +289,7 @@ export async function verifyCloudflareReleaseAccess(input: {
 		)
 	) {
 		throw new Error(
-			`${EXPECTED_ACCOUNT_NAME} cannot manage the ${EXPECTED_ZONE_NAME} zone required by the release domains`,
+			`${EXPECTED_ACCOUNT_NAME} cannot read the ${EXPECTED_ZONE_NAME} zone required by the release domains. ${productionTokenGuidance()}`,
 		);
 	}
 
@@ -409,8 +347,7 @@ async function main(): Promise<void> {
 	const targets = await loadCloudflareReleaseTargets();
 	const requireResources = process.argv.includes("--require-resources");
 	await verifyCloudflareReleaseAccess({
-		apiKey: process.env.CLOUDFLARE_API_KEY ?? "",
-		email: process.env.CLOUDFLARE_EMAIL ?? "",
+		...cloudflareAuthFromEnvironment(process.env),
 		targets,
 		requireResources,
 	});

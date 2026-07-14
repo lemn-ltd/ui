@@ -24,12 +24,13 @@ Todas las operaciones de Changesets usan el wrapper catalogado
 `pnpm exec changeset version` invoca el binario de la dependencia fuera de la
 gobernanza de package scripts y no es una ruta de release soportada.
 
-El workflow de produccion completa el preflight no mutante de la Global API Key
-de Cloudflare antes de que Changesets pueda versionar, pushear o publicar. Luego
-captura el SHA del commit de release y despliega ese SHA y version exactos.
-El mismo guard exclusivo de `main` protege los entrypoints CLI directos, por lo
-que las credenciales en un feature checkout no autorizan versionado,
-publicacion ni deploy.
+El workflow de produccion completa el preflight no mutante del API token de
+cuenta de Cloudflare con scope limitado antes de que Changesets pueda versionar,
+pushear o publicar. El token solo tiene `Workers Scripts: Edit` sobre Account
+`Lemn DEV` y `Zone: Read` sobre Zone `le-mn.com`. Luego captura el SHA del commit
+de release y despliega ese SHA y version exactos. El mismo guard exclusivo de
+`main` protege los entrypoints CLI directos, por lo que las credenciales en un
+feature checkout no autorizan versionado, publicacion ni deploy.
 
 CI publica el paquete solo cuando una lista autenticada de GitHub Packages omite
 la version generada exacta y el package scope coincide con el owner del

@@ -142,6 +142,14 @@ for (const [name, route] of PAGES) {
 		if (route === "/core/components/checkbox") {
 			await page.locator(".showcase-docs-page .shiki").first().waitFor();
 		}
+		if (name === "info-banner") {
+			const banner = page.locator(".ui-info-banner").first();
+			await expect(
+				banner.getByText("Scheduled sync", { exact: true }),
+			).toBeVisible();
+			await expect(banner.getByRole("button", { name: "Review" })).toBeVisible();
+			await expect(banner.getByRole("button", { name: "Dismiss" })).toBeVisible();
+		}
 		if (name === "sidebar") {
 			const target = page.getByTestId("sidebar-visual-target");
 			await expect(target).toHaveCount(1);

@@ -18,6 +18,17 @@ const deployDocs = await Promise.all([
 		"utf8",
 	),
 ]);
+const releaseOverviewDocs = await Promise.all([
+	readFile(resolve(root, "README.md"), "utf8"),
+	readFile(
+		resolve(root, "apps/docs/src/content/docs/lifecycle/index.mdx"),
+		"utf8",
+	),
+	readFile(
+		resolve(root, "apps/docs/src/content/docs/es/lifecycle/index.mdx"),
+		"utf8",
+	),
+]);
 
 const repositorySecretDeletionOrder = [
 	"gh secret delete CLOUDFLARE_API_TOKEN --repo lemn-ltd/ui",
@@ -40,11 +51,17 @@ test("showcase ownership and protected status boundaries are explicit", () => {
 	);
 });
 
-test("English and Spanish runbooks preserve rollback secrets until stable smoke", () => {
+test("English and Spanish runbooks require scoped token auth and preserve rollback secrets until stable smoke", () => {
 	for (const docs of deployDocs) {
-		assert.match(docs, /PRODUCTION_CLOUDFLARE_API_KEY/u);
-		assert.match(docs, /PRODUCTION_CLOUDFLARE_EMAIL/u);
+		assert.match(docs, /PRODUCTION_CLOUDFLARE_API_TOKEN/u);
+		assert.doesNotMatch(docs, /PRODUCTION_CLOUDFLARE_API_KEY/u);
+		assert.doesNotMatch(docs, /PRODUCTION_CLOUDFLARE_EMAIL/u);
 		assert.match(docs, /PRODUCTION_STATUS_TOKEN/u);
+		assert.match(docs, /Workers Scripts: Edit/u);
+		assert.match(docs, /Workers Scripts Write/u);
+		assert.match(docs, /Zone: Read/u);
+		assert.match(docs, /Workers Routes/u);
+		assert.match(docs, /(?:legacy key\/email|modo legacy key\/email)/u);
 		assert.match(
 			docs,
 			/79 (?:local repositories\/worktrees|repositorios\/worktrees locales)/u,
@@ -60,5 +77,16 @@ test("English and Spanish runbooks preserve rollback secrets until stable smoke"
 			assert.ok(commandIndex > previousIndex, `${command} is out of order`);
 			previousIndex = commandIndex;
 		}
+	}
+});
+
+test("release overview docs describe only the scoped production token", () => {
+	for (const docs of releaseOverviewDocs) {
+		assert.match(docs, /Workers Scripts: Edit/u);
+		assert.match(docs, /Zone: Read/u);
+		assert.match(docs, /Lemn DEV/u);
+		assert.match(docs, /le-mn\.com/u);
+		assert.doesNotMatch(docs, /Global API Key/u);
+		assert.doesNotMatch(docs, /CLOUDFLARE_API_KEY|CLOUDFLARE_EMAIL/u);
 	}
 });

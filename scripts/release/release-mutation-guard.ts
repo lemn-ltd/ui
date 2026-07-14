@@ -2,6 +2,7 @@
 import { execFileSync } from "node:child_process";
 import { appendFile } from "node:fs/promises";
 import {
+	cloudflareAuthFromEnvironment,
 	githubOutputs,
 	loadCloudflareReleaseTargets,
 	verifyCloudflareReleaseAccess,
@@ -68,8 +69,7 @@ export async function guardReleaseMutationFromEnvironment(
 		ref,
 		preflight: () =>
 			verifyCloudflareReleaseAccess({
-				apiKey: environment.CLOUDFLARE_API_KEY ?? "",
-				email: environment.CLOUDFLARE_EMAIL ?? "",
+				...cloudflareAuthFromEnvironment(environment),
 				targets,
 			}),
 	});

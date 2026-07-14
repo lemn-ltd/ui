@@ -14,7 +14,7 @@ The production deployment has two public domains:
 CI validates pull requests with typecheck, tests, build, release metadata, and
 changeset status. Pushes to `main` run the release workflow:
 
-1. Validate the Cloudflare Global API Key owner, account membership, Worker write permissions, zone access, and absence of conflicting domain mappings without mutating Cloudflare.
+1. Validate that the scoped Cloudflare account API token is active for the configured account, can read the required zone, and can inspect the target Workers and custom-domain mappings without mutating Cloudflare.
 2. Fetch protected `main`. A stale rerun may resume only the unique release
    commit carrying its `Release-Origin` trailer; otherwise it stops instead of
    creating a sibling or attempting a non-fast-forward push.
@@ -48,13 +48,24 @@ credentials. It uses the `production` GitHub Environment, which requires the
 
 The only custom secret names in the `production` Environment are:
 
-- `PRODUCTION_CLOUDFLARE_API_KEY` containing the Global API Key
-- `PRODUCTION_CLOUDFLARE_EMAIL` for the Global API Key owner
+- `PRODUCTION_CLOUDFLARE_API_TOKEN` containing an account-owned API token
 - `PRODUCTION_STATUS_TOKEN`
 
 `GITHUB_TOKEN` is supplied by GitHub Actions and is not a configured Environment
 secret. The distinct `PRODUCTION_*` names make a missing Environment secret fail
 closed instead of silently resolving a repository credential.
+
+Create the Cloudflare token with exactly these resource grants:
+
+- Account resource: include only `Lemn DEV`; permission `Workers Scripts: Edit`.
+- Zone resource: include only `le-mn.com`; permission `Zone: Read`.
+
+The token is used as `CLOUDFLARE_API_TOKEN`. The release preflight rejects a
+missing, disabled, expired, or legacy key/email authentication mode. `Workers
+Scripts: Edit` (called `Workers Scripts Write` by the API) covers Worker uploads,
+versions, deployments, secrets, and custom domains for this release; `Zone:
+Read` is used only by the non-mutating zone scope check. Do not add user-level,
+account-settings, KV, R2, Workers Routes, or broader account/zone grants.
 
 ## Status Token Rotation And Rollback
 
@@ -124,11 +135,12 @@ gh secret delete STATUS_TOKEN --repo lemn-ltd/ui
 ```
 
 `STATUS_TOKEN` is last because it is the first-rollout rollback credential. Do
-not delete or rename the three `PRODUCTION_*` Environment secrets.
+not delete or rename the two `PRODUCTION_*` Environment secrets.
 
 Both `wrangler.jsonc` files are the account and Worker source of truth. Do not
-set or derive `CLOUDFLARE_API_TOKEN` from the Global API Key; Wrangler requires
-the `CLOUDFLARE_API_KEY` plus `CLOUDFLARE_EMAIL` pair for this repository.
+derive `CLOUDFLARE_API_TOKEN` from a Global API Key or configure
+`CLOUDFLARE_API_KEY`/`CLOUDFLARE_EMAIL`; the release guard accepts only the
+scoped account API token.
 
 This runbook applies `PAT-SEC-SECRETS-001`, `PAT-SEC-RISK-001`,
 `PAT-SEC-LOGGING-001`, `PAT-OPS-LEAST-PRIVILEGE-001`,

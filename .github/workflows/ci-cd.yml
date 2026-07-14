@@ -138,11 +138,63 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run showcase E2E shard
-        run: pnpm --filter @lemn-ltd/ui-showcase exec playwright test --shard=${{ matrix.shard }}/3
+        run: >-
+          pnpm --filter @lemn-ltd/ui-showcase exec playwright test
+          --project=behavior
+          --project=visual-light-mobile
+          --project=visual-light-tablet
+          --project=visual-light-desktop
+          --project=visual-dark-mobile
+          --project=visual-dark-tablet
+          --project=visual-dark-desktop
+          --shard=${{ matrix.shard }}/3
+
+  showcase-accessibility:
+    name: Showcase Accessibility
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://npm.pkg.github.com
+          scope: "@lemn-ltd"
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare "$(node -p "require('./package.json').packageManager")" --activate
+
+      - name: Resolve pnpm store
+        run: echo "PNPM_STORE_PATH=$(pnpm store path --silent)" >> "$GITHUB_ENV"
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.PNPM_STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Chromium
+        run: pnpm --filter @lemn-ltd/ui-showcase exec playwright install --with-deps chromium
+
+      - name: Run showcase accessibility crawl
+        run: pnpm --filter @lemn-ltd/ui-showcase exec playwright test --project=accessibility
 
   release-and-deploy:
     name: Release And Deploy
-    needs: [validate, showcase-e2e]
+    needs: [validate, showcase-e2e, showcase-accessibility]
     if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -184,7 +236,11 @@ jobs:
       - name: Preflight Cloudflare release access
         id: cloudflare
         run: |
-          for name in CLOUDFLARE_API_KEY CLOUDFLARE_EMAIL PRODUCTION_STATUS_TOKEN ROLLBACK_STATUS_TOKEN; do
+          if [ -z "${CLOUDFLARE_API_TOKEN}" ]; then
+            echo '::error::Missing production Environment secret PRODUCTION_CLOUDFLARE_API_TOKEN. Required account-owned Cloudflare token grants: Account "Lemn DEV" -> Workers Scripts: Edit; Zone "le-mn.com" -> Zone: Read.' >&2
+            exit 1
+          fi
+          for name in PRODUCTION_STATUS_TOKEN ROLLBACK_STATUS_TOKEN; do
             if [ -z "${!name}" ]; then
               echo "::error::Missing required production environment secret: ${name}" >&2
               exit 1
@@ -192,8 +248,7 @@ jobs:
           done
           pnpm release:preflight
         env:
-          CLOUDFLARE_API_KEY: ${{ secrets.PRODUCTION_CLOUDFLARE_API_KEY }}
-          CLOUDFLARE_EMAIL: ${{ secrets.PRODUCTION_CLOUDFLARE_EMAIL }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.PRODUCTION_CLOUDFLARE_API_TOKEN }}
           PRODUCTION_STATUS_TOKEN: ${{ secrets.PRODUCTION_STATUS_TOKEN }}
           ROLLBACK_STATUS_TOKEN: ${{ secrets.STATUS_TOKEN || secrets.PRODUCTION_STATUS_TOKEN }}
 
@@ -201,6 +256,7 @@ jobs:
         id: release
         run: pnpm prepare:ui:release
         env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.PRODUCTION_CLOUDFLARE_API_TOKEN }}
           GITHUB_SHA: ${{ github.sha }}
 
       - name: Build package
@@ -212,8 +268,7 @@ jobs:
       - name: Publish or verify exact package
         run: pnpm publish:ui:release
         env:
-          CLOUDFLARE_API_KEY: ${{ secrets.PRODUCTION_CLOUDFLARE_API_KEY }}
-          CLOUDFLARE_EMAIL: ${{ secrets.PRODUCTION_CLOUDFLARE_EMAIL }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.PRODUCTION_CLOUDFLARE_API_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -227,8 +282,7 @@ jobs:
       - name: Deploy docs
         run: pnpm deploy:docs:prod
         env:
-          CLOUDFLARE_API_KEY: ${{ secrets.PRODUCTION_CLOUDFLARE_API_KEY }}
-          CLOUDFLARE_EMAIL: ${{ secrets.PRODUCTION_CLOUDFLARE_EMAIL }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.PRODUCTION_CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ steps.cloudflare.outputs.docs_account_id }}
           PUBLIC_BUILD_VERSION: ${{ steps.release.outputs.version }}
           PUBLIC_BUILD_GIT_SHA: ${{ steps.release.outputs.sha }}
@@ -237,8 +291,7 @@ jobs:
       - name: Roll out showcase with protected rollback
         run: pnpm rollout:showcase:prod
         env:
-          CLOUDFLARE_API_KEY: ${{ secrets.PRODUCTION_CLOUDFLARE_API_KEY }}
-          CLOUDFLARE_EMAIL: ${{ secrets.PRODUCTION_CLOUDFLARE_EMAIL }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.PRODUCTION_CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ steps.cloudflare.outputs.showcase_account_id }}
           EXPECTED_RELEASE_ID: ${{ steps.release.outputs.release_id }}
           EXPECTED_RELEASE_VERSION: ${{ steps.release.outputs.version }}

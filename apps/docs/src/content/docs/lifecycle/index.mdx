@@ -23,11 +23,13 @@ wrapper guards `version` before mutation. `pnpm exec changeset version` invokes
 the dependency binary outside package-script governance and is not a supported
 release path.
 
-The production workflow completes its non-mutating Cloudflare Global API Key
-preflight before Changesets can version, push, or publish anything. It then
-captures the release commit SHA and deploys that exact SHA and package version.
-The same main-only guard protects direct CLI entrypoints, so credentials in a
-feature checkout cannot authorize a version, package publication, or deploy.
+The production workflow completes its non-mutating, scoped Cloudflare account
+API token preflight before Changesets can version, push, or publish anything.
+The token has only `Workers Scripts: Edit` on Account `Lemn DEV` and
+`Zone: Read` on Zone `le-mn.com`. It then captures the release commit SHA and deploys
+that exact SHA and package version. The same main-only guard protects direct CLI
+entrypoints, so credentials in a feature checkout cannot authorize a version,
+package publication, or deploy.
 
 CI publishes the package only when an authenticated GitHub Packages version
 list omits the exact generated version and package scope matches repository

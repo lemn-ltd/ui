@@ -2,24 +2,24 @@ import type { ConsoleMessage, Page } from "@playwright/test";
 import { expect, gotoStable, test } from "../helpers/deterministic";
 
 const EXPANDED_ROUTES = [
-	"area-chart",
-	"bar-chart",
-	"combo-chart",
-	"bar-list",
-	"category-bar",
-	"donut-chart",
-	"line-chart",
-	"progress-circle",
-	"spark-chart",
-	"tracker",
-	"select-native",
-	"radio-card-group",
-	"toggle-group",
-	"slider",
-	"date-picker",
-	"date-range-picker",
-	"tab-navigation",
-	"separator",
+	["area-chart", "Area chart"],
+	["bar-chart", "Bar chart"],
+	["combo-chart", "Combo chart"],
+	["bar-list", "Bar list"],
+	["category-bar", "Category bar"],
+	["donut-chart", "Donut chart"],
+	["line-chart", "Line chart"],
+	["progress-circle", "Progress circle"],
+	["spark-chart", "Spark chart"],
+	["tracker", "Tracker"],
+	["select-native", "Select native"],
+	["radio-card-group", "Radio card group"],
+	["toggle-group", "Toggle group"],
+	["slider", "Slider"],
+	["date-picker", "Date picker"],
+	["date-range-picker", "Date range picker"],
+	["tab-navigation", "Tab navigation"],
+	["separator", "Separator"],
 ] as const;
 
 function runtimeErrors(page: Page): string[] {
@@ -34,10 +34,23 @@ function runtimeErrors(page: Page): string[] {
 test("all expanded component routes render without runtime errors", async ({
 	page,
 }) => {
+	test.setTimeout(240_000);
 	const errors = runtimeErrors(page);
-	for (const slug of EXPANDED_ROUTES) {
-		await gotoStable(page, `/core/components/${slug}`);
-		await expect(page.locator(".showcase-docs-page")).toBeVisible();
+	for (const [slug, title] of EXPANDED_ROUTES) {
+		const route = `/core/components/${slug}`;
+		await test.step(route, async () => {
+			const errorsBeforeNavigation = errors.length;
+			await gotoStable(page, route);
+			expect(new URL(page.url()).pathname).toBe(route);
+			await expect(page.locator(".showcase-docs-page")).toBeVisible();
+			await expect(
+				page.getByRole("heading", { level: 1, name: title, exact: true }),
+			).toBeVisible();
+			await expect(page.locator(".showcase-page-fallback")).toHaveCount(0);
+			expect(errors.slice(errorsBeforeNavigation), `${route} runtime errors`).toEqual(
+				[],
+			);
+		});
 	}
 	expect(errors).toEqual([]);
 });

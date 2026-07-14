@@ -2,13 +2,15 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
 	type CloudflareReleaseTarget,
+	CLOUDFLARE_PRODUCTION_SECRET,
+	CLOUDFLARE_TOKEN_GRANTS,
+	cloudflareAuthFromEnvironment,
 	loadCloudflareReleaseTargets,
 	verifyCloudflareReleaseAccess,
 } from "../../scripts/release/cloudflare-preflight.ts";
 
 const accountId = "71da6f8791d79c8abe7beea6f03d0162";
-const apiKey = "contract-global-api-key";
-const email = "contract@example.test";
+const apiToken = "contract-scoped-api-token";
 
 const targets: CloudflareReleaseTarget[] = [
 	{
@@ -32,12 +34,12 @@ function response(result: unknown, status = 200): Response {
 function cloudflareFixture(
 	options: {
 		conflictingDomain?: boolean;
+		inactiveToken?: boolean;
 		malformedDomainItem?: boolean;
 		malformedWorkerItem?: boolean;
 		malformedWorkerList?: boolean;
 		missingResources?: boolean;
 		missingZone?: boolean;
-		readOnly?: boolean;
 		reject?: boolean;
 	} = {},
 ) {
@@ -46,43 +48,24 @@ function cloudflareFixture(
 		const url = String(input);
 		const headers = new Headers(init?.headers);
 		requests.push({ url, method: init?.method ?? "GET" });
-		assert.equal(headers.get("X-Auth-Key"), apiKey);
-		assert.equal(headers.get("X-Auth-Email"), email);
+		assert.equal(headers.get("Authorization"), `Bearer ${apiToken}`);
+		assert.equal(headers.get("X-Auth-Key"), null);
+		assert.equal(headers.get("X-Auth-Email"), null);
 
 		if (options.reject) {
 			return Response.json(
 				{
 					success: false,
-					errors: [{ code: 9109, message: `Unauthorized ${apiKey}` }],
+					errors: [{ code: 9109, message: `Unauthorized ${apiToken}` }],
 				},
 				{ status: 403 },
 			);
 		}
-		if (url.endsWith("/user")) return response({ email });
-		if (url.endsWith("/memberships")) {
-			return response([
-				{ id: "membership", account: { id: accountId }, status: "accepted" },
-			]);
-		}
-		if (url.endsWith("/memberships/membership")) {
+		if (url.endsWith(`/accounts/${accountId}/tokens/verify`)) {
 			return response({
-				status: "accepted",
-				policies: [
-					{
-						access: "allow",
-						permission_groups: [
-							{
-								name: options.readOnly
-									? "Workers Scripts Read"
-									: "Workers Scripts Write",
-							},
-						],
-					},
-				],
+				status: options.inactiveToken ? "disabled" : "active",
 			});
 		}
-		if (url.endsWith(`/accounts/${accountId}`))
-			return response({ id: accountId, name: "Lemn DEV" });
 		if (url.includes("/zones?")) {
 			return response(
 				options.missingZone
@@ -91,9 +74,7 @@ function cloudflareFixture(
 			);
 		}
 		if (url.endsWith(`/accounts/${accountId}/workers/scripts`)) {
-			if (options.malformedWorkerList) {
-				return response({ success: true, result: [] });
-			}
+			if (options.malformedWorkerList) return response({ scripts: [] });
 			if (options.malformedWorkerItem) return response([{}]);
 			return response(
 				options.missingResources
@@ -112,7 +93,7 @@ function cloudflareFixture(
 						? "different-worker"
 						: requestUrl.searchParams.get("hostname") === "ui.le-mn.com"
 							? "lemn-ui-docs"
-								: "lemn-ui-showcase",
+							: "lemn-ui-showcase",
 				},
 			]);
 		}
@@ -121,142 +102,123 @@ function cloudflareFixture(
 	return { fetchImplementation, requests };
 }
 
+async function verifyFixture(
+	fixture: ReturnType<typeof cloudflareFixture>,
+	requireResources = false,
+): Promise<void> {
+	await verifyCloudflareReleaseAccess({
+		apiToken,
+		targets,
+		fetchImplementation: fixture.fetchImplementation,
+		requireResources,
+	});
+}
+
 test("both Wrangler deploy targets use the confirmed Lemn DEV account", async () => {
 	const configuredTargets = await loadCloudflareReleaseTargets();
 	assert.deepEqual(configuredTargets, targets);
 });
 
-test("preflight verifies Global API Key ownership, write permissions, Workers, and domains without mutation", async () => {
+test("preflight uses only bearer-token auth and performs no mutation", async () => {
 	const fixture = cloudflareFixture();
-	await verifyCloudflareReleaseAccess({
-		apiKey,
-		email,
-		targets,
-		fetchImplementation: fixture.fetchImplementation,
-	});
-	assert.ok(fixture.requests.length >= 7);
+	await verifyFixture(fixture);
+	assert.equal(fixture.requests.length, 6);
+	assert.ok(
+		fixture.requests[0]?.url.endsWith(`/accounts/${accountId}/tokens/verify`),
+	);
 	assert.ok(fixture.requests.every((request) => request.method === "GET"));
 });
 
-test("preflight rejects a read-only Cloudflare membership", async () => {
-	const fixture = cloudflareFixture({ readOnly: true });
-	await assert.rejects(
-		verifyCloudflareReleaseAccess({
-			apiKey,
-			email,
-			targets,
-			fetchImplementation: fixture.fetchImplementation,
-		}),
-		/lacks Workers Scripts Write permission/u,
+test("release auth fails closed for missing or legacy credentials", () => {
+	for (const environment of [
+		{},
+		{
+			CLOUDFLARE_API_TOKEN: apiToken,
+			CLOUDFLARE_API_KEY: "legacy-key",
+			CLOUDFLARE_EMAIL: "legacy@example.test",
+		},
+	]) {
+		assert.throws(
+			() => cloudflareAuthFromEnvironment(environment),
+			(error: unknown) => {
+				assert.ok(error instanceof Error);
+				assert.match(error.message, new RegExp(CLOUDFLARE_PRODUCTION_SECRET, "u"));
+				assert.match(error.message, new RegExp(CLOUDFLARE_TOKEN_GRANTS, "u"));
+				return true;
+			},
+		);
+	}
+	assert.throws(
+		() =>
+			cloudflareAuthFromEnvironment({
+				CLOUDFLARE_API_TOKEN: apiToken,
+				CLOUDFLARE_API_KEY: "legacy-key",
+				CLOUDFLARE_EMAIL: "legacy@example.test",
+			}),
+		/Legacy Cloudflare authentication is forbidden/u,
 	);
 });
 
-test("preflight allows bootstrap when the target Worker and domains do not exist yet", async () => {
-	const fixture = cloudflareFixture({ missingResources: true });
-	await verifyCloudflareReleaseAccess({
-		apiKey,
-		email,
-		targets,
-		fetchImplementation: fixture.fetchImplementation,
-	});
+test("preflight rejects a disabled account token", async () => {
+	await assert.rejects(
+		verifyFixture(cloudflareFixture({ inactiveToken: true })),
+		/not active for account/u,
+	);
 });
 
-test("preflight rejects a malformed Worker list during bootstrap", async () => {
-	const fixture = cloudflareFixture({ malformedWorkerList: true });
+test("preflight allows bootstrap when the target Workers and domains do not exist yet", async () => {
+	await verifyFixture(cloudflareFixture({ missingResources: true }));
+});
+
+test("preflight rejects malformed Worker results during bootstrap", async () => {
 	await assert.rejects(
-		verifyCloudflareReleaseAccess({
-			apiKey,
-			email,
-			targets,
-			fetchImplementation: fixture.fetchImplementation,
-			requireResources: false,
-		}),
+		verifyFixture(cloudflareFixture({ malformedWorkerList: true })),
 		/malformed Worker list for docs/u,
 	);
-});
-
-test("preflight rejects malformed Worker items during bootstrap", async () => {
-	const fixture = cloudflareFixture({ malformedWorkerItem: true });
 	await assert.rejects(
-		verifyCloudflareReleaseAccess({
-			apiKey,
-			email,
-			targets,
-			fetchImplementation: fixture.fetchImplementation,
-			requireResources: false,
-		}),
+		verifyFixture(cloudflareFixture({ malformedWorkerItem: true })),
 		/malformed Worker list for docs/u,
 	);
 });
 
 test("preflight rejects malformed custom-domain items during bootstrap", async () => {
-	const fixture = cloudflareFixture({ malformedDomainItem: true });
 	await assert.rejects(
-		verifyCloudflareReleaseAccess({
-			apiKey,
-			email,
-			targets,
-			fetchImplementation: fixture.fetchImplementation,
-			requireResources: false,
-		}),
+		verifyFixture(cloudflareFixture({ malformedDomainItem: true })),
 		/malformed custom-domain list for docs/u,
 	);
 });
 
 test("post-deploy resource smoke requires both Workers and exact domain mappings", async () => {
-	const fixture = cloudflareFixture({ missingResources: true });
 	await assert.rejects(
-		verifyCloudflareReleaseAccess({
-			apiKey,
-			email,
-			targets,
-			fetchImplementation: fixture.fetchImplementation,
-			requireResources: true,
-		}),
+		verifyFixture(cloudflareFixture({ missingResources: true }), true),
 		/does not contain Worker lemn-ui-docs/u,
 	);
 });
 
 test("preflight rejects a conflicting existing custom-domain mapping", async () => {
-	const fixture = cloudflareFixture({ conflictingDomain: true });
 	await assert.rejects(
-		verifyCloudflareReleaseAccess({
-			apiKey,
-			email,
-			targets,
-			fetchImplementation: fixture.fetchImplementation,
-		}),
+		verifyFixture(cloudflareFixture({ conflictingDomain: true })),
 		/already mapped to another Worker/u,
 	);
 });
 
-test("preflight fails closed when Lemn DEV cannot manage the le-mn.com zone", async () => {
-	const fixture = cloudflareFixture({ missingZone: true });
+test("preflight fails closed when the token cannot read the le-mn.com zone", async () => {
 	await assert.rejects(
-		verifyCloudflareReleaseAccess({
-			apiKey,
-			email,
-			targets,
-			fetchImplementation: fixture.fetchImplementation,
-		}),
-			/cannot manage the le-mn\.com zone/u,
+		verifyFixture(cloudflareFixture({ missingZone: true })),
+		/cannot read the le-mn\.com zone/u,
 	);
 });
 
-test("preflight redacts the Global API Key and email from provider errors", async () => {
-	const fixture = cloudflareFixture({ reject: true });
+test("preflight redacts the API token from provider errors", async () => {
 	await assert.rejects(
-		verifyCloudflareReleaseAccess({
-			apiKey,
-			email,
-			targets,
-			fetchImplementation: fixture.fetchImplementation,
-		}),
+		verifyFixture(cloudflareFixture({ reject: true })),
 		(error: unknown) => {
 			assert.ok(error instanceof Error);
-			assert.doesNotMatch(error.message, new RegExp(apiKey, "u"));
-			assert.doesNotMatch(error.message, new RegExp(email, "u"));
+			assert.doesNotMatch(error.message, new RegExp(apiToken, "u"));
 			assert.match(error.message, /\[REDACTED\]/u);
+			assert.match(error.message, /PRODUCTION_CLOUDFLARE_API_TOKEN/u);
+			assert.match(error.message, /Workers Scripts: Edit/u);
+			assert.match(error.message, /Zone: Read/u);
 			return true;
 		},
 	);

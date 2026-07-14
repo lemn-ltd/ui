@@ -23,6 +23,7 @@ const VIEWPORTS = {
 const THEMES = ['light', 'dark'] as const;
 
 const VISUAL_MATCH = /visual\.e2e\.ts/;
+const ACCESSIBILITY_MATCH = /accessibility\.e2e\.ts/;
 
 // Light/Dark x {375,768,1280} = 6 deterministic visual projects; the theme is
 // applied per project by the deterministic test base (keyed off the name).
@@ -71,7 +72,17 @@ export default defineConfig({
   projects: [
     {
       name: 'behavior',
-      testIgnore: VISUAL_MATCH,
+      testIgnore: [VISUAL_MATCH, ACCESSIBILITY_MATCH],
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: VIEWPORTS.desktop,
+        colorScheme: 'light',
+        deviceScaleFactor: 1,
+      },
+    },
+    {
+      name: 'accessibility',
+      testMatch: ACCESSIBILITY_MATCH,
       use: {
         ...devices['Desktop Chrome'],
         viewport: VIEWPORTS.desktop,
