@@ -174,6 +174,9 @@ export function AccentColorPicker({
 							onChange={(event) =>
 								update({ ...hsv, hue: event.currentTarget.valueAsNumber })
 							}
+							style={
+								{ "--ui-accent-picker-hue": String(hsv.hue) } as CSSProperties
+							}
 							type="range"
 							value={hsv.hue}
 						/>

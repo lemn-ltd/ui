@@ -47,6 +47,21 @@ describe("AccentColorPicker", () => {
 		);
 	});
 
+	it("selects a different hue and applies it in real time", async () => {
+		const onValueChange = vi.fn();
+		render(<AccentColorPicker onValueChange={onValueChange} persist={false} />);
+
+		fireEvent.click(
+			screen.getByRole("button", { name: "Change accent color" }),
+		);
+		const hue = await screen.findByRole("slider", { name: "Accent hue" });
+		fireEvent.change(hue, { target: { value: "240" } });
+
+		expect(onValueChange).toHaveBeenLastCalledWith("#0d0d94");
+		expect(screen.getByRole("status").textContent).toBe("#0D0D94");
+		expect(document.documentElement.dataset.accentColor).toBe("#0d0d94");
+	});
+
 	it("resets to the canonical accent", async () => {
 		const onValueChange = vi.fn();
 		render(
