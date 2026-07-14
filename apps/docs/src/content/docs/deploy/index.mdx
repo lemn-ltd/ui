@@ -26,12 +26,20 @@ Only a successful lookup that omits the exact version permits publication.
 Authentication, authorization, package lookup, network, or scope/owner failures
 stop the release instead of being treated as an unpublished version.
 
-Required secrets and variables:
+The `Release And Deploy` job is the only job that can resolve production
+credentials. It uses the `production` GitHub Environment, which requires an
+approval and permits deployments only from the protected `main` branch.
 
-- `CLOUDFLARE_API_KEY` as a GitHub secret containing the Global API Key
-- `CLOUDFLARE_EMAIL` as a GitHub secret for the Global API Key owner
-- `STATUS_TOKEN`
+Required `production` Environment secrets and variables:
+
+- `PRODUCTION_CLOUDFLARE_API_KEY` containing the Global API Key
+- `PRODUCTION_CLOUDFLARE_EMAIL` for the Global API Key owner
+- `PRODUCTION_STATUS_TOKEN`
 - `GITHUB_TOKEN` from GitHub Actions
+
+Do not create repository-level production credentials. The distinct
+`PRODUCTION_*` names make a missing Environment secret fail closed instead of
+falling back to a repository secret with the runtime variable name.
 
 Both `wrangler.jsonc` files are the account and Worker source of truth. Do not
 set or derive `CLOUDFLARE_API_TOKEN` from the Global API Key; Wrangler requires

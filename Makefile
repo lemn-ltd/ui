@@ -3,13 +3,14 @@ SHELL := /bin/bash
 
 PNPM ?= pnpm
 
-.PHONY: help install dev dev-docs validate-identity validate-package-identity validate-brand-neutrality validate-boundaries validate-release-preconditions validate check test test-e2e-ui-showcase test-e2e-ui-showcase-shard build pack-ui release-preflight clean
+.PHONY: help install dev dev-docs validate-agentops validate-identity validate-package-identity validate-brand-neutrality validate-boundaries validate-release-preconditions validate check test test-e2e-ui-showcase test-e2e-ui-showcase-shard build pack-ui release-preflight clean
 
 help:
 	@printf 'Useful targets:\n'
 	@printf '  make install                  Install workspace dependencies with the lockfile frozen.\n'
 	@printf '  make dev                      Restart the local UI Showcase at http://localhost:6500.\n'
 	@printf '  make dev-docs                 Start the local docs site at http://localhost:6600.\n'
+	@printf '  make validate-agentops        Verify the managed-file lock and local checksums.\n'
 	@printf '  make validate-identity        Verify workspace scopes, docs identity, and legacy-name removal.\n'
 	@printf '  make validate-package-identity Verify the canonical package and registry contract.\n'
 	@printf '  make validate-brand-neutrality Scan shared UI and showcase source for product-specific names.\n'
@@ -33,6 +34,9 @@ dev:
 
 dev-docs:
 	$(PNPM) dev:docs
+
+validate-agentops:
+	$(PNPM) validate:agentops
 
 validate-identity:
 	$(PNPM) validate:identity

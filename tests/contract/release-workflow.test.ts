@@ -45,12 +45,61 @@ function expression(body: string): string {
 	return ["$", `{{ ${body} }}`].join("");
 }
 
+function productionSecret(name: string): string {
+	return expression(`secrets.PRODUCTION_${name}`);
+}
+
 test("manual production release is guarded to main before the job starts", () => {
 	assert.match(String(releaseJob.if), /github\.ref == 'refs\/heads\/main'/u);
 	assert.match(
 		String(releaseJob.if),
 		/github\.event_name == 'workflow_dispatch'/u,
 	);
+});
+
+test("production credentials are exclusive to the protected environment job", () => {
+	assert.equal(releaseJob.environment, "production");
+	const productionSecretPattern =
+		/secrets\.PRODUCTION_(?:CLOUDFLARE_API_KEY|CLOUDFLARE_EMAIL|STATUS_TOKEN)/u;
+	for (const [jobName, job] of Object.entries(jobs)) {
+		if (jobName === "release-and-deploy") continue;
+		assert.doesNotMatch(
+			JSON.stringify(job),
+			productionSecretPattern,
+			`${jobName} must not resolve production credentials`,
+		);
+	}
+	assert.doesNotMatch(
+		workflowSource,
+		/secrets\.(?:CLOUDFLARE_API_KEY|CLOUDFLARE_EMAIL|CLOUDFLARE_API_TOKEN|STATUS_TOKEN)(?![A-Z0-9_])/u,
+	);
+	for (const name of [
+		"CLOUDFLARE_API_KEY",
+		"CLOUDFLARE_EMAIL",
+		"STATUS_TOKEN",
+	]) {
+		assert.match(
+			workflowSource,
+			new RegExp(`secrets\\.PRODUCTION_${name}`, "u"),
+		);
+	}
+
+	const preflight = step("Preflight Cloudflare release access");
+	const preflightEnv = record(preflight.env, "Cloudflare preflight env");
+	assert.equal(
+		preflightEnv.CLOUDFLARE_API_KEY,
+		productionSecret("CLOUDFLARE_API_KEY"),
+	);
+	assert.equal(
+		preflightEnv.CLOUDFLARE_EMAIL,
+		productionSecret("CLOUDFLARE_EMAIL"),
+	);
+	assert.equal(preflightEnv.STATUS_TOKEN, productionSecret("STATUS_TOKEN"));
+	assert.match(
+		String(preflight.run),
+		/Missing required production environment secret/u,
+	);
+	assert.match(String(preflight.run), /pnpm release:preflight/u);
 });
 
 test("production release has only the write permissions it uses", () => {
@@ -63,12 +112,9 @@ test("production release has only the write permissions it uses", () => {
 test("Global API Key preflight runs before every release mutation and package publish", () => {
 	const preflight = step("Preflight Cloudflare release access");
 	const env = record(preflight.env, "Cloudflare preflight env");
-	assert.equal(
-		env.CLOUDFLARE_API_KEY,
-		expression("secrets.CLOUDFLARE_API_KEY"),
-	);
-	assert.equal(env.CLOUDFLARE_EMAIL, expression("secrets.CLOUDFLARE_EMAIL"));
-	assert.equal(preflight.run, "pnpm release:preflight");
+	assert.equal(env.CLOUDFLARE_API_KEY, productionSecret("CLOUDFLARE_API_KEY"));
+	assert.equal(env.CLOUDFLARE_EMAIL, productionSecret("CLOUDFLARE_EMAIL"));
+	assert.match(String(preflight.run), /pnpm release:preflight/u);
 	assert.ok(
 		stepIndex("Preflight Cloudflare release access") <
 			stepIndex("Detect pending changesets"),
@@ -252,9 +298,9 @@ test("all deploy commands receive the Global API Key pair and preflight account 
 		const env = record(step(name).env, `${name} env`);
 		assert.equal(
 			env.CLOUDFLARE_API_KEY,
-			expression("secrets.CLOUDFLARE_API_KEY"),
+			productionSecret("CLOUDFLARE_API_KEY"),
 		);
-		assert.equal(env.CLOUDFLARE_EMAIL, expression("secrets.CLOUDFLARE_EMAIL"));
+		assert.equal(env.CLOUDFLARE_EMAIL, productionSecret("CLOUDFLARE_EMAIL"));
 		assert.match(
 			String(env.CLOUDFLARE_ACCOUNT_ID),
 			/steps\.cloudflare\.outputs\.(?:docs|showcase)_account_id/u,
@@ -268,11 +314,16 @@ test("all deploy commands receive the Global API Key pair and preflight account 
 	);
 	assert.equal(
 		mappingSmokeEnv.CLOUDFLARE_API_KEY,
-		expression("secrets.CLOUDFLARE_API_KEY"),
+		productionSecret("CLOUDFLARE_API_KEY"),
 	);
 	assert.equal(
 		mappingSmokeEnv.CLOUDFLARE_EMAIL,
-		expression("secrets.CLOUDFLARE_EMAIL"),
+		productionSecret("CLOUDFLARE_EMAIL"),
+	);
+	assert.equal(
+		record(step("Set showcase runtime secret").env, "status secret env")
+			.STATUS_TOKEN,
+		productionSecret("STATUS_TOKEN"),
 	);
 	assert.ok(
 		stepIndex("Set showcase runtime secret") <
@@ -307,9 +358,9 @@ test("workflow mutations use guarded root entrypoints instead of direct publishe
 		const env = record(step(name).env, `${name} env`);
 		assert.equal(
 			env.CLOUDFLARE_API_KEY,
-			expression("secrets.CLOUDFLARE_API_KEY"),
+			productionSecret("CLOUDFLARE_API_KEY"),
 		);
-		assert.equal(env.CLOUDFLARE_EMAIL, expression("secrets.CLOUDFLARE_EMAIL"));
+		assert.equal(env.CLOUDFLARE_EMAIL, productionSecret("CLOUDFLARE_EMAIL"));
 	}
 });
 

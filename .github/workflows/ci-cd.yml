@@ -205,10 +205,18 @@ jobs:
 
       - name: Preflight Cloudflare release access
         id: cloudflare
-        run: pnpm release:preflight
+        run: |
+          for name in CLOUDFLARE_API_KEY CLOUDFLARE_EMAIL STATUS_TOKEN; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing required production environment secret: ${name}" >&2
+              exit 1
+            fi
+          done
+          pnpm release:preflight
         env:
-          CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
-          CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
+          CLOUDFLARE_API_KEY: ${{ secrets.PRODUCTION_CLOUDFLARE_API_KEY }}
+          CLOUDFLARE_EMAIL: ${{ secrets.PRODUCTION_CLOUDFLARE_EMAIL }}
+          STATUS_TOKEN: ${{ secrets.PRODUCTION_STATUS_TOKEN }}
 
       - name: Detect pending changesets
         id: changesets
@@ -223,8 +231,8 @@ jobs:
         if: steps.changesets.outputs.has_pending == 'true'
         run: pnpm version:packages
         env:
-          CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
-          CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
+          CLOUDFLARE_API_KEY: ${{ secrets.PRODUCTION_CLOUDFLARE_API_KEY }}
+          CLOUDFLARE_EMAIL: ${{ secrets.PRODUCTION_CLOUDFLARE_EMAIL }}
 
       - name: Commit release metadata
         if: steps.changesets.outputs.has_pending == 'true'
@@ -267,8 +275,8 @@ jobs:
         if: steps.package-version.outputs.published == 'false'
         run: pnpm publish:ui
         env:
-          CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
-          CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
+          CLOUDFLARE_API_KEY: ${{ secrets.PRODUCTION_CLOUDFLARE_API_KEY }}
+          CLOUDFLARE_EMAIL: ${{ secrets.PRODUCTION_CLOUDFLARE_EMAIL }}
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build docs
@@ -281,8 +289,8 @@ jobs:
       - name: Deploy docs
         run: pnpm deploy:docs:prod
         env:
-          CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
-          CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
+          CLOUDFLARE_API_KEY: ${{ secrets.PRODUCTION_CLOUDFLARE_API_KEY }}
+          CLOUDFLARE_EMAIL: ${{ secrets.PRODUCTION_CLOUDFLARE_EMAIL }}
           CLOUDFLARE_ACCOUNT_ID: ${{ steps.cloudflare.outputs.docs_account_id }}
           PUBLIC_BUILD_VERSION: ${{ steps.release.outputs.version }}
           PUBLIC_BUILD_GIT_SHA: ${{ steps.release.outputs.sha }}
@@ -296,10 +304,10 @@ jobs:
           pnpm guard:release:mutation
           printf '%s' "$STATUS_TOKEN" | pnpm --dir apps/showcase exec wrangler secret put STATUS_TOKEN --config wrangler.jsonc --env production
         env:
-          CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
-          CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
+          CLOUDFLARE_API_KEY: ${{ secrets.PRODUCTION_CLOUDFLARE_API_KEY }}
+          CLOUDFLARE_EMAIL: ${{ secrets.PRODUCTION_CLOUDFLARE_EMAIL }}
           CLOUDFLARE_ACCOUNT_ID: ${{ steps.cloudflare.outputs.showcase_account_id }}
-          STATUS_TOKEN: ${{ secrets.STATUS_TOKEN }}
+          STATUS_TOKEN: ${{ secrets.PRODUCTION_STATUS_TOKEN }}
 
       - name: Deploy showcase
         run: pnpm deploy:showcase:prod
@@ -307,15 +315,15 @@ jobs:
           BUILD_VERSION: ${{ steps.release.outputs.version }}
           BUILD_GIT_SHA: ${{ steps.release.outputs.sha }}
           BUILD_TIME: ${{ steps.release.outputs.time }}
-          CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
-          CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
+          CLOUDFLARE_API_KEY: ${{ secrets.PRODUCTION_CLOUDFLARE_API_KEY }}
+          CLOUDFLARE_EMAIL: ${{ secrets.PRODUCTION_CLOUDFLARE_EMAIL }}
           CLOUDFLARE_ACCOUNT_ID: ${{ steps.cloudflare.outputs.showcase_account_id }}
 
       - name: Smoke Cloudflare deployment mappings
         run: pnpm smoke:cloudflare:release
         env:
-          CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
-          CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
+          CLOUDFLARE_API_KEY: ${{ secrets.PRODUCTION_CLOUDFLARE_API_KEY }}
+          CLOUDFLARE_EMAIL: ${{ secrets.PRODUCTION_CLOUDFLARE_EMAIL }}
 
       - name: Smoke public endpoints
         run: pnpm smoke:release:production

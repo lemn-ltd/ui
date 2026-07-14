@@ -27,12 +27,20 @@ publicacion. Los fallos de autenticacion, autorizacion, lookup del paquete, red
 o alineacion scope/owner detienen el release en lugar de tratar la version como
 inedita.
 
-Secrets y variables requeridas:
+El job `Release And Deploy` es el unico que puede resolver credenciales de
+produccion. Usa el GitHub Environment `production`, que exige aprobacion y
+solo permite deployments desde la rama protegida `main`.
 
-- `CLOUDFLARE_API_KEY` como GitHub secret con la Global API Key
-- `CLOUDFLARE_EMAIL` como GitHub secret del owner de la Global API Key
-- `STATUS_TOKEN`
+Secrets y variables requeridas en el Environment `production`:
+
+- `PRODUCTION_CLOUDFLARE_API_KEY` con la Global API Key
+- `PRODUCTION_CLOUDFLARE_EMAIL` para el owner de la Global API Key
+- `PRODUCTION_STATUS_TOKEN`
 - `GITHUB_TOKEN` de GitHub Actions
+
+No crees credenciales productivas a nivel de repositorio. Los nombres
+`PRODUCTION_*` hacen que un secret ausente en el Environment falle cerrado en
+lugar de usar un repository secret con el nombre de la variable de runtime.
 
 Los dos `wrangler.jsonc` son la fuente de verdad de cuenta y Worker. No uses ni
 derives `CLOUDFLARE_API_TOKEN` desde la Global API Key: Wrangler requiere el par

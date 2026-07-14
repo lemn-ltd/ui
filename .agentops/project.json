@@ -58,6 +58,26 @@
         "cacheFile": ".agentops/cache/prompt-files/files/AGENTS.md"
       },
       {
+        "targetPath": "patterns/pattern-audit.md",
+        "checksum": "sha256:dd3bca3784bc8ebb712e30858bc7caca918376346910480239f620b6b4b7e6ce",
+        "revisions": {
+          "project": 1
+        },
+        "strategy": "combine",
+        "gitIgnored": false,
+        "cacheFile": ".agentops/cache/prompt-files/files/patterns/pattern-audit.md"
+      },
+      {
+        "targetPath": "patterns/pattern-profile.md",
+        "checksum": "sha256:df6f55b4e2a51a9f348d779e45e6e49f9d8d17300749a3d9314445504471d4b9",
+        "revisions": {
+          "project": 3
+        },
+        "strategy": "combine",
+        "gitIgnored": false,
+        "cacheFile": ".agentops/cache/prompt-files/files/patterns/pattern-profile.md"
+      },
+      {
         "targetPath": "patterns/pattern-system.md",
         "checksum": "sha256:f6ee17f1cef7b9316e215d58ccc5653ca9ef7f96ab85154b869a0e66a4d09dae",
         "revisions": {
@@ -69,9 +89,10 @@
       },
       {
         "targetPath": "patterns/patterns.md",
-        "checksum": "sha256:8707fed9778f070c4dd821a7e6c276bc3bf4ed88ac02505fde8a0872061c4b69",
+        "checksum": "sha256:bec96e37d467fb7033b780f7eb8ae52542fd2a726cc6ccd85984a996e8705d0c",
         "revisions": {
-          "organization": 11
+          "organization": 11,
+          "project": 3
         },
         "strategy": "combine",
         "gitIgnored": false,
