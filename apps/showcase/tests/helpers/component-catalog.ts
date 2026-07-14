@@ -1,6 +1,7 @@
 import { expect, type Page } from "@playwright/test";
 
 export interface CatalogComponentRoute {
+	readonly area: "core" | "agents";
 	readonly group: string;
 	readonly route: string;
 	readonly slug: string;
@@ -11,6 +12,7 @@ interface CatalogResponse {
 	readonly package: string;
 	readonly source: string;
 	readonly components: readonly {
+		readonly area: "core" | "agents";
 		readonly group: string;
 		readonly slug: string;
 		readonly title: string;
@@ -27,11 +29,14 @@ export async function componentRoutesFromCatalog(
 
 	expect(catalog.package).toBe("@lemn-ltd/ui");
 	expect(catalog.source).toBe("https://github.com/lemn-ltd/ui");
-	expect(catalog.components).toHaveLength(112);
+	expect(catalog.components).toHaveLength(130);
+	expect(catalog.components.filter((component) => component.area === "core")).toHaveLength(101);
+	expect(catalog.components.filter((component) => component.area === "agents")).toHaveLength(29);
 
 	return catalog.components.map((component) => ({
+		area: component.area,
 		group: component.group,
-		route: `/${component.group === "Agents" ? "agents" : "core"}/components/${component.slug}`,
+		route: `/${component.area}/components/${component.slug}`,
 		slug: component.slug,
 		title: component.title,
 	}));

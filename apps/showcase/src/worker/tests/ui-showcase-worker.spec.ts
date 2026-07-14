@@ -53,11 +53,24 @@ describe("ui showcase worker", () => {
 
 		const catalogResponse = await worker.fetch(request("/catalog.json"));
 		expect(catalogResponse.status).toBe(200);
-		expect(await catalogResponse.json()).toMatchObject({
+		const catalog = await catalogResponse.json<{
+			components: readonly { area: "core" | "agents" }[];
+			package: string;
+			source: string;
+			version: string;
+		}>();
+		expect(catalog).toMatchObject({
 			package: "@lemn-ltd/ui",
 			version: "1.2.3",
 			source: "https://github.com/lemn-ltd/ui",
 		});
+		expect(catalog.components).toHaveLength(130);
+		expect(
+			catalog.components.filter((component) => component.area === "core"),
+		).toHaveLength(101);
+		expect(
+			catalog.components.filter((component) => component.area === "agents"),
+		).toHaveLength(29);
 
 		const summary = await (await worker.fetch(request("/llms.txt"))).text();
 		expect(summary).toContain("# Lemn UI");
