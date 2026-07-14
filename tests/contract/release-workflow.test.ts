@@ -316,20 +316,28 @@ test("the validation gate isolates accessibility pressure from all three complet
 	const strategy = record(e2eJob.strategy, "showcase E2E strategy");
 	const matrix = record(strategy.matrix, "showcase E2E matrix");
 	const e2eSteps = e2eJob.steps as UnknownRecord[];
-	const e2eBrowserInstall = e2eSteps.find(
-		(candidate) => candidate.name === "Install Chromium",
+	const e2eImagePull = e2eSteps.find(
+		(candidate) => candidate.name === "Pull pinned Playwright image",
 	);
 	const shard = e2eSteps.find(
 		(candidate) => candidate.name === "Run showcase E2E shard",
 	);
-	assert.ok(e2eBrowserInstall);
+	assert.ok(e2eImagePull);
 	assert.ok(shard);
 	assert.equal(e2eJob.needs, "validate");
 	assert.equal(e2eJob["runs-on"], "ubuntu-24.04");
 	assert.equal(e2eJob.container, undefined);
-	assert.match(String(e2eBrowserInstall.run), /install --with-deps chromium/u);
+	assert.equal(
+		e2eImagePull.run,
+		"docker pull mcr.microsoft.com/playwright:v1.60.0-noble",
+	);
 	assert.equal(strategy["fail-fast"], false);
 	assert.deepEqual(matrix.shard, [1, 2, 3]);
+	assert.match(String(shard.run), /docker run --rm --ipc=host/u);
+	assert.match(
+		String(shard.run),
+		/mcr\.microsoft\.com\/playwright:v1\.60\.0-noble/u,
+	);
 	assert.doesNotMatch(String(shard.run), /--grep|visual\.e2e/u);
 	assert.match(String(shard.run), /--project=behavior/u);
 	for (const project of [

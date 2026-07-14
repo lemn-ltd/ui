@@ -2,7 +2,7 @@ import { statfs } from "node:fs/promises";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
-export const MINIMUM_E2E_FREE_BYTES = 4n * 1024n * 1024n * 1024n;
+export const MINIMUM_E2E_FREE_BYTES = 24n * 1024n * 1024n * 1024n;
 
 function gibibytes(bytes) {
 	return (Number(bytes) / 1024 ** 3).toFixed(2);
@@ -14,7 +14,7 @@ export function assertE2eRunnerCapacity(
 ) {
 	if (availableBytes < minimumBytes) {
 		throw new Error(
-			`E2E runner disk preflight failed: ${gibibytes(availableBytes)} GiB available; ${gibibytes(minimumBytes)} GiB required for Chromium, Vite transforms, and Playwright artifacts.`,
+			`E2E runner disk preflight failed: ${gibibytes(availableBytes)} GiB available; ${gibibytes(minimumBytes)} GiB required for the pinned Playwright image, Vite transforms, and test artifacts.`,
 		);
 	}
 

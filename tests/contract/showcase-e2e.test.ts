@@ -56,7 +56,7 @@ function record(value: unknown, description: string): UnknownRecord {
 	return value as UnknownRecord;
 }
 
-test("Linux E2E avoids the heavyweight job container and preflights disk capacity", async () => {
+test("Linux E2E frees disk and runs visual shards in the pinned Playwright image", async () => {
 	const workflowSource = await readFile(
 		resolve(root, ".github/workflows/ci-cd.yml"),
 		"utf8",
@@ -80,22 +80,38 @@ test("Linux E2E avoids the heavyweight job container and preflights disk capacit
 	assert.equal(e2e["runs-on"], "ubuntu-24.04");
 	assert.equal(e2e.container, undefined);
 	assert.deepEqual(matrix.shard, [1, 2, 3]);
+	assert.match(
+		String(step("Free runner disk for pinned Playwright image").run),
+		/docker system prune --all --force/u,
+	);
 	assert.equal(
 		step("Verify E2E runner disk capacity").run,
 		'node scripts/test/check-e2e-runner-capacity.mjs "$RUNNER_TEMP"',
 	);
 	assert.equal(
-		step("Install Chromium").run,
-		"pnpm --filter @lemn-ltd/ui-showcase exec playwright install --with-deps chromium",
+		step("Pull pinned Playwright image").run,
+		"docker pull mcr.microsoft.com/playwright:v1.60.0-noble",
+	);
+	assert.ok(
+		stepIndex("Free runner disk for pinned Playwright image") <
+			stepIndex("Verify E2E runner disk capacity"),
 	);
 	assert.ok(
 		stepIndex("Verify E2E runner disk capacity") <
-			stepIndex("Install Chromium"),
+			stepIndex("Pull pinned Playwright image"),
 	);
 	assert.ok(
-		stepIndex("Install Chromium") < stepIndex("Run showcase E2E shard"),
+		stepIndex("Pull pinned Playwright image") <
+			stepIndex("Run showcase E2E shard"),
 	);
 	const run = String(step("Run showcase E2E shard").run);
+	assert.match(run, /docker run --rm --ipc=host/u);
+	assert.match(
+		run,
+		/mcr\.microsoft\.com\/playwright:v1\.60\.0-noble/u,
+	);
+	assert.match(run, /--volume "\$GITHUB_WORKSPACE:\/work"/u);
+	assert.match(run, /sudo chown -R/u);
 	for (const project of [
 		"behavior",
 		"visual-light-mobile",
@@ -108,14 +124,9 @@ test("Linux E2E avoids the heavyweight job container and preflights disk capacit
 		assert.match(run, new RegExp(`--project=${project}(?:\\s|$)`, "u"));
 	}
 	assert.match(run, /--shard=\$\{\{ matrix\.shard \}\}\/3/u);
-	assert.doesNotMatch(
-		JSON.stringify(e2e),
-		/mcr\.microsoft\.com\/playwright|--ipc=host/u,
-	);
-
 	assert.throws(
 		() => assertE2eRunnerCapacity(0n),
-		/E2E runner disk preflight failed: 0\.00 GiB available; 4\.00 GiB required/u,
+		/E2E runner disk preflight failed: 0\.00 GiB available; 24\.00 GiB required/u,
 	);
 	assert.doesNotThrow(() => assertE2eRunnerCapacity(MINIMUM_E2E_FREE_BYTES));
 });

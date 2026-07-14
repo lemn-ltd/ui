@@ -134,23 +134,42 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Free runner disk for pinned Playwright image
+        run: |
+          sudo rm -rf \
+            /opt/ghc \
+            /opt/hostedtoolcache/CodeQL \
+            /usr/local/lib/android \
+            /usr/share/dotnet
+          docker system prune --all --force
+
       - name: Verify E2E runner disk capacity
         run: node scripts/test/check-e2e-runner-capacity.mjs "$RUNNER_TEMP"
 
-      - name: Install Chromium
-        run: pnpm --filter @lemn-ltd/ui-showcase exec playwright install --with-deps chromium
+      - name: Pull pinned Playwright image
+        run: docker pull mcr.microsoft.com/playwright:v1.60.0-noble
 
       - name: Run showcase E2E shard
-        run: >-
-          pnpm --filter @lemn-ltd/ui-showcase exec playwright test
-          --project=behavior
-          --project=visual-light-mobile
-          --project=visual-light-tablet
-          --project=visual-light-desktop
-          --project=visual-dark-mobile
-          --project=visual-dark-tablet
-          --project=visual-dark-desktop
-          --shard=${{ matrix.shard }}/3
+        run: |
+          status=0
+          docker run --rm --ipc=host \
+            --env CI=true \
+            --volume "$GITHUB_WORKSPACE:/work" \
+            --workdir /work \
+            mcr.microsoft.com/playwright:v1.60.0-noble \
+            sh -lc 'corepack enable && pnpm --filter @lemn-ltd/ui-showcase exec playwright test \
+              --project=behavior \
+              --project=visual-light-mobile \
+              --project=visual-light-tablet \
+              --project=visual-light-desktop \
+              --project=visual-dark-mobile \
+              --project=visual-dark-tablet \
+              --project=visual-dark-desktop \
+              --shard=${{ matrix.shard }}/3' || status=$?
+          sudo chown -R "$(id -u):$(id -g)" \
+            apps/showcase/test-results \
+            apps/showcase/playwright-report 2>/dev/null || true
+          exit "$status"
 
   showcase-accessibility:
     name: Showcase Accessibility
