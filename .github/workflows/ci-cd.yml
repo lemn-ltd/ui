@@ -138,7 +138,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run showcase E2E shard
-        run: make test-e2e-ui-showcase-shard SHARD=${{ matrix.shard }}/3
+        run: pnpm --filter @appranks/ui-showcase exec playwright test --shard=${{ matrix.shard }}/3
 
   release-and-deploy:
     name: Release And Deploy
