@@ -11,6 +11,7 @@ const expected = {
 	gitSha: "release-commit-sha",
 	buildTime: "2026-07-14T00:00:00Z",
 };
+const statusToken = "deployment-smoke-status-token";
 const legacyUiPackageName = `@${["app", "ranks"].join("")}/ui`;
 
 test("build identity contract rejects stale versions and stale commits", () => {
@@ -59,10 +60,14 @@ test("release identity requires the canonical package without imposing it on hea
 });
 
 test("production smoke compares exact docs and showcase build identities", async () => {
-	const fetchImplementation: typeof fetch = async (input) => {
+	const protectedRequests: Array<{
+		authorization: string | null;
+		url: string;
+	}> = [];
+	const fetchImplementation: typeof fetch = async (input, init) => {
 		const url = String(input);
 		if (url === "https://ui.le-mn.com/")
-				return new Response("<title>Overview | UI</title>");
+			return new Response("<title>Overview | UI</title>");
 		if (url === "https://ui.le-mn.com/release.json") {
 			return Response.json({ package: "@lemn-ltd/ui", ...expected });
 		}
@@ -90,10 +95,86 @@ test("production smoke compares exact docs and showcase build identities", async
 		if (url === "https://showcase.ui.le-mn.com/llms.txt")
 			return new Response("@lemn-ltd/ui");
 		if (url === "https://showcase.ui.le-mn.com/llms-full.txt") {
-				return new Response("Lemn UI Component Catalog");
+			return new Response("Lemn UI Component Catalog");
+		}
+		if (
+			url === "https://showcase.ui.le-mn.com/_status" ||
+			url === "https://showcase.ui.le-mn.com/_status.json" ||
+			url === "https://showcase.ui.le-mn.com/health/deep"
+		) {
+			const authorization = new Headers(init?.headers).get("authorization");
+			protectedRequests.push({ authorization, url });
+			if (authorization !== `Bearer ${statusToken}`) {
+				return Response.json({ error: "unauthorized" }, { status: 401 });
+			}
+			return Response.json({
+				ok: true,
+				build: {
+					version: expected.version,
+					gitSha: expected.gitSha,
+					time: expected.buildTime,
+				},
+				validation: { ready: true },
+			});
 		}
 		throw new Error(`Unexpected smoke fixture request: ${url}`);
 	};
 
-	await smokeProductionDeployment({ expected, fetchImplementation });
+	await smokeProductionDeployment({
+		expected,
+		statusToken,
+		fetchImplementation,
+	});
+	assert.equal(protectedRequests.length, 6);
+	for (const path of ["/_status", "/_status.json", "/health/deep"]) {
+		const requests = protectedRequests.filter(({ url }) => url.endsWith(path));
+		assert.deepEqual(
+			requests.map(({ authorization }) => authorization),
+			[null, `Bearer ${statusToken}`],
+		);
+	}
+});
+
+test("production smoke fails when the new protected status token is rejected", async () => {
+	const fetchImplementation: typeof fetch = async (input, init) => {
+		const url = String(input);
+		if (url === "https://ui.le-mn.com/")
+			return new Response("<title>Overview | UI</title>");
+		if (url === "https://ui.le-mn.com/release.json")
+			return Response.json({ package: "@lemn-ltd/ui", ...expected });
+		if (url === "https://showcase.ui.le-mn.com/health")
+			return Response.json({ ok: true, ...expected });
+		if (url === "https://showcase.ui.le-mn.com/health/ready")
+			return Response.json({ ok: true, ...expected });
+		if (url === "https://showcase.ui.le-mn.com/")
+			return new Response(
+				'<div id="root"></div><script src="/assets/app.js"></script>',
+			);
+		if (url === "https://showcase.ui.le-mn.com/assets/app.js")
+			return new Response("export {};\n");
+		if (url === "https://showcase.ui.le-mn.com/catalog.json")
+			return Response.json({
+				package: "@lemn-ltd/ui",
+				version: expected.version,
+				components: [{}],
+			});
+		if (url === "https://showcase.ui.le-mn.com/llms.txt")
+			return new Response("@lemn-ltd/ui");
+		if (url === "https://showcase.ui.le-mn.com/llms-full.txt")
+			return new Response("Lemn UI Component Catalog");
+		if (new Headers(init?.headers).has("authorization"))
+			return Response.json({ error: "unauthorized" }, { status: 401 });
+		return Response.json({ error: "unauthorized" }, { status: 401 });
+	};
+
+	await assert.rejects(
+		() =>
+			smokeProductionDeployment({
+				expected,
+				statusToken,
+				fetchImplementation,
+				retryOptions: { attempts: 1, delayMs: 0 },
+			}),
+		/with a bearer token returned HTTP 401/u,
+	);
 });

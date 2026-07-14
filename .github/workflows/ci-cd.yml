@@ -206,7 +206,7 @@ jobs:
       - name: Preflight Cloudflare release access
         id: cloudflare
         run: |
-          for name in CLOUDFLARE_API_KEY CLOUDFLARE_EMAIL STATUS_TOKEN; do
+          for name in CLOUDFLARE_API_KEY CLOUDFLARE_EMAIL PRODUCTION_STATUS_TOKEN ROLLBACK_STATUS_TOKEN; do
             if [ -z "${!name}" ]; then
               echo "::error::Missing required production environment secret: ${name}" >&2
               exit 1
@@ -216,7 +216,8 @@ jobs:
         env:
           CLOUDFLARE_API_KEY: ${{ secrets.PRODUCTION_CLOUDFLARE_API_KEY }}
           CLOUDFLARE_EMAIL: ${{ secrets.PRODUCTION_CLOUDFLARE_EMAIL }}
-          STATUS_TOKEN: ${{ secrets.PRODUCTION_STATUS_TOKEN }}
+          PRODUCTION_STATUS_TOKEN: ${{ secrets.PRODUCTION_STATUS_TOKEN }}
+          ROLLBACK_STATUS_TOKEN: ${{ secrets.STATUS_TOKEN || secrets.PRODUCTION_STATUS_TOKEN }}
 
       - name: Detect pending changesets
         id: changesets
@@ -296,52 +297,14 @@ jobs:
           PUBLIC_BUILD_GIT_SHA: ${{ steps.release.outputs.sha }}
           PUBLIC_BUILD_TIME: ${{ steps.release.outputs.time }}
 
-      # Updating a Worker secret creates a new version. Do it before the
-      # metadata-bearing deploy so the final active version always carries the
-      # current build SHA instead of restoring metadata from the prior deploy.
-      - name: Set showcase runtime secret
-        run: |
-          pnpm guard:release:mutation
-          printf '%s' "$STATUS_TOKEN" | pnpm --dir apps/showcase exec wrangler secret put STATUS_TOKEN --config wrangler.jsonc --env production
+      - name: Roll out showcase with protected rollback
+        run: pnpm rollout:showcase:prod
         env:
           CLOUDFLARE_API_KEY: ${{ secrets.PRODUCTION_CLOUDFLARE_API_KEY }}
           CLOUDFLARE_EMAIL: ${{ secrets.PRODUCTION_CLOUDFLARE_EMAIL }}
           CLOUDFLARE_ACCOUNT_ID: ${{ steps.cloudflare.outputs.showcase_account_id }}
-          STATUS_TOKEN: ${{ secrets.PRODUCTION_STATUS_TOKEN }}
-
-      - name: Deploy showcase
-        run: pnpm deploy:showcase:prod
-        env:
-          BUILD_VERSION: ${{ steps.release.outputs.version }}
-          BUILD_GIT_SHA: ${{ steps.release.outputs.sha }}
-          BUILD_TIME: ${{ steps.release.outputs.time }}
-          CLOUDFLARE_API_KEY: ${{ secrets.PRODUCTION_CLOUDFLARE_API_KEY }}
-          CLOUDFLARE_EMAIL: ${{ secrets.PRODUCTION_CLOUDFLARE_EMAIL }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ steps.cloudflare.outputs.showcase_account_id }}
-
-      - name: Smoke Cloudflare deployment mappings
-        run: pnpm smoke:cloudflare:release
-        env:
-          CLOUDFLARE_API_KEY: ${{ secrets.PRODUCTION_CLOUDFLARE_API_KEY }}
-          CLOUDFLARE_EMAIL: ${{ secrets.PRODUCTION_CLOUDFLARE_EMAIL }}
-
-      - name: Smoke public endpoints
-        run: pnpm smoke:release:production
-        env:
           EXPECTED_RELEASE_VERSION: ${{ steps.release.outputs.version }}
           EXPECTED_RELEASE_GIT_SHA: ${{ steps.release.outputs.sha }}
           EXPECTED_RELEASE_TIME: ${{ steps.release.outputs.time }}
-
-      - name: Summary
-        run: |
-          {
-            echo "### Lemn UI"
-            echo ""
-            echo "- Package: \`@lemn-ltd/ui@${{ steps.release.outputs.version }}\`"
-            echo "- Docs: https://ui.le-mn.com"
-            echo "- Showcase: https://showcase.ui.le-mn.com"
-            echo "- Catalog: https://showcase.ui.le-mn.com/catalog.json"
-            echo "- Agent guide: https://showcase.ui.le-mn.com/llms.txt"
-            echo "- Commit: \`${{ steps.release.outputs.sha }}\`"
-            echo "- Build time: \`${{ steps.release.outputs.time }}\`"
-          } >> "$GITHUB_STEP_SUMMARY"
+          PRODUCTION_STATUS_TOKEN: ${{ secrets.PRODUCTION_STATUS_TOKEN }}
+          ROLLBACK_STATUS_TOKEN: ${{ secrets.STATUS_TOKEN || secrets.PRODUCTION_STATUS_TOKEN }}

@@ -32,6 +32,7 @@
     "deploy:showcase": "pnpm deploy:showcase:prod",
     "deploy:docs:prod": "pnpm guard:release:mutation && test -n \"$PUBLIC_BUILD_VERSION\" && test -n \"$PUBLIC_BUILD_GIT_SHA\" && test -n \"$PUBLIC_BUILD_TIME\" && pnpm --filter @lemn-ltd/ui-docs run build && pnpm --dir apps/docs exec wrangler deploy --config wrangler.jsonc",
     "deploy:showcase:prod": "pnpm guard:release:mutation && test -n \"$BUILD_VERSION\" && test -n \"$BUILD_GIT_SHA\" && test -n \"$BUILD_TIME\" && CLOUDFLARE_ENV=production pnpm --filter @lemn-ltd/ui-showcase run cf:build && pnpm --dir apps/showcase exec wrangler deploy --config wrangler.jsonc --env production --var BUILD_VERSION:$BUILD_VERSION --var BUILD_GIT_SHA:$BUILD_GIT_SHA --var BUILD_TIME:$BUILD_TIME",
+    "rollout:showcase:prod": "pnpm guard:release:mutation && node scripts/release/showcase-production-rollout.ts",
     "pack:ui": "pnpm validate:package-identity && node scripts/smoke-package-tarball.mjs",
     "preflight:cloudflare:release": "node scripts/release/cloudflare-preflight.ts",
     "guard:release:mutation": "node scripts/release/release-mutation-guard.ts",

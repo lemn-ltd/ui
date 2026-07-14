@@ -18,8 +18,13 @@ changeset status. Pushes to `main` run the release workflow:
 2. If changesets are pending, create and push one release metadata commit with the SemVer bump and changelog.
 3. Capture that release commit's package version and Git SHA.
 4. Publish any unpublished `@lemn-ltd/ui` version when the registry owner/token can publish the package scope.
-5. Deploy docs and showcase with the captured build identity.
-6. Smoke both public surfaces and reject stale version or Git SHA metadata.
+5. Deploy docs with the captured build identity.
+6. Capture the active showcase Worker version, smoke all protected routes with
+   the current token, rotate the Worker secret, deploy the showcase, and smoke
+   public plus protected routes with the new token and exact build identity.
+7. If anything after the rotation fails, roll back to the captured version and
+   smoke it with the token that authenticated that version. The release remains
+   failed even when rollback succeeds, and reports rollback failure separately.
 
 CI checks the authenticated GitHub Packages version list before publishing.
 Only a successful lookup that omits the exact version permits publication.
@@ -27,20 +32,76 @@ Authentication, authorization, package lookup, network, or scope/owner failures
 stop the release instead of being treated as an unpublished version.
 
 The `Release And Deploy` job is the only job that can resolve production
-credentials. It uses the `production` GitHub Environment, which requires an
-approval and permits deployments only from the protected `main` branch.
+credentials. It uses the `production` GitHub Environment, which requires the
+`angelllemn` reviewer and permits deployments only from the `main` branch.
 
-Required `production` Environment secrets and variables:
+The only custom secret names in the `production` Environment are:
 
 - `PRODUCTION_CLOUDFLARE_API_KEY` containing the Global API Key
 - `PRODUCTION_CLOUDFLARE_EMAIL` for the Global API Key owner
 - `PRODUCTION_STATUS_TOKEN`
-- `GITHUB_TOKEN` from GitHub Actions
 
-Do not create repository-level production credentials. The distinct
-`PRODUCTION_*` names make a missing Environment secret fail closed instead of
-falling back to a repository secret with the runtime variable name.
+`GITHUB_TOKEN` is supplied by GitHub Actions and is not a configured Environment
+secret. The distinct `PRODUCTION_*` names make a missing Environment secret fail
+closed instead of silently resolving a repository credential.
+
+## Status Token Rotation And Rollback
+
+The showcase has no inbound status consumers. This was confirmed on 2026-07-14
+by searching 79 local repositories/worktrees, 14 GitHub repositories,
+LaunchAgents and running processes, and both Monitor D1 databases. `STATUS_TOKEN`
+is mandatory in production; there is no staging deployment.
+
+Rotate the GitHub Environment value without exposing it to the shell history,
+filesystem, logs, or command arguments:
+
+```bash
+openssl rand -hex 32 | gh secret set PRODUCTION_STATUS_TOKEN --env production --repo lemn-ltd/ui
+```
+
+The approved `main` workflow then performs this exact order:
+
+1. Read `wrangler deployments list --json`, require one active version at 100%
+   traffic, and retain its validated Worker version UUID in memory.
+2. Smoke `/_status`, `/_status.json`, and `/health/deep` without a token (`401`)
+   and with the retained repository `STATUS_TOKEN` (`200`). If production was
+   already rotated, retry with `PRODUCTION_STATUS_TOKEN`.
+3. Send `PRODUCTION_STATUS_TOKEN` only over stdin to `wrangler secret put`.
+4. Deploy the showcase with the captured release version, Git SHA, and time.
+5. Verify Cloudflare mappings, all public endpoints, and all three protected
+   endpoints. Protected responses must be `200`, `ok`, ready, and carry the exact
+   release build identity; unauthenticated responses must remain `401`.
+6. Write the release summary only after every smoke passes.
+
+If steps 3-6 fail, the runner executes `wrangler rollback <captured-version-id>
+--yes`, then repeats the protected smoke with the token and build identity
+captured before rotation. Command and smoke rollback failures are both reported;
+neither can turn the workflow green.
+
+Keep all four legacy repository secrets until the approved deploy is stable:
+`CLOUDFLARE_API_KEY`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_EMAIL`, and
+`STATUS_TOKEN`. Stable means the target `main` SHA completed `Release And Deploy`
+without rollback, Cloudflare mapping and public smokes passed, each protected
+route passed authenticated and unauthenticated checks, and the operator reviewed
+the final job summary.
+
+Only then remove repository secrets in this order, verifying names and timestamps
+after each operation and never reading values:
+
+```bash
+gh secret delete CLOUDFLARE_API_TOKEN --repo lemn-ltd/ui
+gh secret delete CLOUDFLARE_API_KEY --repo lemn-ltd/ui
+gh secret delete CLOUDFLARE_EMAIL --repo lemn-ltd/ui
+gh secret delete STATUS_TOKEN --repo lemn-ltd/ui
+```
+
+`STATUS_TOKEN` is last because it is the first-rollout rollback credential. Do
+not delete or rename the three `PRODUCTION_*` Environment secrets.
 
 Both `wrangler.jsonc` files are the account and Worker source of truth. Do not
 set or derive `CLOUDFLARE_API_TOKEN` from the Global API Key; Wrangler requires
 the `CLOUDFLARE_API_KEY` plus `CLOUDFLARE_EMAIL` pair for this repository.
+
+This runbook applies `PAT-SEC-SECRETS-001`, `PAT-SEC-RISK-001`,
+`PAT-SEC-LOGGING-001`, `PAT-OPS-LEAST-PRIVILEGE-001`,
+`PAT-CLOUDFLARE-WRANGLER-CONFIG-001`, and `PAT-TEST-EVIDENCE-001`.

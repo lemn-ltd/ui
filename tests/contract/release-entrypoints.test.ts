@@ -84,6 +84,7 @@ test("all production mutation entrypoints share the guarded release path", () =>
 		"deploy:showcase:prod",
 		"deploy:docs:prod",
 		"publish:ui",
+		"rollout:showcase:prod",
 	]) {
 		assert.match(String(scripts[name]), /^pnpm guard:release:mutation && /u);
 	}

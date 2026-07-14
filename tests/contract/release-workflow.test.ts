@@ -15,6 +15,10 @@ const rootPackage = JSON.parse(
 	await readFile(resolve(root, "package.json"), "utf8"),
 ) as UnknownRecord;
 const contributing = await readFile(resolve(root, "CONTRIBUTING.md"), "utf8");
+const showcaseRolloutSource = await readFile(
+	resolve(root, "scripts/release/showcase-production-rollout.ts"),
+	"utf8",
+);
 const workflow = parse(workflowSource) as UnknownRecord;
 
 function record(value: unknown, description: string): UnknownRecord {
@@ -69,9 +73,19 @@ test("production credentials are exclusive to the protected environment job", ()
 			`${jobName} must not resolve production credentials`,
 		);
 	}
+	const workflowWithoutRollbackBridge = workflowSource.replaceAll(
+		"secrets.STATUS_TOKEN || secrets.PRODUCTION_STATUS_TOKEN",
+		"",
+	);
 	assert.doesNotMatch(
-		workflowSource,
+		workflowWithoutRollbackBridge,
 		/secrets\.(?:CLOUDFLARE_API_KEY|CLOUDFLARE_EMAIL|CLOUDFLARE_API_TOKEN|STATUS_TOKEN)(?![A-Z0-9_])/u,
+	);
+	assert.equal(
+		workflowSource.match(
+			/secrets\.STATUS_TOKEN \|\| secrets\.PRODUCTION_STATUS_TOKEN/gu,
+		)?.length,
+		2,
 	);
 	for (const name of [
 		"CLOUDFLARE_API_KEY",
@@ -94,7 +108,14 @@ test("production credentials are exclusive to the protected environment job", ()
 		preflightEnv.CLOUDFLARE_EMAIL,
 		productionSecret("CLOUDFLARE_EMAIL"),
 	);
-	assert.equal(preflightEnv.STATUS_TOKEN, productionSecret("STATUS_TOKEN"));
+	assert.equal(
+		preflightEnv.PRODUCTION_STATUS_TOKEN,
+		productionSecret("STATUS_TOKEN"),
+	);
+	assert.equal(
+		preflightEnv.ROLLBACK_STATUS_TOKEN,
+		expression("secrets.STATUS_TOKEN || secrets.PRODUCTION_STATUS_TOKEN"),
+	);
 	assert.match(
 		String(preflight.run),
 		/Missing required production environment secret/u,
@@ -230,7 +251,7 @@ test("unpublished current package versions do not receive an accidental second c
 	);
 });
 
-test("deploys, smokes, and summary use the release commit outputs instead of trigger GITHUB_SHA", () => {
+test("the transactional rollout uses the release commit outputs instead of trigger GITHUB_SHA", () => {
 	assert.ok(
 		stepIndex("Capture release metadata") < stepIndex("Push release metadata"),
 	);
@@ -240,13 +261,19 @@ test("deploys, smokes, and summary use the release commit outputs instead of tri
 	);
 	assert.match(
 		String(
-			record(step("Deploy showcase").env, "Deploy showcase env").BUILD_VERSION,
+			record(
+				step("Roll out showcase with protected rollback").env,
+				"Showcase rollout env",
+			).EXPECTED_RELEASE_VERSION,
 		),
 		/steps\.release\.outputs\.version/u,
 	);
 	assert.match(
 		String(
-			record(step("Deploy showcase").env, "Deploy showcase env").BUILD_GIT_SHA,
+			record(
+				step("Roll out showcase with protected rollback").env,
+				"Showcase rollout env",
+			).EXPECTED_RELEASE_GIT_SHA,
 		),
 		/steps\.release\.outputs\.sha/u,
 	);
@@ -264,14 +291,10 @@ test("deploys, smokes, and summary use the release commit outputs instead of tri
 		docsEnv.PUBLIC_BUILD_TIME,
 		expression("steps.release.outputs.time"),
 	);
-	assert.match(
-		String(
-			record(step("Deploy showcase").env, "Deploy showcase env").BUILD_TIME,
-		),
-		/steps\.release\.outputs\.time/u,
+	const smokeEnv = record(
+		step("Roll out showcase with protected rollback").env,
+		"Showcase rollout env",
 	);
-
-	const smokeEnv = record(step("Smoke public endpoints").env, "Smoke env");
 	assert.equal(
 		smokeEnv.EXPECTED_RELEASE_VERSION,
 		expression("steps.release.outputs.version"),
@@ -284,16 +307,15 @@ test("deploys, smokes, and summary use the release commit outputs instead of tri
 		smokeEnv.EXPECTED_RELEASE_TIME,
 		expression("steps.release.outputs.time"),
 	);
-	assert.match(String(step("Summary").run), /steps\.release\.outputs\.sha/u);
-	assert.match(String(step("Summary").run), /steps\.release\.outputs\.time/u);
-	assert.doesNotMatch(String(step("Summary").run), /GITHUB_SHA/u);
+	assert.match(showcaseRolloutSource, /expected\.gitSha/u);
+	assert.match(showcaseRolloutSource, /expected\.buildTime/u);
+	assert.doesNotMatch(showcaseRolloutSource, /GITHUB_SHA/u);
 });
 
 test("all deploy commands receive the Global API Key pair and preflight account output", () => {
 	for (const name of [
 		"Deploy docs",
-		"Deploy showcase",
-		"Set showcase runtime secret",
+		"Roll out showcase with protected rollback",
 	]) {
 		const env = record(step(name).env, `${name} env`);
 		assert.equal(
@@ -307,31 +329,28 @@ test("all deploy commands receive the Global API Key pair and preflight account 
 		);
 	}
 
-	const mappingSmoke = step("Smoke Cloudflare deployment mappings");
-	const mappingSmokeEnv = record(
-		mappingSmoke.env,
-		"Cloudflare mapping smoke env",
-	);
+	const rollout = step("Roll out showcase with protected rollback");
+	const rolloutEnv = record(rollout.env, "Showcase rollout env");
 	assert.equal(
-		mappingSmokeEnv.CLOUDFLARE_API_KEY,
+		rolloutEnv.CLOUDFLARE_API_KEY,
 		productionSecret("CLOUDFLARE_API_KEY"),
 	);
 	assert.equal(
-		mappingSmokeEnv.CLOUDFLARE_EMAIL,
+		rolloutEnv.CLOUDFLARE_EMAIL,
 		productionSecret("CLOUDFLARE_EMAIL"),
 	);
 	assert.equal(
-		record(step("Set showcase runtime secret").env, "status secret env")
-			.STATUS_TOKEN,
+		rolloutEnv.PRODUCTION_STATUS_TOKEN,
 		productionSecret("STATUS_TOKEN"),
 	);
-	assert.ok(
-		stepIndex("Set showcase runtime secret") <
-			stepIndex("Smoke Cloudflare deployment mappings"),
+	assert.equal(
+		rolloutEnv.ROLLBACK_STATUS_TOKEN,
+		expression("secrets.STATUS_TOKEN || secrets.PRODUCTION_STATUS_TOKEN"),
 	);
-	assert.ok(
-		stepIndex("Smoke Cloudflare deployment mappings") <
-			stepIndex("Smoke public endpoints"),
+	assert.equal(rollout.run, "pnpm rollout:showcase:prod");
+	assert.equal(
+		stepIndex("Roll out showcase with protected rollback"),
+		steps.length - 1,
 	);
 });
 
@@ -342,14 +361,13 @@ test("workflow mutations use guarded root entrypoints instead of direct publishe
 	);
 	assert.equal(step("Publish package if needed").run, "pnpm publish:ui");
 	assert.equal(step("Deploy docs").run, "pnpm deploy:docs:prod");
-	assert.equal(step("Deploy showcase").run, "pnpm deploy:showcase:prod");
-	assert.match(
-		String(step("Set showcase runtime secret").run),
-		/^pnpm guard:release:mutation\n/u,
+	assert.equal(
+		step("Roll out showcase with protected rollback").run,
+		"pnpm rollout:showcase:prod",
 	);
 	assert.doesNotMatch(
 		workflowSource,
-		/publish:ui:internal|run:\s*pnpm --dir apps\/(?:docs|showcase) exec wrangler deploy/u,
+		/publish:ui:internal|run:\s*pnpm --dir apps\/(?:docs|showcase) exec wrangler (?:deploy|secret|rollback)/u,
 	);
 	for (const name of [
 		"Version packages from changesets",

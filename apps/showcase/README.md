@@ -13,7 +13,7 @@ bindings. It owns only the `ASSETS` binding that serves the Vite client bundle.
 | Local URL | `http://localhost:6500` |
 | Dev command | `make dev-ui-showcase` |
 | Package dev | `pnpm --filter @lemn-ltd/ui-showcase run dev` |
-| Status | `/health`, `/health/ready`, `/_status`, `/_status.json` |
+| Status | `/health`, `/health/ready`, `/_status`, `/_status.json`, `/health/deep` |
 | Local Explorer | `http://localhost:6500/cdn-cgi/explorer` |
 | Local Explorer API | `pnpm --filter @lemn-ltd/ui-showcase run observe:local:explorer-api` |
 
@@ -41,7 +41,9 @@ bindings. It owns only the `ASSETS` binding that serves the Vite client bundle.
 
 ## Service Graph
 
-Inbound consumers: none.
+Inbound consumers: none. Confirmed on 2026-07-14 by an exhaustive search of 79
+local repositories/worktrees, 14 GitHub repositories, LaunchAgents and running
+processes, and both Monitor D1 databases.
 
 Outbound service dependencies: none.
 
@@ -61,11 +63,13 @@ entries.
 
 ## Environment
 
-`DEPLOYMENT_ENVIRONMENT` selects local, staging, production, or test.
-`STATUS_TOKEN` is optional locally and required in staging for deep status
-routes. Local secrets live in the versioned encrypted `.dev.vars`; `.env.keys`
-owns the local `DOTENV_PRIVATE_KEY_VARS` and stays ignored. Start through
-`make dev-ui-showcase` or `pnpm env:with --service ui-showcase -- <command>` so
+`DEPLOYMENT_ENVIRONMENT` selects local, production, or test. `STATUS_TOKEN` is
+optional outside production and mandatory in production. `/_status`,
+`/_status.json`, and `/health/deep` accept only an exact `Authorization: Bearer
+<token>` header; query-parameter authentication is not supported. Local secrets
+live in the versioned encrypted `.dev.vars`; `.env.keys` owns the local
+`DOTENV_PRIVATE_KEY_VARS` and stays ignored. Start through `make
+dev-ui-showcase` or `pnpm env:with --service ui-showcase -- <command>` so
 `.dev.vars` is decrypted only for the local process and re-encrypted on exit.
 Production uses the `lemn-ui-showcase` Worker and `showcase.ui.le-mn.com`.
 

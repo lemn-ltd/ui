@@ -8,6 +8,8 @@ const LEGACY_UI_PACKAGE_PATTERN = new RegExp(
 	`${legacyUiPackage}(?![-A-Za-z0-9])`,
 	"u",
 );
+const protectedStatusRoutes = ["/_status", "/_status.json", "/health/deep"];
+const statusToken = "test-only-status-token";
 
 function assetsFetcher(): Fetcher {
 	return {
@@ -28,6 +30,17 @@ function createWorker(overrides: Partial<UiShowcaseEnv> = {}) {
 
 function request(pathname: string, init?: RequestInit): Request {
 	return new Request(`https://ui-showcase.example.test${pathname}`, init);
+}
+
+async function expectTokenIsNotExposed(
+	response: Response,
+	token: string,
+): Promise<void> {
+	const responseText = await response.clone().text();
+	expect(responseText).not.toContain(token);
+	expect(JSON.stringify(Object.fromEntries(response.headers))).not.toContain(
+		token,
+	);
 }
 
 describe("ui showcase worker", () => {
@@ -116,6 +129,78 @@ describe("ui showcase worker", () => {
 		expect(await response.json()).toMatchObject({
 			error: "service_not_ready",
 			missingBindings: ["ASSETS"],
+		});
+	});
+
+	describe.each(protectedStatusRoutes)("protected status route %s", (route) => {
+		function protectedWorker() {
+			return createWorker({
+				BUILD_GIT_SHA: "release-sha",
+				BUILD_TIME: "2026-07-14T00:00:00Z",
+				BUILD_VERSION: "1.2.3",
+				DEPLOYMENT_ENVIRONMENT: "production",
+				STATUS_TOKEN: statusToken,
+			});
+		}
+
+		it("rejects a missing bearer token", async () => {
+			const response = await protectedWorker().fetch(request(route));
+
+			expect(response.status).toBe(401);
+			expect(await response.clone().json()).toEqual({ error: "unauthorized" });
+			await expectTokenIsNotExposed(response, statusToken);
+		});
+
+		it.each([
+			"Bearer",
+			"bearer test-only-status-token",
+			"Basic test-only-status-token",
+			"Bearer  test-only-status-token",
+			"Bearer test-only-status-token trailing",
+		])("rejects malformed authorization %s", async (authorization) => {
+			const response = await protectedWorker().fetch(
+				request(route, { headers: { authorization } }),
+			);
+
+			expect(response.status).toBe(401);
+			await expectTokenIsNotExposed(response, statusToken);
+		});
+
+		it("rejects a wrong bearer token", async () => {
+			const response = await protectedWorker().fetch(
+				request(route, { headers: { authorization: "Bearer wrong-token" } }),
+			);
+
+			expect(response.status).toBe(401);
+			await expectTokenIsNotExposed(response, statusToken);
+		});
+
+		it("does not accept the token from a query parameter", async () => {
+			const response = await protectedWorker().fetch(
+				request(`${route}?token=${encodeURIComponent(statusToken)}`),
+			);
+
+			expect(response.status).toBe(401);
+			await expectTokenIsNotExposed(response, statusToken);
+		});
+
+		it("accepts the exact bearer token without exposing it", async () => {
+			const response = await protectedWorker().fetch(
+				request(route, {
+					headers: { authorization: `Bearer ${statusToken}` },
+				}),
+			);
+
+			expect(response.status).toBe(200);
+			expect(await response.clone().json()).toMatchObject({
+				ok: true,
+				build: {
+					version: "1.2.3",
+					gitSha: "release-sha",
+					time: "2026-07-14T00:00:00Z",
+				},
+			});
+			await expectTokenIsNotExposed(response, statusToken);
 		});
 	});
 });
