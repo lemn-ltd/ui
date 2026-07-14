@@ -143,8 +143,9 @@ default mode. The persisted choice uses a brand-neutral `color-theme` storage
 key.
 
 `AccentColorPicker` is the companion runtime control for product-selected accent
-color. It exposes a pointer palette and keyboard controls, supports controlled
-and uncontrolled use, and derives contrast-conscious light/dark values for
+color. It exposes a live pointer palette, a Hue spectrum, keyboard controls, and
+validated hexadecimal entry applied with Enter. It supports controlled and
+uncontrolled use and derives contrast-conscious light/dark values for
 `--accent`, `--accent-strong`, `--accent-soft`, and `--focus-ring`. By default it
 applies and persists the choice under the brand-neutral `accent-color` key;
 consumers can set `applyToRoot={false}` or `persist={false}` and own the runtime

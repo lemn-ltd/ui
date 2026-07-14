@@ -62,6 +62,86 @@ describe("AccentColorPicker", () => {
 		expect(document.documentElement.dataset.accentColor).toBe("#0d0d94");
 	});
 
+	it("keeps palette dragging live through window pointer events", async () => {
+		const onValueChange = vi.fn();
+		render(<AccentColorPicker onValueChange={onValueChange} persist={false} />);
+
+		fireEvent.click(
+			screen.getByRole("button", { name: "Change accent color" }),
+		);
+		const field = await screen.findByRole("button", {
+			name: /Accent saturation/,
+		});
+		vi.spyOn(field, "getBoundingClientRect").mockReturnValue({
+			bottom: 100,
+			height: 100,
+			left: 0,
+			right: 100,
+			top: 0,
+			width: 100,
+			x: 0,
+			y: 0,
+			toJSON: () => ({}),
+		});
+
+		fireEvent.pointerDown(field, { clientX: 20, clientY: 20, pointerId: 7 });
+		fireEvent.pointerMove(window, {
+			clientX: 80,
+			clientY: 80,
+			pointerId: 7,
+		});
+		fireEvent.pointerUp(window, { pointerId: 7 });
+
+		expect(onValueChange).toHaveBeenCalledTimes(2);
+		expect(onValueChange.mock.calls[0]?.[0]).not.toBe(
+			onValueChange.mock.calls[1]?.[0],
+		);
+		expect(document.documentElement.dataset.accentColor).toBe(
+			onValueChange.mock.calls[1]?.[0],
+		);
+	});
+
+	it("applies a valid hexadecimal color on Enter", async () => {
+		const onValueChange = vi.fn();
+		render(<AccentColorPicker onValueChange={onValueChange} persist={false} />);
+
+		fireEvent.click(
+			screen.getByRole("button", { name: "Change accent color" }),
+		);
+		const input = await screen.findByRole("textbox", {
+			name: "Accent hex color",
+		});
+		fireEvent.focus(input);
+		fireEvent.change(input, { target: { value: "#7C3AED" } });
+		fireEvent.keyDown(input, { key: "Enter" });
+
+		expect(onValueChange).toHaveBeenLastCalledWith("#7c3aed");
+		expect(document.documentElement.dataset.accentColor).toBe("#7c3aed");
+		expect((input as HTMLInputElement).value).toBe("#7C3AED");
+	});
+
+	it("rejects an invalid hexadecimal color without changing the accent", async () => {
+		const onValueChange = vi.fn();
+		render(<AccentColorPicker onValueChange={onValueChange} persist={false} />);
+
+		fireEvent.click(
+			screen.getByRole("button", { name: "Change accent color" }),
+		);
+		const input = await screen.findByRole("textbox", {
+			name: "Accent hex color",
+		});
+		fireEvent.focus(input);
+		fireEvent.change(input, { target: { value: "#12ZZ99" } });
+		fireEvent.keyDown(input, { key: "Enter" });
+
+		expect(onValueChange).not.toHaveBeenCalled();
+		expect(input.getAttribute("aria-invalid")).toBe("true");
+		expect(screen.getByRole("alert").textContent).toContain(
+			"Enter a 6-digit hex color.",
+		);
+		expect(document.documentElement.dataset.accentColor).toBeUndefined();
+	});
+
 	it("resets to the canonical accent", async () => {
 		const onValueChange = vi.fn();
 		render(
