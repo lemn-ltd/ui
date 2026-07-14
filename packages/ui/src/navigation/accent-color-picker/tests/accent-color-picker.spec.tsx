@@ -120,6 +120,30 @@ describe("AccentColorPicker", () => {
 		expect((input as HTMLInputElement).value).toBe("#7C3AED");
 	});
 
+	it("shows the exact selected color in both swatches", async () => {
+		render(<AccentColorPicker persist={false} />);
+
+		fireEvent.click(
+			screen.getByRole("button", { name: "Change accent color" }),
+		);
+		const input = await screen.findByRole("textbox", {
+			name: "Accent hex color",
+		});
+		fireEvent.focus(input);
+		fireEvent.change(input, { target: { value: "#000000" } });
+		fireEvent.keyDown(input, { key: "Enter" });
+
+		const triggerSwatch = document.querySelector<HTMLElement>(
+			".ui-accent-color-picker__trigger-swatch",
+		);
+		const previewSwatch = document.querySelector<HTMLElement>(
+			".ui-accent-color-picker__preview",
+		);
+		expect(triggerSwatch?.style.backgroundColor).toBe("#000000");
+		expect(previewSwatch?.style.backgroundColor).toBe("#000000");
+		expect(document.documentElement.dataset.accentColor).toBe("#000000");
+	});
+
 	it("rejects an invalid hexadecimal color without changing the accent", async () => {
 		const onValueChange = vi.fn();
 		render(<AccentColorPicker onValueChange={onValueChange} persist={false} />);

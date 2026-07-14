@@ -133,6 +133,8 @@ uncontrolled use and derives contrast-conscious light/dark values for
 applies and persists the choice under the brand-neutral `accent-color` key;
 consumers can set `applyToRoot={false}` or `persist={false}` and own the runtime
 with `applyAccentColor`, `setAccentColor`, and `resetAccentColor` instead.
+The picker swatches always show the exact selected hexadecimal value; the theme
+tokens remain contrast-adjusted for readable product UI.
 
 ```tsx
 import { AccentColorPicker, ThemeToggle } from '@lemn-ltd/ui';
