@@ -62,4 +62,34 @@ describe("AccentColorPicker", () => {
 		fireEvent.click(await screen.findByRole("button", { name: /Reset/ }));
 		expect(onValueChange).toHaveBeenLastCalledWith(DEFAULT_ACCENT_COLOR);
 	});
+
+	it("leaves controlled tokens unchanged until the owner accepts reset", async () => {
+		const onValueChange = vi.fn();
+		const { rerender } = render(
+			<AccentColorPicker
+				onValueChange={onValueChange}
+				persist={false}
+				value="#7c3aed"
+			/>,
+		);
+		expect(document.documentElement.dataset.accentColor).toBe("#7c3aed");
+
+		fireEvent.click(
+			screen.getByRole("button", { name: "Change accent color" }),
+		);
+		fireEvent.click(await screen.findByRole("button", { name: /Reset/ }));
+
+		expect(onValueChange).toHaveBeenLastCalledWith(DEFAULT_ACCENT_COLOR);
+		expect(document.documentElement.dataset.accentColor).toBe("#7c3aed");
+		expect(screen.getByRole("status").textContent).toBe("#7C3AED");
+
+		rerender(
+			<AccentColorPicker
+				onValueChange={onValueChange}
+				persist={false}
+				value={DEFAULT_ACCENT_COLOR}
+			/>,
+		);
+		expect(document.documentElement.dataset.accentColor).toBeUndefined();
+	});
 });

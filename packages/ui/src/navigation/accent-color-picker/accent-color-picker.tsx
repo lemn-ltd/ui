@@ -77,8 +77,10 @@ export function AccentColorPicker({
 	}
 
 	function reset(): void {
-		if (value === undefined) setLocalValue(DEFAULT_ACCENT_COLOR);
-		if (applyToRoot) resetAccentColor();
+		if (value === undefined) {
+			setLocalValue(DEFAULT_ACCENT_COLOR);
+			if (applyToRoot) resetAccentColor();
+		}
 		onValueChange?.(DEFAULT_ACCENT_COLOR);
 	}
 
