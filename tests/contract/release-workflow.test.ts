@@ -294,6 +294,37 @@ test("CI and release smoke the exact local showcase asset deployment before publ
 	);
 });
 
+test("the successful validation gate runs complete showcase E2E before release", () => {
+	const validationJob = record(jobs.validate, "validate job");
+	const validationSteps = validationJob.steps as UnknownRecord[];
+	const validationStepIndex = (name: string): number => {
+		const index = validationSteps.findIndex(
+			(candidate) => candidate.name === name,
+		);
+		assert.notEqual(index, -1, `Missing validation step: ${name}`);
+		return index;
+	};
+	const e2e = validationSteps[validationStepIndex("Run complete showcase E2E")];
+	assert.equal(e2e?.run, "make test-e2e-ui-showcase");
+	assert.equal(e2e?.if, undefined);
+	assert.ok(Number(validationJob["timeout-minutes"]) >= 60);
+	assert.ok(
+		validationStepIndex("Install Playwright Chromium") <
+			validationStepIndex("Run complete showcase E2E"),
+	);
+	assert.ok(
+		validationStepIndex("Build") <
+			validationStepIndex("Run complete showcase E2E"),
+	);
+	assert.ok(
+		validationStepIndex("Run complete showcase E2E") <
+			validationStepIndex("Smoke showcase deployment locally"),
+	);
+	assert.equal(releaseJob.needs, "validate");
+	assert.doesNotMatch(String(releaseJob.if), /always\s*\(/u);
+	assert.ok(stepIndex("Publish package if needed") < stepIndex("Deploy docs"));
+});
+
 test("contributor release guidance documents fail-closed behavior", () => {
 	assert.match(
 		contributing,

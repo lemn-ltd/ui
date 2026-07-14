@@ -89,5 +89,7 @@ pnpm --filter @appranks/ui-showcase run observe:production:tail
 ```
 
 The worker unit spec covers `/health` 200, SPA asset fallback, and readiness
-503 when `ASSETS` is missing. `make test-e2e-ui-showcase` runs the standalone
-Playwright lane for behavior, visual baselines, and axe.
+503 when `ASSETS` is missing. `make test-e2e-ui-showcase` is the canonical
+complete Playwright lane for behavior, visual baselines, and axe. It starts and
+cleans up its own strict-port server isolated by checkout; it never reuses the
+development server on port 6500 or a server from another worktree.

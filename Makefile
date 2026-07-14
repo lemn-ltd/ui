@@ -3,7 +3,7 @@ SHELL := /bin/bash
 
 PNPM ?= pnpm
 
-.PHONY: help install dev dev-docs validate-package-identity validate-brand-neutrality validate-boundaries validate-release-preconditions validate check test build pack-ui release-preflight clean
+.PHONY: help install dev dev-docs validate-package-identity validate-brand-neutrality validate-boundaries validate-release-preconditions validate check test test-e2e-ui-showcase build pack-ui release-preflight clean
 
 help:
 	@printf 'Useful targets:\n'
@@ -17,6 +17,7 @@ help:
 	@printf '  make validate                 Run all repository validation scripts, including release metadata.\n'
 	@printf '  make check                    Typecheck all workspace packages.\n'
 	@printf '  make test                     Run all workspace test suites.\n'
+	@printf '  make test-e2e-ui-showcase     Run the complete isolated Playwright showcase suite.\n'
 	@printf '  make build                    Build all workspace packages and the showcase.\n'
 	@printf '  make pack-ui                  Pack and smoke-test @lemn-ltd/ui with a clean npm consumer.\n'
 	@printf '  make release-preflight        Run validation, check, test, build, and package smoke.\n'
@@ -52,6 +53,9 @@ check:
 
 test:
 	$(PNPM) test
+
+test-e2e-ui-showcase:
+	$(PNPM) --filter @appranks/ui-showcase run test:e2e
 
 build:
 	$(PNPM) build
