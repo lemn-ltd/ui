@@ -15,6 +15,19 @@ function ProgressCirclePage(): ReactElement {
 		<VisualizationDocs
 			apiRows={[
 				{
+					prop: "animation",
+					type: "'auto' | 'none'",
+					defaultValue: "'auto'",
+					description:
+						"Controls transitions and indeterminate motion while respecting reduced motion.",
+				},
+				{
+					prop: "tone",
+					type: "'default' | 'neutral' | 'warning' | 'error' | 'success'",
+					defaultValue: "'default'",
+					description: "Applies a semantic token color to the indicator.",
+				},
+				{
 					prop: "value",
 					type: "number",
 					description: "Determinate value; omit for indeterminate progress.",
@@ -24,6 +37,11 @@ function ProgressCirclePage(): ReactElement {
 					type: "number",
 					defaultValue: "100",
 					description: "Upper bound for determinate progress.",
+				},
+				{
+					prop: "children",
+					type: "ReactNode",
+					description: "Centered content; takes precedence over label.",
 				},
 				{
 					prop: "label",
@@ -81,7 +99,7 @@ function ProgressCirclePage(): ReactElement {
 					}}
 				>
 					<ProgressCircle aria-label="Upload progress" label="72%" value={72} />
-					<ProgressCircle aria-label="Processing" />
+					<ProgressCircle aria-label="Processing" tone="warning" />
 				</div>
 			)}
 			summary="Represent determinate or indeterminate progress with native SVG and reduced-motion behavior."

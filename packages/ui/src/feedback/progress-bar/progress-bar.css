@@ -1,50 +1,86 @@
 .ui-progress-bar {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  width: 100%;
-  height: 8px;
-  background: var(--surface2);
-  border-radius: var(--radius-pill);
-  overflow: hidden;
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+	width: 100%;
+	height: 8px;
+	background: var(--surface2);
+	border-radius: var(--radius-pill);
+	overflow: hidden;
 }
 
 .ui-progress-bar__fill {
-  height: 100%;
-  background: var(--accent);
-  border-radius: var(--radius-pill);
+	height: 100%;
+	background: var(--ui-progress-color, var(--accent));
+	border-radius: var(--radius-pill);
+}
+
+.ui-progress-bar[data-tone="neutral"] {
+	--ui-progress-color: var(--text-muted);
+}
+.ui-progress-bar[data-tone="warning"] {
+	--ui-progress-color: var(--warn);
+}
+.ui-progress-bar[data-tone="error"] {
+	--ui-progress-color: var(--danger);
+}
+.ui-progress-bar[data-tone="success"] {
+	--ui-progress-color: var(--success);
 }
 
 .ui-progress-bar__label {
-  position: absolute;
-  right: var(--space-2);
-  color: var(--text-muted);
-  font-family: var(--font-sans);
-  font-size: var(--font-size-caption);
-  line-height: var(--line-height-caption);
+	position: absolute;
+	right: var(--space-2);
+	color: var(--text-muted);
+	font-family: var(--font-sans);
+	font-size: var(--font-size-caption);
+	line-height: var(--line-height-caption);
 }
 
 .ui-progress-bar[data-variant="determinate"] .ui-progress-bar__fill {
-  width: var(--ui-progress-value, 0%);
+	width: var(--ui-progress-value, 0%);
 }
 
-.ui-progress-bar[data-variant="indeterminate"] .ui-progress-bar__fill {
-  width: 25%;
-  animation: indeterminate calc(var(--duration-slow) * 2) var(--easing-linear) infinite;
+.ui-progress-bar[data-animation="auto"][data-variant="determinate"]
+	.ui-progress-bar__fill {
+	transition: width var(--duration-normal) var(--easing-standard);
+}
+
+.ui-progress-bar[data-animation="auto"][data-variant="indeterminate"]
+	.ui-progress-bar__fill {
+	width: 25%;
+	animation: indeterminate calc(var(--duration-slow) * 2) var(--easing-linear)
+		infinite;
 }
 
 .ui-progress-bar[data-variant="route"] {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 3px;
-  border-radius: 0;
-  z-index: var(--z-drawer);
+	position: fixed;
+	top: 0;
+	left: 0;
+	height: 3px;
+	border-radius: 0;
+	z-index: var(--z-drawer);
 }
 
-.ui-progress-bar[data-variant="route"] .ui-progress-bar__fill {
-  width: 25%;
-  border-radius: 0;
-  animation: indeterminate calc(var(--duration-slow) * 2) var(--easing-linear) infinite;
+.ui-progress-bar[data-animation="auto"][data-variant="route"]
+	.ui-progress-bar__fill {
+	width: 25%;
+	border-radius: 0;
+	animation: indeterminate calc(var(--duration-slow) * 2) var(--easing-linear)
+		infinite;
+}
+
+.ui-progress-bar[data-animation="none"][data-variant="indeterminate"]
+	.ui-progress-bar__fill,
+.ui-progress-bar[data-animation="none"][data-variant="route"]
+	.ui-progress-bar__fill {
+	width: 25%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.ui-progress-bar[data-animation="auto"] .ui-progress-bar__fill {
+		animation: none;
+		transition: none;
+	}
 }

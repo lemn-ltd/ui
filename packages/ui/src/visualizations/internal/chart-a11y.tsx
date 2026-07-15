@@ -3,6 +3,8 @@ import { ChartFrame } from "../chart-frame/chart-frame.js";
 import { ChartLegend, type ChartLegendItem } from "./chart-legend.js";
 import {
 	type ChartAccessibleName,
+	type ChartLegendOverflow,
+	type ChartLegendPosition,
 	type ChartStateProps,
 	chartAccessibleName,
 } from "./chart-types.js";
@@ -15,7 +17,9 @@ type ChartVisualizationFrameProps = ChartAccessibleName &
 		readonly dataLabelPolicy?: "disabled" | "hidden-collision" | "visible";
 		readonly dataLength: number;
 		readonly hiddenSeries?: ReadonlySet<string>;
+		readonly legendOverflow?: ChartLegendOverflow;
 		readonly legendItems?: readonly ChartLegendItem[];
+		readonly legendPosition?: ChartLegendPosition;
 		readonly onToggleSeries?: (seriesId: string) => void;
 		readonly summary: string;
 	};
@@ -30,7 +34,9 @@ export function ChartVisualizationFrame({
 	error,
 	height = 320,
 	hiddenSeries,
+	legendOverflow,
 	legendItems,
+	legendPosition,
 	loading,
 	onRetry,
 	onToggleSeries,
@@ -68,6 +74,8 @@ export function ChartVisualizationFrame({
 						hidden={hiddenSeries}
 						items={legendItems}
 						onToggle={onToggleSeries}
+						overflow={legendOverflow}
+						position={legendPosition}
 					/>
 				) : null}
 				<p className="ui-chart-visually-hidden">{summary}</p>

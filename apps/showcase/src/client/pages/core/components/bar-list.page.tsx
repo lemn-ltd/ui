@@ -14,6 +14,25 @@ const API_ROWS = defineVisualizationApiRows<BarListProps>()([
 		description: "Label, value, and optional link or action for each row.",
 	},
 	{
+		prop: "sortOrder",
+		type: "'ascending' | 'descending' | 'none'",
+		defaultValue: "'descending'",
+		description: "Sorts by value or preserves input order.",
+	},
+	{
+		prop: "animation",
+		type: "'auto' | 'none'",
+		defaultValue: "'auto'",
+		description:
+			"Animates representative bars while respecting reduced motion.",
+	},
+	{
+		prop: "onValueChange",
+		type: "(item: BarListItem) => void",
+		description:
+			"Reports the activated row without replacing native link or button behavior.",
+	},
+	{
 		prop: "valueFormatter",
 		type: "(value: number) => string",
 		description: "Formats the visible value.",

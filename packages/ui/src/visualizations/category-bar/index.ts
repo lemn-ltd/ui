@@ -1,1 +1,6 @@
-export { CategoryBar, type CategoryBarItem, type CategoryBarProps } from './category-bar.js';
+export {
+	CategoryBar,
+	type CategoryBarItem,
+	type CategoryBarMarker,
+	type CategoryBarProps,
+} from "./category-bar.js";

@@ -1,1 +1,5 @@
-export { ProgressCircle, type ProgressCircleProps } from './progress-circle.js';
+export {
+	ProgressCircle,
+	type ProgressCircleProps,
+	type ProgressCircleTone,
+} from "./progress-circle.js";

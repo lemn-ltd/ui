@@ -18,14 +18,28 @@ function TrackerPage(): ReactElement {
 		<VisualizationDocs
 			apiRows={[
 				{
+					prop: "defaultColor",
+					type: "ChartColor",
+					description:
+						"Optional token color for items without their own color.",
+				},
+				{
+					prop: "hoverEffect",
+					type: "boolean",
+					defaultValue: "false",
+					description:
+						"Highlights the hovered block while respecting reduced motion.",
+				},
+				{
 					prop: "items",
 					type: "readonly TrackerItem[]",
 					description: "Ordered labels, statuses, and optional descriptions.",
 				},
 				{
-					prop: "items[].status",
+					prop: "items[].status / color / tooltip",
 					type: "'complete' | 'active' | 'pending' | 'error'",
-					description: "Text-backed discrete status.",
+					description:
+						"Text-backed status plus optional token color and tooltip copy.",
 				},
 				{
 					prop: "aria-label",
@@ -54,7 +68,7 @@ function TrackerPage(): ReactElement {
 			includeChartStateApi={false}
 			render={() => (
 				<div style={VISUALIZATION_PREVIEW_STYLE}>
-					<Tracker aria-label="Run lifecycle" items={runStates} />
+					<Tracker aria-label="Run lifecycle" hoverEffect items={runStates} />
 				</div>
 			)}
 			summary="Summarize a discrete sequence of states using patterns and hidden text as well as color."

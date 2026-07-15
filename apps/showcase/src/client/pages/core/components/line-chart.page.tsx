@@ -1,6 +1,6 @@
 import { DocumentationSection, ExampleBlock } from "@lemn-ltd/showcase-kit";
 import { LineChart, type LineChartProps } from "@lemn-ltd/ui";
-import type { ReactElement } from "react";
+import { type ReactElement, useState } from "react";
 import { monthlyReportData } from "../../../fixtures/index.js";
 import {
 	defineVisualizationApiRows,
@@ -80,7 +80,38 @@ const CODE = `import { LineChart } from '@lemn-ltd/ui';
     { dataKey: 'revenue', name: 'Revenue' },
     { dataKey: 'expenses', name: 'Expenses' },
   ]}
+  legendOverflow="scroll"
+  onValueChange={setSelection}
+  xAxis={{ label: 'Month' }}
+  yAxis={{ label: 'Amount', valueFormatter: (value) => '$' + value + 'k' }}
 />`;
+
+function LineChartPreview(): ReactElement {
+	const [selection, setSelection] = useState("No point selected");
+	return (
+		<div style={VISUALIZATION_PREVIEW_STYLE}>
+			<LineChart
+				animation="none"
+				aria-label="Revenue and expenses by month"
+				data={monthlyReportData}
+				index="month"
+				legendOverflow="scroll"
+				onValueChange={(value) =>
+					setSelection(
+						value ? `${value.name} · ${value.indexValue}` : "No point selected",
+					)
+				}
+				series={[
+					{ dataKey: "revenue", name: "Revenue" },
+					{ dataKey: "expenses", name: "Expenses" },
+				]}
+				xAxis={{ label: "Month" }}
+				yAxis={{ label: "Amount", valueFormatter: (value) => `$${value}k` }}
+			/>
+			<output aria-live="polite">Selection: {selection}</output>
+		</div>
+	);
+}
 
 function LineChartPage(): ReactElement {
 	return (
@@ -88,20 +119,8 @@ function LineChartPage(): ReactElement {
 			apiRows={API_ROWS}
 			code={CODE}
 			componentName="LineChart"
-			render={() => (
-				<div style={VISUALIZATION_PREVIEW_STYLE}>
-					<LineChart
-						animation="none"
-						aria-label="Revenue and expenses by month"
-						data={monthlyReportData}
-						index="month"
-						series={[
-							{ dataKey: "revenue", name: "Revenue" },
-							{ dataKey: "expenses", name: "Expenses" },
-						]}
-					/>
-				</div>
-			)}
+			includeCartesianApi
+			render={() => <LineChartPreview />}
 			summary="Compare one or more series over an ordered dimension with accessible legend controls and tooltips."
 			title="Line chart"
 		>

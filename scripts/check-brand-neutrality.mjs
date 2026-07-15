@@ -3,7 +3,10 @@ import { join, relative } from 'node:path';
 
 const root = process.cwd();
 const targets = process.argv.slice(2);
-const scanRoots = targets.length > 0 ? targets : ['packages/ui/src', 'apps/showcase/src'];
+const scanRoots =
+  targets.length > 0
+    ? targets
+    : ['packages/ui/src', 'apps/showcase/src', 'apps/brand-lab/src'];
 
 const publicBrandPattern = /\blemn\b/i;
 const officialPackageScopePattern = /@lemn-ltd\//i;
@@ -21,6 +24,7 @@ const forbiddenPatterns = [
 const publicBrandSurfacePrefixes = [
   'apps/showcase/src/client/pages/',
   'apps/showcase/src/worker/',
+  'apps/brand-lab/src/',
 ];
 
 const textExtensions = new Set([

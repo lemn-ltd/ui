@@ -1,5 +1,5 @@
 import { BarChart, type BarChartProps } from "@lemn-ltd/ui";
-import type { ReactElement } from "react";
+import { type ReactElement, useState } from "react";
 import { monthlyReportData } from "../../../fixtures/index.js";
 import {
 	defineVisualizationApiRows,
@@ -22,11 +22,22 @@ const API_ROWS = defineVisualizationApiRows<
 		description: "Named numeric series.",
 	},
 	{
+		prop: "mode",
+		type: "'default' | 'stacked' | 'percent'",
+		defaultValue: "'default'",
+		description: "Controls grouped, stacked, or normalized percent bars.",
+	},
+	{
 		prop: "animation",
 		type: "'auto' | 'none'",
 		defaultValue: "'auto'",
 		description:
 			"Animates only when motion is allowed and mark count is representative.",
+	},
+	{
+		prop: "barCategoryGap",
+		type: "number | string",
+		description: "Controls spacing between category groups.",
 	},
 	{
 		prop: "orientation",
@@ -78,7 +89,38 @@ const CODE = `import { BarChart } from '@lemn-ltd/ui';
     { dataKey: 'revenue', name: 'Revenue' },
     { dataKey: 'expenses', name: 'Expenses' },
   ]}
+  mode="stacked"
+  onValueChange={setSelection}
+  xAxis={{ label: 'Month' }}
+  yAxis={{ label: 'Amount', valueFormatter: (value) => '$' + value + 'k' }}
 />`;
+
+function BarChartPreview(): ReactElement {
+	const [selection, setSelection] = useState("No bar selected");
+	return (
+		<div style={VISUALIZATION_PREVIEW_STYLE}>
+			<BarChart
+				animation="none"
+				aria-label="Revenue and expenses by month"
+				data={monthlyReportData}
+				index="month"
+				mode="stacked"
+				onValueChange={(value) =>
+					setSelection(
+						value ? `${value.name} · ${value.indexValue}` : "No bar selected",
+					)
+				}
+				series={[
+					{ dataKey: "revenue", name: "Revenue" },
+					{ dataKey: "expenses", name: "Expenses" },
+				]}
+				xAxis={{ label: "Month" }}
+				yAxis={{ label: "Amount", valueFormatter: (value) => `$${value}k` }}
+			/>
+			<output aria-live="polite">Selection: {selection}</output>
+		</div>
+	);
+}
 
 function BarChartPage(): ReactElement {
 	return (
@@ -86,20 +128,8 @@ function BarChartPage(): ReactElement {
 			apiRows={API_ROWS}
 			code={CODE}
 			componentName="BarChart"
-			render={() => (
-				<div style={VISUALIZATION_PREVIEW_STYLE}>
-					<BarChart
-						animation="none"
-						aria-label="Revenue and expenses by month"
-						data={monthlyReportData}
-						index="month"
-						series={[
-							{ dataKey: "revenue", name: "Revenue" },
-							{ dataKey: "expenses", name: "Expenses" },
-						]}
-					/>
-				</div>
-			)}
+			includeCartesianApi
+			render={() => <BarChartPreview />}
 			summary="Compare categorical values as grouped or stacked bars in vertical or horizontal layouts."
 			title="Bar chart"
 		/>

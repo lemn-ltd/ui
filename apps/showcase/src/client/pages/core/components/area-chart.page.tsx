@@ -1,5 +1,5 @@
 import { AreaChart, type AreaChartProps } from "@lemn-ltd/ui";
-import type { ReactElement } from "react";
+import { type ReactElement, useState } from "react";
 import { monthlyReportData } from "../../../fixtures/index.js";
 import {
 	defineVisualizationApiRows,
@@ -26,14 +26,26 @@ const API_ROWS = defineVisualizationApiRows<
 		description: "Named area series.",
 	},
 	{
+		prop: "mode",
+		type: "'default' | 'stacked' | 'percent'",
+		defaultValue: "'default'",
+		description: "Controls normal, stacked, or normalized percent geometry.",
+	},
+	{
 		prop: "stacked",
 		type: "boolean",
 		defaultValue: "false",
 		description: "Stacks the declared series.",
 	},
 	{
+		prop: "connectNulls",
+		type: "boolean",
+		defaultValue: "false",
+		description: "Connects values across null gaps.",
+	},
+	{
 		prop: "fill",
-		type: "'solid' | 'gradient'",
+		type: "'solid' | 'gradient' | 'none'",
 		defaultValue: "'gradient'",
 		description: "Token-driven area fill.",
 	},
@@ -73,8 +85,38 @@ const CODE = `import { AreaChart } from '@lemn-ltd/ui';
     { dataKey: 'revenue', name: 'Revenue' },
     { dataKey: 'expenses', name: 'Expenses' },
   ]}
-  stacked
+  mode="percent"
+  onValueChange={setSelection}
+  xAxis={{ label: 'Month' }}
+  yAxis={{ label: 'Share' }}
 />`;
+
+function AreaChartPreview(): ReactElement {
+	const [selection, setSelection] = useState("No point selected");
+	return (
+		<div style={VISUALIZATION_PREVIEW_STYLE}>
+			<AreaChart
+				animation="none"
+				aria-label="Revenue and expenses by month"
+				data={monthlyReportData}
+				index="month"
+				mode="percent"
+				onValueChange={(value) =>
+					setSelection(
+						value ? `${value.name} · ${value.indexValue}` : "No point selected",
+					)
+				}
+				series={[
+					{ dataKey: "revenue", name: "Revenue" },
+					{ dataKey: "expenses", name: "Expenses" },
+				]}
+				xAxis={{ label: "Month" }}
+				yAxis={{ label: "Share" }}
+			/>
+			<output aria-live="polite">Selection: {selection}</output>
+		</div>
+	);
+}
 
 function AreaChartPage(): ReactElement {
 	return (
@@ -82,21 +124,8 @@ function AreaChartPage(): ReactElement {
 			apiRows={API_ROWS}
 			code={CODE}
 			componentName="AreaChart"
-			render={() => (
-				<div style={VISUALIZATION_PREVIEW_STYLE}>
-					<AreaChart
-						animation="none"
-						aria-label="Revenue and expenses by month"
-						data={monthlyReportData}
-						index="month"
-						series={[
-							{ dataKey: "revenue", name: "Revenue" },
-							{ dataKey: "expenses", name: "Expenses" },
-						]}
-						stacked
-					/>
-				</div>
-			)}
+			includeCartesianApi
+			render={() => <AreaChartPreview />}
 			summary="Show the magnitude of one or more normal or stacked series over an ordered dimension."
 			title="Area chart"
 		/>

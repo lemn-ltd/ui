@@ -16,6 +16,7 @@ const expectedPackageNames = new Map([
   ['packages/showcase-kit/package.json', '@lemn-ltd/showcase-kit'],
   ['apps/docs/package.json', '@lemn-ltd/ui-docs'],
   ['apps/showcase/package.json', '@lemn-ltd/ui-showcase'],
+  ['apps/brand-lab/package.json', '@lemn-ltd/ui-brand-lab'],
 ]);
 
 const files = execFileSync(

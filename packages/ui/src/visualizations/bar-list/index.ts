@@ -1,1 +1,6 @@
-export { BarList, type BarListItem, type BarListProps } from './bar-list.js';
+export {
+	BarList,
+	type BarListItem,
+	type BarListProps,
+	type BarListSortOrder,
+} from "./bar-list.js";

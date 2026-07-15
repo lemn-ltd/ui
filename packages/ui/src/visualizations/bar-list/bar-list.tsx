@@ -1,7 +1,9 @@
 import type { ReactElement } from "react";
 import { ChartFrame } from "../chart-frame/chart-frame.js";
+import { useChartAnimation } from "../internal/chart-animation.js";
 import {
 	type ChartAccessibleName,
+	type ChartAnimation,
 	type ChartColor,
 	type ChartStateProps,
 	chartAccessibleName,
@@ -11,10 +13,13 @@ import "./bar-list.css";
 
 interface BarListItemBase {
 	readonly color?: ChartColor;
+	readonly key?: string;
 	readonly label: string;
 	readonly value: number;
 	readonly valueLabel?: string;
 }
+
+export type BarListSortOrder = "ascending" | "descending" | "none";
 
 export type BarListItem = BarListItemBase &
 	(
@@ -25,12 +30,16 @@ export type BarListItem = BarListItemBase &
 
 export type BarListProps = ChartAccessibleName &
 	ChartStateProps & {
+		readonly animation?: ChartAnimation;
 		readonly items: readonly BarListItem[];
+		readonly onValueChange?: (item: BarListItem) => void;
+		readonly sortOrder?: BarListSortOrder;
 		readonly valueFormatter?: (value: number) => string;
 	};
 
 /** Ordered categories whose native CSS bars are scaled to the largest value. */
 export function BarList({
+	animation = "auto",
 	className,
 	emptyMessage,
 	error,
@@ -38,12 +47,26 @@ export function BarList({
 	items,
 	loading,
 	onRetry,
+	onValueChange,
+	sortOrder = "descending",
 	style,
 	valueFormatter = (value) => String(value),
 	"aria-label": ariaLabel,
 	"aria-labelledby": ariaLabelledBy,
 }: BarListProps): ReactElement {
-	const max = items.reduce((peak, item) => Math.max(peak, item.value), 0);
+	const animationActive = useChartAnimation(animation, items.length);
+	const orderedItems =
+		sortOrder === "none"
+			? items
+			: [...items].sort((left, right) =>
+					sortOrder === "ascending"
+						? left.value - right.value
+						: right.value - left.value,
+				);
+	const max = orderedItems.reduce(
+		(peak, item) => Math.max(peak, item.value),
+		0,
+	);
 	const frameName = chartAccessibleName(ariaLabel, ariaLabelledBy);
 
 	return (
@@ -58,8 +81,11 @@ export function BarList({
 			onRetry={onRetry}
 			style={style}
 		>
-			<ol className="ui-bar-list__items">
-				{items.map((item, index) => {
+			<ol
+				className="ui-bar-list__items"
+				data-animation-active={animationActive}
+			>
+				{orderedItems.map((item, index) => {
 					const ratio = max > 0 ? Math.max(0, item.value) / max : 0;
 					const content = (
 						<>
@@ -78,15 +104,22 @@ export function BarList({
 						</>
 					);
 					return (
-						<li className="ui-bar-list__item" key={item.label}>
+						<li className="ui-bar-list__item" key={item.key ?? item.label}>
 							{item.href ? (
-								<a className="ui-bar-list__content" href={item.href}>
+								<a
+									className="ui-bar-list__content"
+									href={item.href}
+									onClick={() => onValueChange?.(item)}
+								>
 									{content}
 								</a>
-							) : item.onSelect ? (
+							) : item.onSelect || onValueChange ? (
 								<button
 									className="ui-bar-list__content"
-									onClick={item.onSelect}
+									onClick={() => {
+										item.onSelect?.();
+										onValueChange?.(item);
+									}}
 									type="button"
 								>
 									{content}

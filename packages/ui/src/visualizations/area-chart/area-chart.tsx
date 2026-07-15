@@ -1,61 +1,85 @@
-import { type ReactElement, useId } from "react";
+import type { MouseEvent, ReactElement } from "react";
+import { useId } from "react";
 import {
 	Area,
 	CartesianGrid,
+	Dot,
+	Label,
 	AreaChart as RechartsAreaChart,
 	ResponsiveContainer,
 	Tooltip,
 	XAxis,
 	YAxis,
+	type ActiveDotProps,
+	type DotProps,
 } from "recharts";
 import { ChartVisualizationFrame } from "../internal/chart-a11y.js";
 import { useChartAnimation } from "../internal/chart-animation.js";
 import { useChartSeriesVisibility } from "../internal/chart-legend.js";
+import { useChartSelection } from "../internal/chart-selection.js";
+import { ChartTooltipContent } from "../internal/chart-tooltip.js";
 import {
+	type CartesianChartInteractionProps,
 	type ChartAccessibleName,
 	type ChartAnimation,
 	type ChartDatum,
+	type ChartMode,
 	type ChartSeries,
 	type ChartStateProps,
 	chartAccessibleName,
 	chartColor,
-	numericValue,
+	chartTickValue,
+	chartXAxisInterval,
+	resolveChartMode,
 } from "../internal/chart-types.js";
 import "./area-chart.css";
 
-export type AreaChartFill = "solid" | "gradient";
+export type AreaChartFill = "solid" | "gradient" | "none";
 
 export type AreaChartProps<TDatum extends ChartDatum> = ChartAccessibleName &
-	ChartStateProps & {
+	ChartStateProps &
+	CartesianChartInteractionProps<TDatum> & {
 		readonly animation?: ChartAnimation;
+		readonly connectNulls?: boolean;
 		readonly data: readonly TDatum[];
 		readonly fill?: AreaChartFill;
 		readonly index: Extract<keyof TDatum, string>;
+		readonly mode?: ChartMode;
 		readonly series: readonly ChartSeries<TDatum>[];
 		readonly showGrid?: boolean;
 		readonly showLegend?: boolean;
 		readonly showTooltip?: boolean;
+		/** @deprecated Use mode="stacked". */
 		readonly stacked?: boolean;
 	};
 
-/** Responsive area chart for one or more normal or stacked series. */
+/** Responsive area chart for one or more normal, stacked, or percent series. */
 export function AreaChart<TDatum extends ChartDatum>({
 	animation = "auto",
 	className,
+	connectNulls = false,
 	data,
 	emptyMessage,
 	error,
 	fill = "gradient",
 	height = 320,
 	index,
+	legendOverflow = "wrap",
+	legendPosition = "right",
 	loading,
+	mode,
 	onRetry,
+	onTooltipChange,
+	onValueChange,
+	renderTooltip,
 	series,
 	showGrid = true,
 	showLegend = true,
 	showTooltip = true,
-	stacked = false,
+	stacked,
 	style,
+	xAxis,
+	yAxis,
 	"aria-label": ariaLabel,
 	"aria-labelledby": ariaLabelledBy,
 }: AreaChartProps<TDatum>): ReactElement {
@@ -65,12 +89,28 @@ export function AreaChart<TDatum extends ChartDatum>({
 		data.length * series.length,
 	);
 	const [hiddenSeries, toggleSeries] = useChartSeriesVisibility();
+	const selection = useChartSelection(series, onValueChange);
+	const resolvedMode = resolveChartMode(mode, stacked);
+	const xAxisOptions = xAxis === false ? { show: false } : (xAxis ?? {});
+	const yAxisOptions = yAxis === false ? { show: false } : (yAxis ?? {});
 	const legendItems = series.map((item, seriesIndex) => ({
 		color: chartColor(item.color, seriesIndex),
 		id: item.dataKey,
 		name: item.name,
 	}));
 	const frameName = chartAccessibleName(ariaLabel, ariaLabelledBy);
+	const endDatum = data[data.length - 1];
+	const startEndTicks =
+		xAxisOptions.startEndOnly && data[0] && endDatum
+			? [chartTickValue(data[0][index]), chartTickValue(endDatum[index])]
+			: undefined;
+	const yDomain: [number | "dataMin", number | "auto"] = [
+		yAxisOptions.min ?? (yAxisOptions.autoMin ? "dataMin" : 0),
+		yAxisOptions.max ?? "auto",
+	];
+	const percent = resolvedMode === "percent";
+	const percentFormatter = (value: number): string =>
+		`${Math.round(value * 100)}%`;
 
 	return (
 		<ChartVisualizationFrame
@@ -83,17 +123,26 @@ export function AreaChart<TDatum extends ChartDatum>({
 			height={height}
 			hiddenSeries={showLegend ? hiddenSeries : undefined}
 			legendItems={showLegend ? legendItems : undefined}
+			legendOverflow={legendOverflow}
+			legendPosition={legendPosition}
 			loading={loading}
 			onRetry={onRetry}
 			onToggleSeries={showLegend ? toggleSeries : undefined}
 			style={style}
-			summary={`${data.length} data points across ${series.length} ${stacked ? "stacked " : ""}area series: ${series.map((item) => item.name).join(", ")}.`}
+			summary={`${data.length} data points across ${series.length} ${resolvedMode === "stacked" ? "stacked " : resolvedMode === "percent" ? "percent " : ""}area series: ${series.map((item) => item.name).join(", ")}.`}
 		>
 			<ResponsiveContainer height="100%" width="100%">
 				<RechartsAreaChart
 					accessibilityLayer
 					data={data}
-					margin={{ bottom: 8, left: 4, right: 12, top: 8 }}
+					margin={{
+						bottom: xAxisOptions.label ? 28 : 8,
+						left: yAxisOptions.label ? 20 : 4,
+						right: 12,
+						top: 8,
+					}}
+					onClick={selection.selected ? selection.clear : undefined}
+					stackOffset={percent ? "expand" : undefined}
 				>
 					<defs>
 						{series.map((item, seriesIndex) => {
@@ -120,48 +169,100 @@ export function AreaChart<TDatum extends ChartDatum>({
 							vertical={false}
 						/>
 					) : null}
-					<XAxis dataKey={index} stroke="var(--chart-axis)" tickLine={false} />
-					<YAxis stroke="var(--chart-axis)" tickLine={false} width={44} />
-					{showTooltip ? (
-						<Tooltip
-							contentStyle={{
-								background: "var(--chart-tooltip-surface)",
-								border: "1px solid var(--chart-tooltip-border)",
-								borderRadius: "var(--radius-sm)",
-								color: "var(--text)",
-							}}
-							cursor={{ stroke: "var(--chart-cursor)" }}
-							formatter={(value, name) => {
-								const matchingSeries = series.find(
-									(item) => item.dataKey === String(name),
-								);
-								const number = numericValue(value);
-								return [
-									number !== undefined && matchingSeries?.valueFormatter
-										? matchingSeries.valueFormatter(number)
-										: String(value ?? "—"),
-									matchingSeries?.name ?? String(name),
-								];
-							}}
-						/>
-					) : null}
+					<XAxis
+						axisLine={false}
+						dataKey={index}
+						hide={xAxisOptions.show === false}
+						interval={chartXAxisInterval(xAxisOptions.interval)}
+						minTickGap={xAxisOptions.tickGap ?? 5}
+						stroke="var(--chart-axis)"
+						tickLine={false}
+						ticks={startEndTicks}
+					>
+						{xAxisOptions.label ? (
+							<Label offset={-20} position="insideBottom">
+								{xAxisOptions.label}
+							</Label>
+						) : null}
+					</XAxis>
+					<YAxis
+						allowDecimals={yAxisOptions.allowDecimals ?? true}
+						axisLine={false}
+						domain={yDomain}
+						hide={yAxisOptions.show === false}
+						stroke="var(--chart-axis)"
+						tickFormatter={
+							percent ? percentFormatter : yAxisOptions.valueFormatter
+						}
+						tickLine={false}
+						width={yAxisOptions.width ?? 56}
+					>
+						{yAxisOptions.label ? (
+							<Label angle={-90} position="insideLeft">
+								{yAxisOptions.label}
+							</Label>
+						) : null}
+					</YAxis>
+					<Tooltip
+						content={(props) => (
+							<ChartTooltipContent
+								active={showTooltip ? props.active : false}
+								label={props.label}
+								onChange={onTooltipChange}
+								payload={props.payload}
+								render={renderTooltip}
+								series={series}
+							/>
+						)}
+						cursor={{ stroke: "var(--chart-cursor)" }}
+						isAnimationActive={animationActive}
+					/>
 					{series.map((item, seriesIndex) => {
 						const color = chartColor(item.color, seriesIndex);
+						const dimmed =
+							selection.selected !== null &&
+							selection.selected.dataKey !== item.dataKey;
 						return (
 							<Area
+								activeDot={
+									onValueChange
+										? (point: ActiveDotProps) => (
+												<Dot
+													{...point}
+													className="ui-chart-selectable-mark"
+													onClick={(
+														_dotProps: DotProps,
+														event: MouseEvent<SVGCircleElement>,
+													) => {
+														event.stopPropagation();
+														selection.select(
+															item.dataKey,
+															point.payload as TDatum,
+															String((point.payload as TDatum)[index]),
+														);
+													}}
+													r={5}
+												/>
+											)
+										: { r: 4 }
+								}
+								connectNulls={connectNulls}
 								dataKey={item.dataKey}
 								fill={
-									fill === "gradient"
-										? `url(#${gradientSeed}-${seriesIndex})`
-										: color
+									fill === "none"
+										? "transparent"
+										: fill === "gradient"
+											? `url(#${gradientSeed}-${seriesIndex})`
+											: color
 								}
-								fillOpacity={fill === "gradient" ? 1 : 0.18}
+								fillOpacity={fill === "solid" ? (dimmed ? 0.06 : 0.18) : 1}
 								hide={hiddenSeries.has(item.dataKey)}
 								isAnimationActive={animationActive}
 								key={item.dataKey}
 								name={item.name}
-								stackId={stacked ? "area-stack" : undefined}
+								stackId={resolvedMode === "default" ? undefined : "area-stack"}
 								stroke={color}
+								strokeOpacity={dimmed ? 0.3 : 1}
 								strokeWidth={2}
 								type="monotone"
 							/>

@@ -1,17 +1,24 @@
-import type { ReactElement } from "react";
+import type { MouseEvent, ReactElement } from "react";
 import {
 	CartesianGrid,
+	Dot,
+	Label,
 	Line,
 	LineChart as RechartsLineChart,
 	ResponsiveContainer,
 	Tooltip,
 	XAxis,
 	YAxis,
+	type ActiveDotProps,
+	type DotProps,
 } from "recharts";
 import { ChartVisualizationFrame } from "../internal/chart-a11y.js";
 import { useChartAnimation } from "../internal/chart-animation.js";
 import { useChartSeriesVisibility } from "../internal/chart-legend.js";
+import { useChartSelection } from "../internal/chart-selection.js";
+import { ChartTooltipContent } from "../internal/chart-tooltip.js";
 import {
+	type CartesianChartInteractionProps,
 	type ChartAccessibleName,
 	type ChartAnimation,
 	type ChartDatum,
@@ -19,14 +26,16 @@ import {
 	type ChartStateProps,
 	chartAccessibleName,
 	chartColor,
-	numericValue,
+	chartTickValue,
+	chartXAxisInterval,
 } from "../internal/chart-types.js";
 import "./line-chart.css";
 
 export type LineChartCurve = "linear" | "monotone" | "step";
 
 export type LineChartProps<TDatum extends ChartDatum> = ChartAccessibleName &
-	ChartStateProps & {
+	ChartStateProps &
+	CartesianChartInteractionProps<TDatum> & {
 		readonly animation?: ChartAnimation;
 		readonly connectNulls?: boolean;
 		readonly curve?: LineChartCurve;
@@ -39,7 +48,7 @@ export type LineChartProps<TDatum extends ChartDatum> = ChartAccessibleName &
 		readonly showTooltip?: boolean;
 	};
 
-/** Responsive multi-series line chart with keyboard-aware interaction semantics. */
+/** Responsive multi-series line chart with selection and configurable axes. */
 export function LineChart<TDatum extends ChartDatum>({
 	animation = "auto",
 	className,
@@ -50,28 +59,47 @@ export function LineChart<TDatum extends ChartDatum>({
 	error,
 	height = 320,
 	index,
+	legendOverflow = "wrap",
+	legendPosition = "right",
 	loading,
 	onRetry,
+	onTooltipChange,
+	onValueChange,
+	renderTooltip,
 	series,
 	showDots = false,
 	showGrid = true,
 	showLegend = true,
 	showTooltip = true,
 	style,
+	xAxis,
+	yAxis,
 	"aria-label": ariaLabel,
 	"aria-labelledby": ariaLabelledBy,
 }: LineChartProps<TDatum>): ReactElement {
 	const [hiddenSeries, toggleSeries] = useChartSeriesVisibility();
+	const selection = useChartSelection(series, onValueChange);
 	const animationActive = useChartAnimation(
 		animation,
 		data.length * series.length,
 	);
+	const xAxisOptions = xAxis === false ? { show: false } : (xAxis ?? {});
+	const yAxisOptions = yAxis === false ? { show: false } : (yAxis ?? {});
 	const legendItems = series.map((item, seriesIndex) => ({
 		color: chartColor(item.color, seriesIndex),
 		id: item.dataKey,
 		name: item.name,
 	}));
 	const frameName = chartAccessibleName(ariaLabel, ariaLabelledBy);
+	const endDatum = data[data.length - 1];
+	const startEndTicks =
+		xAxisOptions.startEndOnly && data[0] && endDatum
+			? [chartTickValue(data[0][index]), chartTickValue(endDatum[index])]
+			: undefined;
+	const yDomain: [number | "dataMin", number | "auto"] = [
+		yAxisOptions.min ?? (yAxisOptions.autoMin ? "dataMin" : 0),
+		yAxisOptions.max ?? "auto",
+	];
 
 	return (
 		<ChartVisualizationFrame
@@ -84,6 +112,8 @@ export function LineChart<TDatum extends ChartDatum>({
 			height={height}
 			hiddenSeries={showLegend ? hiddenSeries : undefined}
 			legendItems={showLegend ? legendItems : undefined}
+			legendOverflow={legendOverflow}
+			legendPosition={legendPosition}
 			loading={loading}
 			onRetry={onRetry}
 			onToggleSeries={showLegend ? toggleSeries : undefined}
@@ -94,7 +124,13 @@ export function LineChart<TDatum extends ChartDatum>({
 				<RechartsLineChart
 					accessibilityLayer
 					data={data}
-					margin={{ bottom: 8, left: 4, right: 12, top: 8 }}
+					margin={{
+						bottom: xAxisOptions.label ? 28 : 8,
+						left: yAxisOptions.label ? 20 : 4,
+						right: 12,
+						top: 8,
+					}}
+					onClick={selection.selected ? selection.clear : undefined}
 				>
 					{showGrid ? (
 						<CartesianGrid
@@ -103,44 +139,94 @@ export function LineChart<TDatum extends ChartDatum>({
 							vertical={false}
 						/>
 					) : null}
-					<XAxis dataKey={index} stroke="var(--chart-axis)" tickLine={false} />
-					<YAxis stroke="var(--chart-axis)" tickLine={false} width={44} />
-					{showTooltip ? (
-						<Tooltip
-							contentStyle={{
-								background: "var(--chart-tooltip-surface)",
-								border: "1px solid var(--chart-tooltip-border)",
-								borderRadius: "var(--radius-sm)",
-								color: "var(--text)",
-							}}
-							cursor={{ stroke: "var(--chart-cursor)" }}
-							formatter={(value, name) => {
-								const matchingSeries = series.find(
-									(item) => item.dataKey === String(name),
-								);
-								const number = numericValue(value);
-								const formatted =
-									number !== undefined && matchingSeries?.valueFormatter
-										? matchingSeries.valueFormatter(number)
-										: String(value ?? "—");
-								return [formatted, matchingSeries?.name ?? String(name)];
-							}}
-						/>
-					) : null}
-					{series.map((item, seriesIndex) => (
-						<Line
-							connectNulls={connectNulls}
-							dataKey={item.dataKey}
-							dot={showDots}
-							hide={hiddenSeries.has(item.dataKey)}
-							isAnimationActive={animationActive}
-							key={item.dataKey}
-							name={item.name}
-							stroke={chartColor(item.color, seriesIndex)}
-							strokeWidth={2}
-							type={curve}
-						/>
-					))}
+					<XAxis
+						axisLine={false}
+						dataKey={index}
+						hide={xAxisOptions.show === false}
+						interval={chartXAxisInterval(xAxisOptions.interval)}
+						minTickGap={xAxisOptions.tickGap ?? 5}
+						stroke="var(--chart-axis)"
+						tickLine={false}
+						ticks={startEndTicks}
+					>
+						{xAxisOptions.label ? (
+							<Label offset={-20} position="insideBottom">
+								{xAxisOptions.label}
+							</Label>
+						) : null}
+					</XAxis>
+					<YAxis
+						allowDecimals={yAxisOptions.allowDecimals ?? true}
+						axisLine={false}
+						domain={yDomain}
+						hide={yAxisOptions.show === false}
+						stroke="var(--chart-axis)"
+						tickFormatter={yAxisOptions.valueFormatter}
+						tickLine={false}
+						width={yAxisOptions.width ?? 56}
+					>
+						{yAxisOptions.label ? (
+							<Label angle={-90} position="insideLeft">
+								{yAxisOptions.label}
+							</Label>
+						) : null}
+					</YAxis>
+					<Tooltip
+						content={(props) => (
+							<ChartTooltipContent
+								active={showTooltip ? props.active : false}
+								label={props.label}
+								onChange={onTooltipChange}
+								payload={props.payload}
+								render={renderTooltip}
+								series={series}
+							/>
+						)}
+						cursor={{ stroke: "var(--chart-cursor)" }}
+						isAnimationActive={animationActive}
+					/>
+					{series.map((item, seriesIndex) => {
+						const dimmed =
+							selection.selected !== null &&
+							selection.selected.dataKey !== item.dataKey;
+						return (
+							<Line
+								activeDot={
+									onValueChange
+										? (point: ActiveDotProps) => (
+												<Dot
+													{...point}
+													className="ui-chart-selectable-mark"
+													onClick={(
+														_dotProps: DotProps,
+														event: MouseEvent<SVGCircleElement>,
+													) => {
+														event.stopPropagation();
+														selection.select(
+															item.dataKey,
+															point.payload as TDatum,
+															String((point.payload as TDatum)[index]),
+														);
+													}}
+													r={5}
+												/>
+											)
+										: { r: 4 }
+								}
+								connectNulls={connectNulls}
+								dataKey={item.dataKey}
+								dot={showDots}
+								hide={hiddenSeries.has(item.dataKey)}
+								isAnimationActive={animationActive}
+								key={item.dataKey}
+								name={item.name}
+								stroke={chartColor(item.color, seriesIndex)}
+								strokeOpacity={dimmed ? 0.3 : 1}
+								strokeWidth={2}
+								type={curve}
+							/>
+						);
+					})}
 				</RechartsLineChart>
 			</ResponsiveContainer>
 		</ChartVisualizationFrame>

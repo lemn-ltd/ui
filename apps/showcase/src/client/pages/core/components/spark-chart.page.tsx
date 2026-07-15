@@ -16,10 +16,44 @@ const API_ROWS = defineVisualizationApiRows<
 		description: "Prepared compact-series rows.",
 	},
 	{
+		prop: "series",
+		type: "readonly ChartSeries<TDatum>[]",
+		description:
+			"Multiple compact series; replaces the single-series compatibility props.",
+	},
+	{
 		prop: "kind",
 		type: "'line' | 'area' | 'bar'",
 		defaultValue: "'line'",
 		description: "Approved compact geometry.",
+	},
+	{
+		prop: "mode",
+		type: "'default' | 'stacked' | 'percent'",
+		defaultValue: "'default'",
+		description: "Stacks or normalizes area and bar series.",
+	},
+	{
+		prop: "fill",
+		type: "'solid' | 'gradient' | 'none'",
+		defaultValue: "'solid'",
+		description: "Controls compact area fill.",
+	},
+	{
+		prop: "connectNulls",
+		type: "boolean",
+		defaultValue: "false",
+		description: "Connects line and area values across null gaps.",
+	},
+	{
+		prop: "domain",
+		type: "ChartValueDomain",
+		description: "Configures the hidden numeric domain.",
+	},
+	{
+		prop: "barCategoryGap",
+		type: "number | string",
+		description: "Controls compact bar category spacing.",
 	},
 	{
 		prop: "dataKey",
@@ -51,6 +85,16 @@ const API_ROWS = defineVisualizationApiRows<
 		description: "Shows compact value details.",
 	},
 	{
+		prop: "onTooltipChange",
+		type: "(context: ChartTooltipContext<TDatum> | null) => void",
+		description: "Reports normalized tooltip lifecycle changes.",
+	},
+	{
+		prop: "renderTooltip",
+		type: "(context: ChartTooltipContext<TDatum>) => ReactNode",
+		description: "Renders custom normalized tooltip content.",
+	},
+	{
 		prop: "valueFormatter",
 		type: "(value: number) => string",
 		description: "Formats tooltip values.",
@@ -60,12 +104,15 @@ const API_ROWS = defineVisualizationApiRows<
 const CODE = `import { SparkChart } from '@lemn-ltd/ui';
 
 <SparkChart
-  aria-label="Monthly revenue trend"
+  aria-label="Monthly revenue and expense trend"
   data={monthlyReportData}
-  dataKey="revenue"
   index="month"
   kind="area"
-  name="Revenue"
+  fill="gradient"
+  series={[
+    { dataKey: 'revenue', name: 'Revenue' },
+    { dataKey: 'expenses', name: 'Expenses' },
+  ]}
 />`;
 
 function SparkChartPage(): ReactElement {
@@ -79,12 +126,15 @@ function SparkChartPage(): ReactElement {
 				<div style={VISUALIZATION_PREVIEW_STYLE}>
 					<SparkChart
 						animation="none"
-						aria-label="Monthly revenue trend"
+						aria-label="Monthly revenue and expense trend"
 						data={monthlyReportData}
-						dataKey="revenue"
+						fill="gradient"
 						index="month"
 						kind="area"
-						name="Revenue"
+						series={[
+							{ dataKey: "revenue", name: "Revenue" },
+							{ dataKey: "expenses", name: "Expenses" },
+						]}
 					/>
 				</div>
 			)}

@@ -1,60 +1,70 @@
 .ui-bar-list__items {
-  display: grid;
-  gap: var(--space-2);
-  padding: 0;
-  margin: 0;
-  list-style: none;
+	display: grid;
+	gap: var(--space-2);
+	padding: 0;
+	margin: 0;
+	list-style: none;
 }
 
 .ui-bar-list__content {
-  position: relative;
-  display: grid;
-  min-height: 38px;
-  align-items: center;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: var(--space-3);
-  padding: var(--space-2) var(--space-3);
-  overflow: hidden;
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: var(--surface2);
-  color: var(--text);
-  font: inherit;
-  text-align: left;
-  text-decoration: none;
+	position: relative;
+	display: grid;
+	min-height: 38px;
+	align-items: center;
+	grid-template-columns: minmax(0, 1fr) auto;
+	gap: var(--space-3);
+	padding: var(--space-2) var(--space-3);
+	overflow: hidden;
+	border: 0;
+	border-radius: var(--radius-sm);
+	background: var(--surface2);
+	color: var(--text);
+	font: inherit;
+	text-align: left;
+	text-decoration: none;
 }
 
 button.ui-bar-list__content,
 a.ui-bar-list__content {
-  width: 100%;
-  cursor: pointer;
+	width: 100%;
+	cursor: pointer;
 }
 
 .ui-bar-list__content:focus-visible {
-  outline: 2px solid var(--focus-ring);
-  outline-offset: 2px;
+	outline: 2px solid var(--focus-ring);
+	outline-offset: 2px;
 }
 
 .ui-bar-list__bar {
-  position: absolute;
-  inset: 0;
-  opacity: 0.14;
-  transform-origin: left center;
+	position: absolute;
+	inset: 0;
+	opacity: 0.14;
+	transform-origin: left center;
+}
+
+.ui-bar-list__items[data-animation-active="true"] .ui-bar-list__bar {
+	transition: transform var(--duration-normal) var(--easing-standard);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.ui-bar-list__items[data-animation-active="true"] .ui-bar-list__bar {
+		transition: none;
+	}
 }
 
 .ui-bar-list__label,
 .ui-bar-list__value {
-  position: relative;
-  z-index: var(--z-raised);
+	position: relative;
+	z-index: var(--z-raised);
 }
 
 .ui-bar-list__label {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .ui-bar-list__value {
-  color: var(--text-muted);
-  font-variant-numeric: tabular-nums;
+	color: var(--text-muted);
+	font-variant-numeric: tabular-nums;
 }

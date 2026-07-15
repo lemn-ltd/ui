@@ -25,6 +25,7 @@
     "validate:boundaries": "node scripts/check-ui-boundaries.mjs && pnpm --dir packages/ui run validate:boundaries",
     "sync:docs-changelog": "node scripts/sync-docs-changelog.mjs",
     "dev:showcase": "pnpm --filter @lemn-ltd/ui-showcase run dev",
+    "dev:brand-lab": "pnpm --filter @lemn-ltd/ui-brand-lab run dev",
     "dev:docs": "pnpm --filter @lemn-ltd/ui-docs run dev",
     "kill:showcase": "pnpm --filter @lemn-ltd/ui-showcase run kill",
     "build:docs": "pnpm --filter @lemn-ltd/ui-docs run build",

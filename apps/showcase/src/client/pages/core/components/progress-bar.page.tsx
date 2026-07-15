@@ -1,82 +1,110 @@
-import { ComponentPage, ExampleBlock, PropsTable, VariantsGallery } from '@lemn-ltd/showcase-kit';
-import { ProgressBar, type ProgressBarVariant } from '@lemn-ltd/ui';
-import type { ReactElement } from 'react';
+import { ProgressBar, type ProgressBarTone } from "@lemn-ltd/ui";
+import type { ReactElement } from "react";
+import { VisualizationDocs } from "./visualization-docs.js";
 
-const VARIANTS: readonly ProgressBarVariant[] = ['determinate', 'indeterminate', 'route'];
+const TONES: readonly ProgressBarTone[] = [
+	"default",
+	"neutral",
+	"warning",
+	"error",
+	"success",
+];
 
-const DETERMINATE_VALUES: readonly number[] = [0, 25, 50, 75, 100];
+const CODE = `import { ProgressBar } from '@lemn-ltd/ui';
+
+<ProgressBar
+  aria-label="Migration progress"
+  label="36 of 48"
+  max={48}
+  tone="success"
+  value={36}
+/>`;
 
 function ProgressBarPage(): ReactElement {
-  return (
-    <ComponentPage
-      status="stable"
-      summary="A linear progress indicator. Determinate carries ARIA and an optional label; the indeterminate and route loops run on the linear easing and go static under reduced motion."
-      title="Progress bar"
-    >
-      <ExampleBlock
-        code={`<ProgressBar variant="determinate" value={50} showLabel />
-<ProgressBar variant="indeterminate" />`}
-        render={() => (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, width: 320 }}>
-            <ProgressBar showLabel value={50} variant="determinate" />
-            <ProgressBar variant="indeterminate" />
-          </div>
-        )}
-      />
-
-      <VariantsGallery
-        columns={1}
-        items={VARIANTS.map((variant) => ({
-          label: variant,
-          render: () => (
-            <div style={{ width: 280 }}>
-              <ProgressBar value={variant === 'determinate' ? 60 : undefined} variant={variant} />
-            </div>
-          ),
-        }))}
-      />
-
-      <VariantsGallery
-        columns={1}
-        items={DETERMINATE_VALUES.map((value) => ({
-          label: `${value}%`,
-          render: () => (
-            <div style={{ width: 280 }}>
-              <ProgressBar showLabel value={value} variant="determinate" />
-            </div>
-          ),
-        }))}
-      />
-
-      <PropsTable
-        rows={[
-          {
-            name: 'variant',
-            type: "'determinate' | 'indeterminate' | 'route'",
-            defaultValue: "'determinate'",
-            description: 'Progress mode; written to data-variant. Only determinate reads value.',
-          },
-          {
-            name: 'value',
-            type: 'number',
-            defaultValue: '0',
-            description: 'Determinate percentage, clamped to 0–100.',
-          },
-          {
-            name: 'showLabel',
-            type: 'boolean',
-            defaultValue: 'false',
-            description: 'When determinate, renders the percent as a label.',
-          },
-          {
-            name: '…rest',
-            type: "Omit<HTMLAttributes<HTMLDivElement>, 'role'>",
-            description: 'Native div props (className, style, …); role is owned by the component.',
-          },
-        ]}
-      />
-    </ComponentPage>
-  );
+	return (
+		<VisualizationDocs
+			apiRows={[
+				{
+					prop: "variant",
+					type: "'determinate' | 'indeterminate' | 'route'",
+					defaultValue: "'determinate'",
+					description: "Progress mode; only determinate reads value and max.",
+				},
+				{
+					prop: "tone",
+					type: "'default' | 'neutral' | 'warning' | 'error' | 'success'",
+					defaultValue: "'default'",
+					description: "Semantic token color for the fill.",
+				},
+				{
+					prop: "animation",
+					type: "'auto' | 'none'",
+					defaultValue: "'auto'",
+					description:
+						"Controls transitions and loops while respecting reduced motion.",
+				},
+				{
+					prop: "value",
+					type: "number",
+					defaultValue: "0",
+					description: "Determinate value, clamped between zero and max.",
+				},
+				{
+					prop: "max",
+					type: "number",
+					defaultValue: "100",
+					description: "Upper bound and ARIA maximum for determinate progress.",
+				},
+				{
+					prop: "label",
+					type: "ReactNode",
+					description: "Consumer-provided visible label.",
+				},
+				{
+					prop: "showLabel",
+					type: "boolean",
+					defaultValue: "false",
+					description:
+						"Shows a calculated percentage when label is not supplied.",
+				},
+				{
+					prop: "native div attributes",
+					type: "Omit<HTMLAttributes<HTMLDivElement>, 'role'>",
+					description:
+						"Native div props; progress semantics are owned by the component.",
+				},
+			]}
+			code={CODE}
+			componentName="ProgressBar"
+			includeChartStateApi={false}
+			render={() => (
+				<div
+					style={{
+						display: "grid",
+						gap: "var(--space-4)",
+						width: "min(520px, 100%)",
+					}}
+				>
+					{TONES.map((tone, index) => (
+						<ProgressBar
+							aria-label={`${tone} progress`}
+							key={tone}
+							showLabel
+							tone={tone}
+							value={20 + index * 15}
+						/>
+					))}
+					<ProgressBar
+						aria-label="Loading"
+						tone="neutral"
+						variant="indeterminate"
+					/>
+				</div>
+			)}
+			summary="Represent bounded, indeterminate, or route progress with semantic tones and reduced-motion behavior."
+			title="Progress bar"
+		/>
+	);
 }
 
 export default ProgressBarPage;

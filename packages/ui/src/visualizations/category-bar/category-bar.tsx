@@ -2,6 +2,7 @@ import type { ReactElement } from "react";
 import { ChartFrame } from "../chart-frame/chart-frame.js";
 import {
 	type ChartAccessibleName,
+	type ChartAnimation,
 	type ChartColor,
 	type ChartStateProps,
 	chartAccessibleName,
@@ -15,9 +16,17 @@ export interface CategoryBarItem {
 	readonly value: number;
 }
 
+export interface CategoryBarMarker {
+	readonly animation?: ChartAnimation;
+	readonly tooltip?: string;
+	readonly value: number;
+}
+
 export type CategoryBarProps = ChartAccessibleName &
 	ChartStateProps & {
 		readonly items: readonly CategoryBarItem[];
+		readonly marker?: CategoryBarMarker;
+		readonly showLabels?: boolean;
 		readonly showLegend?: boolean;
 		readonly valueFormatter?: (value: number) => string;
 	};
@@ -30,7 +39,9 @@ export function CategoryBar({
 	height,
 	items,
 	loading,
+	marker,
 	onRetry,
+	showLabels = true,
 	showLegend = true,
 	style,
 	valueFormatter = (value) => String(value),
@@ -39,6 +50,15 @@ export function CategoryBar({
 }: CategoryBarProps): ReactElement {
 	const total = items.reduce((sum, item) => sum + Math.max(0, item.value), 0);
 	const frameName = chartAccessibleName(ariaLabel, ariaLabelledBy);
+	const markerPosition =
+		marker && total > 0
+			? Math.min(100, Math.max(0, (marker.value / total) * 100))
+			: undefined;
+	let cumulative = 0;
+	const labels = [
+		0,
+		...items.map((item) => (cumulative += Math.max(0, item.value))),
+	];
 
 	return (
 		<ChartFrame
@@ -52,17 +72,44 @@ export function CategoryBar({
 			onRetry={onRetry}
 			style={style}
 		>
-			<div aria-hidden="true" className="ui-category-bar__track">
-				{items.map((item, index) => (
+			<div className="ui-category-bar__visual">
+				{showLabels && total > 0 ? (
+					<div aria-hidden="true" className="ui-category-bar__labels">
+						{labels.map((value, index) => (
+							<span
+								key={`${value}-${index}`}
+								style={{ left: `${(value / total) * 100}%` }}
+							>
+								{valueFormatter(value)}
+							</span>
+						))}
+					</div>
+				) : null}
+				<div aria-hidden="true" className="ui-category-bar__track">
+					{items.map((item, index) => (
+						<span
+							className="ui-category-bar__segment"
+							key={item.label}
+							style={{
+								backgroundColor: chartColor(item.color, index),
+								width: `${(Math.max(0, item.value) / total) * 100}%`,
+							}}
+						/>
+					))}
+				</div>
+				{markerPosition !== undefined ? (
 					<span
-						className="ui-category-bar__segment"
-						key={item.label}
-						style={{
-							backgroundColor: chartColor(item.color, index),
-							width: `${(Math.max(0, item.value) / total) * 100}%`,
-						}}
+						aria-label={
+							marker?.tooltip ??
+							`Marker at ${valueFormatter(marker?.value ?? 0)}`
+						}
+						className="ui-category-bar__marker"
+						data-animation={marker?.animation ?? "auto"}
+						role="img"
+						style={{ left: `${markerPosition}%` }}
+						title={marker?.tooltip}
 					/>
-				))}
+				) : null}
 			</div>
 			{showLegend ? (
 				<ul className="ui-category-bar__legend">

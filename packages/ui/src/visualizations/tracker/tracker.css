@@ -1,48 +1,89 @@
 .ui-tracker {
-  display: flex;
-  min-width: 0;
-  gap: 3px;
-  padding: 0;
-  margin: 0;
-  list-style: none;
+	display: flex;
+	min-width: 0;
+	gap: 3px;
+	padding: 0;
+	margin: 0;
+	list-style: none;
 }
 
 .ui-tracker__item {
-  min-width: 4px;
-  flex: 1 1 0;
+	min-width: 4px;
+	flex: 1 1 0;
 }
 
 .ui-tracker__block {
-  display: block;
-  height: 12px;
-  border: 1px solid var(--border-strong);
-  border-radius: 3px;
-  background: var(--surface2);
+	display: block;
+	height: 12px;
+	border: 1px solid var(--border-strong);
+	border-radius: 3px;
+	background: var(--surface2);
+}
+
+.ui-tracker[data-hover-effect="true"] .ui-tracker__item {
+	transition:
+		opacity var(--duration-fast) var(--easing-standard),
+		transform var(--duration-fast) var(--easing-standard);
+}
+
+.ui-tracker[data-hover-effect="true"]:hover .ui-tracker__item:not(:hover) {
+	opacity: 0.45;
+}
+
+.ui-tracker[data-hover-effect="true"] .ui-tracker__item:hover {
+	transform: translateY(-2px);
 }
 
 .ui-tracker__item[data-status="complete"] .ui-tracker__block {
-  border-color: var(--chart-positive);
-  background: var(--chart-positive);
+	border-color: var(--chart-positive);
+	background: var(--chart-positive);
 }
 
 .ui-tracker__item[data-status="active"] .ui-tracker__block {
-  border-color: var(--chart-series-1);
-  background: repeating-linear-gradient(45deg, var(--chart-series-1), var(--chart-series-1) 3px, transparent 3px, transparent 6px);
+	border-color: var(--chart-series-1);
+	background: repeating-linear-gradient(
+		45deg,
+		var(--chart-series-1),
+		var(--chart-series-1) 3px,
+		transparent 3px,
+		transparent 6px
+	);
 }
 
 .ui-tracker__item[data-status="error"] .ui-tracker__block {
-  border-color: var(--chart-negative);
-  background: linear-gradient(135deg, transparent 35%, var(--chart-negative) 35%, var(--chart-negative) 65%, transparent 65%);
+	border-color: var(--chart-negative);
+	background: linear-gradient(
+		135deg,
+		transparent 35%,
+		var(--chart-negative) 35%,
+		var(--chart-negative) 65%,
+		transparent 65%
+	);
+}
+
+.ui-tracker__item[data-custom-color="true"] .ui-tracker__block {
+	border-color: var(--ui-tracker-color);
+	background: var(--ui-tracker-color);
 }
 
 .ui-tracker__sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-  border: 0;
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.ui-tracker[data-hover-effect="true"] .ui-tracker__item {
+		transition: none;
+	}
+
+	.ui-tracker[data-hover-effect="true"] .ui-tracker__item:hover {
+		transform: none;
+	}
 }

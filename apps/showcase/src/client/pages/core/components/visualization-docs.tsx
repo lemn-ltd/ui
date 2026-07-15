@@ -18,11 +18,60 @@ interface VisualizationDocsProps {
 	readonly children?: ReactNode;
 	readonly code: string;
 	readonly componentName: string;
+	readonly includeCartesianApi?: boolean;
 	readonly includeChartStateApi?: boolean;
 	readonly defaultHeight?: string;
 	readonly render: () => ReactElement;
 	readonly summary: string;
 	readonly title: string;
+}
+
+function cartesianChartApiRows(): readonly DocumentationApiRow[] {
+	return [
+		{
+			prop: "xAxis",
+			type: "ChartXAxisOptions | false",
+			description:
+				"Configures visibility, label, start/end ticks, interval policy, and tick gap; false hides the axis.",
+		},
+		{
+			prop: "yAxis",
+			type: "ChartYAxisOptions | false",
+			description:
+				"Configures visibility, label, width, domain, decimal policy, and tick formatting; false hides the axis.",
+		},
+		{
+			prop: "legendPosition",
+			type: "'left' | 'center' | 'right'",
+			defaultValue: "'right'",
+			description: "Aligns the engine-independent series legend.",
+		},
+		{
+			prop: "legendOverflow",
+			type: "'wrap' | 'scroll'",
+			defaultValue: "'wrap'",
+			description:
+				"Wraps legend controls or exposes a keyboard-operable horizontal scroller.",
+		},
+		{
+			prop: "onValueChange",
+			type: "(selection: ChartSelection<TDatum>) => void",
+			description:
+				"Makes data marks selectable and emits the selected datum or null when cleared.",
+		},
+		{
+			prop: "onTooltipChange",
+			type: "(context: ChartTooltipContext<TDatum> | null) => void",
+			description:
+				"Reports normalized tooltip lifecycle changes without exposing renderer payloads.",
+		},
+		{
+			prop: "renderTooltip",
+			type: "(context: ChartTooltipContext<TDatum>) => ReactNode",
+			description:
+				"Renders custom tooltip content from the normalized Lemn context.",
+		},
+	];
 }
 
 function chartStateApiRows(
@@ -96,7 +145,14 @@ type SharedChartApiKey =
 	| "height"
 	| "loading"
 	| "onRetry"
-	| "style";
+	| "style"
+	| "legendOverflow"
+	| "legendPosition"
+	| "onTooltipChange"
+	| "onValueChange"
+	| "renderTooltip"
+	| "xAxis"
+	| "yAxis";
 
 /** Compile-time drift gate: every non-shared public prop must have one API row. */
 export function defineVisualizationApiRows<T>() {
@@ -122,6 +178,7 @@ export function VisualizationDocs({
 	code,
 	componentName,
 	defaultHeight = "320",
+	includeCartesianApi = false,
 	includeChartStateApi = true,
 	render,
 	summary,
@@ -174,6 +231,7 @@ export function VisualizationDocs({
 				apiLabel="Source"
 				apiRows={[
 					...apiRows,
+					...(includeCartesianApi ? cartesianChartApiRows() : []),
 					...(includeChartStateApi ? chartStateApiRows(defaultHeight) : []),
 				]}
 				componentName={title}

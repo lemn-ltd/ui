@@ -14,6 +14,18 @@ const API_ROWS = defineVisualizationApiRows<CategoryBarProps>()([
 		description: "Labelled segment values and optional token colors.",
 	},
 	{
+		prop: "marker",
+		type: "CategoryBarMarker",
+		description:
+			"Positions an accessible value marker with optional tooltip and motion policy.",
+	},
+	{
+		prop: "showLabels",
+		type: "boolean",
+		defaultValue: "true",
+		description: "Shows cumulative boundary values above the bar.",
+	},
+	{
 		prop: "showLegend",
 		type: "boolean",
 		defaultValue: "true",
@@ -31,6 +43,7 @@ const CODE = `import { CategoryBar } from '@lemn-ltd/ui';
 <CategoryBar
   aria-label="Traffic distribution"
   items={trafficSources}
+  marker={{ tooltip: 'Current mix', value: 64 }}
 />`;
 
 function CategoryBarPage(): ReactElement {
@@ -44,6 +57,7 @@ function CategoryBarPage(): ReactElement {
 					<CategoryBar
 						aria-label="Traffic distribution"
 						items={trafficSources}
+						marker={{ tooltip: "Current mix", value: 64 }}
 					/>
 				</div>
 			)}

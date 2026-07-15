@@ -44,6 +44,28 @@ contract.
 and accessible labeling. It does not own rendering-engine lifecycle or data
 normalization.
 
+Cartesian charts share provider-neutral configuration types:
+
+- `ChartXAxisOptions` controls visibility, label, tick interval, start/end-only
+  rendering, and minimum tick gap;
+- `ChartYAxisOptions` controls visibility, label, width, domain, decimal policy,
+  and tick formatting;
+- `ChartLegendPosition` and `ChartLegendOverflow` align legends and switch long
+  legends between wrapping and keyboard-scrollable behavior;
+- `ChartSelection<TDatum>` normalizes mark selection and clear events;
+- `ChartTooltipContext<TDatum>` normalizes tooltip entries for lifecycle
+  callbacks and custom React content without exposing Recharts payloads.
+
+`AreaChart` and `BarChart` support default, stacked, and percent modes.
+`ComboChart` supports declared primary/secondary axes and grouped or stacked
+bars. `DonutChart` supports donut and pie geometry. `SparkChart` supports one or
+more declared series while retaining its original one-series compatibility
+props. Native progress, list, category, and tracker components expose the same
+motion and semantic-token posture without importing a chart engine.
+
+The source-by-source capability comparison and deliberate Lemn differences are
+recorded in the [Tremor parity audit](./tremor-parity-audit.md).
+
 ## Tokens and themes
 
 All visualization color and chrome use the chart tokens defined in
