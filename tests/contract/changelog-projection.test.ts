@@ -44,6 +44,7 @@ async function createProjectionFixture(): Promise<string> {
 		"apps/docs/src/content/docs/es/changelog",
 		"apps/docs",
 		"apps/showcase",
+		"apps/showcase-admin",
 		"packages/showcase-kit",
 		"packages/ui",
 	]) {
@@ -55,6 +56,7 @@ async function createProjectionFixture(): Promise<string> {
 		".changeset/config.json",
 		"apps/docs/package.json",
 		"apps/showcase/package.json",
+		"apps/showcase-admin/package.json",
 		"packages/showcase-kit/package.json",
 		"packages/ui/package.json",
 		"packages/ui/CHANGELOG.md",

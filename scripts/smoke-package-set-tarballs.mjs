@@ -179,6 +179,74 @@ try {
   assert(packResult.name === canonicalPackageName, `Packed name must be ${canonicalPackageName}`);
   assert(packResult.version === uiPackage.version, 'Packed version must match packages/ui/package.json');
 
+  const nodeConsumerDirectory = join(temporaryRoot, 'node-consumer');
+  await mkdir(nodeConsumerDirectory);
+  await writeFile(
+    join(nodeConsumerDirectory, 'package.json'),
+    `${JSON.stringify(
+      {
+        name: 'lemn-brand-studio-node-smoke',
+        version: '1.0.0',
+        private: true,
+        type: 'module',
+      },
+      null,
+      2,
+    )}\n`,
+  );
+  run(
+    npmCommand,
+    [
+      'install',
+      '--ignore-scripts',
+      '--no-audit',
+      '--no-fund',
+      '--save-exact',
+      '--legacy-peer-deps',
+      '--omit=peer',
+      brandContractTarballPath,
+      brandStudioTarballPath,
+    ],
+    nodeConsumerDirectory,
+  );
+  const isolatedPresetSmoke = JSON.parse(
+    run(
+      process.execPath,
+      [
+        '--input-type=module',
+        '--eval',
+        `
+          const canResolve = async (specifier) => {
+            try {
+              await import.meta.resolve(specifier);
+              return true;
+            } catch {
+              return false;
+            }
+          };
+          const reactResolved = await canResolve('react');
+          const uiResolved = await canResolve('@lemn-ltd/ui');
+          const { createBrandFromPreset } = await import('@lemn-ltd/brand-studio/presets');
+          const project = createBrandFromPreset('aster-vault');
+          console.log(JSON.stringify({
+            brandId: project.brandId,
+            profiles: Object.keys(project.profiles),
+            reactResolved,
+            uiResolved,
+          }));
+        `,
+      ],
+      nodeConsumerDirectory,
+    ),
+  );
+  assert(
+    isolatedPresetSmoke.brandId === 'aster-vault' &&
+      isolatedPresetSmoke.profiles.includes('core') &&
+      isolatedPresetSmoke.reactResolved === false &&
+      isolatedPresetSmoke.uiResolved === false,
+    'Brand Studio presets must run without React, @lemn-ltd/ui, or CSS evaluation',
+  );
+
   const files = packResult.files ?? [];
   const packedPaths = new Set(files.map((file) => file.path));
   const packedSourcePaths = files.filter((file) => file.path.startsWith('src/')).map((file) => file.path);
@@ -281,12 +349,12 @@ try {
     'Installed brand-studio version must match its tarball',
   );
   assert(
-    installedBrandStudio.dependencies?.['@lemn-ltd/brand-contract'] === '0.1.0',
-    'Packed Brand Studio must depend on exact @lemn-ltd/brand-contract 0.1.0',
+    installedBrandStudio.dependencies?.['@lemn-ltd/brand-contract'] === brandContractPackage.version,
+    `Packed Brand Studio must depend on exact @lemn-ltd/brand-contract ${brandContractPackage.version}`,
   );
   assert(
-    installedBrandStudio.peerDependencies?.['@lemn-ltd/ui'] === '0.3.0',
-    'Packed Brand Studio must peer-depend on exact @lemn-ltd/ui 0.3.0',
+    installedBrandStudio.peerDependencies?.['@lemn-ltd/ui'] === uiPackage.version,
+    `Packed Brand Studio must peer-depend on exact @lemn-ltd/ui ${uiPackage.version}`,
   );
   const presetSmoke = JSON.parse(
     run(

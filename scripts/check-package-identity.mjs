@@ -10,6 +10,7 @@ const canonicalRepositoryUrl = 'https://github.com/lemn-ltd/ui';
 const canonicalDocsHost = 'ui.le-mn.com';
 const canonicalShowcaseHost = 'showcase.ui.le-mn.com';
 const canonicalCatalogTitle = 'Lemn UI Component Catalog';
+const exactPublishedVersion = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?$/u;
 const legacyOrganization = ['app', 'ranks'].join('');
 const legacyPackageName = `@${legacyOrganization}/ui`;
 const legacyPackagePattern = new RegExp(`${legacyPackageName}(?![-A-Za-z0-9])`, 'u');
@@ -96,6 +97,7 @@ const uiPackage = await readJson('packages/ui/package.json');
 const brandContractPackage = await readJson('packages/brand-contract/package.json');
 const brandStudioPackage = await readJson('packages/brand-studio/package.json');
 const showcasePackage = await readJson('apps/showcase/package.json');
+const showcaseAdminPackage = await readJson('apps/showcase-admin/package.json');
 const showcaseKitPackage = await readJson('packages/showcase-kit/package.json');
 const changesetConfig = await readJson('.changeset/config.json');
 const npmrc = await readFile(join(root, '.npmrc'), 'utf8');
@@ -115,13 +117,16 @@ assert(
   `packages/ui/package.json must declare name ${canonicalPackageName}; received ${uiPackage.name}`,
 );
 const releasePackages = [
-  [brandContractPackage, '@lemn-ltd/brand-contract', '0.1.0'],
-  [uiPackage, canonicalPackageName, '0.3.0'],
-  [brandStudioPackage, '@lemn-ltd/brand-studio', '0.1.1'],
+  [brandContractPackage, '@lemn-ltd/brand-contract'],
+  [uiPackage, canonicalPackageName],
+  [brandStudioPackage, '@lemn-ltd/brand-studio'],
 ];
-for (const [manifest, name, version] of releasePackages) {
+for (const [manifest, name] of releasePackages) {
   assert(manifest.name === name, `Release package must be ${name}`);
-  assert(manifest.version === version, `${name} must release exact version ${version}`);
+  assert(
+    exactPublishedVersion.test(manifest.version ?? ''),
+    `${name} must declare an exact publishable version; received ${manifest.version ?? 'missing'}`,
+  );
   assert(
     manifest.publishConfig?.registry === canonicalRegistry,
     `${name} must publish to ${canonicalRegistry}`,
@@ -133,10 +138,12 @@ for (const [manifest, name, version] of releasePackages) {
   );
 }
 assert(
-  brandStudioPackage.dependencies?.['@lemn-ltd/brand-contract'] === 'workspace:0.1.0' &&
-    brandStudioPackage.peerDependencies?.[canonicalPackageName] === '0.3.0' &&
-    brandStudioPackage.devDependencies?.[canonicalPackageName] === 'workspace:0.3.0',
-  'Brand Studio must use exact brand-contract 0.1.0 and UI 0.3.0 contracts',
+  brandStudioPackage.dependencies?.['@lemn-ltd/brand-contract'] ===
+      `workspace:${brandContractPackage.version}` &&
+    brandStudioPackage.peerDependencies?.[canonicalPackageName] === uiPackage.version &&
+    brandStudioPackage.devDependencies?.[canonicalPackageName] ===
+      `workspace:${uiPackage.version}`,
+  'Brand Studio must use the exact current brand-contract and UI release contracts',
 );
 assert(
   rootPackage.scripts?.['pack:packages'] ===
@@ -205,10 +212,21 @@ assert(
   showcaseKitPackage.dependencies?.[canonicalPackageName] === 'workspace:*',
   `packages/showcase-kit must resolve ${canonicalPackageName} through workspace:*`,
 );
-assert(
-  !changesetConfig.ignore?.includes(canonicalPackageName),
-  `${canonicalPackageName} must remain versioned by Changesets`,
-);
+for (const [, packageName] of releasePackages) {
+  assert(
+    !changesetConfig.ignore?.includes(packageName),
+    `${packageName} must remain versioned by Changesets`,
+  );
+}
+for (const [application, manifest] of [
+  ['apps/showcase', showcasePackage],
+  ['apps/showcase-admin', showcaseAdminPackage],
+]) {
+  assert(
+    manifest.dependencies?.['@lemn-ltd/brand-studio'] === 'workspace:*',
+    `${application} must follow the current workspace Brand Studio release`,
+  );
+}
 
 for (const relativePath of canonicalRepositoryFiles) {
   const content = await readFile(join(root, relativePath), 'utf8');

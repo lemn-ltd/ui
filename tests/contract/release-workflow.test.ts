@@ -197,6 +197,11 @@ test("release package order is contract then UI then Studio with immutable verif
 	assert.match(publishSource, /for \(const artifact of artifacts\)/u);
 	assert.match(publishSource, /timingSafeEqual/u);
 	assert.match(publishSource, /sha512/u);
+	assert.doesNotMatch(
+		packageSetSource,
+		/expectedVersion/u,
+		"Changesets must remain the version-transition authority",
+	);
 	assert.equal(
 		step("Build release packages in dependency order").run,
 		"pnpm build:packages:release",

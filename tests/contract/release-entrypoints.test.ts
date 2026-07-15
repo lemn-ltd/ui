@@ -199,7 +199,7 @@ test("package-set lifecycle builds in order then requires dist and a strict cons
 	);
 });
 
-test("publish-ready verification fails closed without complete dist exports", async () => {
+test("publish-ready verification follows Changesets versions and fails closed without complete dist exports", async () => {
 	const temporaryRoot = await mkdtemp(
 		resolve(tmpdir(), "lemn-ui-dist-contract-"),
 	);
@@ -213,7 +213,7 @@ test("publish-ready verification fails closed without complete dist exports", as
 			resolve(temporaryRoot, "packages/ui/package.json"),
 			JSON.stringify({
 				name: "@lemn-ltd/ui",
-				version: "0.3.0",
+				version: "0.4.9",
 				publishConfig: {
 					registry: "https://npm.pkg.github.com",
 					access: "restricted",
@@ -241,15 +241,19 @@ test("publish-ready verification fails closed without complete dist exports", as
 			[
 				"brand-contract",
 				"@lemn-ltd/brand-contract",
-				"0.1.0",
+				"0.2.3",
 				{ ".": { types: "./dist/index.d.ts", default: "./dist/index.js" } },
 			],
 			[
 				"brand-studio",
 				"@lemn-ltd/brand-studio",
-				"0.1.0",
+				"0.2.1",
 				{
 					".": { types: "./dist/index.d.ts", default: "./dist/index.js" },
+					"./presets": {
+						types: "./dist/presets.d.ts",
+						default: "./dist/presets.js",
+					},
 					"./styles.css": "./dist/styles.css",
 				},
 			],
@@ -269,13 +273,45 @@ test("publish-ready verification fails closed without complete dist exports", as
 					},
 					...(directory === "brand-studio"
 						? {
-								dependencies: { "@lemn-ltd/brand-contract": "workspace:0.1.0" },
-								peerDependencies: { "@lemn-ltd/ui": "0.3.0" },
+								dependencies: { "@lemn-ltd/brand-contract": "workspace:0.2.3" },
+								peerDependencies: { "@lemn-ltd/ui": "0.4.9" },
+								devDependencies: { "@lemn-ltd/ui": "workspace:0.4.9" },
 							}
 						: {}),
 				}),
 			);
 		}
+		for (const relativePath of [
+			"packages/brand-contract/dist/index.d.ts",
+			"packages/brand-contract/dist/index.js",
+			"packages/ui/dist/index.d.ts",
+			"packages/ui/dist/index.js",
+			"packages/ui/dist/tokens.d.ts",
+			"packages/ui/dist/tokens.js",
+			"packages/ui/dist/catalog.d.ts",
+			"packages/ui/dist/catalog.js",
+			"packages/ui/dist/blocks/index.d.ts",
+			"packages/ui/dist/blocks/index.js",
+			"packages/ui/dist/styles.css",
+			"packages/brand-studio/dist/index.d.ts",
+			"packages/brand-studio/dist/index.js",
+			"packages/brand-studio/dist/presets.d.ts",
+			"packages/brand-studio/dist/presets.js",
+			"packages/brand-studio/dist/styles.css",
+		]) {
+			await mkdir(resolve(temporaryRoot, relativePath, ".."), {
+				recursive: true,
+			});
+			await writeFile(resolve(temporaryRoot, relativePath), "");
+		}
+		assert.deepEqual(await verifyPackageDists(temporaryRoot), {
+			packages: [
+				"@lemn-ltd/brand-contract@0.2.3",
+				"@lemn-ltd/ui@0.4.9",
+				"@lemn-ltd/brand-studio@0.2.1",
+			],
+		});
+		await rm(resolve(temporaryRoot, "packages/brand-studio/dist/presets.js"));
 		await assert.rejects(
 			verifyPackageDists(temporaryRoot),
 			/built dist is missing/u,

@@ -51,8 +51,8 @@ export async function verifyPackageDists(root: string): Promise<{
 			`${definition.id} package name is invalid`,
 		);
 		assert(
-			manifest.version === definition.expectedVersion,
-			`${definition.name} must release ${definition.expectedVersion}; received ${manifest.version ?? "missing"}`,
+			exactVersion.test(manifest.version ?? ""),
+			`${definition.name} must declare an exact release version; received ${manifest.version ?? "missing"}`,
 		);
 		assert(
 			manifest.publishConfig?.registry === registry &&
@@ -103,21 +103,26 @@ export async function verifyPackageDists(root: string): Promise<{
 				assertExactDependency(definition, group, name, value);
 			}
 		}
-		verified.push(`${definition.name}@${definition.expectedVersion}`);
+		verified.push(`${definition.name}@${manifest.version}`);
 	}
 
+	const contract = await readReleasePackageManifest(root, releasePackages[0]);
+	const ui = await readReleasePackageManifest(root, releasePackages[1]);
 	const studio = await readReleasePackageManifest(root, releasePackages[2]);
+	const contractVersion = contract.version ?? "missing";
+	const uiVersion = ui.version ?? "missing";
 	assert(
-		studio.dependencies?.["@lemn-ltd/brand-contract"] === "workspace:0.1.0",
-		"Brand Studio must source the exact brand-contract 0.1.0 workspace release",
+		studio.dependencies?.["@lemn-ltd/brand-contract"] ===
+			`workspace:${contractVersion}`,
+		`Brand Studio must source the exact brand-contract ${contractVersion} workspace release`,
 	);
 	assert(
-		studio.peerDependencies?.["@lemn-ltd/ui"] === "0.3.0",
-		"Brand Studio must require exact @lemn-ltd/ui 0.3.0",
+		studio.peerDependencies?.["@lemn-ltd/ui"] === uiVersion,
+		`Brand Studio must require exact @lemn-ltd/ui ${uiVersion}`,
 	);
 	assert(
-		studio.devDependencies?.["@lemn-ltd/ui"] === "workspace:0.3.0",
-		"Brand Studio development must use exact workspace @lemn-ltd/ui 0.3.0",
+		studio.devDependencies?.["@lemn-ltd/ui"] === `workspace:${uiVersion}`,
+		`Brand Studio development must use exact workspace @lemn-ltd/ui ${uiVersion}`,
 	);
 	return { packages: verified };
 }

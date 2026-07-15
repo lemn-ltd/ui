@@ -8,7 +8,6 @@ export interface ReleasePackageDefinition {
 		| "@lemn-ltd/ui"
 		| "@lemn-ltd/brand-studio";
 	readonly directory: string;
-	readonly expectedVersion: string;
 	readonly requiredExports: readonly string[];
 }
 
@@ -21,21 +20,18 @@ export const releasePackages = [
 		id: "brand-contract",
 		name: "@lemn-ltd/brand-contract",
 		directory: "packages/brand-contract",
-		expectedVersion: "0.1.0",
 		requiredExports: ["."],
 	},
 	{
 		id: "ui",
 		name: "@lemn-ltd/ui",
 		directory: "packages/ui",
-		expectedVersion: "0.3.0",
 		requiredExports: [".", "./tokens", "./catalog", "./blocks", "./styles.css"],
 	},
 	{
 		id: "brand-studio",
 		name: "@lemn-ltd/brand-studio",
 		directory: "packages/brand-studio",
-		expectedVersion: "0.1.1",
 		requiredExports: [".", "./presets", "./styles.css"],
 	},
 ] as const satisfies readonly ReleasePackageDefinition[];

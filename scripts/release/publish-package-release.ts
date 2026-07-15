@@ -14,6 +14,8 @@ import {
 
 const execFileAsync = promisify(execFile);
 const root = resolve(import.meta.dirname, "../..");
+const exactVersion =
+	/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?$/u;
 
 export interface PackageArtifact {
 	readonly packageName: string;
@@ -145,9 +147,9 @@ export async function localPackageArtifact(
 		manifest.version,
 		`${definition.id} package version`,
 	);
-	if (version !== definition.expectedVersion) {
+	if (!exactVersion.test(version)) {
 		throw new Error(
-			`${packageName} must publish ${definition.expectedVersion}; received ${version}`,
+			`${packageName} must publish an exact version; received ${version}`,
 		);
 	}
 	const temporaryRoot = await mkdtemp(
