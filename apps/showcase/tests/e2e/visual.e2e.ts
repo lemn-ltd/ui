@@ -26,6 +26,12 @@ const PAGES: readonly (readonly [string, string])[] = [
 	["dashboard", "/core/patterns/dashboard"],
 ];
 
+function routeForBrandMode(route: string, projectName: string): string {
+	const separator = route.includes("?") ? "&" : "?";
+	const mode = projectName.includes("dark") ? "dark" : "light";
+	return `${route}${separator}brandMode=${mode}`;
+}
+
 async function expectCompleteSidebarTarget(target: Locator): Promise<void> {
 	const footer = target.locator(".ui-sidebar__footer");
 	const search = target
@@ -137,7 +143,7 @@ for (const [name, route] of PAGES) {
 		const stableRoute =
 			name === "sidebar"
 				? `${route}?embed=playground&theme=${testInfo.project.name.includes("dark") ? "dark" : "light"}`
-				: route;
+				: routeForBrandMode(route, testInfo.project.name);
 		await gotoStable(page, stableRoute);
 		if (route === "/core/components/checkbox") {
 			await page.locator(".showcase-docs-page .shiki").first().waitFor();
@@ -147,8 +153,12 @@ for (const [name, route] of PAGES) {
 			await expect(
 				banner.getByText("Scheduled sync", { exact: true }),
 			).toBeVisible();
-			await expect(banner.getByRole("button", { name: "Review" })).toBeVisible();
-			await expect(banner.getByRole("button", { name: "Dismiss" })).toBeVisible();
+			await expect(
+				banner.getByRole("button", { name: "Review" }),
+			).toBeVisible();
+			await expect(
+				banner.getByRole("button", { name: "Dismiss" }),
+			).toBeVisible();
 		}
 		if (name === "sidebar") {
 			const target = page.getByTestId("sidebar-visual-target");
@@ -161,8 +171,8 @@ for (const [name, route] of PAGES) {
 	});
 }
 
-test("visual: overview bento", async ({ page }) => {
-	await gotoStable(page, "/");
+test("visual: overview bento", async ({ page }, testInfo) => {
+	await gotoStable(page, routeForBrandMode("/", testInfo.project.name));
 	await page
 		.locator('[data-home-feature="reporting"]')
 		.scrollIntoViewIfNeeded();
@@ -189,9 +199,12 @@ test("visual contract: every component is responsive in the active viewport and 
 		await test.step(entry.route, async () => {
 			const page = await newDeterministicPage(context, testInfo.project.name);
 			try {
-				await gotoStable(page, entry.route);
-				await expect(page.locator("html")).toHaveAttribute(
-					"data-theme",
+				await gotoStable(
+					page,
+					routeForBrandMode(entry.route, testInfo.project.name),
+				);
+				await expect(page.locator(".showcase-brand-scope")).toHaveAttribute(
+					"data-lemn-mode",
 					expectedTheme,
 				);
 				await expect(page.locator(".showcase-docs-page")).toBeVisible();
