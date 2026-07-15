@@ -1,9 +1,11 @@
 import { expect, gotoStable, test } from "../helpers/deterministic";
 
-function bodyBackground(
+function brandScopeBackground(
 	page: import("@playwright/test").Page,
 ): Promise<string> {
-	return page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+	return page
+		.locator(".showcase-brand-scope")
+		.evaluate((scope) => getComputedStyle(scope).backgroundColor);
 }
 
 function htmlTheme(page: import("@playwright/test").Page): Promise<string> {
@@ -17,15 +19,17 @@ test("the theme toggle flips data-theme and the token-bound background", async (
 
 	// The behavior project boots Light.
 	await expect.poll(() => htmlTheme(page)).toBe("light");
-	await expect.poll(() => bodyBackground(page)).toBe("rgb(255, 255, 255)");
+	await expect
+		.poll(() => brandScopeBackground(page))
+		.toBe("rgb(243, 248, 245)");
 
 	await page.getByLabel("Switch to dark theme").click();
 	await expect.poll(() => htmlTheme(page)).toBe("dark");
-	await expect
-		.poll(() => bodyBackground(page))
-		.toBe("oklch(0.13 0.028 261.692)");
+	await expect.poll(() => brandScopeBackground(page)).toBe("rgb(7, 17, 13)");
 
 	await page.getByLabel("Switch to light theme").click();
 	await expect.poll(() => htmlTheme(page)).toBe("light");
-	await expect.poll(() => bodyBackground(page)).toBe("rgb(255, 255, 255)");
+	await expect
+		.poll(() => brandScopeBackground(page))
+		.toBe("rgb(243, 248, 245)");
 });

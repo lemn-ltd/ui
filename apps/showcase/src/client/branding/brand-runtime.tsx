@@ -17,10 +17,13 @@ import {
 	type ReactNode,
 	useCallback,
 	useContext,
+	useLayoutEffect,
 	useMemo,
 	useRef,
 	useState,
 } from "react";
+
+const THEME_STORAGE_KEY = "color-theme";
 
 export interface ShowcaseBrandRuntime {
 	readonly artifact: CompiledBrandArtifact;
@@ -54,6 +57,23 @@ function defaultModeId(project: BrandProject, profileId: string): string {
 	return profile?.defaultMode ?? Object.keys(profile?.modes ?? {})[0] ?? "light";
 }
 
+function initialModeId(project: BrandProject, profileId: string): string {
+	if (typeof window === "undefined") return defaultModeId(project, profileId);
+	let persistedTheme: string | null = null;
+	try {
+		persistedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
+	} catch {
+		return defaultModeId(project, profileId);
+	}
+	if (persistedTheme !== "light" && persistedTheme !== "dark") {
+		return defaultModeId(project, profileId);
+	}
+	const matchingMode = Object.entries(
+		project.profiles[profileId]?.modes ?? {},
+	).find(([, mode]) => mode.colorScheme === persistedTheme);
+	return matchingMode?.[0] ?? defaultModeId(project, profileId);
+}
+
 function resolveScope(
 	artifact: CompiledBrandArtifact,
 	profileId: string,
@@ -83,7 +103,7 @@ export function BrandRuntimeProvider({
 		initialProject.defaultProfileId,
 	);
 	const [modeId, setModeIdState] = useState(() =>
-		defaultModeId(initialProject, initialProject.defaultProfileId),
+		initialModeId(initialProject, initialProject.defaultProfileId),
 	);
 	const [presetId, setPresetIdState] = useState("verdant-ledger");
 	const [diagnostics, setDiagnostics] = useState<readonly BrandDiagnostic[]>([]);
@@ -94,6 +114,15 @@ export function BrandRuntimeProvider({
 		() => resolveScope(artifact, profileId, modeId),
 		[artifact, modeId, profileId],
 	);
+
+	useLayoutEffect(() => {
+		document.documentElement.dataset.theme = scope.colorScheme;
+		try {
+			window.localStorage.setItem(THEME_STORAGE_KEY, scope.colorScheme);
+		} catch {
+			// The rendered brand remains authoritative when storage is unavailable.
+		}
+	}, [scope.colorScheme]);
 
 	const compileDraft = useCallback(async (next: BrandProject) => {
 		const sequence = compilationSequence.current + 1;

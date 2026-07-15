@@ -1,5 +1,5 @@
 import { Command } from 'cmdk';
-import { type ReactElement, useEffect, useState } from 'react';
+import { type ReactElement, useEffect, useMemo, useState } from 'react';
 import { Icon, type IconName, Kbd } from '../../primitives/index.js';
 import './command-palette.css';
 
@@ -26,16 +26,26 @@ export interface CommandPaletteProps {
 }
 
 /**
- * Substring match over the item value (label + keywords), requiring every
- * search word. cmdk's default score treats the query as a fuzzy subsequence,
- * which over-matches against the long summary keywords so unrelated entries
- * survive; this keeps the palette to genuine substring hits.
+ * Substring match requiring every search word. Exact and partial label
+ * matches rank above keyword-only matches so a description cannot displace a
+ * component whose title is the query.
  */
-function paletteFilter(value: string, search: string): number {
-  const haystack = value.toLowerCase();
+function paletteFilter(
+  value: string,
+  search: string,
+  keywords: string[] = [],
+  exactLabels: ReadonlySet<string> = new Set(),
+): number {
+  const label = value.toLowerCase();
   const query = search.trim().toLowerCase();
   if (!query) return 1;
-  return query.split(/\s+/).every((word) => haystack.includes(word)) ? 1 : 0;
+  if (label === query) return 1;
+  if (label.startsWith(query)) return 0.9;
+  const words = query.split(/\s+/);
+  if (words.every((word) => label.includes(word))) return 0.8;
+  const keywordText = keywords.join(' ').toLowerCase();
+  if (!words.every((word) => keywordText.includes(word))) return 0;
+  return exactLabels.has(query) ? 0 : 0.5;
 }
 
 export function CommandPalette({
@@ -46,6 +56,13 @@ export function CommandPalette({
   emptyMessage = 'No matches',
 }: CommandPaletteProps): ReactElement {
   const [query, setQuery] = useState('');
+  const exactLabels = useMemo(
+    () =>
+      new Set(
+        groups.flatMap((group) => group.items.map((item) => item.label.toLowerCase())),
+      ),
+    [groups],
+  );
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent): void {
@@ -66,7 +83,9 @@ export function CommandPalette({
     <Command.Dialog
       className="ui-command-palette"
       contentClassName="ui-command-palette__panel"
-      filter={paletteFilter}
+      filter={(value, search, keywords) =>
+        paletteFilter(value, search, keywords, exactLabels)
+      }
       label="Command palette"
       onOpenChange={onOpenChange}
       open={open}
@@ -98,11 +117,12 @@ export function CommandPalette({
               <Command.Item
                 className="ui-command-palette__item"
                 key={item.id}
+                keywords={[...(item.keywords ?? [])]}
                 onSelect={() => {
                   item.onSelect?.();
                   onOpenChange(false);
                 }}
-                value={`${item.label} ${(item.keywords ?? []).join(' ')}`}
+                value={item.label}
               >
                 {item.icon ? <Icon name={item.icon} size={16} /> : null}
                 <span className="ui-command-palette__item-label">{item.label}</span>

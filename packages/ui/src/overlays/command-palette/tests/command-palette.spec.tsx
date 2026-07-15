@@ -64,4 +64,32 @@ describe('CommandPalette', () => {
     expect(labels).toContain('Input');
     expect(labels).not.toContain('Icons');
   });
+
+  it('ranks an exact label above the same words in another item keyword', () => {
+    const onDataTable = vi.fn();
+    const onHeatmap = vi.fn();
+    const ranked: CommandPaletteGroup[] = [
+      {
+        label: 'Visualizations',
+        items: [
+          {
+            id: 'heatmap-chart',
+            label: 'Heatmap chart',
+            keywords: ['An interactive chart with an SSR data table'],
+            onSelect: onHeatmap,
+          },
+        ],
+      },
+      {
+        label: 'Data display',
+        items: [{ id: 'data-table', label: 'Data table', onSelect: onDataTable }],
+      },
+    ];
+    render(<CommandPalette groups={ranked} onOpenChange={vi.fn()} open />);
+    const input = document.querySelector('.ui-command-palette__input') as HTMLInputElement;
+    fireEvent.change(input, { target: { value: 'Data table' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(onDataTable).toHaveBeenCalledTimes(1);
+    expect(onHeatmap).not.toHaveBeenCalled();
+  });
 });
