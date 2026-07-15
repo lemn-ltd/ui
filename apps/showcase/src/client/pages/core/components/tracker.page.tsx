@@ -71,7 +71,7 @@ function TrackerPage(): ReactElement {
 					<Tracker aria-label="Run lifecycle" hoverEffect items={runStates} />
 				</div>
 			)}
-			summary="Summarize a discrete sequence of states using patterns and hidden text as well as color."
+			summary="Tremor's pinned Tracker and HoverCard behavior behind a semantic LEMN adapter, using patterns and hidden text as well as color."
 			title="Tracker"
 		/>
 	);

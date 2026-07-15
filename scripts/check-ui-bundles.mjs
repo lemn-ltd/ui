@@ -9,6 +9,7 @@ const fixturesRoot = join(root, 'packages/ui/tests/bundle/fixtures');
 const fixtures = [
   { id: 'button', entry: join(fixturesRoot, 'button.ts') },
   { id: 'line-chart', entry: join(fixturesRoot, 'line-chart.ts') },
+  { id: 'tracker', entry: join(fixturesRoot, 'tracker.ts') },
   { id: 'catalog', entry: join(fixturesRoot, 'catalog.ts') },
 ];
 
@@ -76,6 +77,12 @@ for (const fixture of fixtures) {
   }
   if (fixture.id === 'line-chart' && !modules.some((id) => /(?:^|\/)recharts(?:\/|$)/i.test(id))) {
     throw new Error('line-chart must include Recharts');
+  }
+  if (
+    fixture.id === 'tracker' &&
+    !modules.some((id) => /(?:^|\/)@radix-ui\/react-hover-card(?:\/|$)/i.test(id))
+  ) {
+    throw new Error('tracker must retain Tremor\'s Radix HoverCard behavior');
   }
 }
 

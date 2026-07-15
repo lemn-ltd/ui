@@ -2,7 +2,7 @@
   "$schema": "https://schemas.ui.le-mn.com/provider-registry/v1.json",
   "schemaVersion": 1,
   "registryId": "lemn-ui",
-  "revision": "1.0.0",
+  "revision": "1.1.0",
   "sourceOfTruth": {
     "kind": "git_manifest",
     "repository": "https://github.com/lemn-ltd/ui",
@@ -35,7 +35,7 @@
   "sbom": {
     "format": "SPDX-2.3",
     "path": "third-party/sbom.spdx.json",
-    "sha256": "7d69b6057cbcddb220ce04e14f052f57f61f3860f03daac70e84a5cca9b448ec"
+    "sha256": "1bd46c5235442d652f66365004ad99096810597534e673492d470869554e008f"
   },
   "capabilities": [
     {
@@ -272,6 +272,118 @@
         "lastSuccessfulSync": "2026-07-15T00:00:00Z",
         "updateStatus": "current",
         "upstreamReference": "https://www.npmjs.com/package/echarts/v/6.1.0"
+      }
+    },
+    {
+      "capabilityId": "ui.core.tracker",
+      "implementationId": "tremor.tracker@ca4d588f47820ff3d514d37fa4ee08a4222dec11",
+      "publicExport": "Tracker",
+      "category": "visualizations",
+      "maturity": "beta",
+      "lifecycle": "active",
+      "providerOfRecord": true,
+      "provider": {
+        "id": "tremor",
+        "name": "Tremor",
+        "repository": "https://github.com/tremorlabs/tremor"
+      },
+      "source": {
+        "ingestionMode": "source_snapshot",
+        "commitSha": "ca4d588f47820ff3d514d37fa4ee08a4222dec11",
+        "selectedSourcePaths": [
+          "src/components/Tracker/Tracker.tsx"
+        ],
+        "closure": [
+          {
+            "upstreamPath": "package.json",
+            "localPath": "third-party/source-snapshots/tremor/ca4d588f47820ff3d514d37fa4ee08a4222dec11/package.json",
+            "upstreamSha256": "99c15b47666aa9e87076f8daa22df090e7596ec68e2b3fce37349aaef2b0c3d1",
+            "localSha256": "99c15b47666aa9e87076f8daa22df090e7596ec68e2b3fce37349aaef2b0c3d1"
+          },
+          {
+            "upstreamPath": "src/components/Tracker/Tracker.tsx",
+            "localPath": "third-party/source-snapshots/tremor/ca4d588f47820ff3d514d37fa4ee08a4222dec11/src/components/Tracker/Tracker.tsx",
+            "upstreamSha256": "843b47866fe927826173649128c914b797d0283a321450df85df71a0bc1f1e5b",
+            "localSha256": "843b47866fe927826173649128c914b797d0283a321450df85df71a0bc1f1e5b"
+          },
+          {
+            "upstreamPath": "src/utils/cx.ts",
+            "localPath": "third-party/source-snapshots/tremor/ca4d588f47820ff3d514d37fa4ee08a4222dec11/src/utils/cx.ts",
+            "upstreamSha256": "1d84c1b1b8afa7708dd626acf536ae1b7f57b3162b3a959b1cf02c5f22e98592",
+            "localSha256": "1d84c1b1b8afa7708dd626acf536ae1b7f57b3162b3a959b1cf02c5f22e98592"
+          }
+        ],
+        "transforms": [
+          {
+            "id": "tremor-tracker",
+            "version": "1.0.0",
+            "scriptPath": "third-party/transforms/tremor-tracker-v1.ts",
+            "scriptSha256": "98054e2fb9322987ecd7cc17bca4ad0209e2f0fe03272c72fe7f899a15fb8adf"
+          }
+        ],
+        "patches": [
+          {
+            "path": "third-party/patches/tremor-tracker-lemn.patch.json",
+            "sha256": "ec75422c08530e63c132211d85782847c36f58f80e242ae6023eb9223700c719",
+            "reason": "Adds only semantic token hooks, ordered-list accessibility, and keyboard-linked HoverCard descriptions while preserving Tremor interaction state."
+          }
+        ]
+      },
+      "license": {
+        "spdx": "Apache-2.0",
+        "reviewClass": "automatic",
+        "copyright": "Copyright © 2025 Tremor. All rights reserved.",
+        "requirements": [
+          "Distribute the captured Apache-2.0 license with copies or substantial portions of the source snapshot.",
+          "Record all LEMN modifications and retain upstream attribution for the generated derivative."
+        ],
+        "files": [
+          {
+            "kind": "LICENSE",
+            "path": "third-party/licenses/tremor-tracker-ca4d588f-LICENSE.txt",
+            "sha256": "6e43333ff4b171baacff233a3672365923eb688bf7ce8724eac42868bc4a08eb"
+          }
+        ]
+      },
+      "adapters": {
+        "publicApi": "packages/ui/src/visualizations/tracker/tracker.tsx",
+        "theme": "packages/ui/src/visualizations/tracker/tracker.css"
+      },
+      "brandTokenRoles": [
+        "color.border",
+        "color.surface",
+        "color.text",
+        "visualization.positive",
+        "visualization.negative",
+        "visualization.series",
+        "visualization.tooltip"
+      ],
+      "conformance": {
+        "behavior": [
+          "packages/ui/src/visualizations/tracker/tests/tracker.spec.tsx"
+        ],
+        "accessibility": [
+          "packages/ui/src/visualizations/tracker/tests/tracker.spec.tsx",
+          "apps/showcase/tests/e2e/accessibility.e2e.ts"
+        ],
+        "interaction": [
+          "packages/ui/src/visualizations/tracker/tests/tracker.spec.tsx",
+          "apps/showcase/tests/e2e/capability-expansion.e2e.ts"
+        ],
+        "visual": [
+          "apps/showcase/tests/e2e/visual.e2e.ts"
+        ],
+        "ssr": [
+          "packages/ui/src/visualizations/tracker/tests/tracker.spec.tsx"
+        ],
+        "bundle": [
+          "scripts/check-ui-bundles.mjs"
+        ]
+      },
+      "upstream": {
+        "lastSuccessfulSync": "2026-07-15T20:06:21Z",
+        "updateStatus": "current",
+        "upstreamReference": "https://github.com/tremorlabs/tremor/commit/ca4d588f47820ff3d514d37fa4ee08a4222dec11"
       }
     },
     {

@@ -255,7 +255,7 @@ test("Darwin and Linux visual baselines have exact platform parity", async () =>
 			.sort();
 	const darwin = platformBaselines("darwin");
 	const linux = platformBaselines("linux");
-	assert.equal(darwin.length, 90);
+	assert.equal(darwin.length, 96);
 	assert.deepEqual(linux, darwin);
 	const expectConfig = record(playwrightConfig.expect, "Playwright expect");
 	const screenshots = record(

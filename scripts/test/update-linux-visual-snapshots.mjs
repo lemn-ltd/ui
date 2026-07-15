@@ -14,7 +14,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 const defaultRoot = resolve(fileURLToPath(new URL("../..", import.meta.url)));
 const image = "mcr.microsoft.com/playwright:v1.60.0-noble";
-const expectedSnapshotCount = 90;
+const expectedSnapshotCount = 96;
 
 function commandLabel(command, args) {
 	return [command, ...args].join(" ");

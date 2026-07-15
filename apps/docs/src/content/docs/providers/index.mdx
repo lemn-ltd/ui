@@ -38,6 +38,16 @@ Every public component/block record includes:
 Floating versions, short SHAs, branches, unverified copied source, silent
 patches, and unrecorded assets/fonts/examples are forbidden.
 
+## Concrete source-snapshot proof
+
+`Tracker` maps `ui.core.tracker` to Tremor commit
+`ca4d588f47820ff3d514d37fa4ee08a4222dec11`. The registry captures the raw
+Tracker, its local utility closure and package metadata byte-for-byte, plus the
+Apache-2.0 license. A hashed transform reuses the existing pinned Radix
+HoverCard dependency; an explicit patch adds only semantic token and
+accessibility hooks. Run `check:snapshots` for offline drift detection or
+`sync:snapshots` to refetch the same immutable commit and regenerate output.
+
 ## Adding a capability
 
 1. Confirm no canonical LEMN capability already serves the job.

@@ -26,11 +26,14 @@ Direct D3 use and additional chart engines are outside the current contract.
 | Renderer | Components |
 | --- | --- |
 | Recharts | `LineChart`, `AreaChart`, `BarChart`, `ComboChart`, `DonutChart`, `SparkChart` |
-| Native React and CSS/SVG | `BarList`, `CategoryBar`, `ProgressCircle`, `Tracker`, `ProgressBar`, `Sparkline`, `Meter` |
+| Tremor source snapshot (`ca4d588f47820ff3d514d37fa4ee08a4222dec11`) | `Tracker` |
+| Native React and CSS/SVG | `BarList`, `CategoryBar`, `ProgressCircle`, `ProgressBar`, `Sparkline`, `Meter` |
 | Renderer-independent frame | `ChartFrame` |
 
-Native components must not import Recharts. Importing `Button`, `ChartFrame`, or
-a native visualization must not pull a chart engine into the consumer bundle.
+Native components must not import Recharts. Tracker preserves Tremor's Radix HoverCard lifecycle
+through a deterministic source-snapshot transform, without importing a chart engine. Importing
+`Button`, `ChartFrame`, Tracker, or a native visualization must not pull a chart engine into the
+consumer bundle.
 
 ## Public API boundary
 

@@ -74,6 +74,19 @@ test("chart legends are keyboard-operable series controls", async ({
 	await expect(legend).toHaveAttribute("aria-pressed", "true");
 });
 
+test("Tracker preserves the provider HoverCard click lifecycle", async ({ page }) => {
+	await gotoStable(page, "/core/components/tracker");
+	const running = page.getByRole("listitem").filter({ hasText: "Running: active." });
+	await running.click();
+	const hoverCard = page.locator(".ui-tracker-provider__tooltip");
+	await expect(hoverCard).toHaveText("Executing the approved plan.");
+	const hoverCardId = await hoverCard.getAttribute("id");
+	expect(hoverCardId).toBeTruthy();
+	await expect(running).toHaveAttribute("aria-describedby", hoverCardId ?? "");
+	await page.keyboard.press("Escape");
+	await expect(hoverCard).toHaveCount(0);
+});
+
 test("date range selection completes by keyboard and returns focus", async ({
 	page,
 }) => {

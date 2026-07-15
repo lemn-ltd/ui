@@ -24,9 +24,11 @@
   },
   "scripts": {
     "build": "rm -rf dist && tsc",
-    "check": "tsc --noEmit && pnpm run check:matrix",
+    "check": "tsc --noEmit && pnpm run check:matrix && pnpm run check:snapshots",
     "check:matrix": "node scripts/generate-capability-migration-matrix.mjs --check",
+    "check:snapshots": "node scripts/sync-source-snapshots.ts --check",
     "generate:matrix": "node scripts/generate-capability-migration-matrix.mjs",
+    "sync:snapshots": "node scripts/sync-source-snapshots.ts --write",
     "test": "vitest run"
   },
   "devDependencies": {

@@ -25,6 +25,14 @@ export const ADMIN_REGISTRY_READ_MODEL = {
 			licenseRequirements: source.license.requirements,
 			patches: source.source.ingestionMode === "source_snapshot" ? source.source.patches : [],
 			transforms: source.source.ingestionMode === "source_snapshot" ? source.source.transforms : [],
+			snapshot:
+				source.source.ingestionMode === "source_snapshot"
+					? {
+							commitSha: source.source.commitSha,
+							selectedSourcePaths: source.source.selectedSourcePaths,
+							closure: source.source.closure,
+						}
+					: null,
 			conformance: source.conformance,
 		};
 	}),

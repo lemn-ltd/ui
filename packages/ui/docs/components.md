@@ -1728,7 +1728,9 @@ trend where the surrounding text already communicates the value.
 
 Use a `Tracker` for an ordered sequence of complete, active, pending, or error
 states. Each item keeps visible or assistive text so status never depends on
-color alone. Use a [`stepper`](#stepper) for user-controlled navigation.
+color alone. The public adapter retains Tremor's pinned HoverCard interaction
+while applying only LEMN semantic tokens and accessibility hooks. Use a
+[`stepper`](#stepper) for user-controlled navigation.
 
 ## Data display
 

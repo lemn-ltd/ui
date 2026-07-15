@@ -30,6 +30,15 @@ opcion upstream aceptable y registra warning de maintenance.
 No se permiten floats, short SHA, branch, copia no verificada, silent patch ni
 assets/examples sin derechos.
 
+## Prueba concreta de source snapshot
+
+`Tracker` mapea `ui.core.tracker` al commit completo de Tremor
+`ca4d588f47820ff3d514d37fa4ee08a4222dec11`. El registry conserva byte por byte
+el componente, su closure local y metadata, junto con la licencia Apache-2.0.
+Un transform hasheado reutiliza el Radix HoverCard ya fijado y un patch explicito
+agrega solo hooks semanticos y de accesibilidad. `check:snapshots` detecta drift
+offline; `sync:snapshots` vuelve a leer ese mismo commit inmutable y regenera.
+
 ## Flujo
 
 Confirma el gap, compara candidatos, selecciona uno, registra origen/licencia,

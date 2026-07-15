@@ -3,6 +3,10 @@ import type {
 	ChartAccessibleName,
 	ChartColor,
 } from "../internal/chart-types.js";
+import {
+	TremorTracker,
+	type TremorTrackerBlockProps,
+} from "./tremor-tracker.internal.js";
 import "./tracker.css";
 
 export type TrackerStatus = "complete" | "active" | "pending" | "error";
@@ -35,33 +39,40 @@ export function Tracker({
 	"aria-labelledby": ariaLabelledBy,
 	...rest
 }: TrackerProps): ReactElement {
+	const data: TremorTrackerBlockProps[] = items.map((item) => {
+		const status = item.status ?? "pending";
+		const customColor = item.color ?? defaultColor;
+		return {
+			accessibleLabel: [
+				`${item.label}: ${status}.`,
+				item.description,
+			]
+				.filter(Boolean)
+				.join(" "),
+			color: customColor
+				? "ui-tracker-provider__block--custom"
+				: `ui-tracker-provider__block--${status}`,
+			...(customColor
+				? {
+						blockStyle: {
+							"--ui-tracker-color": customColor,
+						} as CSSProperties,
+						customColor: true,
+					}
+				: {}),
+			status,
+			tooltip: item.tooltip ?? item.description,
+		};
+	});
+
 	return (
-		<ol
+		<TremorTracker
 			aria-label={ariaLabel}
 			aria-labelledby={ariaLabelledBy}
 			className={["ui-tracker", className].filter(Boolean).join(" ")}
-			data-hover-effect={hoverEffect}
+			data={data}
+			hoverEffect={hoverEffect}
 			{...rest}
-		>
-			{items.map((item) => (
-				<li
-					className="ui-tracker__item"
-					data-custom-color={Boolean(item.color ?? defaultColor) || undefined}
-					data-status={item.status ?? "pending"}
-					key={item.label}
-					style={
-						{
-							"--ui-tracker-color": item.color ?? defaultColor,
-						} as CSSProperties
-					}
-					title={item.tooltip ?? item.description}
-				>
-					<span aria-hidden="true" className="ui-tracker__block" />
-					<span className="ui-tracker__sr-only">
-						{item.label}: {item.status ?? "pending"}. {item.description}
-					</span>
-				</li>
-			))}
-		</ol>
+		/>
 	);
 }

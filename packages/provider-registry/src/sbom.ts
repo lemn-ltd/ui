@@ -3,7 +3,6 @@ import type {
   RegistryValidationIssue,
   RegistryValidationResult,
 } from './model.js';
-import { isExactPackageVersion } from './validation.js';
 
 type JsonObject = Record<string, unknown>;
 
@@ -44,9 +43,9 @@ export function validateRegistrySbom(
       issues.push(issue('SBOM_PACKAGE_NAME', `$.packages[${index}].name`, 'Package name is required.'));
       return;
     }
-    if (typeof entry.versionInfo !== 'string' || !isExactPackageVersion(entry.versionInfo)) {
+    if (typeof entry.versionInfo !== 'string' || entry.versionInfo.length === 0) {
       issues.push(
-        issue('SBOM_PACKAGE_VERSION', `$.packages[${index}].versionInfo`, 'Package version must be exact.'),
+        issue('SBOM_PACKAGE_VERSION', `$.packages[${index}].versionInfo`, 'Package version or immutable source revision is required.'),
       );
     }
     const records = packagesByName.get(entry.name) ?? [];
@@ -56,11 +55,18 @@ export function validateRegistrySbom(
 
   const expected = new Map<string, { readonly version: string; readonly license: string }>();
   for (const capability of manifest.capabilities) {
-    if (capability.lifecycle !== 'active' || capability.source.ingestionMode !== 'runtime_dependency') continue;
-    expected.set(capability.source.packageName, {
-      version: capability.source.packageVersion,
-      license: capability.license.spdx,
-    });
+    if (capability.lifecycle !== 'active') continue;
+    if (capability.source.ingestionMode === 'runtime_dependency') {
+      expected.set(capability.source.packageName, {
+        version: capability.source.packageVersion,
+        license: capability.license.spdx,
+      });
+    } else if (capability.source.ingestionMode === 'source_snapshot') {
+      expected.set(`${capability.provider.id}:${capability.publicExport}`, {
+        version: capability.source.commitSha,
+        license: capability.license.spdx,
+      });
+    }
   }
 
   for (const [name, expectedPackage] of expected) {

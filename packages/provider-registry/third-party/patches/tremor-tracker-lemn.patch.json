@@ -1,0 +1,55 @@
+{
+  "$schema": "https://schemas.ui.le-mn.com/provider-registry/source-patch/v1.json",
+  "patchId": "tremor-tracker-lemn-adapter-v1",
+  "upstreamCommit": "ca4d588f47820ff3d514d37fa4ee08a4222dec11",
+  "operations": [
+    {
+      "id": "a11y-and-token-block-contract",
+      "reason": "Expose only semantic accessibility and token hooks while retaining Tremor's block and HoverCard state model.",
+      "match": "  defaultBackgroundColor?: string\n}",
+      "replacement": "  defaultBackgroundColor?: string\n  accessibleLabel: string\n  blockStyle?: React.CSSProperties\n  customColor?: boolean\n  status: string\n}"
+    },
+    {
+      "id": "a11y-and-token-block-inputs",
+      "reason": "Receive the adapter-owned accessible name, semantic status, and compiled-token style without embedding branding policy upstream.",
+      "match": "  defaultBackgroundColor,\n  hoverEffect,\n}: TremorTrackerBlockProps) => {\n  const [open, setOpen] = React.useState(false)",
+      "replacement": "  defaultBackgroundColor,\n  hoverEffect,\n  accessibleLabel,\n  blockStyle,\n  customColor,\n  status,\n}: TremorTrackerBlockProps) => {\n  const [open, setOpen] = React.useState(false)\n  const tooltipId = React.useId()"
+    },
+    {
+      "id": "semantic-list-item",
+      "reason": "Use a focusable ordered-list item and text equivalent while preserving the original HoverCard trigger and click-to-open behavior.",
+      "match": "        <div className=\"ui-tracker-provider__item\">\n          <div\n            className={cx(\n              \"ui-tracker-provider__block\",\n              color || defaultBackgroundColor,\n              hoverEffect ? \"ui-tracker-provider__block--hover\" : \"\",\n            )}\n          />\n        </div>",
+      "replacement": "        <li\n          aria-describedby={tooltip && open ? tooltipId : undefined}\n          className=\"ui-tracker-provider__item\"\n          data-custom-color={customColor || undefined}\n          data-status={status}\n          tabIndex={tooltip ? 0 : undefined}\n        >\n          <span\n            aria-hidden=\"true\"\n            className={cx(\n              \"ui-tracker-provider__block\",\n              color || defaultBackgroundColor,\n              hoverEffect ? \"ui-tracker-provider__block--hover\" : \"\",\n            )}\n            style={blockStyle}\n          />\n          <span className=\"ui-tracker__sr-only\">{accessibleLabel}</span>\n        </li>"
+    },
+    {
+      "id": "tooltip-description-link",
+      "reason": "Associate the retained HoverCard content with its keyboard-focusable block for assistive technology.",
+      "match": "          sideOffset={10}\n          side=\"top\"",
+      "replacement": "          id={tooltipId}\n          sideOffset={10}\n          side=\"top\""
+    },
+    {
+      "id": "ordered-list-root-contract",
+      "reason": "Preserve the existing LEMN Tracker ordered-list public contract without changing Tremor's mapping or HoverCard lifecycle.",
+      "match": "export interface TremorTrackerProps extends React.HTMLAttributes<HTMLDivElement> {",
+      "replacement": "export interface TremorTrackerProps extends React.HTMLAttributes<HTMLOListElement> {"
+    },
+    {
+      "id": "ordered-list-forward-ref",
+      "reason": "Keep the provider implementation's forwarded ref aligned with the semantic ordered-list root.",
+      "match": "const TremorTracker = React.forwardRef<HTMLDivElement, TremorTrackerProps>(",
+      "replacement": "const TremorTracker = React.forwardRef<HTMLOListElement, TremorTrackerProps>("
+    },
+    {
+      "id": "ordered-list-render",
+      "reason": "Render the same provider blocks as an ordered list and expose hover state only as a semantic styling hook.",
+      "match": "      <div\n        ref={forwardedRef}\n        className={cx(\"ui-tracker-provider\", className)}\n        {...props}\n      >",
+      "replacement": "      <ol\n        ref={forwardedRef}\n        className={cx(\"ui-tracker-provider\", className)}\n        data-hover-effect={hoverEffect || undefined}\n        {...props}\n      >"
+    },
+    {
+      "id": "ordered-list-close",
+      "reason": "Close the semantic root introduced by the ordered-list accessibility patch.",
+      "match": "      </div>\n    )\n  },\n)",
+      "replacement": "      </ol>\n    )\n  },\n)"
+    }
+  ]
+}

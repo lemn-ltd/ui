@@ -22,6 +22,7 @@ export function ProvidersPage(): ReactElement {
 							<th scope="col">LEMN export</th>
 							<th scope="col">Provider</th>
 							<th scope="col">Exact source</th>
+							<th scope="col">Ingestion</th>
 							<th scope="col">License</th>
 							<th scope="col">Status</th>
 						</tr>
@@ -33,6 +34,7 @@ export function ProvidersPage(): ReactElement {
 								<td><code>{capability.publicExport}</code></td>
 								<td>{capability.provider.name}</td>
 								<td><code>{capability.exactUpstreamReference}</code></td>
+								<td><code>{capability.ingestionMode}</code></td>
 								<td>{capability.license.spdx}</td>
 								<td>
 									<Badge tone={capability.maturity === "stable" ? "success" : "warn"}>

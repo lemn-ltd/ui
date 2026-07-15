@@ -20,6 +20,7 @@ const PAGES: readonly (readonly [string, string])[] = [
 	["data-table", "/core/components/data-table"],
 	["sidebar", "/core/components/sidebar"],
 	["info-banner", "/core/components/info-banner"],
+	["tracker", "/core/components/tracker"],
 	["settings-shell", "/core/components/settings-shell"],
 	["approval-card", "/agents/components/approval-card"],
 	["colors", "/core/foundations/colors"],
@@ -145,7 +146,11 @@ for (const [name, route] of PAGES) {
 				? `${route}?embed=playground&theme=${testInfo.project.name.includes("dark") ? "dark" : "light"}`
 				: routeForBrandMode(route, testInfo.project.name);
 		await gotoStable(page, stableRoute);
-		if (route === "/core/components/checkbox") {
+		if (
+			(await page
+				.locator(".showcase-docs-page .ui-syntax-code-block")
+				.count()) > 0
+		) {
 			await page.locator(".showcase-docs-page .shiki").first().waitFor();
 		}
 		if (name === "info-banner") {

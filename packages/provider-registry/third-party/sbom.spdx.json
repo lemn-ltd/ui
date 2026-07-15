@@ -2,8 +2,8 @@
   "SPDXID": "SPDXRef-DOCUMENT",
   "spdxVersion": "SPDX-2.3",
   "dataLicense": "CC0-1.0",
-  "name": "LEMN UI provider registry 1.0.0",
-  "documentNamespace": "https://schemas.ui.le-mn.com/sbom/provider-registry/1.0.0",
+  "name": "LEMN UI provider registry 1.1.0",
+  "documentNamespace": "https://schemas.ui.le-mn.com/sbom/provider-registry/1.1.0",
   "creationInfo": {
     "created": "2026-07-15T00:00:00Z",
     "creators": [
@@ -19,7 +19,8 @@
     "SPDXRef-Package-react-markdown",
     "SPDXRef-Package-cmdk",
     "SPDXRef-Package-sonner",
-    "SPDXRef-Package-xyflow-react"
+    "SPDXRef-Package-xyflow-react",
+    "SPDXRef-Package-tremor-tracker"
   ],
   "packages": [
     {
@@ -174,6 +175,23 @@
           "referenceLocator": "pkg:npm/%40xyflow/react@12.11.0"
         }
       ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-tremor-tracker",
+      "name": "tremor:Tracker",
+      "versionInfo": "ca4d588f47820ff3d514d37fa4ee08a4222dec11",
+      "downloadLocation": "https://github.com/tremorlabs/tremor/commit/ca4d588f47820ff3d514d37fa4ee08a4222dec11",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "Copyright © 2025 Tremor. All rights reserved.",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:github/tremorlabs/tremor@ca4d588f47820ff3d514d37fa4ee08a4222dec11"
+        }
+      ]
     }
   ],
   "relationships": [
@@ -221,6 +239,11 @@
       "spdxElementId": "SPDXRef-DOCUMENT",
       "relationshipType": "DESCRIBES",
       "relatedSpdxElement": "SPDXRef-Package-xyflow-react"
+    },
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-Package-tremor-tracker"
     }
   ]
 }

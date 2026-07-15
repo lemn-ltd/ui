@@ -2700,13 +2700,20 @@
       "finalPublicExports": [
         "Tracker"
       ],
-      "disposition": "native-with-rationale",
-      "nativeRationale": "Tracker remains a LEMN-owned visualizations capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "disposition": "keep-provider-backed",
+      "provider": {
+        "implementationId": "tremor.tracker@ca4d588f47820ff3d514d37fa4ee08a4222dec11",
+        "id": "tremor",
+        "name": "Tremor",
+        "repository": "https://github.com/tremorlabs/tremor",
+        "ingestionMode": "source_snapshot",
+        "commitSha": "ca4d588f47820ff3d514d37fa4ee08a4222dec11"
+      },
       "migration": {
         "status": "complete",
         "publicVersionEffect": "minor",
         "targetPackageVersion": "0.3.0",
-        "summary": "Retain Tracker as reviewed native LEMN behavior in the 0.3.0 cutover."
+        "summary": "Retain Tracker behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
       },
       "conformanceProof": [
         "packages/ui/src/visualizations/tracker/tests/tracker.spec.tsx",

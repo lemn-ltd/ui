@@ -59,6 +59,7 @@ bundle evidence where applicable before claiming the capability complete.
 | `ui.primitive.checkbox` | `Checkbox` | `radix-ui@1.4.3` | MIT |
 | `ui.visualization.line-chart` | `LineChart` | `recharts@3.9.2` | MIT |
 | `ui.visualization.heatmap-chart` | `HeatmapChart` | `echarts@6.1.0` | Apache-2.0 |
+| `ui.core.tracker` | `Tracker` | `tremorlabs/tremor@ca4d588f47820ff3d514d37fa4ee08a4222dec11` | Apache-2.0 |
 | `ui.form.json-code-editor` | `JsonCodeEditor` | `@uiw/react-codemirror@4.25.10` | MIT |
 | `ui.data-display.syntax-code-block` | `SyntaxCodeBlock` | `shiki@4.2.0` | MIT |
 | `ui.data-display.markdown` | `Markdown` | `react-markdown@10.1.0` | MIT |
@@ -88,13 +89,29 @@ The kernel uses Web Crypto and never imports Node filesystem APIs in production 
 
 ## Verification
 
+### Script catalog
+
+| Command | Category | Owner | Scope | Environment | Mutation | Secrets | Dry-run / apply | CI | Removal |
+|---|---|---|---|---|---|---|---|---|---|
+| `check:snapshots` | `check` | LEMN UI | Active `source_snapshot` closure, transform hashes, and generated outputs | Local and CI; offline | None | None | Always check-only; never writes | Yes, through package `check` | Permanent while the registry supports source snapshots |
+| `sync:snapshots` | `codegen` | LEMN UI | The same active immutable closure and generated outputs | Maintainer workstation with network access | Writes only declared snapshot/output paths | None | Explicit apply command; the underlying CLI writes only with `--write` | No | Remove only after the final source-snapshot capability is retired |
+
+Both commands execute maintained TypeScript source. Network refresh is limited
+to the full Git SHA in the reviewed manifest, and every fetched byte must match
+its pinned SHA-256 before any file is written.
+
 ```bash
 pnpm --filter @lemn-ltd/provider-registry run check
 pnpm --filter @lemn-ltd/provider-registry run test
 pnpm --filter @lemn-ltd/provider-registry run build
+# Offline drift check for captured bytes and generated adapters
+pnpm --filter @lemn-ltd/provider-registry run check:snapshots
+# Explicit network refresh from the same immutable full commit
+pnpm --filter @lemn-ltd/provider-registry run sync:snapshots
 ```
 
-The checked-in `third-party/sbom.spdx.json` is the SPDX 2.3 inventory of the selected direct
-runtime providers. Captured Apache ECharts evidence includes its Apache-2.0 license, NOTICE, and
-embedded d3 BSD-3-Clause license. Release tooling verifies these immutable artifacts before
-package publication.
+The checked-in `third-party/sbom.spdx.json` is the SPDX 2.3 inventory of selected direct runtime
+providers and source snapshots. Captured Apache ECharts evidence includes its Apache-2.0 license,
+NOTICE, and embedded d3 BSD-3-Clause license. Tremor Tracker records a byte-identical raw closure,
+deterministic transform, explicit semantic patch, and Apache-2.0 evidence. Release tooling verifies
+these immutable artifacts before package publication.

@@ -1,4 +1,5 @@
-import { cleanup, render } from "@testing-library/react";
+import { cleanup, fireEvent, render, waitFor } from "@testing-library/react";
+import { renderToString } from "react-dom/server";
 import { afterEach, describe, expect, it } from "vitest";
 import { Tracker } from "../tracker.js";
 
@@ -19,8 +20,8 @@ describe("Tracker", () => {
 		expect(getByText(/Deploy: error/)).toBeTruthy();
 	});
 
-	it("supports custom token colors, tooltips, and hover treatment", () => {
-		const { container, getByTitle } = render(
+	it("retains Tremor's click-to-open HoverCard while applying token colors", async () => {
+		const { container, getByRole, getByText } = render(
 			<Tracker
 				aria-label="Run status"
 				hoverEffect
@@ -33,11 +34,37 @@ describe("Tracker", () => {
 				]}
 			/>,
 		);
-		expect(getByTitle("Deploying now").getAttribute("data-custom-color")).toBe(
-			"true",
-		);
+		const item = getByRole("listitem");
+		expect(item.getAttribute("data-custom-color")).toBe("true");
+		expect(item.getAttribute("data-status")).toBe("pending");
+		expect(
+			item.querySelector<HTMLElement>(".ui-tracker-provider__block")?.style.getPropertyValue(
+				"--ui-tracker-color",
+			),
+		).toBe("var(--lemn-chart-series-2)");
 		expect(
 			container.querySelector("ol")?.getAttribute("data-hover-effect"),
 		).toBe("true");
+
+		fireEvent.click(item);
+		await waitFor(() => expect(getByText("Deploying now")).toBeTruthy());
+		expect(item.getAttribute("aria-describedby")).toBeTruthy();
+	});
+
+	it("renders a semantic, branded-first server snapshot", () => {
+		const html = renderToString(
+			<Tracker
+				aria-label="Run status"
+				items={[
+					{ label: "Build", status: "complete" },
+					{ label: "Deploy", status: "active", tooltip: "Deploying" },
+				]}
+			/>,
+		);
+		expect(html).toContain('aria-label="Run status"');
+		expect(html).toContain("ui-tracker-provider__block--complete");
+		expect(html).toContain("Build: complete.");
+		expect(html).toContain("Deploy: active.");
+		expect(html).not.toContain("bg-gray-");
 	});
 });

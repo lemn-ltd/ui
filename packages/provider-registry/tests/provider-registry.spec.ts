@@ -86,8 +86,8 @@ describe('Git-authoritative provider registry', () => {
     const records = asArray(matrix.capabilities).map(asObject);
     expect(matrix.catalogCount).toBe(131);
     expect(records).toHaveLength(131);
-    expect(records.filter((entry) => entry.disposition === 'keep-provider-backed')).toHaveLength(31);
-    expect(records.filter((entry) => entry.disposition === 'native-with-rationale')).toHaveLength(100);
+    expect(records.filter((entry) => entry.disposition === 'keep-provider-backed')).toHaveLength(32);
+    expect(records.filter((entry) => entry.disposition === 'native-with-rationale')).toHaveLength(99);
     expect(new Set(records.map((entry) => entry.catalogSlug)).size).toBe(131);
     const exports = records.flatMap((entry) => asArray(entry.finalPublicExports));
     expect(new Set(exports).size).toBe(exports.length);
@@ -123,7 +123,7 @@ describe('Git-authoritative provider registry', () => {
       repository: 'https://github.com/lemn-ltd/ui',
       path: 'packages/provider-registry/registry/provider-registry.v1.json',
     });
-    expect(readModel.capabilities).toHaveLength(9);
+    expect(readModel.capabilities).toHaveLength(10);
     expect(readModel.capabilities.map((capability) => capability.capabilityId)).toEqual(
       [...readModel.capabilities.map((capability) => capability.capabilityId)].sort(),
     );
@@ -169,6 +169,31 @@ describe('Git-authoritative provider registry', () => {
     ).toHaveLength(1);
   });
 
+  it('selects exactly one immutable Tremor Tracker snapshot with explicit transformation evidence', async () => {
+    const manifest = (await loadJson(manifestPath)) as ProviderRegistryManifest;
+    const tracker = getProviderOfRecord(manifest, 'ui.core.tracker');
+    expect(tracker).toMatchObject({
+      implementationId: 'tremor.tracker@ca4d588f47820ff3d514d37fa4ee08a4222dec11',
+      publicExport: 'Tracker',
+      provider: { id: 'tremor' },
+      source: {
+        ingestionMode: 'source_snapshot',
+        commitSha: 'ca4d588f47820ff3d514d37fa4ee08a4222dec11',
+        selectedSourcePaths: ['src/components/Tracker/Tracker.tsx'],
+      },
+      license: { spdx: 'Apache-2.0' },
+    });
+    if (tracker.source.ingestionMode !== 'source_snapshot') throw new Error('Tracker is not a source snapshot.');
+    expect(tracker.source.closure).toHaveLength(3);
+    expect(tracker.source.transforms).toHaveLength(1);
+    expect(tracker.source.patches).toHaveLength(1);
+    expect(
+      manifest.capabilities.filter(
+        (capability) => capability.lifecycle === 'active' && capability.publicExport === 'Tracker',
+      ),
+    ).toHaveLength(1);
+  });
+
   it('verifies every captured license against the hashes in the manifest', async () => {
     const manifest = await loadJson(manifestPath);
     const result = await verifyRegistryArtifacts(manifest, (path) => readFile(resolve(packageRoot, path)));
@@ -187,6 +212,16 @@ describe('Git-authoritative provider registry', () => {
     if (!radixPackage) throw new Error('Missing Radix fixture package.');
     radixPackage.versionInfo = '1.4.2';
     expect(validateRegistrySbom(manifest, staleSbom).issues).toContainEqual(
+      expect.objectContaining({ code: 'SBOM_PROVIDER_VERSION' }),
+    );
+
+    const staleSnapshotSbom = structuredClone(asObject(sbom));
+    const tremorPackage = asArray(staleSnapshotSbom.packages)
+      .map(asObject)
+      .find((entry) => entry.name === 'tremor:Tracker');
+    if (!tremorPackage) throw new Error('Missing Tremor Tracker fixture package.');
+    tremorPackage.versionInfo = 'b'.repeat(40);
+    expect(validateRegistrySbom(manifest, staleSnapshotSbom).issues).toContainEqual(
       expect.objectContaining({ code: 'SBOM_PROVIDER_VERSION' }),
     );
   });

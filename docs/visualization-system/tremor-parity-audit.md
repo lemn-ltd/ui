@@ -152,13 +152,18 @@ or axis type crosses the package boundary.
 - Target: add a `series` declaration while keeping `dataKey`, `name`, `color`,
   and `valueFormatter` as a one-series compatibility path.
 
-### Tracker — extend
+### Tracker — provider-backed
 
-- Present: semantic status blocks and hidden status text.
-- Missing: custom token color, default background color, explicit hover effect,
-  and tooltip content independent from the hidden description.
-- Target: add token color/tooltip per item plus default color and hover effect;
-  retain semantic statuses as the accessible default.
+- Source: Tremor Tracker at full commit
+  `ca4d588f47820ff3d514d37fa4ee08a4222dec11`, captured byte-for-byte with its
+  declared closure and Apache-2.0 evidence.
+- Preserved: provider mapping, click/hover HoverCard state, zero open/close
+  delays, Portal, collision handling, and item tooltip lifecycle.
+- LEMN delta: provider-neutral statuses and token colors, ordered-list
+  semantics, keyboard-linked descriptions, visible focus, and reduced motion.
+- Reproduction: `check:snapshots` validates raw hashes and generated output;
+  `sync:snapshots` refetches only the pinned commit and reapplies the recorded
+  deterministic transform and explicit patch.
 
 ## Non-negotiable Lemn behavior
 

@@ -99,6 +99,13 @@ const provider = {
     packageVersion: '10.1.0',
     packageIntegrity: 'sha512-qKxVopLT/TyA6BX3Ue5NwabOsAzm0Q7kAPwq6L+wWDwisYs7R8vZ0nRXqq6rkueboxpkjvLGU9fWifiX/ZZFxQ==',
   },
+  tremor: {
+    id: 'tremor',
+    name: 'Tremor',
+    repository: 'https://github.com/tremorlabs/tremor',
+    ingestionMode: 'source_snapshot',
+    commitSha: 'ca4d588f47820ff3d514d37fa4ee08a4222dec11',
+  },
 };
 
 const providerBySlug = new Map([
@@ -118,6 +125,7 @@ const providerBySlug = new Map([
   ['json-code-editor', provider.codemirror],
   ['syntax-code-block', provider.shiki],
   ['markdown', provider.markdown],
+  ['tracker', provider.tremor],
 ]);
 
 const implementationDirectory = new Map([
@@ -238,7 +246,7 @@ const records = entries.map((entry) => {
     ...(selectedProvider
       ? {
           provider: {
-            implementationId: `${selectedProvider.id}.${entry.slug}@${selectedProvider.packageVersion}`,
+            implementationId: `${selectedProvider.id}.${entry.slug}@${selectedProvider.packageVersion ?? selectedProvider.commitSha}`,
             ...selectedProvider,
           },
         }
