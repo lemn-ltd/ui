@@ -213,7 +213,7 @@ try {
     'dist/provider-registry/third-party/licenses/echarts-6.1.0-NOTICE.txt',
     'dist/provider-registry/third-party/licenses/tremor-tracker-ca4d588f-LICENSE.txt',
     'dist/provider-registry/third-party/patches/tremor-tracker-lemn.patch.json',
-    'dist/provider-registry/third-party/source-snapshots/tremor/ca4d588f47820ff3d514d37fa4ee08a4222dec11/package.json',
+    'dist/provider-registry/third-party/source-snapshots/tremor/ca4d588f47820ff3d514d37fa4ee08a4222dec11/package.json.snapshot',
     'dist/provider-registry/third-party/source-snapshots/tremor/ca4d588f47820ff3d514d37fa4ee08a4222dec11/src/components/Tracker/Tracker.tsx',
     'dist/provider-registry/third-party/source-snapshots/tremor/ca4d588f47820ff3d514d37fa4ee08a4222dec11/src/utils/cx.ts',
     'dist/provider-registry/third-party/transforms/tremor-tracker-v1.ts',

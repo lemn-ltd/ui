@@ -296,7 +296,7 @@
         "closure": [
           {
             "upstreamPath": "package.json",
-            "localPath": "third-party/source-snapshots/tremor/ca4d588f47820ff3d514d37fa4ee08a4222dec11/package.json",
+            "localPath": "third-party/source-snapshots/tremor/ca4d588f47820ff3d514d37fa4ee08a4222dec11/package.json.snapshot",
             "upstreamSha256": "99c15b47666aa9e87076f8daa22df090e7596ec68e2b3fce37349aaef2b0c3d1",
             "localSha256": "99c15b47666aa9e87076f8daa22df090e7596ec68e2b3fce37349aaef2b0c3d1"
           },

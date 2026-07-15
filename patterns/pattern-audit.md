@@ -91,25 +91,25 @@ No full pattern audit has been completed for this workspace yet.
 
 | Audit ID | Date | Scope | Evidence | Result |
 |---|---|---|---|---|
-| TRACKER-SOURCE-SNAPSHOT-2026-07-16 | 2026-07-16 | Tremor Tracker source snapshot, deterministic codegen, script governance, package evidence, and focused conformance | Full SHA/raw hash checks, registry tests, TypeScript checks, bundle/tarball gates, targeted behavior/Axe, and visual evidence described below | PASS (focused audit; Linux visual baselines remain a separate delivery gate) |
+| TRACKER-SOURCE-SNAPSHOT-2026-07-16 | 2026-07-16 | Tremor Tracker source snapshot, deterministic codegen, script governance, package evidence, and focused conformance | Full SHA/raw hash checks, registry tests, TypeScript checks, bundle/tarball gates, targeted behavior/Axe, and Darwin/Linux visual evidence described below | PASS (focused audit) |
 | UI-CAPABILITY-2026-07-14 | 2026-07-14 | Component catalog expansion, report visualizations, advanced inputs, showcase, docs, release candidate | Commits `c56fc6f` through `4655aab`; commands and artifacts below | PASS (focused audit; Playwright exception recorded) |
 
 ## TRACKER-SOURCE-SNAPSHOT-2026-07-16
 
 This focused audit proves the source-snapshot and script-governance slice only;
-it does not claim a full-codebase pattern audit or waive the platform-specific
-Linux visual delivery gate.
+it does not claim a full-codebase pattern audit.
 
 | Pattern | Evidence | Result |
 |---|---|---|
 | PAT-CODE-SCRIPT-GOVERNANCE-001 | `@lemn-ltd/provider-registry` exposes package-local `check:snapshots` and `sync:snapshots` commands. Its README catalogs category, owner, scope, environment, mutability, secrets, dry-run/apply behavior, CI use, and removal condition. The check path is offline/read-only; mutation requires the explicit `--write` path and remains restricted to manifest-declared files. | PASS |
 | PAT-CODE-TYPESCRIPT-SOURCE-001 | Both the snapshot CLI and hash-loaded deterministic transform are maintained `.ts` sources; the registry pins the transform path and SHA-256, and `check:snapshots` proves the checked-in generated adapter is byte-for-byte reproducible. | PASS |
+| PAT-CODE-DEPENDENCIES-001 | The raw upstream manifest remains byte-identical but is stored as `package.json.snapshot`, so GitHub cannot misclassify inert provenance as an installable workspace. Exact pnpm overrides move the two vulnerable development-only transitives to `js-yaml@3.15.0` and `ws@8.21.1`; `pnpm audit` reports zero known vulnerabilities. | PASS |
 | PAT-UI-PROVIDER-FIRST-001 | `ui.core.tracker` has one active Tremor provider of record at full commit `ca4d588f47820ff3d514d37fa4ee08a4222dec11`, a complete captured closure, byte-identical Apache-2.0 evidence, one deterministic transform, one explicit semantic patch, SPDX inventory, public adapter, token roles, and behavior/accessibility/interaction/visual/SSR/bundle evidence. | PASS |
-| PAT-TEST-EVIDENCE-001 | Registry validation and artifact checks, Tracker unit/SSR tests, real browser HoverCard lifecycle, Light/Dark Axe checks, bundle isolation, release-artifact packaging, and reviewed Darwin Light/Dark responsive baselines exercise the current worktree. The six Linux baselines are not represented as complete here and remain required before release. | PASS (focused scope) |
+| PAT-TEST-EVIDENCE-001 | Registry validation and artifact checks, Tracker unit/SSR tests, real browser HoverCard lifecycle, Light/Dark Axe checks, bundle isolation, release-artifact packaging, and reviewed Darwin and pinned-Playwright Linux Light/Dark responsive baselines exercise the current worktree. | PASS (focused scope) |
 
 ### Focused verification evidence
 
-- Raw `package.json`, `Tracker.tsx`, `cx.ts`, and `LICENSE` were compared to
+- Raw `package.json` (stored locally as `package.json.snapshot`), `Tracker.tsx`, `cx.ts`, and `LICENSE` were compared to
   `raw.githubusercontent.com/tremorlabs/tremor` at the full pinned commit and
   matched byte-for-byte and by SHA-256.
 - `check:snapshots` verified one immutable source snapshot and one deterministic
@@ -120,9 +120,10 @@ Linux visual delivery gate.
   ECharts, and stayed independently measurable. The UI build copied the Tremor
   license, raw closure, patch, transform, registry, and SBOM into the release
   package, and the tarball smoke requires those exact paths.
-- Darwin visual baselines cover Light/Dark at 375, 768, and 1280 pixels after
-  lazy syntax highlighting is ready. Linux uses the same six projects but is a
-  separate pinned-runner delivery gate and must pass before release.
+- Darwin and Linux visual baselines cover Light/Dark at 375, 768, and 1280
+  pixels after lazy syntax highlighting is ready. Linux was generated and
+  passed 6/6 in `mcr.microsoft.com/playwright:v1.60.0-noble`, the exact CI
+  runtime, and the contract verifies 96-file platform parity.
 
 ## UI-CAPABILITY-2026-07-14
 
