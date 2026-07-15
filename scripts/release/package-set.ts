@@ -35,8 +35,8 @@ export const releasePackages = [
 		id: "brand-studio",
 		name: "@lemn-ltd/brand-studio",
 		directory: "packages/brand-studio",
-		expectedVersion: "0.1.0",
-		requiredExports: [".", "./styles.css"],
+		expectedVersion: "0.1.1",
+		requiredExports: [".", "./presets", "./styles.css"],
 	},
 ] as const satisfies readonly ReleasePackageDefinition[];
 

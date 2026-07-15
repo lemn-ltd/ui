@@ -11,3 +11,12 @@ import "@lemn-ltd/brand-studio/styles.css";
 const [brand, setBrand] = useState(() => createBrandFromPreset("aster-vault"));
 return <BrandStudio value={brand} onChange={setBrand} onIntent={handleIntent} />;
 ```
+
+Server-side tools, seeds, and CLIs must use the side-effect-free presets
+entrypoint so Node never evaluates the Studio UI or its stylesheet:
+
+```ts
+import { createBrandFromPreset } from "@lemn-ltd/brand-studio/presets";
+
+const project = createBrandFromPreset("aster-vault");
+```

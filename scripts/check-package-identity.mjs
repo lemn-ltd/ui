@@ -117,7 +117,7 @@ assert(
 const releasePackages = [
   [brandContractPackage, '@lemn-ltd/brand-contract', '0.1.0'],
   [uiPackage, canonicalPackageName, '0.3.0'],
-  [brandStudioPackage, '@lemn-ltd/brand-studio', '0.1.0'],
+  [brandStudioPackage, '@lemn-ltd/brand-studio', '0.1.1'],
 ];
 for (const [manifest, name, version] of releasePackages) {
   assert(manifest.name === name, `Release package must be ${name}`);

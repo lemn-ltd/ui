@@ -26,7 +26,7 @@ de variables.
 ## Brand Studio
 
 ```bash
-pnpm add @lemn-ltd/brand-studio@0.1.0
+pnpm add @lemn-ltd/brand-studio@0.1.1
 ```
 
 ```tsx
@@ -34,6 +34,13 @@ import { BrandStudio } from "@lemn-ltd/brand-studio";
 import "@lemn-ltd/brand-studio/styles.css";
 
 <BrandStudio value={draft} onChange={setDraft} onIntent={authorizedIntent} />
+```
+
+Seeds, herramientas SSR y CLIs importan presets desde el subpath seguro para
+Node, sin evaluar React ni CSS:
+
+```ts
+import { createBrandFromPreset } from "@lemn-ltd/brand-studio/presets";
 ```
 
 El wizard cubre identity, presets, assets, Profiles/modes, colors, typography,

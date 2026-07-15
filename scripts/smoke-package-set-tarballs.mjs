@@ -288,6 +288,21 @@ try {
     installedBrandStudio.peerDependencies?.['@lemn-ltd/ui'] === '0.3.0',
     'Packed Brand Studio must peer-depend on exact @lemn-ltd/ui 0.3.0',
   );
+  const presetSmoke = JSON.parse(
+    run(
+      process.execPath,
+      [
+        '--input-type=module',
+        '--eval',
+        `const { createBrandFromPreset } = await import('@lemn-ltd/brand-studio/presets'); const project = createBrandFromPreset('aster-vault'); console.log(JSON.stringify({ brandId: project.brandId, profiles: Object.keys(project.profiles) }));`,
+      ],
+      consumerDirectory,
+    ),
+  );
+  assert(
+    typeof presetSmoke.brandId === 'string' && presetSmoke.profiles.includes('core'),
+    'Brand Studio presets subpath must execute in plain Node without UI or CSS side effects',
+  );
   assert(installedPackage.name === canonicalPackageName, 'Installed package must retain its canonical name');
   assert(installedPackage.version === uiPackage.version, 'Installed package version must match the tarball');
   assert(

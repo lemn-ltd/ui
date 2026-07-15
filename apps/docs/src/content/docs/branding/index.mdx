@@ -63,7 +63,7 @@ names.
 Install Studio with an exact compatible release:
 
 ```bash
-pnpm add @lemn-ltd/brand-studio@0.1.0
+pnpm add @lemn-ltd/brand-studio@0.1.1
 ```
 
 ```tsx
@@ -75,6 +75,13 @@ import "@lemn-ltd/brand-studio/styles.css";
   onChange={setDraft}
   onIntent={handleAuthorizedIntent}
 />
+```
+
+Seeds, SSR tooling, and CLIs import presets from the Node-safe subpath, which
+does not evaluate React or CSS:
+
+```ts
+import { createBrandFromPreset } from "@lemn-ltd/brand-studio/presets";
 ```
 
 The wizard exposes identity, starting presets, managed assets, Profiles/modes,
