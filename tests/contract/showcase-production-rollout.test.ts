@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { resolve } from "node:path";
+import { basename, dirname, resolve } from "node:path";
 import test from "node:test";
 import {
 	activateCandidateCommand,
@@ -17,6 +17,7 @@ import {
 	deploymentListCommand,
 	encodeCandidateState,
 	RolloutRollbackFailure,
+	removeCandidateTemporaryRoot,
 	rollbackCommand,
 	runProductionRollout,
 	safeErrorMessage,
@@ -68,6 +69,18 @@ type InterruptBoundary =
 	| "stage"
 	| "summary"
 	| "upload";
+
+interface UploadEvidence {
+	readonly command: string;
+	readonly content: string;
+	readonly directoryIsDirectory: boolean;
+	readonly directoryMode: number;
+	readonly directoryPath: string;
+	readonly isRegularFile: boolean;
+	readonly mode: number;
+	readonly path: string;
+	readonly stdin: string | undefined;
+}
 
 function commandLabel(spec: CommandSpec): string {
 	return `${spec.command} ${spec.args.join(" ")}`;
@@ -147,6 +160,8 @@ function fakePlatform(
 		rollbackFailure?: Error;
 		rollbackSmokeFailure?: Error;
 		activeSmokeFailure?: Error;
+		uploadFailure?: Error;
+		cleanupFailure?: Error;
 	} = {},
 ) {
 	let phase = options.phase ?? "baseline";
@@ -155,6 +170,8 @@ function fakePlatform(
 	let timeoutAfter = options.timeoutAfter;
 	const events: string[] = [];
 	const counts = { activate: 0, build: 0, rollback: 0, stage: 0, upload: 0 };
+	const cleanupPaths: string[] = [];
+	const uploads: UploadEvidence[] = [];
 
 	const boundary = (name: InterruptBoundary) => {
 		if (interruptAfter === name) {
@@ -170,10 +187,17 @@ function fakePlatform(
 	return {
 		events,
 		counts,
+		cleanupPaths,
+		uploads,
 		get phase() {
 			return phase;
 		},
 		dependencies: {
+			async removeCandidateTemporaryRoot(temporaryRoot: string) {
+				cleanupPaths.push(temporaryRoot);
+				await removeCandidateTemporaryRoot(temporaryRoot);
+				if (options.cleanupFailure) throw options.cleanupFailure;
+			},
 			async runCommand(spec: CommandSpec) {
 				events.push(commandLabel(spec));
 				if (spec.args.join(" ") === deploymentListCommand.args.join(" ")) {
@@ -189,7 +213,26 @@ function fakePlatform(
 				}
 				if (spec.args.includes("upload")) {
 					counts.upload += 1;
+					const secretsFileIndex = spec.args.indexOf("--secrets-file");
+					assert.notEqual(secretsFileIndex, -1);
+					const secretsFilePath = spec.args[secretsFileIndex + 1];
+					assert.ok(secretsFilePath);
+					const secretsDirectoryPath = dirname(secretsFilePath);
+					const secretsDirectoryStat = await stat(secretsDirectoryPath);
+					const secretsFileStat = await stat(secretsFilePath);
+					uploads.push({
+						command: commandLabel(spec),
+						content: await readFile(secretsFilePath, "utf8"),
+						directoryIsDirectory: secretsDirectoryStat.isDirectory(),
+						directoryMode: secretsDirectoryStat.mode & 0o777,
+						directoryPath: secretsDirectoryPath,
+						isRegularFile: secretsFileStat.isFile(),
+						mode: secretsFileStat.mode & 0o777,
+						path: secretsFilePath,
+						stdin: spec.stdin,
+					});
 					candidatePresent = true;
+					if (options.uploadFailure) throw options.uploadFailure;
 					boundary("upload");
 					return "";
 				}
@@ -269,15 +312,15 @@ test("deployment JSON requires validated IDs and selects the latest deployment",
 	);
 });
 
-test("candidate upload stages the secret only through stdin and activation is separate", () => {
-	const upload = uploadCandidateCommand(input, state);
+test("candidate upload receives only a secrets file path and activation is separate", () => {
+	const secretsFilePath = resolve(tmpdir(), "wrangler-secrets.json");
+	const upload = uploadCandidateCommand(expected, state, secretsFilePath);
 	assert.match(commandLabel(upload), /wrangler versions upload/u);
-	assert.match(commandLabel(upload), /--secrets-file \/dev\/stdin/u);
+	assert.match(commandLabel(upload), /--secrets-file/u);
+	assert.ok(upload.args.includes(secretsFilePath));
+	assert.ok(!upload.args.includes("/dev/stdin"));
 	assert.doesNotMatch(commandLabel(upload), /new-production-status-token/u);
-	assert.equal(
-		JSON.parse(upload.stdin ?? "{}").STATUS_TOKEN,
-		input.productionStatusToken,
-	);
+	assert.equal(upload.stdin, undefined);
 	assert.doesNotMatch(commandLabel(upload), /secret put|wrangler deploy/u);
 	assert.doesNotMatch(
 		commandLabel(stageCandidateCommand(state, candidateVersionId)),
@@ -296,6 +339,28 @@ test("new rollout persists candidate, acquires zero-traffic lease, smokes, and a
 		stage: 1,
 		upload: 1,
 	});
+	assert.equal(platform.uploads.length, 1);
+	const upload = platform.uploads[0];
+	assert.ok(upload);
+	assert.equal(upload.directoryIsDirectory, true);
+	assert.equal(upload.isRegularFile, true);
+	if (process.platform !== "win32") {
+		assert.equal(upload.directoryMode, 0o700);
+		assert.equal(upload.mode, 0o600);
+	}
+	assert.match(
+		basename(upload.directoryPath),
+		/^lemn-ui-showcase-secrets-.{6}$/u,
+	);
+	assert.equal(
+		upload.content,
+		JSON.stringify({ STATUS_TOKEN: input.productionStatusToken }),
+	);
+	assert.equal(upload.stdin, undefined);
+	assert.notEqual(upload.path, "/dev/stdin");
+	assert.doesNotMatch(upload.command, /new-production-status-token/u);
+	await assert.rejects(stat(upload.path), { code: "ENOENT" });
+	assert.deepEqual(platform.cleanupPaths, [upload.directoryPath]);
 	assert.ok(
 		platform.events.indexOf(
 			`production:${input.productionStatusToken}:${candidateVersionId}`,
@@ -305,6 +370,93 @@ test("new rollout persists candidate, acquires zero-traffic lease, smokes, and a
 			),
 	);
 	assert.equal(platform.events.at(-1), "summary");
+});
+
+test("candidate secrets file is removed when upload fails", async () => {
+	const platform = fakePlatform({
+		uploadFailure: new Error("candidate upload failed"),
+	});
+	await assert.rejects(
+		runProductionRollout(input, platform.dependencies),
+		/candidate upload failed/u,
+	);
+	assert.equal(platform.uploads.length, 1);
+	const upload = platform.uploads[0];
+	assert.ok(upload);
+	await assert.rejects(stat(upload.path), { code: "ENOENT" });
+	assert.deepEqual(platform.cleanupPaths, [upload.directoryPath]);
+	assert.equal(platform.counts.rollback, 0);
+});
+
+test("candidate cleanup failure is surfaced after a successful upload", async () => {
+	const cleanupFailure = new Error("candidate temporary cleanup failed");
+	const platform = fakePlatform({ cleanupFailure });
+	await assert.rejects(
+		runProductionRollout(input, platform.dependencies),
+		(error) => error === cleanupFailure,
+	);
+	assert.equal(platform.uploads.length, 1);
+	const upload = platform.uploads[0];
+	assert.ok(upload);
+	await assert.rejects(stat(upload.path), { code: "ENOENT" });
+	assert.deepEqual(platform.cleanupPaths, [upload.directoryPath]);
+	assert.equal(platform.counts.rollback, 0);
+	assert.doesNotMatch(
+		safeErrorMessage(cleanupFailure, [
+			input.productionStatusToken,
+			input.rollbackStatusToken,
+		]),
+		/new-production-status-token|previous-production-status-token/u,
+	);
+});
+
+test("candidate upload and cleanup failures remain ordered and inspectable", async () => {
+	const uploadFailure = new Error("candidate upload failed");
+	const cleanupFailure = new Error("candidate temporary cleanup failed");
+	const platform = fakePlatform({ cleanupFailure, uploadFailure });
+	await assert.rejects(
+		runProductionRollout(input, platform.dependencies),
+		(error) => {
+			assert(error instanceof AggregateError);
+			assert.equal(error.errors.length, 2);
+			assert.equal(error.errors[0], uploadFailure);
+			assert.equal(error.errors[1], cleanupFailure);
+			assert.equal(
+				error.message,
+				"Worker candidate upload and temporary secret cleanup both failed",
+			);
+			const structuredMessages = [error.message, ...error.errors]
+				.map((value) =>
+					value instanceof Error ? value.message : String(value),
+				)
+				.join("; ");
+			assert.doesNotMatch(
+				structuredMessages,
+				/new-production-status-token|previous-production-status-token/u,
+			);
+			const safeMessage = safeErrorMessage(error, [
+				input.productionStatusToken,
+				input.rollbackStatusToken,
+			]);
+			assert.match(safeMessage, /candidate upload failed/u);
+			assert.match(safeMessage, /candidate temporary cleanup failed/u);
+			assert.doesNotMatch(
+				safeMessage,
+				/new-production-status-token|previous-production-status-token/u,
+			);
+			return true;
+		},
+	);
+	assert.equal(platform.uploads.length, 1);
+	const upload = platform.uploads[0];
+	assert.ok(upload);
+	assert.doesNotMatch(
+		upload.command,
+		/new-production-status-token|previous-production-status-token/u,
+	);
+	await assert.rejects(stat(upload.path), { code: "ENOENT" });
+	assert.deepEqual(platform.cleanupPaths, [upload.directoryPath]);
+	assert.equal(platform.counts.rollback, 0);
 });
 
 for (const boundary of [
@@ -328,6 +480,10 @@ for (const boundary of [
 		assert.equal(platform.phase, "active");
 		if (boundary === "upload") {
 			assert.equal(platform.counts.upload, countsAfterCancellation.upload);
+			const upload = platform.uploads[0];
+			assert.ok(upload);
+			await assert.rejects(stat(upload.path), { code: "ENOENT" });
+			assert.deepEqual(platform.cleanupPaths, [upload.directoryPath]);
 		}
 		if (boundary === "stage") {
 			assert.equal(platform.counts.stage, countsAfterCancellation.stage);
@@ -337,6 +493,20 @@ for (const boundary of [
 		}
 	});
 }
+
+test("a timed-out candidate upload still reaches tempfile cleanup", async () => {
+	const platform = fakePlatform({ timeoutAfter: "upload" });
+	await assert.rejects(
+		runProductionRollout(input, platform.dependencies),
+		(error) =>
+			error instanceof CommandAbortedError && error.interrupted === false,
+	);
+	assert.equal(platform.uploads.length, 1);
+	const upload = platform.uploads[0];
+	assert.ok(upload);
+	await assert.rejects(stat(upload.path), { code: "ENOENT" });
+	assert.deepEqual(platform.cleanupPaths, [upload.directoryPath]);
+});
 
 test("a timed-out staged deployment is rolled back and remains retryable", async () => {
 	const platform = fakePlatform({ timeoutAfter: "stage" });

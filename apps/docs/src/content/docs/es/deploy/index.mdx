@@ -85,9 +85,14 @@ El workflow aprobado de `main` ejecuta este orden exacto:
 2. Hace smoke de `/_status`, `/_status.json` y `/health/deep` sin token (`401`) y
    con el `STATUS_TOKEN` retenido en el repositorio (`200`). Si produccion ya fue
    rotada, reintenta con `PRODUCTION_STATUS_TOKEN`.
-3. Envia un documento JSON con el token nuevo solo por stdin a `wrangler
-   versions upload --secrets-file /dev/stdin`. La candidata inactiva incluye
-   codigo, assets, identidad, token y metadata de recovery sin cambiar trafico.
+3. Crea el documento JSON de secretos de Wrangler como fichero regular dentro
+   de un directorio temporal aleatorio con modo `0700`. El fichero se crea de
+   forma exclusiva con modo `0600` y solo su ruta se pasa a `wrangler versions
+   upload --secrets-file`. El cleanup siempre se intenta en `finally`; un fallo
+   solo de cleanup detiene el rollout, y un fallo simultaneo de upload y cleanup
+   reporta ambos con el fallo de upload primero. El token nunca aparece en
+   argumentos ni logs. La candidata inactiva incluye codigo, assets, identidad,
+   token y metadata de recovery sin cambiar trafico.
 4. Despliega baseline al 100% y candidata al 0% con una lease del release. Hace
    smoke publico/protegido de la candidata mediante
    `Cloudflare-Workers-Version-Overrides`, manteniendo trafico normal en baseline.
@@ -105,8 +110,10 @@ Los fallos normales despues de la lease ejecutan `wrangler rollback
 <captured-version-id> --yes` y verifican el baseline con el rol de token y la
 identidad guardados. Los fallos de rollback no ocultan el error original.
 `SIGTERM`/`SIGINT` terminan el child activo y un retry retoma candidata, lease o
-candidata activa. `SIGKILL` no puede limpiar; por eso el token nuevo no recibe
-trafico antes del smoke y todos los limites quedan visibles en Cloudflare.
+candidata activa. `SIGKILL` no puede ejecutar el cleanup; los datos temporales
+permanecen privados y limitados al runner hasta que este termina. El token nuevo
+no recibe trafico antes del smoke y todos los limites quedan visibles en
+Cloudflare.
 
 Conserva los cuatro repository secrets legacy hasta que el deploy aprobado sea
 estable: `CLOUDFLARE_API_KEY`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_EMAIL` y
