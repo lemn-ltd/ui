@@ -86,11 +86,13 @@ El workflow aprobado de `main` ejecuta este orden exacto:
    con el `STATUS_TOKEN` retenido en el repositorio (`200`). Si produccion ya fue
    rotada, reintenta con `PRODUCTION_STATUS_TOKEN`.
 3. Crea el documento JSON de secretos de Wrangler como fichero regular dentro
-   de un directorio temporal privado. El fichero se crea de forma exclusiva con
-   modo `0600`, solo su ruta se pasa a `wrangler versions upload --secrets-file`
-   y el directorio se elimina en `finally` tanto en exito como en fallo. El token
-   nunca aparece en argumentos ni logs. La candidata inactiva incluye codigo,
-   assets, identidad, token y metadata de recovery sin cambiar trafico.
+   de un directorio temporal aleatorio con modo `0700`. El fichero se crea de
+   forma exclusiva con modo `0600` y solo su ruta se pasa a `wrangler versions
+   upload --secrets-file`. El cleanup siempre se intenta en `finally`; un fallo
+   solo de cleanup detiene el rollout, y un fallo simultaneo de upload y cleanup
+   reporta ambos con el fallo de upload primero. El token nunca aparece en
+   argumentos ni logs. La candidata inactiva incluye codigo, assets, identidad,
+   token y metadata de recovery sin cambiar trafico.
 4. Despliega baseline al 100% y candidata al 0% con una lease del release. Hace
    smoke publico/protegido de la candidata mediante
    `Cloudflare-Workers-Version-Overrides`, manteniendo trafico normal en baseline.

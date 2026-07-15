@@ -89,12 +89,14 @@ The approved `main` workflow then performs this exact order:
    and with the retained repository `STATUS_TOKEN` (`200`). If production was
    already rotated, retry with `PRODUCTION_STATUS_TOKEN`.
 3. Build locally and create Wrangler's JSON secret document as a regular file
-   inside a private temporary directory. The file is created exclusively with
-   mode `0600`, only its path is passed to `wrangler versions upload
-   --secrets-file`, and the directory is removed in `finally` after success or
-   failure. The token is never placed in command arguments or logs. This creates
-   an inactive candidate carrying the code, assets, new token, release tag, and
-   recovery metadata; it does not change production traffic.
+   inside a random temporary directory with mode `0700`. The file is created
+   exclusively with mode `0600`, and only its path is passed to `wrangler
+   versions upload --secrets-file`. Cleanup is always attempted in `finally`;
+   cleanup-only failure stops the rollout, while simultaneous upload and cleanup
+   failures report both with the upload failure first. The token is never placed
+   in command arguments or logs. This creates an inactive candidate carrying the
+   code, assets, new token, release tag, and recovery metadata; it does not
+   change production traffic.
 4. Deploy the baseline at 100% and candidate at 0% with a release-specific lease
    message. Smoke all public/protected showcase routes against the candidate via
    `Cloudflare-Workers-Version-Overrides`; the new token and exact build identity
