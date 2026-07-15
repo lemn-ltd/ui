@@ -85,9 +85,11 @@ El workflow aprobado de `main` ejecuta este orden exacto:
 2. Hace smoke de `/_status`, `/_status.json` y `/health/deep` sin token (`401`) y
    con el `STATUS_TOKEN` retenido en el repositorio (`200`). Si produccion ya fue
    rotada, reintenta con `PRODUCTION_STATUS_TOKEN`.
-3. Envia un documento JSON con el token nuevo solo por stdin a `wrangler
-   versions upload --secrets-file /dev/stdin`. La candidata inactiva incluye
-   codigo, assets, identidad, token y metadata de recovery sin cambiar trafico.
+3. Materializa el documento JSON con el token nuevo en un archivo temporal
+   modo `0600`, fuera del repositorio, para `wrangler versions upload
+   --secrets-file`. El runner elimina el archivo tras exito, fallo, timeout o
+   interrupcion. La candidata inactiva incluye codigo, assets, identidad, token
+   y metadata de recovery sin cambiar trafico.
 4. Despliega baseline al 100% y candidata al 0% con una lease del release. Hace
    smoke publico/protegido de la candidata mediante
    `Cloudflare-Workers-Version-Overrides`, manteniendo trafico normal en baseline.

@@ -88,10 +88,12 @@ The approved `main` workflow then performs this exact order:
 2. Smoke `/_status`, `/_status.json`, and `/health/deep` without a token (`401`)
    and with the retained repository `STATUS_TOKEN` (`200`). If production was
    already rotated, retry with `PRODUCTION_STATUS_TOKEN`.
-3. Build locally and send a JSON secret document only through stdin to
-   `wrangler versions upload --secrets-file /dev/stdin`. This creates an inactive
-   candidate carrying the code, assets, new token, release tag, and recovery
-   metadata; it does not change production traffic.
+3. Build locally and materialize the JSON secret document in a mode-`0600`
+   temporary file outside the repository for `wrangler versions upload
+   --secrets-file`. The runner removes the file after success, failure, timeout,
+   or interruption. This creates an inactive candidate carrying the code,
+   assets, new token, release tag, and recovery metadata without changing
+   production traffic.
 4. Deploy the baseline at 100% and candidate at 0% with a release-specific lease
    message. Smoke all public/protected showcase routes against the candidate via
    `Cloudflare-Workers-Version-Overrides`; the new token and exact build identity

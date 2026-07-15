@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
 import test from "node:test";
 import {
 	activateCandidateCommand,
@@ -269,13 +269,17 @@ test("deployment JSON requires validated IDs and selects the latest deployment",
 	);
 });
 
-test("candidate upload stages the secret only through stdin and activation is separate", () => {
+test("candidate upload stages the secret through a secure file contract and activation is separate", () => {
 	const upload = uploadCandidateCommand(input, state);
 	assert.match(commandLabel(upload), /wrangler versions upload/u);
-	assert.match(commandLabel(upload), /--secrets-file \/dev\/stdin/u);
+	assert.match(
+		commandLabel(upload),
+		/--secrets-file \{lemn-ui-secure-secrets-file\}/u,
+	);
+	assert.doesNotMatch(commandLabel(upload), /\/dev\/stdin/u);
 	assert.doesNotMatch(commandLabel(upload), /new-production-status-token/u);
 	assert.equal(
-		JSON.parse(upload.stdin ?? "{}").STATUS_TOKEN,
+		JSON.parse(upload.secretsFile ?? "{}").STATUS_TOKEN,
 		input.productionStatusToken,
 	);
 	assert.doesNotMatch(commandLabel(upload), /secret put|wrangler deploy/u);
@@ -283,6 +287,80 @@ test("candidate upload stages the secret only through stdin and activation is se
 		commandLabel(stageCandidateCommand(state, candidateVersionId)),
 		/new-production-status-token/u,
 	);
+});
+
+test("command runner creates a 0600 secrets file and removes it after success", async () => {
+	const temporaryRoot = await mkdtemp(
+		resolve(tmpdir(), "lemn-ui-rollout-secrets-test-"),
+	);
+	try {
+		const script = resolve(temporaryRoot, "inspect-secrets-file.mjs");
+		const marker = resolve(temporaryRoot, "receipt.json");
+		await writeFile(
+			script,
+			`import { readFileSync, statSync, writeFileSync } from "node:fs";\nimport { dirname } from "node:path";\nconst [secretPath, markerPath] = process.argv.slice(2);\nconst value = JSON.parse(readFileSync(secretPath, "utf8"));\nwriteFileSync(markerPath, JSON.stringify({ secretPath, fileMode: statSync(secretPath).mode & 0o777, directoryMode: statSync(dirname(secretPath)).mode & 0o777, keys: Object.keys(value) }));\n`,
+		);
+		const upload = uploadCandidateCommand(input, state);
+		const placeholder = upload.args[upload.args.indexOf("--secrets-file") + 1];
+		assert.ok(placeholder);
+		await createCommandRunner()({
+			command: process.execPath,
+			args: [script, placeholder, marker],
+			secretsFile: upload.secretsFile,
+			timeoutMs: 5_000,
+		});
+		const receipt = JSON.parse(await readFile(marker, "utf8")) as {
+			secretPath: string;
+			fileMode: number;
+			directoryMode: number;
+			keys: string[];
+		};
+		assert.equal(receipt.fileMode, 0o600);
+		assert.equal(receipt.directoryMode, 0o700);
+		assert.deepEqual(receipt.keys, ["STATUS_TOKEN"]);
+		await assert.rejects(readFile(receipt.secretPath, "utf8"), /ENOENT/u);
+		await assert.rejects(
+			readFile(dirname(receipt.secretPath), "utf8"),
+			/ENOENT/u,
+		);
+	} finally {
+		await rm(temporaryRoot, { recursive: true, force: true });
+	}
+});
+
+test("command runner removes the secrets file after command failure without exposing its contents", async () => {
+	const temporaryRoot = await mkdtemp(
+		resolve(tmpdir(), "lemn-ui-rollout-secrets-failure-"),
+	);
+	try {
+		const script = resolve(temporaryRoot, "fail-after-secret.mjs");
+		const marker = resolve(temporaryRoot, "secret-path.txt");
+		await writeFile(
+			script,
+			`import { readFileSync, writeFileSync } from "node:fs";\nconst [secretPath, markerPath] = process.argv.slice(2);\nJSON.parse(readFileSync(secretPath, "utf8"));\nwriteFileSync(markerPath, secretPath);\nprocess.exit(7);\n`,
+		);
+		const upload = uploadCandidateCommand(input, state);
+		const placeholder = upload.args[upload.args.indexOf("--secrets-file") + 1];
+		assert.ok(placeholder);
+		await assert.rejects(
+			createCommandRunner()({
+				command: process.execPath,
+				args: [script, placeholder, marker],
+				secretsFile: upload.secretsFile,
+				timeoutMs: 5_000,
+			}),
+			(error) => {
+				assert(error instanceof Error);
+				assert.doesNotMatch(error.message, /new-production-status-token/u);
+				return true;
+			},
+		);
+		const secretPath = await readFile(marker, "utf8");
+		await assert.rejects(readFile(secretPath, "utf8"), /ENOENT/u);
+		await assert.rejects(readFile(dirname(secretPath), "utf8"), /ENOENT/u);
+	} finally {
+		await rm(temporaryRoot, { recursive: true, force: true });
+	}
 });
 
 test("new rollout persists candidate, acquires zero-traffic lease, smokes, and activates", async () => {
@@ -454,26 +532,48 @@ test("command timeouts and aborts terminate their child with SIGTERM", async () 
 		const marker = resolve(temporaryRoot, "signal.txt");
 		await writeFile(
 			script,
-			`import { writeFileSync } from "node:fs";\nprocess.once("SIGTERM", () => { writeFileSync(process.env.SIGNAL_MARKER, "SIGTERM"); process.exit(0); });\nsetInterval(() => {}, 1000);\n`,
+			`import { readFileSync, writeFileSync } from "node:fs";\nconst secretPath = process.argv[2];\nif (secretPath) { JSON.parse(readFileSync(secretPath, "utf8")); writeFileSync(process.env.SECRET_PATH_MARKER, secretPath); }\nprocess.once("SIGTERM", () => { writeFileSync(process.env.SIGNAL_MARKER, "SIGTERM"); process.exit(0); });\nsetInterval(() => {}, 1000);\n`,
+		);
+		const upload = uploadCandidateCommand(input, state);
+		const placeholder = upload.args[upload.args.indexOf("--secrets-file") + 1];
+		assert.ok(placeholder);
+		const timeoutSecretMarker = resolve(
+			temporaryRoot,
+			"timeout-secret-path.txt",
 		);
 		await assert.rejects(
 			createCommandRunner()({
 				command: process.execPath,
-				args: [script],
-				environment: { SIGNAL_MARKER: marker },
+				args: [script, placeholder],
+				environment: {
+					SIGNAL_MARKER: marker,
+					SECRET_PATH_MARKER: timeoutSecretMarker,
+				},
+				secretsFile: upload.secretsFile,
 				timeoutMs: 300,
 			}),
 			(error) =>
 				error instanceof CommandAbortedError && error.interrupted === false,
 		);
 		assert.equal(await readFile(marker, "utf8"), "SIGTERM");
+		const timeoutSecretPath = await readFile(timeoutSecretMarker, "utf8");
+		await assert.rejects(readFile(timeoutSecretPath, "utf8"), /ENOENT/u);
+		await assert.rejects(
+			readFile(dirname(timeoutSecretPath), "utf8"),
+			/ENOENT/u,
+		);
 
 		const abortMarker = resolve(temporaryRoot, "abort-signal.txt");
+		const abortSecretMarker = resolve(temporaryRoot, "abort-secret-path.txt");
 		const controller = new AbortController();
 		const command = createCommandRunner(controller.signal)({
 			command: process.execPath,
-			args: [script],
-			environment: { SIGNAL_MARKER: abortMarker },
+			args: [script, placeholder],
+			environment: {
+				SIGNAL_MARKER: abortMarker,
+				SECRET_PATH_MARKER: abortSecretMarker,
+			},
+			secretsFile: upload.secretsFile,
 			timeoutMs: 5_000,
 		});
 		setTimeout(() => controller.abort(), 300);
@@ -483,6 +583,9 @@ test("command timeouts and aborts terminate their child with SIGTERM", async () 
 				error instanceof CommandAbortedError && error.interrupted === true,
 		);
 		assert.equal(await readFile(abortMarker, "utf8"), "SIGTERM");
+		const abortSecretPath = await readFile(abortSecretMarker, "utf8");
+		await assert.rejects(readFile(abortSecretPath, "utf8"), /ENOENT/u);
+		await assert.rejects(readFile(dirname(abortSecretPath), "utf8"), /ENOENT/u);
 	} finally {
 		await rm(temporaryRoot, { recursive: true, force: true });
 	}

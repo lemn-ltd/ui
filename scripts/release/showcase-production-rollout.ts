@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 import { type ChildProcess, spawn } from "node:child_process";
-import { appendFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { appendFile, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 import {
 	type BuildIdentity,
 	smokeProductionDeployment,
@@ -14,6 +15,7 @@ const versionIdPattern =
 const releaseShaPattern = /^[0-9a-f]{40}$/u;
 const candidateMessagePrefix = "lemn-ui-candidate/v1:";
 const rollbackMessage = "Lemn UI automated rollback";
+const secureSecretsFilePlaceholder = "{lemn-ui-secure-secrets-file}";
 
 type BaselineTokenRole = "production" | "rollback";
 
@@ -22,7 +24,7 @@ export interface CommandSpec {
 	readonly args: readonly string[];
 	readonly captureOutput?: boolean;
 	readonly environment?: Readonly<Record<string, string>>;
-	readonly stdin?: string;
+	readonly secretsFile?: string;
 	readonly timeoutMs?: number;
 	readonly recovery?: boolean;
 }
@@ -309,9 +311,9 @@ export function uploadCandidateCommand(
 			"--message",
 			encodeCandidateState(state),
 			"--secrets-file",
-			"/dev/stdin",
+			secureSecretsFilePlaceholder,
 		],
-		stdin: JSON.stringify({ STATUS_TOKEN: input.productionStatusToken }),
+		secretsFile: JSON.stringify({ STATUS_TOKEN: input.productionStatusToken }),
 		timeoutMs: 10 * 60_000,
 	};
 }
@@ -562,75 +564,139 @@ function terminateChild(child: ChildProcess, signal: NodeJS.Signals): void {
 }
 
 export function createCommandRunner(signal?: AbortSignal) {
-	return async (spec: CommandSpec): Promise<string> =>
-		new Promise((resolveCommand, rejectCommand) => {
-			const child = spawn(spec.command, [...spec.args], {
-				cwd: root,
-				env: { ...process.env, ...spec.environment },
-				stdio: [
-					spec.stdin === undefined ? "ignore" : "pipe",
-					spec.captureOutput ? "pipe" : "inherit",
-					"inherit",
-				],
-				detached: process.platform !== "win32",
-			});
-			const output: Buffer[] = [];
-			let abortError: CommandAbortedError | undefined;
-			let settled = false;
-			let forceTimer: NodeJS.Timeout | undefined;
-
-			const abort = (message: string, interrupted: boolean) => {
-				if (abortError) return;
-				abortError = new CommandAbortedError(message, interrupted);
-				terminateChild(child, "SIGTERM");
-				forceTimer = setTimeout(() => terminateChild(child, "SIGKILL"), 5_000);
-				forceTimer.unref();
-			};
-			const timeout = setTimeout(
-				() => abort(`${spec.command} ${spec.args.join(" ")} timed out`, false),
-				spec.timeoutMs ?? 5 * 60_000,
-			);
-			timeout.unref();
-			const onAbort = () =>
-				abort(`${spec.command} ${spec.args.join(" ")} was interrupted`, true);
-			if (!spec.recovery) {
-				if (signal?.aborted) onAbort();
-				else signal?.addEventListener("abort", onAbort, { once: true });
-			}
-
-			if (spec.captureOutput) {
-				child.stdout?.on("data", (chunk: Buffer) => output.push(chunk));
-			}
-			child.once("error", (error) => {
-				if (settled) return;
-				settled = true;
-				clearTimeout(timeout);
-				if (forceTimer) clearTimeout(forceTimer);
-				signal?.removeEventListener("abort", onAbort);
-				rejectCommand(abortError ?? error);
-			});
-			child.once("exit", (code, childSignal) => {
-				if (settled) return;
-				settled = true;
-				clearTimeout(timeout);
-				if (forceTimer) clearTimeout(forceTimer);
-				signal?.removeEventListener("abort", onAbort);
-				if (abortError) {
-					rejectCommand(abortError);
-					return;
+	return async (spec: CommandSpec): Promise<string> => {
+		const prepared = await prepareCommand(spec);
+		let commandFailed = false;
+		let commandError: unknown;
+		try {
+			return await runPreparedCommand(spec, prepared.args, signal);
+		} catch (error) {
+			commandFailed = true;
+			commandError = error;
+			throw error;
+		} finally {
+			try {
+				await prepared.cleanup();
+			} catch (cleanupError) {
+				if (commandFailed) {
+					throw new AggregateError(
+						[commandError, cleanupError],
+						"Command failed and its temporary secrets file could not be removed",
+					);
 				}
-				if (code === 0) {
-					resolveCommand(Buffer.concat(output).toString("utf8"));
-					return;
-				}
-				rejectCommand(
-					new Error(
-						`${spec.command} ${spec.args.join(" ")} failed with ${childSignal ? `signal ${childSignal}` : `exit ${String(code)}`}`,
-					),
-				);
-			});
-			if (spec.stdin !== undefined) child.stdin?.end(spec.stdin);
+				throw cleanupError;
+			}
+		}
+	};
+}
+
+async function prepareCommand(spec: CommandSpec): Promise<{
+	readonly args: readonly string[];
+	readonly cleanup: () => Promise<void>;
+}> {
+	const placeholderCount = spec.args.filter(
+		(value) => value === secureSecretsFilePlaceholder,
+	).length;
+	if (spec.secretsFile === undefined) {
+		if (placeholderCount !== 0) {
+			throw new Error("Command is missing secure secrets-file content");
+		}
+		return { args: spec.args, cleanup: async () => undefined };
+	}
+	if (placeholderCount !== 1) {
+		throw new Error(
+			"Command secrets-file content requires exactly one secure placeholder",
+		);
+	}
+
+	const directory = await mkdtemp(join(tmpdir(), "lemn-ui-wrangler-secrets-"));
+	const path = join(directory, "secrets.json");
+	try {
+		await writeFile(path, spec.secretsFile, {
+			encoding: "utf8",
+			flag: "wx",
+			mode: 0o600,
 		});
+	} catch (error) {
+		await rm(directory, { recursive: true, force: true });
+		throw error;
+	}
+	return {
+		args: spec.args.map((value) =>
+			value === secureSecretsFilePlaceholder ? path : value,
+		),
+		cleanup: () => rm(directory, { recursive: true, force: true }),
+	};
+}
+
+function runPreparedCommand(
+	spec: CommandSpec,
+	args: readonly string[],
+	signal?: AbortSignal,
+): Promise<string> {
+	return new Promise((resolveCommand, rejectCommand) => {
+		const child = spawn(spec.command, [...args], {
+			cwd: root,
+			env: { ...process.env, ...spec.environment },
+			stdio: ["ignore", spec.captureOutput ? "pipe" : "inherit", "inherit"],
+			detached: process.platform !== "win32",
+		});
+		const output: Buffer[] = [];
+		let abortError: CommandAbortedError | undefined;
+		let settled = false;
+		let forceTimer: NodeJS.Timeout | undefined;
+
+		const abort = (message: string, interrupted: boolean) => {
+			if (abortError) return;
+			abortError = new CommandAbortedError(message, interrupted);
+			terminateChild(child, "SIGTERM");
+			forceTimer = setTimeout(() => terminateChild(child, "SIGKILL"), 5_000);
+			forceTimer.unref();
+		};
+		const timeout = setTimeout(
+			() => abort(`${spec.command} ${args.join(" ")} timed out`, false),
+			spec.timeoutMs ?? 5 * 60_000,
+		);
+		timeout.unref();
+		const onAbort = () =>
+			abort(`${spec.command} ${args.join(" ")} was interrupted`, true);
+		if (!spec.recovery) {
+			if (signal?.aborted) onAbort();
+			else signal?.addEventListener("abort", onAbort, { once: true });
+		}
+
+		if (spec.captureOutput) {
+			child.stdout?.on("data", (chunk: Buffer) => output.push(chunk));
+		}
+		child.once("error", (error) => {
+			if (settled) return;
+			settled = true;
+			clearTimeout(timeout);
+			if (forceTimer) clearTimeout(forceTimer);
+			signal?.removeEventListener("abort", onAbort);
+			rejectCommand(abortError ?? error);
+		});
+		child.once("exit", (code, childSignal) => {
+			if (settled) return;
+			settled = true;
+			clearTimeout(timeout);
+			if (forceTimer) clearTimeout(forceTimer);
+			signal?.removeEventListener("abort", onAbort);
+			if (abortError) {
+				rejectCommand(abortError);
+				return;
+			}
+			if (code === 0) {
+				resolveCommand(Buffer.concat(output).toString("utf8"));
+				return;
+			}
+			rejectCommand(
+				new Error(
+					`${spec.command} ${args.join(" ")} failed with ${childSignal ? `signal ${childSignal}` : `exit ${String(code)}`}`,
+				),
+			);
+		});
+	});
 }
 
 async function writeGitHubSummary(expected: BuildIdentity): Promise<void> {
