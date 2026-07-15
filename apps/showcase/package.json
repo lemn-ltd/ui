@@ -22,6 +22,9 @@
 		"deploy:production": "pnpm --dir ../.. deploy:showcase:prod"
 	},
 	"dependencies": {
+		"@lemn-ltd/brand-contract": "workspace:0.1.0",
+		"@lemn-ltd/brand-studio": "workspace:0.1.0",
+		"@lemn-ltd/provider-registry": "workspace:0.1.0",
 		"@lemn-ltd/showcase-kit": "workspace:*",
 		"@lemn-ltd/ui": "workspace:*",
 		"react": "catalog:",

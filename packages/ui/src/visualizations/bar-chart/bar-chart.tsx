@@ -180,7 +180,7 @@ export function BarChart<TDatum extends ChartDatum>({
 					{showGrid ? (
 						<CartesianGrid
 							horizontal={!horizontal}
-							stroke="var(--chart-grid)"
+							stroke="var(--lemn-chart-grid)"
 							strokeDasharray="3 3"
 							vertical={horizontal}
 						/>
@@ -192,7 +192,7 @@ export function BarChart<TDatum extends ChartDatum>({
 								axisLine={false}
 								domain={valueDomain}
 								hide={xAxisOptions.show === false}
-								stroke="var(--chart-axis)"
+								stroke="var(--lemn-chart-axis)"
 								tickFormatter={
 									percent ? percentFormatter : yAxisOptions.valueFormatter
 								}
@@ -211,7 +211,7 @@ export function BarChart<TDatum extends ChartDatum>({
 								hide={yAxisOptions.show === false}
 								interval={chartXAxisInterval(xAxisOptions.interval)}
 								minTickGap={xAxisOptions.tickGap ?? 5}
-								stroke="var(--chart-axis)"
+								stroke="var(--lemn-chart-axis)"
 								tickLine={false}
 								type="category"
 								width={yAxisOptions.width ?? 88}
@@ -231,7 +231,7 @@ export function BarChart<TDatum extends ChartDatum>({
 								hide={xAxisOptions.show === false}
 								interval={chartXAxisInterval(xAxisOptions.interval)}
 								minTickGap={xAxisOptions.tickGap ?? 5}
-								stroke="var(--chart-axis)"
+								stroke="var(--lemn-chart-axis)"
 								tickLine={false}
 								ticks={startEndTicks}
 								type="category"
@@ -247,7 +247,7 @@ export function BarChart<TDatum extends ChartDatum>({
 								axisLine={false}
 								domain={valueDomain}
 								hide={yAxisOptions.show === false}
-								stroke="var(--chart-axis)"
+								stroke="var(--lemn-chart-axis)"
 								tickFormatter={
 									percent ? percentFormatter : yAxisOptions.valueFormatter
 								}
@@ -274,7 +274,7 @@ export function BarChart<TDatum extends ChartDatum>({
 								series={series}
 							/>
 						)}
-						cursor={{ fill: "var(--chart-cursor)" }}
+						cursor={{ fill: "var(--lemn-chart-cursor)" }}
 						isAnimationActive={animationActive}
 					/>
 					{series.map((item, seriesIndex) => {
@@ -312,7 +312,7 @@ export function BarChart<TDatum extends ChartDatum>({
 							>
 								{labelsVisible ? (
 									<LabelList
-										fill="var(--text-muted)"
+										fill="var(--lemn-color-text-muted)"
 										formatter={(label) => {
 											const value = numericValue(label);
 											return value === undefined

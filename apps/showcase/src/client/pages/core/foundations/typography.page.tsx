@@ -14,44 +14,44 @@ const SCALE: Specimen[] = [
     label: 'display',
     size: 28,
     ratio: 1.29,
-    style: { fontSize: 'var(--font-size-display)', lineHeight: 'var(--line-height-display)' },
+    style: { fontSize: 'var(--lemn-font-size-display)', lineHeight: 'var(--lemn-line-height-display)' },
   },
   {
     label: 'title',
     size: 20,
     ratio: 1.4,
-    style: { fontSize: 'var(--font-size-title)', lineHeight: 'var(--line-height-title)' },
+    style: { fontSize: 'var(--lemn-font-size-title)', lineHeight: 'var(--lemn-line-height-title)' },
   },
   {
     label: 'heading',
     size: 16,
     ratio: 1.5,
-    style: { fontSize: 'var(--font-size-heading)', lineHeight: 'var(--line-height-heading)' },
+    style: { fontSize: 'var(--lemn-font-size-heading)', lineHeight: 'var(--lemn-line-height-heading)' },
   },
   {
     label: 'body',
     size: 14,
     ratio: 1.43,
-    style: { fontSize: 'var(--font-size-body)', lineHeight: 'var(--line-height-body)' },
+    style: { fontSize: 'var(--lemn-font-size-body)', lineHeight: 'var(--lemn-line-height-body)' },
   },
   {
     label: 'small',
     size: 13,
     ratio: 1.38,
-    style: { fontSize: 'var(--font-size-small)', lineHeight: 'var(--line-height-small)' },
+    style: { fontSize: 'var(--lemn-font-size-small)', lineHeight: 'var(--lemn-line-height-small)' },
   },
   {
     label: 'caption',
     size: 12,
     ratio: 1.33,
-    style: { fontSize: 'var(--font-size-caption)', lineHeight: 'var(--line-height-caption)' },
+    style: { fontSize: 'var(--lemn-font-size-caption)', lineHeight: 'var(--lemn-line-height-caption)' },
   },
 ];
 
 const WEIGHTS = [
-  { label: 'regular', weight: 'var(--font-weight-regular)' },
-  { label: 'medium', weight: 'var(--font-weight-medium)' },
-  { label: 'semibold', weight: 'var(--font-weight-semibold)' },
+  { label: 'regular', weight: 'var(--lemn-font-weight-regular)' },
+  { label: 'medium', weight: 'var(--lemn-font-weight-medium)' },
+  { label: 'semibold', weight: 'var(--lemn-font-weight-semibold)' },
 ];
 
 function TypographyPage(): ReactElement {
@@ -75,7 +75,7 @@ function TypographyPage(): ReactElement {
           {WEIGHTS.map((weight) => (
             <div className="showcase-type-row" key={weight.label}>
               <span className="showcase-type-meta">{weight.label}</span>
-              <span style={{ fontSize: 'var(--font-size-heading)', fontWeight: weight.weight }}>
+              <span style={{ fontSize: 'var(--lemn-font-size-heading)', fontWeight: weight.weight }}>
                 The quick brown fox
               </span>
             </div>
@@ -87,9 +87,9 @@ function TypographyPage(): ReactElement {
             <span className="showcase-type-meta">mono · 13 / 1.54</span>
             <span
               style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: 'var(--font-size-mono)',
-                lineHeight: 'var(--line-height-mono)',
+                fontFamily: 'var(--lemn-font-code)',
+                fontSize: 'var(--lemn-font-size-mono)',
+                lineHeight: 'var(--lemn-line-height-mono)',
               }}
             >
               const tokens = mirror(design);

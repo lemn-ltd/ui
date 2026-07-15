@@ -9,6 +9,9 @@ const BarListPage = lazy(() => import('../../pages/core/components/bar-list.page
 const CategoryBarPage = lazy(() => import('../../pages/core/components/category-bar.page.js'));
 const DonutChartPage = lazy(() => import('../../pages/core/components/donut-chart.page.js'));
 const LineChartPage = lazy(() => import('../../pages/core/components/line-chart.page.js'));
+const HeatmapChartPage = lazy(
+  () => import('../../pages/core/components/heatmap-chart.page.js'),
+);
 const ProgressCirclePage = lazy(
   () => import('../../pages/core/components/progress-circle.page.js'),
 );
@@ -23,6 +26,7 @@ export const visualizationEntries: ShowcaseEntry[] = [
   componentEntry('category-bar', () => <CategoryBarPage />),
   componentEntry('donut-chart', () => <DonutChartPage />),
   componentEntry('line-chart', () => <LineChartPage />),
+  componentEntry('heatmap-chart', () => <HeatmapChartPage />),
   componentEntry('progress-circle', () => <ProgressCirclePage />),
   componentEntry('spark-chart', () => <SparkChartPage />),
   componentEntry('tracker', () => <TrackerPage />),

@@ -1,0 +1,2904 @@
+{
+  "$schema": "https://schemas.ui.le-mn.com/provider-registry/capability-migration-matrix/v1.json",
+  "schemaVersion": 1,
+  "matrixId": "lemn-ui-provider-first-cutover",
+  "catalogCount": 131,
+  "targetPackage": "@lemn-ltd/ui",
+  "targetPackageVersion": "0.3.0",
+  "capabilities": [
+    {
+      "catalogSlug": "button",
+      "capabilityId": "ui.core.button",
+      "finalCapabilityId": "ui.core.button",
+      "finalPublicExports": [
+        "Button"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Button remains a LEMN-owned primitives capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Button as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/primitives/button/tests/button.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "icon-button",
+      "capabilityId": "ui.core.icon-button",
+      "finalCapabilityId": "ui.core.icon-button",
+      "finalPublicExports": [
+        "IconButton"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Icon button remains a LEMN-owned primitives capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain IconButton as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/primitives/icon-button/tests/icon-button.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "scroll-to-bottom-button",
+      "capabilityId": "ui.core.scroll-to-bottom-button",
+      "finalCapabilityId": "ui.core.scroll-to-bottom-button",
+      "finalPublicExports": [
+        "ScrollToBottomButton"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Scroll to bottom button remains a LEMN-owned primitives capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain ScrollToBottomButton as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/primitives/scroll-to-bottom-button/tests/scroll-to-bottom-button.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "input",
+      "capabilityId": "ui.core.input",
+      "finalCapabilityId": "ui.core.input",
+      "finalPublicExports": [
+        "Input"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Input remains a LEMN-owned inputs capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Input as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/primitives/input/tests/input.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "textarea",
+      "capabilityId": "ui.core.textarea",
+      "finalCapabilityId": "ui.core.textarea",
+      "finalPublicExports": [
+        "Textarea"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Textarea remains a LEMN-owned inputs capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Textarea as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/primitives/textarea/tests/textarea.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "select",
+      "capabilityId": "ui.core.select",
+      "finalCapabilityId": "ui.core.select",
+      "finalPublicExports": [
+        "InputSelect"
+      ],
+      "disposition": "keep-provider-backed",
+      "provider": {
+        "implementationId": "radix-ui.select@1.4.3",
+        "id": "radix-ui",
+        "name": "Radix UI",
+        "repository": "https://github.com/radix-ui/primitives",
+        "ingestionMode": "runtime_dependency",
+        "packageName": "radix-ui",
+        "packageVersion": "1.4.3",
+        "packageIntegrity": "sha512-aWizCQiyeAenIdUbqEpXgRA1ya65P13NKn/W8rWkcN0OPkRDxdBVLWnIEDsS2RpwCK2nobI7oMUSmexzTDyAmA=="
+      },
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain InputSelect behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/primitives/input-select/tests/input-select.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "search",
+      "capabilityId": "ui.core.search",
+      "finalCapabilityId": "ui.core.search",
+      "finalPublicExports": [
+        "InputSearch"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Search remains a LEMN-owned inputs capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain InputSearch as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/primitives/input-search/tests/input-search.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "checkbox",
+      "capabilityId": "ui.primitive.checkbox",
+      "finalCapabilityId": "ui.primitive.checkbox",
+      "finalPublicExports": [
+        "Checkbox"
+      ],
+      "disposition": "keep-provider-backed",
+      "provider": {
+        "implementationId": "radix-ui.checkbox@1.4.3",
+        "id": "radix-ui",
+        "name": "Radix UI",
+        "repository": "https://github.com/radix-ui/primitives",
+        "ingestionMode": "runtime_dependency",
+        "packageName": "radix-ui",
+        "packageVersion": "1.4.3",
+        "packageIntegrity": "sha512-aWizCQiyeAenIdUbqEpXgRA1ya65P13NKn/W8rWkcN0OPkRDxdBVLWnIEDsS2RpwCK2nobI7oMUSmexzTDyAmA=="
+      },
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Checkbox behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/primitives/checkbox/tests/checkbox.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "radio",
+      "capabilityId": "ui.core.radio",
+      "finalCapabilityId": "ui.core.radio",
+      "finalPublicExports": [
+        "RadioGroup",
+        "RadioGroupItem"
+      ],
+      "disposition": "keep-provider-backed",
+      "provider": {
+        "implementationId": "radix-ui.radio@1.4.3",
+        "id": "radix-ui",
+        "name": "Radix UI",
+        "repository": "https://github.com/radix-ui/primitives",
+        "ingestionMode": "runtime_dependency",
+        "packageName": "radix-ui",
+        "packageVersion": "1.4.3",
+        "packageIntegrity": "sha512-aWizCQiyeAenIdUbqEpXgRA1ya65P13NKn/W8rWkcN0OPkRDxdBVLWnIEDsS2RpwCK2nobI7oMUSmexzTDyAmA=="
+      },
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain RadioGroup, RadioGroupItem behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/primitives/radio/tests/radio.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "toggle",
+      "capabilityId": "ui.core.toggle",
+      "finalCapabilityId": "ui.core.toggle",
+      "finalPublicExports": [
+        "Toggle"
+      ],
+      "disposition": "keep-provider-backed",
+      "provider": {
+        "implementationId": "radix-ui.toggle@1.4.3",
+        "id": "radix-ui",
+        "name": "Radix UI",
+        "repository": "https://github.com/radix-ui/primitives",
+        "ingestionMode": "runtime_dependency",
+        "packageName": "radix-ui",
+        "packageVersion": "1.4.3",
+        "packageIntegrity": "sha512-aWizCQiyeAenIdUbqEpXgRA1ya65P13NKn/W8rWkcN0OPkRDxdBVLWnIEDsS2RpwCK2nobI7oMUSmexzTDyAmA=="
+      },
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Toggle behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/primitives/toggle/tests/toggle.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "badge",
+      "capabilityId": "ui.core.badge",
+      "finalCapabilityId": "ui.core.badge",
+      "finalPublicExports": [
+        "Badge"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Badge remains a LEMN-owned primitives capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Badge as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/primitives/badge/tests/badge.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "tag",
+      "capabilityId": "ui.core.tag",
+      "finalCapabilityId": "ui.core.tag",
+      "finalPublicExports": [
+        "Tag"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Tag remains a LEMN-owned primitives capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Tag as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/primitives/tag/tests/tag.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "avatar",
+      "capabilityId": "ui.core.avatar",
+      "finalCapabilityId": "ui.core.avatar",
+      "finalPublicExports": [
+        "Avatar"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Avatar remains a LEMN-owned primitives capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Avatar as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/primitives/avatar/tests/avatar.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "kbd",
+      "capabilityId": "ui.core.kbd",
+      "finalCapabilityId": "ui.core.kbd",
+      "finalPublicExports": [
+        "Kbd"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Kbd remains a LEMN-owned primitives capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Kbd as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/primitives/kbd/tests/kbd.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "meter",
+      "capabilityId": "ui.core.meter",
+      "finalCapabilityId": "ui.core.meter",
+      "finalPublicExports": [
+        "Meter"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Meter remains a LEMN-owned visualizations capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Meter as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "filter-pill",
+      "capabilityId": "ui.core.filter-pill",
+      "finalCapabilityId": "ui.core.filter-pill",
+      "finalPublicExports": [
+        "FilterPill"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Filter pill remains a LEMN-owned primitives capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain FilterPill as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/primitives/filter-pill/tests/filter-pill.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "scope-pill",
+      "capabilityId": "ui.core.scope-pill",
+      "finalCapabilityId": "ui.core.scope-pill",
+      "finalPublicExports": [
+        "ScopePill"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Scope pill remains a LEMN-owned primitives capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain ScopePill as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/primitives/scope-pill/tests/scope-pill.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "field",
+      "capabilityId": "ui.core.field",
+      "finalCapabilityId": "ui.core.field",
+      "finalPublicExports": [
+        "Field"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Field remains a LEMN-owned forms capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Field as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/forms/field/tests/field.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "calendar",
+      "capabilityId": "ui.core.calendar",
+      "finalCapabilityId": "ui.core.calendar",
+      "finalPublicExports": [
+        "Calendar"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Calendar remains a LEMN-owned inputs capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Calendar as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/forms/calendar/tests/calendar.spec.tsx",
+        "packages/ui/src/forms/calendar/tests/date-helpers.spec.ts",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "inline-edit",
+      "capabilityId": "ui.core.inline-edit",
+      "finalCapabilityId": "ui.core.inline-edit",
+      "finalPublicExports": [
+        "InlineEdit"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Inline edit remains a LEMN-owned forms capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain InlineEdit as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/forms/inline-edit/tests/inline-edit.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "segmented-control",
+      "capabilityId": "ui.core.segmented-control",
+      "finalCapabilityId": "ui.core.segmented-control",
+      "finalPublicExports": [
+        "SegmentedControl"
+      ],
+      "disposition": "keep-provider-backed",
+      "provider": {
+        "implementationId": "radix-ui.segmented-control@1.4.3",
+        "id": "radix-ui",
+        "name": "Radix UI",
+        "repository": "https://github.com/radix-ui/primitives",
+        "ingestionMode": "runtime_dependency",
+        "packageName": "radix-ui",
+        "packageVersion": "1.4.3",
+        "packageIntegrity": "sha512-aWizCQiyeAenIdUbqEpXgRA1ya65P13NKn/W8rWkcN0OPkRDxdBVLWnIEDsS2RpwCK2nobI7oMUSmexzTDyAmA=="
+      },
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain SegmentedControl behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/forms/segmented-control/tests/segmented-control.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "combobox",
+      "capabilityId": "ui.core.combobox",
+      "finalCapabilityId": "ui.core.combobox",
+      "finalPublicExports": [
+        "Combobox"
+      ],
+      "disposition": "keep-provider-backed",
+      "provider": {
+        "implementationId": "cmdk.combobox@1.1.1",
+        "id": "cmdk",
+        "name": "cmdk",
+        "repository": "https://github.com/pacocoursey/cmdk",
+        "ingestionMode": "runtime_dependency",
+        "packageName": "cmdk",
+        "packageVersion": "1.1.1",
+        "packageIntegrity": "sha512-Vsv7kFaXm+ptHDMZ7izaRsP70GgrW9NBNGswt9OZaVBLlE0SNpDq8eu/VGXyF9r7M0azK3Wy7OlYXsuyYLFzHg=="
+      },
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Combobox behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/forms/combobox/tests/combobox.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "accordion",
+      "capabilityId": "ui.core.accordion",
+      "finalCapabilityId": "ui.core.accordion",
+      "finalPublicExports": [
+        "Accordion"
+      ],
+      "disposition": "keep-provider-backed",
+      "provider": {
+        "implementationId": "radix-ui.accordion@1.4.3",
+        "id": "radix-ui",
+        "name": "Radix UI",
+        "repository": "https://github.com/radix-ui/primitives",
+        "ingestionMode": "runtime_dependency",
+        "packageName": "radix-ui",
+        "packageVersion": "1.4.3",
+        "packageIntegrity": "sha512-aWizCQiyeAenIdUbqEpXgRA1ya65P13NKn/W8rWkcN0OPkRDxdBVLWnIEDsS2RpwCK2nobI7oMUSmexzTDyAmA=="
+      },
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Accordion behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/forms/accordion/tests/accordion.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "selection-list",
+      "capabilityId": "ui.core.selection-list",
+      "finalCapabilityId": "ui.core.selection-list",
+      "finalPublicExports": [
+        "SelectionList"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "SelectionList remains a LEMN-owned inputs capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain SelectionList as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/forms/selection-list/tests/selection-list.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "composer",
+      "capabilityId": "ui.core.composer",
+      "finalCapabilityId": "ui.core.composer",
+      "finalPublicExports": [
+        "Composer"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Composer remains a LEMN-owned forms capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Composer as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/forms/composer/tests/composer.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "key-value-editor",
+      "capabilityId": "ui.core.key-value-editor",
+      "finalCapabilityId": "ui.core.key-value-editor",
+      "finalPublicExports": [
+        "KeyValueEditor"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Key-value editor remains a LEMN-owned forms capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain KeyValueEditor as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/forms/key-value-editor/tests/key-value-editor.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "json-code-editor",
+      "capabilityId": "ui.core.json-code-editor",
+      "finalCapabilityId": "ui.core.json-code-editor",
+      "finalPublicExports": [
+        "JsonCodeEditor"
+      ],
+      "disposition": "keep-provider-backed",
+      "provider": {
+        "implementationId": "uiw-react-codemirror.json-code-editor@4.25.10",
+        "id": "uiw-react-codemirror",
+        "name": "UIW React CodeMirror",
+        "repository": "https://github.com/uiwjs/react-codemirror",
+        "ingestionMode": "runtime_dependency",
+        "packageName": "@uiw/react-codemirror",
+        "packageVersion": "4.25.10",
+        "packageIntegrity": "sha512-DzgSMwM5qzB7v1FIb4gEeriYt67iiay756/HIOM9mAbeOVK0MO7rqefHf0O5c0269pJKMW7AH9FjclExD23V9w=="
+      },
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain JsonCodeEditor behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/forms/json-code-editor/tests/json-code-editor.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "file-dropzone",
+      "capabilityId": "ui.core.file-dropzone",
+      "finalCapabilityId": "ui.core.file-dropzone",
+      "finalPublicExports": [
+        "FileDropzone"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "File dropzone remains a LEMN-owned forms capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain FileDropzone as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/forms/file-dropzone/tests/file-dropzone.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "file-bundle-editor",
+      "capabilityId": "ui.core.file-bundle-editor",
+      "finalCapabilityId": "ui.core.file-bundle-editor",
+      "finalPublicExports": [
+        "FileBundleEditor"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "File bundle editor remains a LEMN-owned forms capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain FileBundleEditor as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/forms/file-bundle-editor/tests/file-bundle-editor.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "markdown-editor",
+      "capabilityId": "ui.core.markdown-editor",
+      "finalCapabilityId": "ui.core.markdown-editor",
+      "finalPublicExports": [
+        "MarkdownEditor"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Markdown editor remains a LEMN-owned forms capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain MarkdownEditor as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/forms/markdown-editor/tests/markdown-editor.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "agent-activity-line",
+      "capabilityId": "ui.agents.agent-activity-line",
+      "finalCapabilityId": "ui.agents.agent-activity-line",
+      "finalPublicExports": [
+        "AgentActivityLine"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Agent activity line remains a LEMN-owned conversation capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain AgentActivityLine as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/agents/agent-activity-line/tests/agent-activity-line.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "agent-message-bubble",
+      "capabilityId": "ui.agents.agent-message-bubble",
+      "finalCapabilityId": "ui.agents.agent-message-bubble",
+      "finalPublicExports": [
+        "AgentMessageBubble"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Agent message bubble remains a LEMN-owned conversation capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain AgentMessageBubble as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/agents/agent-message-bubble/tests/agent-message-bubble.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "agent-reasoning-block",
+      "capabilityId": "ui.agents.agent-reasoning-block",
+      "finalCapabilityId": "ui.agents.agent-reasoning-block",
+      "finalPublicExports": [
+        "AgentReasoningBlock"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Agent reasoning block remains a LEMN-owned conversation capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain AgentReasoningBlock as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/agents/agent-reasoning-block/tests/agent-reasoning-block.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "agent-text-block",
+      "capabilityId": "ui.agents.agent-text-block",
+      "finalCapabilityId": "ui.agents.agent-text-block",
+      "finalPublicExports": [
+        "AgentTextBlock"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Agent text block remains a LEMN-owned conversation capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain AgentTextBlock as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/agents/agent-text-block/tests/agent-text-block.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "user-message-bubble",
+      "capabilityId": "ui.agents.user-message-bubble",
+      "finalCapabilityId": "ui.agents.user-message-bubble",
+      "finalPublicExports": [
+        "UserMessageBubble"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "User message bubble remains a LEMN-owned conversation capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain UserMessageBubble as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/agents/user-message-bubble/tests/user-message-bubble.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "agent-status-badge",
+      "capabilityId": "ui.agents.agent-status-badge",
+      "finalCapabilityId": "ui.agents.agent-status-badge",
+      "finalPublicExports": [
+        "AgentStatusBadge"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Agent status badge remains a LEMN-owned runtime & evidence capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain AgentStatusBadge as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/agents/agent-status-badge/tests/agent-status-badge.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "capability-chip",
+      "capabilityId": "ui.agents.capability-chip",
+      "finalCapabilityId": "ui.agents.capability-chip",
+      "finalPublicExports": [
+        "CapabilityChip"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Capability chip remains a LEMN-owned governance capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain CapabilityChip as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "capability-constraints-editor",
+      "capabilityId": "ui.agents.capability-constraints-editor",
+      "finalCapabilityId": "ui.agents.capability-constraints-editor",
+      "finalPublicExports": [
+        "CapabilityConstraintsEditor"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Capability constraints editor remains a LEMN-owned governance capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain CapabilityConstraintsEditor as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "principal-picker",
+      "capabilityId": "ui.agents.principal-picker",
+      "finalCapabilityId": "ui.agents.principal-picker",
+      "finalPublicExports": [
+        "PrincipalPicker"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Principal picker remains a LEMN-owned governance capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain PrincipalPicker as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "approval-card",
+      "capabilityId": "ui.agents.approval-card",
+      "finalCapabilityId": "ui.agents.approval-card",
+      "finalPublicExports": [
+        "ApprovalCard"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Approval card remains a LEMN-owned approvals capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain ApprovalCard as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "approvals-inbox",
+      "capabilityId": "ui.agents.approvals-inbox",
+      "finalCapabilityId": "ui.agents.approvals-inbox",
+      "finalPublicExports": [
+        "ApprovalsInbox"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Approvals inbox remains a LEMN-owned approvals capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain ApprovalsInbox as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "capability-matrix",
+      "capabilityId": "ui.agents.capability-matrix",
+      "finalCapabilityId": "ui.agents.capability-matrix",
+      "finalPublicExports": [
+        "CapabilityMatrix"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Capability matrix remains a LEMN-owned governance capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain CapabilityMatrix as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "classification-matrix",
+      "capabilityId": "ui.agents.classification-matrix",
+      "finalCapabilityId": "ui.agents.classification-matrix",
+      "finalPublicExports": [
+        "ClassificationMatrix"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Classification matrix remains a LEMN-owned governance capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain ClassificationMatrix as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "effective-surface-viewer",
+      "capabilityId": "ui.agents.effective-surface-viewer",
+      "finalCapabilityId": "ui.agents.effective-surface-viewer",
+      "finalPublicExports": [
+        "EffectiveSurfaceViewer"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Effective surface viewer remains a LEMN-owned governance capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain EffectiveSurfaceViewer as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "agent-tool-call-list",
+      "capabilityId": "ui.agents.agent-tool-call-list",
+      "finalCapabilityId": "ui.agents.agent-tool-call-list",
+      "finalPublicExports": [
+        "AgentToolCallList"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Agent tool call list remains a LEMN-owned conversation capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain AgentToolCallList as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/agents/agent-tool-call-list/tests/agent-tool-call-card.spec.tsx",
+        "packages/ui/src/agents/agent-tool-call-list/tests/agent-tool-call-list.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "execution-map",
+      "capabilityId": "ui.agent.execution-map",
+      "finalCapabilityId": "ui.agent.execution-map",
+      "finalPublicExports": [
+        "ExecutionMap"
+      ],
+      "disposition": "keep-provider-backed",
+      "provider": {
+        "implementationId": "xyflow-react.execution-map@12.11.0",
+        "id": "xyflow-react",
+        "name": "XYFlow React",
+        "repository": "https://github.com/xyflow/xyflow",
+        "ingestionMode": "runtime_dependency",
+        "packageName": "@xyflow/react",
+        "packageVersion": "12.11.0",
+        "packageIntegrity": "sha512-na4IO33FSs2OS72hASgZDmTYwFAkef7Z74uBUVrong3ARmQQHfnRUVaCFn1kTt5LbS6pK03TbYjCPGLjLFfziA=="
+      },
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain ExecutionMap behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "dialog",
+      "capabilityId": "ui.core.dialog",
+      "finalCapabilityId": "ui.core.dialog",
+      "finalPublicExports": [
+        "Dialog"
+      ],
+      "disposition": "keep-provider-backed",
+      "provider": {
+        "implementationId": "radix-ui.dialog@1.4.3",
+        "id": "radix-ui",
+        "name": "Radix UI",
+        "repository": "https://github.com/radix-ui/primitives",
+        "ingestionMode": "runtime_dependency",
+        "packageName": "radix-ui",
+        "packageVersion": "1.4.3",
+        "packageIntegrity": "sha512-aWizCQiyeAenIdUbqEpXgRA1ya65P13NKn/W8rWkcN0OPkRDxdBVLWnIEDsS2RpwCK2nobI7oMUSmexzTDyAmA=="
+      },
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Dialog behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/overlays/dialog/tests/dialog.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "drawer",
+      "capabilityId": "ui.core.drawer",
+      "finalCapabilityId": "ui.core.drawer",
+      "finalPublicExports": [
+        "Drawer"
+      ],
+      "disposition": "keep-provider-backed",
+      "provider": {
+        "implementationId": "radix-ui.drawer@1.4.3",
+        "id": "radix-ui",
+        "name": "Radix UI",
+        "repository": "https://github.com/radix-ui/primitives",
+        "ingestionMode": "runtime_dependency",
+        "packageName": "radix-ui",
+        "packageVersion": "1.4.3",
+        "packageIntegrity": "sha512-aWizCQiyeAenIdUbqEpXgRA1ya65P13NKn/W8rWkcN0OPkRDxdBVLWnIEDsS2RpwCK2nobI7oMUSmexzTDyAmA=="
+      },
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Drawer behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/overlays/drawer/tests/drawer.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "markdown-viewer",
+      "capabilityId": "ui.core.markdown-viewer",
+      "finalCapabilityId": "ui.core.markdown-viewer",
+      "finalPublicExports": [
+        "MarkdownViewer"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Markdown viewer remains a LEMN-owned overlays capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain MarkdownViewer as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/overlays/markdown-viewer/tests/markdown-viewer.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "confirm-dialog",
+      "capabilityId": "ui.core.confirm-dialog",
+      "finalCapabilityId": "ui.core.confirm-dialog",
+      "finalPublicExports": [
+        "ConfirmDialog"
+      ],
+      "disposition": "keep-provider-backed",
+      "provider": {
+        "implementationId": "radix-ui.confirm-dialog@1.4.3",
+        "id": "radix-ui",
+        "name": "Radix UI",
+        "repository": "https://github.com/radix-ui/primitives",
+        "ingestionMode": "runtime_dependency",
+        "packageName": "radix-ui",
+        "packageVersion": "1.4.3",
+        "packageIntegrity": "sha512-aWizCQiyeAenIdUbqEpXgRA1ya65P13NKn/W8rWkcN0OPkRDxdBVLWnIEDsS2RpwCK2nobI7oMUSmexzTDyAmA=="
+      },
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain ConfirmDialog behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/overlays/confirm-dialog/tests/confirm-dialog.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "form-dialog",
+      "capabilityId": "ui.core.form-dialog",
+      "finalCapabilityId": "ui.core.form-dialog",
+      "finalPublicExports": [
+        "FormDialog"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Form dialog remains a LEMN-owned overlays capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain FormDialog as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/overlays/form-dialog/tests/form-dialog.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "menu",
+      "capabilityId": "ui.core.menu",
+      "finalCapabilityId": "ui.core.menu",
+      "finalPublicExports": [
+        "Menu"
+      ],
+      "disposition": "keep-provider-backed",
+      "provider": {
+        "implementationId": "radix-ui.menu@1.4.3",
+        "id": "radix-ui",
+        "name": "Radix UI",
+        "repository": "https://github.com/radix-ui/primitives",
+        "ingestionMode": "runtime_dependency",
+        "packageName": "radix-ui",
+        "packageVersion": "1.4.3",
+        "packageIntegrity": "sha512-aWizCQiyeAenIdUbqEpXgRA1ya65P13NKn/W8rWkcN0OPkRDxdBVLWnIEDsS2RpwCK2nobI7oMUSmexzTDyAmA=="
+      },
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Menu behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/overlays/menu/tests/menu.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "popover",
+      "capabilityId": "ui.core.popover",
+      "finalCapabilityId": "ui.core.popover",
+      "finalPublicExports": [
+        "Popover"
+      ],
+      "disposition": "keep-provider-backed",
+      "provider": {
+        "implementationId": "radix-ui.popover@1.4.3",
+        "id": "radix-ui",
+        "name": "Radix UI",
+        "repository": "https://github.com/radix-ui/primitives",
+        "ingestionMode": "runtime_dependency",
+        "packageName": "radix-ui",
+        "packageVersion": "1.4.3",
+        "packageIntegrity": "sha512-aWizCQiyeAenIdUbqEpXgRA1ya65P13NKn/W8rWkcN0OPkRDxdBVLWnIEDsS2RpwCK2nobI7oMUSmexzTDyAmA=="
+      },
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Popover behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/overlays/popover/tests/popover.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "tooltip",
+      "capabilityId": "ui.core.tooltip",
+      "finalCapabilityId": "ui.core.tooltip",
+      "finalPublicExports": [
+        "Tooltip"
+      ],
+      "disposition": "keep-provider-backed",
+      "provider": {
+        "implementationId": "radix-ui.tooltip@1.4.3",
+        "id": "radix-ui",
+        "name": "Radix UI",
+        "repository": "https://github.com/radix-ui/primitives",
+        "ingestionMode": "runtime_dependency",
+        "packageName": "radix-ui",
+        "packageVersion": "1.4.3",
+        "packageIntegrity": "sha512-aWizCQiyeAenIdUbqEpXgRA1ya65P13NKn/W8rWkcN0OPkRDxdBVLWnIEDsS2RpwCK2nobI7oMUSmexzTDyAmA=="
+      },
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Tooltip behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/overlays/tooltip/tests/tooltip.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "hint-icon",
+      "capabilityId": "ui.core.hint-icon",
+      "finalCapabilityId": "ui.core.hint-icon",
+      "finalPublicExports": [
+        "HintIcon"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Hint icon remains a LEMN-owned overlays capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain HintIcon as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/overlays/hint-icon/tests/hint-icon.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "command-palette",
+      "capabilityId": "ui.overlay.command-palette",
+      "finalCapabilityId": "ui.overlay.command-palette",
+      "finalPublicExports": [
+        "CommandPalette"
+      ],
+      "disposition": "keep-provider-backed",
+      "provider": {
+        "implementationId": "cmdk.command-palette@1.1.1",
+        "id": "cmdk",
+        "name": "cmdk",
+        "repository": "https://github.com/pacocoursey/cmdk",
+        "ingestionMode": "runtime_dependency",
+        "packageName": "cmdk",
+        "packageVersion": "1.1.1",
+        "packageIntegrity": "sha512-Vsv7kFaXm+ptHDMZ7izaRsP70GgrW9NBNGswt9OZaVBLlE0SNpDq8eu/VGXyF9r7M0azK3Wy7OlYXsuyYLFzHg=="
+      },
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain CommandPalette behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/overlays/command-palette/tests/command-palette.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "sidebar",
+      "capabilityId": "ui.core.sidebar",
+      "finalCapabilityId": "ui.core.sidebar",
+      "finalPublicExports": [
+        "Sidebar"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Sidebar remains a LEMN-owned navigation capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Sidebar as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/navigation/sidebar/tests/sidebar-tree.spec.tsx",
+        "packages/ui/src/navigation/sidebar/tests/sidebar-user-row.spec.tsx",
+        "packages/ui/src/navigation/sidebar/tests/sidebar.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "top-bar",
+      "capabilityId": "ui.core.top-bar",
+      "finalCapabilityId": "ui.core.top-bar",
+      "finalPublicExports": [
+        "TopBar"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Top bar remains a LEMN-owned navigation capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain TopBar as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/navigation/top-bar/tests/top-bar.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "entity-toolbar",
+      "capabilityId": "ui.core.entity-toolbar",
+      "finalCapabilityId": "ui.core.entity-toolbar",
+      "finalPublicExports": [
+        "EntityToolbar"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Entity toolbar remains a LEMN-owned navigation capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain EntityToolbar as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/navigation/entity-toolbar/tests/entity-toolbar.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "breadcrumb",
+      "capabilityId": "ui.core.breadcrumb",
+      "finalCapabilityId": "ui.core.breadcrumb",
+      "finalPublicExports": [
+        "Breadcrumb"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Breadcrumb remains a LEMN-owned navigation capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Breadcrumb as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/navigation/breadcrumb/tests/breadcrumb.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "tabs",
+      "capabilityId": "ui.core.tabs",
+      "finalCapabilityId": "ui.core.tabs",
+      "finalPublicExports": [
+        "Tabs"
+      ],
+      "disposition": "keep-provider-backed",
+      "provider": {
+        "implementationId": "radix-ui.tabs@1.4.3",
+        "id": "radix-ui",
+        "name": "Radix UI",
+        "repository": "https://github.com/radix-ui/primitives",
+        "ingestionMode": "runtime_dependency",
+        "packageName": "radix-ui",
+        "packageVersion": "1.4.3",
+        "packageIntegrity": "sha512-aWizCQiyeAenIdUbqEpXgRA1ya65P13NKn/W8rWkcN0OPkRDxdBVLWnIEDsS2RpwCK2nobI7oMUSmexzTDyAmA=="
+      },
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Tabs behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/navigation/tabs/tests/tabs.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "stepper",
+      "capabilityId": "ui.core.stepper",
+      "finalCapabilityId": "ui.core.stepper",
+      "finalPublicExports": [
+        "Stepper"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Stepper remains a LEMN-owned navigation capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Stepper as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/navigation/stepper/tests/stepper.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "org-switcher",
+      "capabilityId": "ui.core.org-switcher",
+      "finalCapabilityId": "ui.core.org-switcher",
+      "finalPublicExports": [
+        "OrgSwitcher"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Org switcher remains a LEMN-owned navigation capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain OrgSwitcher as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/navigation/org-switcher/tests/org-switcher.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "pagination",
+      "capabilityId": "ui.core.pagination",
+      "finalCapabilityId": "ui.core.pagination",
+      "finalPublicExports": [
+        "Pagination"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Pagination remains a LEMN-owned navigation capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Pagination as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/navigation/pagination/tests/pagination.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "dock-panel",
+      "capabilityId": "ui.core.dock-panel",
+      "finalCapabilityId": "ui.core.dock-panel",
+      "finalPublicExports": [
+        "DockPanel"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Dock panel remains a LEMN-owned navigation capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain DockPanel as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/navigation/dock-panel/tests/dock-panel.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "card",
+      "capabilityId": "ui.core.card",
+      "finalCapabilityId": "ui.core.card",
+      "finalPublicExports": [
+        "Card"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Card remains a LEMN-owned data display capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Card as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/data-display/card/tests/card.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "settings-row",
+      "capabilityId": "ui.core.settings-row",
+      "finalCapabilityId": "ui.core.settings-row",
+      "finalPublicExports": [
+        "SettingsRow"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Settings row remains a LEMN-owned data display capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain SettingsRow as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/data-display/settings-row/tests/settings-row.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "description-list",
+      "capabilityId": "ui.core.description-list",
+      "finalCapabilityId": "ui.core.description-list",
+      "finalPublicExports": [
+        "DescriptionList"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Description list remains a LEMN-owned data display capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain DescriptionList as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/data-display/description-list/tests/description-list.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "data-table",
+      "capabilityId": "ui.core.data-table",
+      "finalCapabilityId": "ui.core.data-table",
+      "finalPublicExports": [
+        "DataTable"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Data table remains a LEMN-owned data display capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain DataTable as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/data-display/data-table/tests/data-table.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "stat-card",
+      "capabilityId": "ui.core.stat-card",
+      "finalCapabilityId": "ui.core.stat-card",
+      "finalPublicExports": [
+        "StatCard"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Stat card remains a LEMN-owned data display capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain StatCard as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/data-display/stat-card/tests/stat-card.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "stats-strip",
+      "capabilityId": "ui.core.stats-strip",
+      "finalCapabilityId": "ui.core.stats-strip",
+      "finalPublicExports": [
+        "StatsStrip"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Stats strip remains a LEMN-owned data display capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain StatsStrip as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/data-display/stats-strip/tests/stats-strip.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "code-block",
+      "capabilityId": "ui.core.code-block",
+      "finalCapabilityId": "ui.core.code-block",
+      "finalPublicExports": [
+        "CodeBlock"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Code block remains a LEMN-owned data display capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain CodeBlock as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/data-display/code-block/tests/code-block.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "syntax-code-block",
+      "capabilityId": "ui.core.syntax-code-block",
+      "finalCapabilityId": "ui.core.syntax-code-block",
+      "finalPublicExports": [
+        "SyntaxCodeBlock"
+      ],
+      "disposition": "keep-provider-backed",
+      "provider": {
+        "implementationId": "shiki.syntax-code-block@4.2.0",
+        "id": "shiki",
+        "name": "Shiki",
+        "repository": "https://github.com/shikijs/shiki",
+        "ingestionMode": "runtime_dependency",
+        "packageName": "shiki",
+        "packageVersion": "4.2.0",
+        "packageIntegrity": "sha512-hjNax6o/ylDy9lefQEaSDtzaT3iVNtZ3WmpQnbuQNoG4xvnSKf2kSKbihZVO4JRG1TTMejs7CmNRYlWgAL66pQ=="
+      },
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain SyntaxCodeBlock behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/data-display/syntax-code-block/tests/syntax-code-block.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "json-viewer",
+      "capabilityId": "ui.core.json-viewer",
+      "finalCapabilityId": "ui.core.json-viewer",
+      "finalPublicExports": [
+        "JsonViewer"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "JSON viewer remains a LEMN-owned data display capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain JsonViewer as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/data-display/json-viewer/tests/json-viewer.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "markdown",
+      "capabilityId": "ui.core.markdown",
+      "finalCapabilityId": "ui.core.markdown",
+      "finalPublicExports": [
+        "Markdown"
+      ],
+      "disposition": "keep-provider-backed",
+      "provider": {
+        "implementationId": "react-markdown.markdown@10.1.0",
+        "id": "react-markdown",
+        "name": "react-markdown",
+        "repository": "https://github.com/remarkjs/react-markdown",
+        "ingestionMode": "runtime_dependency",
+        "packageName": "react-markdown",
+        "packageVersion": "10.1.0",
+        "packageIntegrity": "sha512-qKxVopLT/TyA6BX3Ue5NwabOsAzm0Q7kAPwq6L+wWDwisYs7R8vZ0nRXqq6rkueboxpkjvLGU9fWifiX/ZZFxQ=="
+      },
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Markdown behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/data-display/markdown/tests/markdown.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "sparkline",
+      "capabilityId": "ui.core.sparkline",
+      "finalCapabilityId": "ui.core.sparkline",
+      "finalPublicExports": [
+        "Sparkline"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Sparkline remains a LEMN-owned visualizations capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Sparkline as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/data-display/sparkline/tests/sparkline.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "relative-time",
+      "capabilityId": "ui.core.relative-time",
+      "finalCapabilityId": "ui.core.relative-time",
+      "finalPublicExports": [
+        "RelativeTime"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Relative time remains a LEMN-owned data display capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain RelativeTime as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/data-display/relative-time/tests/relative-time.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "list-shell",
+      "capabilityId": "ui.core.list-shell",
+      "finalCapabilityId": "ui.core.list-shell",
+      "finalPublicExports": [
+        "ListShell"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "List shell remains a LEMN-owned data display capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain ListShell as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/data-display/list-shell/tests/list-shell.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "list-filters-bar",
+      "capabilityId": "ui.core.list-filters-bar",
+      "finalCapabilityId": "ui.core.list-filters-bar",
+      "finalPublicExports": [
+        "ListFiltersBar"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "List filters bar remains a LEMN-owned data display capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain ListFiltersBar as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/data-display/list-filters-bar/tests/list-filters-bar.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "filter",
+      "capabilityId": "ui.core.filter",
+      "finalCapabilityId": "ui.core.filter",
+      "finalPublicExports": [
+        "Filter"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Filter remains a LEMN-owned data display capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Filter as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/data-display/filter/tests/filter.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "filter-chip",
+      "capabilityId": "ui.core.filter-chip",
+      "finalCapabilityId": "ui.core.filter-chip",
+      "finalPublicExports": [
+        "FilterChip"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Filter chip remains a LEMN-owned data display capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain FilterChip as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/data-display/filter-chip/tests/filter-chip.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "empty-state",
+      "capabilityId": "ui.core.empty-state",
+      "finalCapabilityId": "ui.core.empty-state",
+      "finalPublicExports": [
+        "EmptyState"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Empty state remains a LEMN-owned data display capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain EmptyState as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/data-display/empty-state/tests/empty-state.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "recent-chips",
+      "capabilityId": "ui.core.recent-chips",
+      "finalCapabilityId": "ui.core.recent-chips",
+      "finalPublicExports": [
+        "RecentChips"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Recent chips remains a LEMN-owned data display capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain RecentChips as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/data-display/recent-chips/tests/recent-chips.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "preset-selector",
+      "capabilityId": "ui.core.preset-selector",
+      "finalCapabilityId": "ui.core.preset-selector",
+      "finalPublicExports": [
+        "PresetSelector"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Preset selector remains a LEMN-owned data display capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain PresetSelector as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/data-display/preset-selector/tests/preset-selector.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "toast",
+      "capabilityId": "ui.core.toast",
+      "finalCapabilityId": "ui.core.toast",
+      "finalPublicExports": [
+        "Toast"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Toast remains a LEMN-owned feedback capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Toast as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/feedback/toast/tests/toast.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "toaster",
+      "capabilityId": "ui.feedback.toaster",
+      "finalCapabilityId": "ui.feedback.toaster",
+      "finalPublicExports": [
+        "Toaster"
+      ],
+      "disposition": "keep-provider-backed",
+      "provider": {
+        "implementationId": "sonner.toaster@2.0.7",
+        "id": "sonner",
+        "name": "Sonner",
+        "repository": "https://github.com/emilkowalski/sonner",
+        "ingestionMode": "runtime_dependency",
+        "packageName": "sonner",
+        "packageVersion": "2.0.7",
+        "packageIntegrity": "sha512-W6ZN4p58k8aDKA4XPcx2hpIQXBRAgyiWVkYhT7CvK6D3iAu7xjvVyhQHg2/iaKJZ1XVJ4r7XuwGL+WGEK37i9w=="
+      },
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Toaster behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/feedback/toaster/tests/toaster.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "info-banner",
+      "capabilityId": "ui.core.info-banner",
+      "finalCapabilityId": "ui.core.info-banner",
+      "finalPublicExports": [
+        "InfoBanner"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Info banner remains a LEMN-owned feedback capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain InfoBanner as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/feedback/info-banner/tests/info-banner.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "system-bar",
+      "capabilityId": "ui.core.system-bar",
+      "finalCapabilityId": "ui.core.system-bar",
+      "finalPublicExports": [
+        "SystemBar"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "System bar remains a LEMN-owned feedback capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain SystemBar as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/feedback/system-bar/tests/system-bar.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "skeleton",
+      "capabilityId": "ui.core.skeleton",
+      "finalCapabilityId": "ui.core.skeleton",
+      "finalPublicExports": [
+        "Skeleton"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Skeleton remains a LEMN-owned feedback capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Skeleton as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/feedback/skeleton/tests/skeleton.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "spinner",
+      "capabilityId": "ui.core.spinner",
+      "finalCapabilityId": "ui.core.spinner",
+      "finalPublicExports": [
+        "Spinner"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Spinner remains a LEMN-owned feedback capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Spinner as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/feedback/spinner/tests/spinner.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "progress-bar",
+      "capabilityId": "ui.core.progress-bar",
+      "finalCapabilityId": "ui.core.progress-bar",
+      "finalPublicExports": [
+        "ProgressBar"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Progress bar remains a LEMN-owned visualizations capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain ProgressBar as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/feedback/progress-bar/tests/progress-bar.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "screen-shell",
+      "capabilityId": "ui.core.screen-shell",
+      "finalCapabilityId": "ui.core.screen-shell",
+      "finalPublicExports": [
+        "ScreenShell"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Screen shell remains a LEMN-owned layout capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain ScreenShell as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/layout/screen-shell/tests/screen-shell.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "content-layout",
+      "capabilityId": "ui.core.content-layout",
+      "finalCapabilityId": "ui.core.content-layout",
+      "finalPublicExports": [
+        "ContentLayout"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Content layout remains a LEMN-owned layout capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain ContentLayout as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/layout/content-layout/tests/content-layout.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "page-section",
+      "capabilityId": "ui.core.page-section",
+      "finalCapabilityId": "ui.core.page-section",
+      "finalPublicExports": [
+        "PageSection"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Page section remains a LEMN-owned layout capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain PageSection as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/layout/page-section/tests/page-section.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "section-grid",
+      "capabilityId": "ui.core.section-grid",
+      "finalCapabilityId": "ui.core.section-grid",
+      "finalPublicExports": [
+        "SectionGrid"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Section grid remains a LEMN-owned layout capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain SectionGrid as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/layout/section-grid/tests/section-grid.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "two-column",
+      "capabilityId": "ui.core.two-column",
+      "finalCapabilityId": "ui.core.two-column",
+      "finalPublicExports": [
+        "TwoColumn"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Two column remains a LEMN-owned layout capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain TwoColumn as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/layout/two-column/tests/two-column.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "settings-shell",
+      "capabilityId": "ui.core.settings-shell",
+      "finalCapabilityId": "ui.core.settings-shell",
+      "finalPublicExports": [
+        "SettingsShell"
+      ],
+      "disposition": "keep-provider-backed",
+      "provider": {
+        "implementationId": "radix-ui.settings-shell@1.4.3",
+        "id": "radix-ui",
+        "name": "Radix UI",
+        "repository": "https://github.com/radix-ui/primitives",
+        "ingestionMode": "runtime_dependency",
+        "packageName": "radix-ui",
+        "packageVersion": "1.4.3",
+        "packageIntegrity": "sha512-aWizCQiyeAenIdUbqEpXgRA1ya65P13NKn/W8rWkcN0OPkRDxdBVLWnIEDsS2RpwCK2nobI7oMUSmexzTDyAmA=="
+      },
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain SettingsShell behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/layout/settings-shell/tests/settings-shell.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "sign-in-screen",
+      "capabilityId": "ui.core.sign-in-screen",
+      "finalCapabilityId": "ui.core.sign-in-screen",
+      "finalPublicExports": [
+        "SignInScreen"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Sign-in screen remains a LEMN-owned layout capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain SignInScreen as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "version-tag",
+      "capabilityId": "ui.core.version-tag",
+      "finalCapabilityId": "ui.core.version-tag",
+      "finalPublicExports": [
+        "VersionTag"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Version tag remains a LEMN-owned layout capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain VersionTag as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/navigation/version-tag/tests/version-tag.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "automation-status-badge",
+      "capabilityId": "ui.agents.automation-status-badge",
+      "finalCapabilityId": "ui.agents.automation-status-badge",
+      "finalPublicExports": [
+        "AutomationStatusBadge"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Automation status badge remains a LEMN-owned runtime & evidence capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain AutomationStatusBadge as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/agents/automation-status-badge/tests/automation-status-badge.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "trigger-tile",
+      "capabilityId": "ui.agents.trigger-tile",
+      "finalCapabilityId": "ui.agents.trigger-tile",
+      "finalPublicExports": [
+        "TriggerTile"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Trigger tile remains a LEMN-owned automation capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain TriggerTile as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/agents/trigger-tile/tests/trigger-tile.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "schedule-editor",
+      "capabilityId": "ui.agents.schedule-editor",
+      "finalCapabilityId": "ui.agents.schedule-editor",
+      "finalPublicExports": [
+        "ScheduleEditor"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Schedule editor remains a LEMN-owned automation capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain ScheduleEditor as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/agents/schedule-editor/tests/schedule-editor.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "trigger-composer",
+      "capabilityId": "ui.agents.trigger-composer",
+      "finalCapabilityId": "ui.agents.trigger-composer",
+      "finalPublicExports": [
+        "TriggerComposer"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Trigger composer remains a LEMN-owned automation capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain TriggerComposer as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/agents/trigger-composer/tests/trigger-composer.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "automation-graph",
+      "capabilityId": "ui.agents.automation-graph",
+      "finalCapabilityId": "ui.agents.automation-graph",
+      "finalPublicExports": [
+        "GraphCanvas"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Automation graph remains a LEMN-owned automation capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain GraphCanvas as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/agents/graph-canvas/tests/graph-canvas.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "node-inspector",
+      "capabilityId": "ui.agents.node-inspector",
+      "finalCapabilityId": "ui.agents.node-inspector",
+      "finalPublicExports": [
+        "NodeInspector"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Node inspector remains a LEMN-owned automation capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain NodeInspector as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/agents/node-inspector/tests/node-inspector.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "run-timeline",
+      "capabilityId": "ui.agents.run-timeline",
+      "finalCapabilityId": "ui.agents.run-timeline",
+      "finalPublicExports": [
+        "RunTimeline"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Run timeline remains a LEMN-owned runtime & evidence capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain RunTimeline as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/agents/run-timeline/tests/run-timeline.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "wait-retry-chip",
+      "capabilityId": "ui.agents.wait-retry-chip",
+      "finalCapabilityId": "ui.agents.wait-retry-chip",
+      "finalPublicExports": [
+        "WaitChip",
+        "RetryChip"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Wait & retry chips remains a LEMN-owned runtime & evidence capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain WaitChip, RetryChip as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/agents/retry-chip/tests/retry-chip.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "approval-panel",
+      "capabilityId": "ui.agents.approval-panel",
+      "finalCapabilityId": "ui.agents.approval-panel",
+      "finalPublicExports": [
+        "ApprovalPanel"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Approval panel remains a LEMN-owned approvals capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain ApprovalPanel as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/agents/approval-panel/tests/approval-panel.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "planner-status",
+      "capabilityId": "ui.agents.planner-status",
+      "finalCapabilityId": "ui.agents.planner-status",
+      "finalPublicExports": [
+        "PlannerStatus"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Planner status remains a LEMN-owned runtime & evidence capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain PlannerStatus as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/agents/planner-status/tests/planner-status.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "proposal-preview",
+      "capabilityId": "ui.agents.proposal-preview",
+      "finalCapabilityId": "ui.agents.proposal-preview",
+      "finalPublicExports": [
+        "ProposalPreview"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Proposal preview remains a LEMN-owned automation capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain ProposalPreview as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/agents/proposal-preview/tests/proposal-preview.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "node-attempts-table",
+      "capabilityId": "ui.agents.node-attempts-table",
+      "finalCapabilityId": "ui.agents.node-attempts-table",
+      "finalPublicExports": [
+        "NodeAttemptsTable"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Node attempts table remains a LEMN-owned runtime & evidence capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain NodeAttemptsTable as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/agents/node-attempts-table/tests/node-attempts-table.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "runtime-refs-panel",
+      "capabilityId": "ui.agents.runtime-refs-panel",
+      "finalCapabilityId": "ui.agents.runtime-refs-panel",
+      "finalPublicExports": [
+        "RuntimeRefsPanel"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Runtime refs panel remains a LEMN-owned runtime & evidence capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain RuntimeRefsPanel as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/agents/runtime-refs-panel/tests/runtime-refs-panel.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "area-chart",
+      "capabilityId": "ui.core.area-chart",
+      "finalCapabilityId": "ui.core.area-chart",
+      "finalPublicExports": [
+        "AreaChart"
+      ],
+      "disposition": "keep-provider-backed",
+      "provider": {
+        "implementationId": "recharts.area-chart@3.9.2",
+        "id": "recharts",
+        "name": "Recharts",
+        "repository": "https://github.com/recharts/recharts",
+        "ingestionMode": "runtime_dependency",
+        "packageName": "recharts",
+        "packageVersion": "3.9.2",
+        "packageIntegrity": "sha512-G4fy+Pk46RaXgwWMh+Nzhyo/lbFAVqXo9gtetlyehe6Ehge9CsgDuOTwQDD+i1+llaLktNBiNq4bhnGlDRXFtw=="
+      },
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain AreaChart behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/visualizations/area-chart/tests/area-chart.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "bar-chart",
+      "capabilityId": "ui.core.bar-chart",
+      "finalCapabilityId": "ui.core.bar-chart",
+      "finalPublicExports": [
+        "BarChart"
+      ],
+      "disposition": "keep-provider-backed",
+      "provider": {
+        "implementationId": "recharts.bar-chart@3.9.2",
+        "id": "recharts",
+        "name": "Recharts",
+        "repository": "https://github.com/recharts/recharts",
+        "ingestionMode": "runtime_dependency",
+        "packageName": "recharts",
+        "packageVersion": "3.9.2",
+        "packageIntegrity": "sha512-G4fy+Pk46RaXgwWMh+Nzhyo/lbFAVqXo9gtetlyehe6Ehge9CsgDuOTwQDD+i1+llaLktNBiNq4bhnGlDRXFtw=="
+      },
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain BarChart behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/visualizations/bar-chart/tests/bar-chart.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "combo-chart",
+      "capabilityId": "ui.core.combo-chart",
+      "finalCapabilityId": "ui.core.combo-chart",
+      "finalPublicExports": [
+        "ComboChart"
+      ],
+      "disposition": "keep-provider-backed",
+      "provider": {
+        "implementationId": "recharts.combo-chart@3.9.2",
+        "id": "recharts",
+        "name": "Recharts",
+        "repository": "https://github.com/recharts/recharts",
+        "ingestionMode": "runtime_dependency",
+        "packageName": "recharts",
+        "packageVersion": "3.9.2",
+        "packageIntegrity": "sha512-G4fy+Pk46RaXgwWMh+Nzhyo/lbFAVqXo9gtetlyehe6Ehge9CsgDuOTwQDD+i1+llaLktNBiNq4bhnGlDRXFtw=="
+      },
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain ComboChart behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/visualizations/combo-chart/tests/combo-chart.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "bar-list",
+      "capabilityId": "ui.core.bar-list",
+      "finalCapabilityId": "ui.core.bar-list",
+      "finalPublicExports": [
+        "BarList"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Bar list remains a LEMN-owned visualizations capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain BarList as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/visualizations/bar-list/tests/bar-list.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "category-bar",
+      "capabilityId": "ui.core.category-bar",
+      "finalCapabilityId": "ui.core.category-bar",
+      "finalPublicExports": [
+        "CategoryBar"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Category bar remains a LEMN-owned visualizations capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain CategoryBar as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/visualizations/category-bar/tests/category-bar.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "donut-chart",
+      "capabilityId": "ui.core.donut-chart",
+      "finalCapabilityId": "ui.core.donut-chart",
+      "finalPublicExports": [
+        "DonutChart"
+      ],
+      "disposition": "keep-provider-backed",
+      "provider": {
+        "implementationId": "recharts.donut-chart@3.9.2",
+        "id": "recharts",
+        "name": "Recharts",
+        "repository": "https://github.com/recharts/recharts",
+        "ingestionMode": "runtime_dependency",
+        "packageName": "recharts",
+        "packageVersion": "3.9.2",
+        "packageIntegrity": "sha512-G4fy+Pk46RaXgwWMh+Nzhyo/lbFAVqXo9gtetlyehe6Ehge9CsgDuOTwQDD+i1+llaLktNBiNq4bhnGlDRXFtw=="
+      },
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain DonutChart behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/visualizations/donut-chart/tests/donut-chart.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "heatmap-chart",
+      "capabilityId": "ui.visualization.heatmap-chart",
+      "finalCapabilityId": "ui.visualization.heatmap-chart",
+      "finalPublicExports": [
+        "HeatmapChart"
+      ],
+      "disposition": "keep-provider-backed",
+      "provider": {
+        "implementationId": "apache-echarts.heatmap-chart@6.1.0",
+        "id": "apache-echarts",
+        "name": "Apache ECharts",
+        "repository": "https://github.com/apache/echarts",
+        "ingestionMode": "runtime_dependency",
+        "packageName": "echarts",
+        "packageVersion": "6.1.0",
+        "packageIntegrity": "sha512-q0yaFPggC9FUdsWH4blavRWFmxdrIodbkoKNAjJudAI6CA9gNPxHtV2RcZNEepZVlk4yvBYkOkbk6HIVpIyHZA=="
+      },
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain HeatmapChart behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/visualizations/heatmap-chart/tests/heatmap-chart.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "line-chart",
+      "capabilityId": "ui.visualization.line-chart",
+      "finalCapabilityId": "ui.visualization.line-chart",
+      "finalPublicExports": [
+        "LineChart"
+      ],
+      "disposition": "keep-provider-backed",
+      "provider": {
+        "implementationId": "recharts.line-chart@3.9.2",
+        "id": "recharts",
+        "name": "Recharts",
+        "repository": "https://github.com/recharts/recharts",
+        "ingestionMode": "runtime_dependency",
+        "packageName": "recharts",
+        "packageVersion": "3.9.2",
+        "packageIntegrity": "sha512-G4fy+Pk46RaXgwWMh+Nzhyo/lbFAVqXo9gtetlyehe6Ehge9CsgDuOTwQDD+i1+llaLktNBiNq4bhnGlDRXFtw=="
+      },
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain LineChart behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/visualizations/line-chart/tests/line-chart.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "progress-circle",
+      "capabilityId": "ui.core.progress-circle",
+      "finalCapabilityId": "ui.core.progress-circle",
+      "finalPublicExports": [
+        "ProgressCircle"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Progress circle remains a LEMN-owned visualizations capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain ProgressCircle as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/visualizations/progress-circle/tests/progress-circle.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "spark-chart",
+      "capabilityId": "ui.core.spark-chart",
+      "finalCapabilityId": "ui.core.spark-chart",
+      "finalPublicExports": [
+        "SparkChart"
+      ],
+      "disposition": "keep-provider-backed",
+      "provider": {
+        "implementationId": "recharts.spark-chart@3.9.2",
+        "id": "recharts",
+        "name": "Recharts",
+        "repository": "https://github.com/recharts/recharts",
+        "ingestionMode": "runtime_dependency",
+        "packageName": "recharts",
+        "packageVersion": "3.9.2",
+        "packageIntegrity": "sha512-G4fy+Pk46RaXgwWMh+Nzhyo/lbFAVqXo9gtetlyehe6Ehge9CsgDuOTwQDD+i1+llaLktNBiNq4bhnGlDRXFtw=="
+      },
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain SparkChart behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/visualizations/spark-chart/tests/spark-chart.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "tracker",
+      "capabilityId": "ui.core.tracker",
+      "finalCapabilityId": "ui.core.tracker",
+      "finalPublicExports": [
+        "Tracker"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Tracker remains a LEMN-owned visualizations capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Tracker as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/visualizations/tracker/tests/tracker.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "select-native",
+      "capabilityId": "ui.core.select-native",
+      "finalCapabilityId": "ui.core.select-native",
+      "finalPublicExports": [
+        "SelectNative"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Select native remains a LEMN-owned inputs capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain SelectNative as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/primitives/select-native/tests/select-native.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "radio-card-group",
+      "capabilityId": "ui.core.radio-card-group",
+      "finalCapabilityId": "ui.core.radio-card-group",
+      "finalPublicExports": [
+        "RadioCardGroup"
+      ],
+      "disposition": "keep-provider-backed",
+      "provider": {
+        "implementationId": "radix-ui.radio-card-group@1.4.3",
+        "id": "radix-ui",
+        "name": "Radix UI",
+        "repository": "https://github.com/radix-ui/primitives",
+        "ingestionMode": "runtime_dependency",
+        "packageName": "radix-ui",
+        "packageVersion": "1.4.3",
+        "packageIntegrity": "sha512-aWizCQiyeAenIdUbqEpXgRA1ya65P13NKn/W8rWkcN0OPkRDxdBVLWnIEDsS2RpwCK2nobI7oMUSmexzTDyAmA=="
+      },
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain RadioCardGroup behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/forms/radio-card-group/tests/radio-card-group.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "toggle-group",
+      "capabilityId": "ui.core.toggle-group",
+      "finalCapabilityId": "ui.core.toggle-group",
+      "finalPublicExports": [
+        "ToggleGroup"
+      ],
+      "disposition": "keep-provider-backed",
+      "provider": {
+        "implementationId": "radix-ui.toggle-group@1.4.3",
+        "id": "radix-ui",
+        "name": "Radix UI",
+        "repository": "https://github.com/radix-ui/primitives",
+        "ingestionMode": "runtime_dependency",
+        "packageName": "radix-ui",
+        "packageVersion": "1.4.3",
+        "packageIntegrity": "sha512-aWizCQiyeAenIdUbqEpXgRA1ya65P13NKn/W8rWkcN0OPkRDxdBVLWnIEDsS2RpwCK2nobI7oMUSmexzTDyAmA=="
+      },
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain ToggleGroup behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/forms/toggle-group/tests/toggle-group.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "slider",
+      "capabilityId": "ui.core.slider",
+      "finalCapabilityId": "ui.core.slider",
+      "finalPublicExports": [
+        "Slider"
+      ],
+      "disposition": "keep-provider-backed",
+      "provider": {
+        "implementationId": "radix-ui.slider@1.4.3",
+        "id": "radix-ui",
+        "name": "Radix UI",
+        "repository": "https://github.com/radix-ui/primitives",
+        "ingestionMode": "runtime_dependency",
+        "packageName": "radix-ui",
+        "packageVersion": "1.4.3",
+        "packageIntegrity": "sha512-aWizCQiyeAenIdUbqEpXgRA1ya65P13NKn/W8rWkcN0OPkRDxdBVLWnIEDsS2RpwCK2nobI7oMUSmexzTDyAmA=="
+      },
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Slider behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/forms/slider/tests/slider.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "date-picker",
+      "capabilityId": "ui.core.date-picker",
+      "finalCapabilityId": "ui.core.date-picker",
+      "finalPublicExports": [
+        "DatePicker"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Date picker remains a LEMN-owned inputs capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain DatePicker as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/forms/date-picker/tests/date-picker.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "date-range-picker",
+      "capabilityId": "ui.core.date-range-picker",
+      "finalCapabilityId": "ui.core.date-range-picker",
+      "finalPublicExports": [
+        "DateRangePicker"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Date range picker remains a LEMN-owned inputs capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain DateRangePicker as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/forms/date-range-picker/tests/date-range-picker.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "tab-navigation",
+      "capabilityId": "ui.core.tab-navigation",
+      "finalCapabilityId": "ui.core.tab-navigation",
+      "finalPublicExports": [
+        "TabNavigation"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Tab navigation remains a LEMN-owned navigation capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain TabNavigation as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/navigation/tab-navigation/tests/tab-navigation.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "separator",
+      "capabilityId": "ui.core.separator",
+      "finalCapabilityId": "ui.core.separator",
+      "finalPublicExports": [
+        "Separator"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Separator remains a LEMN-owned layout capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Separator as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/layout/separator/tests/separator.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    }
+  ]
+}

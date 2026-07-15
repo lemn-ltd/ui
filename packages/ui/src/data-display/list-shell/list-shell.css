@@ -1,7 +1,7 @@
 .ui-list-shell {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
-  padding: var(--space-6);
-  font-family: var(--font-sans);
+  gap: var(--lemn-space-5);
+  padding: var(--lemn-space-6);
+  font-family: var(--lemn-font-body);
 }

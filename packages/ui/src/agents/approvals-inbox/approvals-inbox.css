@@ -1,7 +1,7 @@
 .ui-approvals-inbox {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--lemn-space-4);
 }
 
 .ui-approvals-inbox__header {
@@ -11,16 +11,16 @@
 }
 
 .ui-approvals-inbox__count {
-  color: var(--text-muted);
-  font-size: var(--font-size-small);
-  font-weight: var(--font-weight-medium);
+  color: var(--lemn-color-text-muted);
+  font-size: var(--lemn-font-size-small);
+  font-weight: var(--lemn-font-weight-medium);
   font-variant-numeric: tabular-nums;
 }
 
 .ui-approvals-inbox__list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--lemn-space-3);
   margin: 0;
   padding: 0;
   list-style: none;

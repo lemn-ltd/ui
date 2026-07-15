@@ -25,32 +25,32 @@ const DEFAULT_MIN_HEIGHT = 320;
 const jsonEditorTheme = EditorView.theme({
   '&': {
     backgroundColor: 'transparent',
-    color: 'var(--text)',
-    fontFamily: 'var(--font-mono)',
-    fontSize: 'var(--font-size-mono)',
+    color: 'var(--lemn-color-text)',
+    fontFamily: 'var(--lemn-font-code)',
+    fontSize: 'var(--lemn-font-size-mono)',
   },
   '&.cm-focused': {
     outline: 'none',
   },
   '.cm-scroller': {
-    fontFamily: 'var(--font-mono)',
-    lineHeight: 'var(--line-height-mono)',
+    fontFamily: 'var(--lemn-font-code)',
+    lineHeight: 'var(--lemn-line-height-mono)',
   },
   '.cm-content': {
-    padding: 'var(--space-3) 0',
+    padding: 'var(--lemn-space-3) 0',
   },
   '.cm-line': {
-    padding: '0 var(--space-4)',
+    padding: '0 var(--lemn-space-4)',
   },
   '.cm-gutters': {
     backgroundColor: 'transparent',
-    borderRight: '1px solid var(--border)',
-    color: 'var(--text-muted)',
+    borderRight: '1px solid var(--lemn-color-border)',
+    color: 'var(--lemn-color-text-muted)',
   },
   '.cm-lineNumbers .cm-gutterElement': {
     minWidth: '2.75ch',
-    paddingLeft: 'var(--space-3)',
-    paddingRight: 'var(--space-1)',
+    paddingLeft: 'var(--lemn-space-3)',
+    paddingRight: 'var(--lemn-space-1)',
   },
   '.cm-foldGutter .cm-gutterElement': {
     minWidth: '1.125rem',
@@ -59,37 +59,37 @@ const jsonEditorTheme = EditorView.theme({
     textAlign: 'center',
   },
   '.cm-activeLine': {
-    backgroundColor: 'color-mix(in srgb, var(--accent-soft) 52%, transparent)',
+    backgroundColor: 'color-mix(in srgb, var(--lemn-color-accent-soft) 52%, transparent)',
   },
   '.cm-activeLineGutter': {
-    backgroundColor: 'color-mix(in srgb, var(--accent-soft) 60%, transparent)',
-    color: 'var(--text)',
+    backgroundColor: 'color-mix(in srgb, var(--lemn-color-accent-soft) 60%, transparent)',
+    color: 'var(--lemn-color-text)',
   },
   '.cm-selectionBackground, .cm-content ::selection': {
-    backgroundColor: 'color-mix(in srgb, var(--accent) 28%, transparent) !important',
+    backgroundColor: 'color-mix(in srgb, var(--lemn-color-accent) 28%, transparent) !important',
   },
   '.cm-cursor': {
-    borderLeftColor: 'var(--accent)',
+    borderLeftColor: 'var(--lemn-color-accent)',
   },
   '.cm-foldPlaceholder': {
-    backgroundColor: 'var(--surface2)',
-    border: '1px solid var(--border)',
-    color: 'var(--text-muted)',
+    backgroundColor: 'var(--lemn-color-surface-muted)',
+    border: '1px solid var(--lemn-color-border)',
+    color: 'var(--lemn-color-text-muted)',
   },
   '.cm-diagnostic': {
-    fontFamily: 'var(--font-sans)',
+    fontFamily: 'var(--lemn-font-body)',
   },
 });
 
 const jsonHighlightStyle = HighlightStyle.define([
-  { tag: tags.propertyName, color: 'var(--accent)' },
-  { tag: tags.string, color: 'var(--text)' },
-  { tag: tags.number, color: 'var(--info)' },
-  { tag: tags.bool, color: 'var(--info)' },
-  { tag: tags.null, color: 'var(--info)' },
-  { tag: tags.punctuation, color: 'var(--text-muted)' },
-  { tag: tags.squareBracket, color: 'var(--text-muted)' },
-  { tag: tags.brace, color: 'var(--text-muted)' },
+  { tag: tags.propertyName, color: 'var(--lemn-color-accent)' },
+  { tag: tags.string, color: 'var(--lemn-color-text)' },
+  { tag: tags.number, color: 'var(--lemn-color-info)' },
+  { tag: tags.bool, color: 'var(--lemn-color-info)' },
+  { tag: tags.null, color: 'var(--lemn-color-info)' },
+  { tag: tags.punctuation, color: 'var(--lemn-color-text-muted)' },
+  { tag: tags.squareBracket, color: 'var(--lemn-color-text-muted)' },
+  { tag: tags.brace, color: 'var(--lemn-color-text-muted)' },
 ]);
 
 const jsonParseLinter = linter((view) => jsonParseDiagnosticsForState(view.state), {

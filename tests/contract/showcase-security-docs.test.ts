@@ -30,13 +30,6 @@ const releaseOverviewDocs = await Promise.all([
 	),
 ]);
 
-const repositorySecretDeletionOrder = [
-	"gh secret delete CLOUDFLARE_API_TOKEN --repo lemn-ltd/ui",
-	"gh secret delete CLOUDFLARE_API_KEY --repo lemn-ltd/ui",
-	"gh secret delete CLOUDFLARE_EMAIL --repo lemn-ltd/ui",
-	"gh secret delete STATUS_TOKEN --repo lemn-ltd/ui",
-];
-
 test("showcase ownership and protected status boundaries are explicit", () => {
 	assert.match(showcaseReadme, /Inbound consumers: none/u);
 	assert.match(showcaseReadme, /79\s+local repositories\/worktrees/u);
@@ -51,39 +44,28 @@ test("showcase ownership and protected status boundaries are explicit", () => {
 	);
 });
 
-test("English and Spanish runbooks require scoped token auth and preserve rollback secrets until stable smoke", () => {
+test("English and Spanish runbooks require scoped token auth and preserve rollback capability until stable smoke", () => {
 	for (const docs of deployDocs) {
 		assert.match(docs, /PRODUCTION_CLOUDFLARE_API_TOKEN/u);
 		assert.doesNotMatch(docs, /PRODUCTION_CLOUDFLARE_API_KEY/u);
 		assert.doesNotMatch(docs, /PRODUCTION_CLOUDFLARE_EMAIL/u);
 		assert.match(docs, /PRODUCTION_STATUS_TOKEN/u);
-		assert.match(docs, /Workers Scripts: Edit/u);
-		assert.match(docs, /Workers Scripts Write/u);
-		assert.match(docs, /Zone: Read/u);
+		assert.match(docs, /Workers\s+Scripts:\s+Edit/u);
+		assert.match(docs, /Workers\s+Scripts\s+Write/u);
+		assert.match(docs, /Zone:\s+Read/u);
 		assert.match(docs, /Workers Routes/u);
-		assert.match(docs, /(?:legacy key\/email|modo legacy key\/email)/u);
-		assert.match(
-			docs,
-			/79 (?:local repositories\/worktrees|repositorios\/worktrees locales)/u,
-		);
-		assert.match(docs, /14 (?:GitHub repositories|repositorios GitHub)/u);
-		assert.match(docs, /wrangler deployments list --json/u);
-		assert.match(docs, /wrangler rollback/u);
-		assert.match(docs, /STATUS_TOKEN.*(?:last|ultimo)/su);
-
-		let previousIndex = -1;
-		for (const command of repositorySecretDeletionOrder) {
-			const commandIndex = docs.indexOf(command);
-			assert.ok(commandIndex > previousIndex, `${command} is out of order`);
-			previousIndex = commandIndex;
-		}
+		assert.match(docs, /(?:key\/email|key\/email)/u);
+		assert.match(docs, /wrangler\s+deployments\s+list\s+--json/u);
+		assert.match(docs, /wrangler\s+rollback/u);
+		assert.match(docs, /PRODUCTION_STATUS_TOKEN[\s\S]*(?:stable|estable)/u);
+		assert.doesNotMatch(docs, /CLOUDFLARE_API_KEY|CLOUDFLARE_EMAIL/u);
 	}
 });
 
 test("release overview docs describe only the scoped production token", () => {
 	for (const docs of releaseOverviewDocs) {
-		assert.match(docs, /Workers Scripts: Edit/u);
-		assert.match(docs, /Zone: Read/u);
+		assert.match(docs, /Workers\s+Scripts:\s+Edit/u);
+		assert.match(docs, /Zone:\s+Read/u);
 		assert.match(docs, /Lemn DEV/u);
 		assert.match(docs, /le-mn\.com/u);
 		assert.doesNotMatch(docs, /Global API Key/u);

@@ -207,7 +207,7 @@ export function DonutChart({
 							}
 							outerRadius="84%"
 							paddingAngle={variant === "donut" ? 2 : 1}
-							stroke="var(--surface)"
+							stroke="var(--lemn-color-surface)"
 							strokeWidth={2}
 						>
 							{visibleData.map((item) => {

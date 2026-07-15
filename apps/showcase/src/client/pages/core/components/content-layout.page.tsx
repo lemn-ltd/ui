@@ -5,9 +5,9 @@ import type { CSSProperties, ReactElement } from 'react';
 // A bordered frame so the centered content reads as a preview rather than
 // re-centering the whole page (every page already sits inside a ContentLayout).
 const frame: CSSProperties = {
-  border: '1px solid var(--border)',
-  borderRadius: 'var(--radius-lg)',
-  background: 'var(--surface)',
+  border: '1px solid var(--lemn-color-border)',
+  borderRadius: 'var(--lemn-radius-large)',
+  background: 'var(--lemn-color-surface)',
   overflow: 'hidden',
 };
 
@@ -15,20 +15,20 @@ function ContentLayoutPage(): ReactElement {
   return (
     <ComponentPage
       status="stable"
-      summary="The reading-width column. It centers its children and caps them at var(--content-max) with page padding; bleed drops the cap and padding for full-width sections."
+      summary="The reading-width column. It centers its children and caps them at var(--lemn-content-max) with page padding; bleed drops the cap and padding for full-width sections."
       title="Content layout"
     >
       <ExampleBlock
         code={`<ContentLayout>
   <Card title="Centered content">
-    Capped at var(--content-max) with page padding on both sides.
+    Capped at var(--lemn-content-max) with page padding on both sides.
   </Card>
 </ContentLayout>`}
         render={() => (
           <div style={frame}>
             <ContentLayout>
               <Card title="Centered content">
-                Capped at var(--content-max) with page padding on both sides.
+                Capped at var(--lemn-content-max) with page padding on both sides.
               </Card>
             </ContentLayout>
           </div>

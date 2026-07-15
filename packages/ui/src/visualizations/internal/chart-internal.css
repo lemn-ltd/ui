@@ -1,7 +1,7 @@
 .ui-chart-visualization {
 	display: grid;
 	min-width: 0;
-	gap: var(--space-3);
+	gap: var(--lemn-space-3);
 }
 
 .ui-chart-visualization__canvas {
@@ -10,14 +10,14 @@
 }
 
 .ui-chart-visualization :where(.recharts-cartesian-axis-tick-value) {
-	fill: var(--chart-axis);
-	font-size: var(--font-size-caption);
+	fill: var(--lemn-chart-axis);
+	font-size: var(--lemn-font-size-caption);
 }
 
 .ui-chart-legend {
 	display: flex;
 	flex-wrap: wrap;
-	gap: var(--space-2) var(--space-4);
+	gap: var(--lemn-space-2) var(--lemn-space-4);
 	padding: 0;
 	margin: 0;
 	list-style: none;
@@ -27,7 +27,7 @@
 	display: flex;
 	min-width: 0;
 	align-items: center;
-	gap: var(--space-1);
+	gap: var(--lemn-space-1);
 }
 
 .ui-chart-legend-frame[data-position="left"] {
@@ -45,7 +45,7 @@
 .ui-chart-legend-frame__viewport {
 	min-width: 0;
 	max-width: 100%;
-	border-radius: var(--radius-sm);
+	border-radius: var(--lemn-radius-small);
 }
 
 .ui-chart-legend-frame[data-overflow="scroll"]
@@ -67,7 +67,7 @@
 
 .ui-chart-legend-frame__viewport:focus-visible,
 .ui-chart-legend-frame__controls button:focus-visible {
-	outline: 2px solid var(--focus-ring);
+	outline: 2px solid var(--lemn-color-focus);
 	outline-offset: 2px;
 }
 
@@ -83,17 +83,17 @@
 	height: 24px;
 	padding: 0;
 	border: 0;
-	border-radius: var(--radius-sm);
+	border-radius: var(--lemn-radius-small);
 	background: transparent;
-	color: var(--text-muted);
+	color: var(--lemn-color-text-muted);
 	cursor: pointer;
 	font: inherit;
 	place-items: center;
 }
 
 .ui-chart-legend-frame__controls button:hover:not(:disabled) {
-	background: var(--chart-hover);
-	color: var(--text);
+	background: var(--lemn-chart-hover);
+	color: var(--lemn-color-text);
 }
 
 .ui-chart-legend-frame__controls button:disabled {
@@ -104,23 +104,23 @@
 .ui-chart-legend__button {
 	display: inline-flex;
 	align-items: center;
-	gap: var(--space-2);
-	padding: var(--space-1) var(--space-2);
+	gap: var(--lemn-space-2);
+	padding: var(--lemn-space-1) var(--lemn-space-2);
 	border: 0;
-	border-radius: var(--radius-sm);
+	border-radius: var(--lemn-radius-small);
 	background: transparent;
-	color: var(--text-muted);
+	color: var(--lemn-color-text-muted);
 	cursor: pointer;
 	font: inherit;
 }
 
 .ui-chart-legend__button:hover {
-	background: var(--chart-hover);
-	color: var(--text);
+	background: var(--lemn-chart-hover);
+	color: var(--lemn-color-text);
 }
 
 .ui-chart-legend__button:focus-visible {
-	outline: 2px solid var(--focus-ring);
+	outline: 2px solid var(--lemn-color-focus);
 	outline-offset: 2px;
 }
 
@@ -133,9 +133,9 @@
 	width: 12px;
 	height: 12px;
 	flex: none;
-	border: 2px solid var(--chart-series-1);
+	border: 2px solid var(--lemn-chart-series-1);
 	border-radius: 3px;
-	background: var(--chart-series-1);
+	background: var(--lemn-chart-series-1);
 }
 
 .ui-chart-legend__swatch[data-pattern="2"] {
@@ -161,27 +161,27 @@
 }
 
 .ui-chart-tooltip {
-	padding: var(--space-2) var(--space-3);
-	border: 1px solid var(--chart-tooltip-border);
-	border-radius: var(--radius-sm);
-	background: var(--chart-tooltip-surface);
-	box-shadow: var(--elev-2);
-	color: var(--text);
-	font-size: var(--font-size-small);
+	padding: var(--lemn-space-2) var(--lemn-space-3);
+	border: 1px solid var(--lemn-chart-tooltip-border);
+	border-radius: var(--lemn-radius-small);
+	background: var(--lemn-chart-tooltip-surface);
+	box-shadow: var(--lemn-shadow-overlay);
+	color: var(--lemn-color-text);
+	font-size: var(--lemn-font-size-small);
 }
 
 .ui-chart-tooltip__label {
-	padding: 0 0 var(--space-2);
-	margin: 0 0 var(--space-2);
-	border-bottom: 1px solid var(--chart-tooltip-border);
-	font-weight: var(--font-weight-medium);
+	padding: 0 0 var(--lemn-space-2);
+	margin: 0 0 var(--lemn-space-2);
+	border-bottom: 1px solid var(--lemn-chart-tooltip-border);
+	font-weight: var(--lemn-font-weight-medium);
 }
 
 .ui-chart-tooltip__entries {
 	display: grid;
 	padding: 0;
 	margin: 0;
-	gap: var(--space-1);
+	gap: var(--lemn-space-1);
 	list-style: none;
 }
 
@@ -189,7 +189,7 @@
 	display: grid;
 	grid-template-columns: auto minmax(0, 1fr) auto;
 	align-items: center;
-	gap: var(--space-2);
+	gap: var(--lemn-space-2);
 }
 
 .ui-chart-tooltip__entries strong {

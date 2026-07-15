@@ -1,10 +1,10 @@
 .ui-spinner {
   display: inline-block;
   border-style: solid;
-  border-color: var(--text-muted);
+  border-color: var(--lemn-color-text-muted);
   border-top-color: transparent;
-  border-radius: var(--radius-pill);
-  animation: spin calc(var(--duration-slow) * 2) var(--easing-linear) infinite;
+  border-radius: var(--lemn-radius-pill);
+  animation: spin calc(var(--lemn-duration-slow) * 2) var(--lemn-easing-linear) infinite;
 }
 
 .ui-spinner[data-size="sm"] {

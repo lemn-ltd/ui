@@ -9,8 +9,8 @@
   inset: 50% auto auto 50%;
   max-width: 34%;
   transform: translate(-50%, -50%);
-  color: var(--text);
-  font-size: var(--font-size-heading);
-  font-weight: var(--font-weight-semibold);
+  color: var(--lemn-color-text);
+  font-size: var(--lemn-font-size-heading);
+  font-weight: var(--lemn-font-weight-semibold);
   text-align: center;
 }

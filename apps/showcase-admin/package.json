@@ -1,0 +1,36 @@
+{
+  "name": "@lemn-ltd/ui-showcase-admin",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "cf:dry-run:development": "pnpm run build && wrangler deploy --env development --dry-run --outdir dist/cloudflare/development",
+    "cf:dry-run:staging": "pnpm run build && wrangler deploy --env staging --dry-run --outdir dist/cloudflare/staging",
+    "cf:dry-run:production": "pnpm run build && wrangler deploy --env production --dry-run --outdir dist/cloudflare/production",
+    "check": "tsc --noEmit",
+    "dev": "vite dev --host 0.0.0.0 --port 6502 --strictPort",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@lemn-ltd/brand-contract": "workspace:0.1.0",
+    "@lemn-ltd/brand-studio": "workspace:0.1.0",
+    "@lemn-ltd/provider-registry": "workspace:0.1.0",
+    "@lemn-ltd/ui": "workspace:*",
+    "jose": "6.2.3",
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "1.42.1",
+    "@cloudflare/workers-types": "4.20260617.1",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "6.0.1",
+    "typescript": "catalog:",
+    "vite": "8.0.16",
+    "vitest": "catalog:",
+    "wrangler": "4.103.0"
+  }
+}

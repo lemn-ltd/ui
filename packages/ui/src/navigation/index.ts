@@ -1,11 +1,7 @@
 export {
 	AccentColorPicker,
 	type AccentColorPickerProps,
-	applyAccentColor,
 	DEFAULT_ACCENT_COLOR,
-	getAccentColor,
-	resetAccentColor,
-	setAccentColor,
 } from "./accent-color-picker/accent-color-picker.js";
 export { Brand, type BrandProps } from "./brand/brand.js";
 export {
@@ -60,6 +56,10 @@ export {
 	type TabNavigationProps,
 } from "./tab-navigation/tab-navigation.js";
 export { type TabItem, Tabs, type TabsProps } from "./tabs/tabs.js";
-export { ThemeToggle } from "./theme-toggle/theme-toggle.js";
+export {
+	ThemeToggle,
+	type ThemeMode,
+	type ThemeToggleProps,
+} from "./theme-toggle/theme-toggle.js";
 export { TopBar, type TopBarProps } from "./top-bar/top-bar.js";
 export { VersionTag, type VersionTagProps } from "./version-tag/version-tag.js";

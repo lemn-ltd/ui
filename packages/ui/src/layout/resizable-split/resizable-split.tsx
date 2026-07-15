@@ -135,7 +135,7 @@ export function ResizableSplit({
 
   const left = clamp(leftPercent);
   const transition =
-    animated && !dragging ? 'width var(--duration-normal) var(--easing-emphasized)' : 'none';
+    animated && !dragging ? 'width var(--lemn-duration-normal) var(--lemn-easing-emphasized)' : 'none';
 
   return (
     <div className="ui-resizable-split" ref={containerRef}>

@@ -33,7 +33,7 @@ const nextReleaseChangeset = `---
 "@lemn-ltd/ui": patch
 ---
 
-Exercise the post-0.2.5 changelog projection contract.
+Exercise the post-0.3.0 changelog projection contract.
 `;
 
 async function createProjectionFixture(): Promise<string> {
@@ -59,7 +59,10 @@ async function createProjectionFixture(): Promise<string> {
 		"packages/ui/package.json",
 		"packages/ui/CHANGELOG.md",
 	]) {
-		await copyFile(resolve(root, relativePath), resolve(fixtureRoot, relativePath));
+		await copyFile(
+			resolve(root, relativePath),
+			resolve(fixtureRoot, relativePath),
+		);
 	}
 	await writeFile(
 		resolve(fixtureRoot, ".changeset/next-release.md"),
@@ -79,7 +82,7 @@ test("the source changelog is version-true and has one section per release", () 
 	const firstPass = validateVersionedChangelog(changelog, packageJson.version);
 	const secondPass = validateVersionedChangelog(changelog, packageJson.version);
 	assert.deepEqual(firstPass, secondPass);
-	assert.equal(firstPass[0], "0.2.5");
+	assert.equal(firstPass[0], "0.3.0");
 	assert.equal(new Set(firstPass).size, firstPass.length);
 	assert.doesNotMatch(changelog, /^##\s+Unreleased\s*$/mu);
 });
@@ -106,7 +109,7 @@ test("release projection rejects duplicate release sections", () => {
 	);
 });
 
-test("real post-0.2.5 projection and docs sync are idempotent", async () => {
+test("real post-0.3.0 projection and docs sync are idempotent", async () => {
 	const fixtureRoot = await createProjectionFixture();
 	try {
 		projectChangesets(fixtureRoot);
@@ -121,8 +124,8 @@ test("real post-0.2.5 projection and docs sync are idempotent", async () => {
 			projectedChangelog,
 			projectedManifest.version,
 		);
-		assert.equal(projectedManifest.version, "0.2.6");
-		assert.deepEqual(projectedHeadings.slice(0, 2), ["0.2.6", "0.2.5"]);
+		assert.equal(projectedManifest.version, "0.3.1");
+		assert.deepEqual(projectedHeadings.slice(0, 2), ["0.3.1", "0.3.0"]);
 		assert.equal(
 			projectedHeadings.filter((heading) => heading === "0.2.0").length,
 			1,
@@ -140,7 +143,8 @@ test("real post-0.2.5 projection and docs sync are idempotent", async () => {
 			),
 		);
 		for (const docs of firstDocs) {
-			assert.equal(docs.match(/^## 0\.2\.6$/gmu)?.length, 1);
+			assert.equal(docs.match(/^## 0\.3\.1$/gmu)?.length, 1);
+			assert.equal(docs.match(/^## 0\.3\.0$/gmu)?.length, 1);
 			assert.equal(docs.match(/^## 0\.2\.5$/gmu)?.length, 1);
 			assert.equal(docs.match(/^## 0\.2\.0$/gmu)?.length, 1);
 			assert.doesNotMatch(docs, /^##\s+Unreleased\s*$/mu);

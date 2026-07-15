@@ -39,8 +39,8 @@ export function dismissToasts(id?: string | number): void {
   sonnerToast.dismiss(id);
 }
 
-// Stack gap mirrors --space-3; theme is intentionally omitted so tone colors
-// resolve from the package data-theme custom properties, not a sonner override.
+// Stack gap mirrors the semantic spacing scale; the host's compiled brand
+// scope owns all tone colors, so Sonner never receives provider theme state.
 const STACK_GAP = 12;
 
 /** Toast stack region; sonner owns the viewport, auto-dismiss, swipe, and queue. */

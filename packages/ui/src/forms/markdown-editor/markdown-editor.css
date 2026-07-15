@@ -6,8 +6,8 @@
 
 .ui-markdown-editor__toggle {
   position: absolute;
-  top: var(--space-2);
-  right: var(--space-2);
+  top: var(--lemn-space-2);
+  right: var(--lemn-space-2);
   z-index: 1;
   display: inline-flex;
   align-items: center;
@@ -15,20 +15,20 @@
   width: 26px;
   height: 26px;
   padding: 0;
-  color: var(--accent);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  color: var(--lemn-color-accent);
+  background: var(--lemn-color-surface);
+  border: 1px solid var(--lemn-color-border);
+  border-radius: var(--lemn-radius-small);
   cursor: pointer;
-  transition: border-color var(--duration-fast) var(--easing-standard);
+  transition: border-color var(--lemn-duration-fast) var(--lemn-easing-standard);
 }
 
 .ui-markdown-editor__toggle:hover {
-  border-color: var(--accent);
+  border-color: var(--lemn-color-accent);
 }
 
 .ui-markdown-editor__toggle:disabled {
-  color: var(--text-dim);
+  color: var(--lemn-color-disabled-text);
   cursor: not-allowed;
 }
 
@@ -49,13 +49,13 @@
 .ui-markdown-editor__preview {
   height: auto;
   overflow: visible;
-  padding: var(--space-3) 42px var(--space-3) var(--space-3);
-  color: var(--text);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  padding: var(--lemn-space-3) 42px var(--lemn-space-3) var(--lemn-space-3);
+  color: var(--lemn-color-text);
+  background: var(--lemn-color-surface);
+  border: 1px solid var(--lemn-color-border);
+  border-radius: var(--lemn-radius-medium);
 }
 
 .ui-markdown-editor__empty {
-  color: var(--text-muted);
+  color: var(--lemn-color-text-muted);
 }

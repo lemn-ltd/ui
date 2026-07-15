@@ -1,0 +1,67 @@
+---
+title: Provider governance
+description: Select individual upstream capabilities with immutable provenance and conformance.
+sidebar:
+  label: Provider governance
+  order: 5
+---
+
+## Selection policy
+
+LEMN may use multiple providers—even multiple chart engines—when they solve
+materially different capabilities. Each public semantic capability still has
+exactly one active implementation and one provider of record. The registry does
+not ingest every component from a provider and never exposes duplicate public
+Buttons, Dialogs, or equivalent primitives.
+
+Prefer a stable exact runtime dependency. Use a source snapshot only when the
+complete immutable transitive closure, deterministic transforms, explicit
+patches, provenance, and license evidence are captured. `native_lemn` is
+reserved for uniquely LEMN-specific behavior with no suitable accepted upstream
+capability and carries an explicit maintenance warning.
+
+## Required capability record
+
+Every public component/block record includes:
+
+- stable semantic capability ID and public export;
+- category, maturity, and provider of record;
+- ingestion mode and exact version or full upstream commit;
+- repository/source paths and integrity;
+- SPDX license, copyright/notice requirements, and captured license artifacts;
+- deterministic transforms and explicit patch files/reasons;
+- public API and provider-theme adapter paths;
+- supported semantic brand roles;
+- behavior, accessibility, interaction, visual, SSR, and bundle conformance;
+- last successful sync, upstream status, and replacement/deprecation metadata.
+
+Floating versions, short SHAs, branches, unverified copied source, silent
+patches, and unrecorded assets/fonts/examples are forbidden.
+
+## Adding a capability
+
+1. Confirm no canonical LEMN capability already serves the job.
+2. Compare open-source candidates for behavior, maintenance, accessibility,
+   license, API stability, SSR, bundle cost, and update path.
+3. Select one provider of record and pin immutable origin/integrity.
+4. Record license/notices and add the minimal provider-neutral adapter.
+5. Map compiled semantic roles without altering provider functionality.
+6. Add conformance, catalog, Showcase, docs, notices/SBOM, and a changeset.
+7. Publish and prove a clean exact consumer install.
+
+## Updating or replacing
+
+Upstream detection creates a proposal, never an automatic production update.
+Run the complete selected-capability delta and conformance gates before merge.
+Replacing a provider requires an ADR, API/behavior/visual delta, migration
+notes, and correct semantic-version impact.
+
+Protected Showcase Admin may generate a proposal bundle and request a
+least-privilege AgentOps/GitHub-sync plan. It cannot write the active manifest
+or hold a personal GitHub token.
+
+## Consumer rule
+
+Product apps import only exact public `@lemn-ltd/*` packages. Direct imports of
+an upstream UI provider for catalog-owned capabilities are a boundary failure,
+not a shortcut.

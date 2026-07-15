@@ -1,0 +1,75 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "lemn-ui-showcase-admin-development",
+  "main": "src/worker/index.ts",
+  "compatibility_date": "2026-07-15",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": false,
+  "preview_urls": false,
+  "assets": {
+    "directory": "./dist/client",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/*"]
+  },
+  "observability": { "enabled": true, "head_sampling_rate": 1 },
+  "vars": {
+    "ACCESS_AUDIENCE": "19ef47dd0e179e0ae6922daa94dbd76ae7afc8ecbd6dadbac41d39a7cbe52987",
+    "ACCESS_ISSUER": "https://lemn-dev.cloudflareaccess.com",
+    "DEPLOYMENT_ENVIRONMENT": "development"
+  },
+  "services": [
+    {
+      "binding": "SIMULATOR",
+      "service": "lemn-dev-agentops-branding-control-plane"
+    }
+  ],
+  "dev": { "port": 6502, "local_protocol": "http" },
+  "env": {
+    "development": {
+      "name": "lemn-ui-showcase-admin-development",
+      "vars": {
+        "ACCESS_AUDIENCE": "19ef47dd0e179e0ae6922daa94dbd76ae7afc8ecbd6dadbac41d39a7cbe52987",
+        "ACCESS_ISSUER": "https://lemn-dev.cloudflareaccess.com",
+        "DEPLOYMENT_ENVIRONMENT": "development"
+      },
+      "services": [
+        {
+          "binding": "SIMULATOR",
+          "service": "lemn-dev-agentops-branding-control-plane"
+        }
+      ]
+    },
+    "staging": {
+      "name": "lemn-ui-showcase-admin-staging",
+      "vars": {
+        "ACCESS_AUDIENCE": "19ef47dd0e179e0ae6922daa94dbd76ae7afc8ecbd6dadbac41d39a7cbe52987",
+        "ACCESS_ISSUER": "https://lemn-dev.cloudflareaccess.com",
+        "DEPLOYMENT_ENVIRONMENT": "staging"
+      },
+      "services": [
+        {
+          "binding": "SIMULATOR",
+          "service": "lemn-dev-agentops-branding-control-plane"
+        }
+      ]
+    },
+    "production": {
+      "name": "lemn-ui-showcase-admin",
+      "routes": [
+        { "pattern": "admin.showcase.ui.le-mn.com", "custom_domain": true }
+      ],
+      "vars": {
+        "ACCESS_AUDIENCE": "19ef47dd0e179e0ae6922daa94dbd76ae7afc8ecbd6dadbac41d39a7cbe52987",
+        "ACCESS_ISSUER": "https://lemn-dev.cloudflareaccess.com",
+        "DEPLOYMENT_ENVIRONMENT": "production"
+      },
+      "services": [
+        {
+          "binding": "SIMULATOR",
+          "service": "lemn-dev-agentops-branding-control-plane"
+        }
+      ]
+    }
+  }
+}

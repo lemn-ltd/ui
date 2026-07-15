@@ -7,6 +7,17 @@
 > component. The structured source is `src/catalog.ts`; screen recipes are in
 > [patterns.md](patterns.md).
 
+Install an exact approved `@lemn-ltd/ui` release and import only its public
+entrypoints. Provider names in the registry are implementation provenance, not
+consumer APIs: never deep-import or import an upstream UI provider for a
+catalog-owned capability. Preserve the provider-owned interaction behavior and
+apply visual identity only through a verified compiled BrandProject scope.
+
+Product fetching, routing, authentication, global state,
+internationalization, analytics, persistence, and workflow policy stay outside
+this library. Components receive controlled data, state, permissions, and
+actions from the host.
+
 ## By intent (job to be done)
 
 Start here: find the job, reach for the listed components, then read each one's
@@ -29,6 +40,9 @@ section below for the precise call.
 | Surface a message          | `info-banner` (in content) · `system-bar` (page-wide) · `toast` + `toaster` (transient)                                                                                                               |
 | Convey loading             | `skeleton` (known shape) · `spinner` (indeterminate) · `progress-bar` (determinate)                                                                                                                   |
 | Show a metric              | `stat-card` + `stats-strip`, with `sparkline` for a trend                                                                                                                                             |
+| Show an operations summary | `dashboard-overview-block` from `@lemn-ltd/ui/blocks` when its controlled metric/trend/ranking contract fits                                                                                          |
+| Show an appointment queue  | `appointment-schedule-block` from `@lemn-ltd/ui/blocks`; the host owns loading, data, actions, authorization, and persistence                                                                          |
+| Show an approval queue     | `approval-queue-block` from `@lemn-ltd/ui/blocks`; the host owns policy and mutations                                                                                                                  |
 | Show agent state           | `agent-activity-line` for live activity rows · `agent-status-badge` for lifecycle labels · `agent-reasoning-block` + `agent-text-block` inside `agent-message-bubble` for assistant turns             |
 | Ask for a decision         | `confirm-dialog` (single yes/no) · `dialog` (form / multi-action)                                                                                                                                     |
 | Offer actions              | `button` / `icon-button` · `menu` (dropdown) · `command-palette` (⌘K)                                                                                                                                 |
@@ -545,7 +559,7 @@ popup itself must follow the design-system surface.
 
 Use `RadioCardGroup` for a small mutually exclusive choice where every option
 needs a label, description, or icon and the full card should be clickable. It
-keeps Radix radio keyboard semantics and a visible selection marker. Use plain
+preserves the selected provider's keyboard semantics and a visible selection marker. Use plain
 [`radio`](#radio) when the card treatment would add unnecessary weight.
 
 ### Toggle group
@@ -1681,6 +1695,16 @@ center value. Avoid it for many similar slices; use a
 Use a `LineChart` for one or more ordered trends. Give it an accessible name,
 declare every series, and provide stable deterministic data. Use a
 [`spark-chart`](#spark-chart) when the chart must fit a dense metric card.
+
+### Heatmap chart
+
+`/core/components/heatmap-chart` · beta
+
+Use a `HeatmapChart` to compare intensity across two categorical dimensions.
+It uses its registered provider of record while consuming the same
+provider-neutral semantic chart roles as other visualizations, and always emits
+an SSR-readable data table. Avoid it when
+an ordered trend is the primary message; use a [`line-chart`](#line-chart).
 
 ### Progress circle
 

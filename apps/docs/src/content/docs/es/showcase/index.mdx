@@ -1,26 +1,36 @@
 ---
-title: Showcase
-description: Docs interactivos de componentes y superficie de visual regression.
+title: Showcase y Admin
+description: Catalogo publico read-only, experimentacion protegida y limite de Brand Studio.
 sidebar:
   label: Showcase
-  order: 4
+  order: 8
 ---
 
-El showcase se despliega por separado en
-[showcase.ui.le-mn.com](https://showcase.ui.le-mn.com).
+## Showcase publico
 
-El showcase controla:
+[showcase.ui.le-mn.com](https://showcase.ui.le-mn.com) es publico y read-only.
+Renderiza componentes/blocks reales, expone catalogos para humanos/agentes y
+demuestra cambios de Profile/mode sin cambiar funcionalidad.
 
-- ejemplos interactivos de componentes
-- estados visuales responsive
-- checks de accesibilidad y comportamiento
-- `catalog.json`, `llms.txt` y `llms-full.txt`
-- baselines de visual regression
+## Showcase Admin
 
-Desarrollo local:
+[admin.showcase.ui.le-mn.com](https://admin.showcase.ui.le-mn.com) es un deploy
+separado protegido por Cloudflare Access. Permite experimentar con mappings de
+proveedores, variaciones, conformance y previews de proyecto/Profile, ademas de
+crear proposal bundles.
+
+Admin nunca escribe directamente el manifest activo ni recibe un token personal
+de GitHub. Un plan/apply AgentOps/GitHub-sync least-privilege crea un branch/PR
+revisable que sigue los gates normales.
+
+## Brand Studio
+
+Brand Studio es un paquete reusable, no un deploy ni un control plane. Edita un
+BrandProject controlado, compila preview/diagnosticos y emite intents tipados.
+El host posee auth, persistencia, expected revision, idempotencia, publicacion,
+rollback y audit.
 
 ```bash
 pnpm dev:showcase
+pnpm dev:showcase-admin
 ```
-
-El showcase local corre en `http://localhost:6500`.

@@ -10,37 +10,37 @@
 }
 
 .ui-progress-circle__track {
-	stroke: var(--surface2);
+	stroke: var(--lemn-color-surface-muted);
 }
 
 .ui-progress-circle__indicator {
-	stroke: var(--ui-progress-circle-color, var(--accent));
+	stroke: var(--ui-progress-circle-color, var(--lemn-color-accent));
 	stroke-linecap: round;
-	transition: stroke-dashoffset var(--duration-normal) var(--easing-standard);
+	transition: stroke-dashoffset var(--lemn-duration-normal) var(--lemn-easing-standard);
 }
 
 .ui-progress-circle[data-tone="neutral"] {
-	--ui-progress-circle-color: var(--text-muted);
+	--ui-progress-circle-color: var(--lemn-color-text-muted);
 }
 .ui-progress-circle[data-tone="warning"] {
-	--ui-progress-circle-color: var(--warn);
+	--ui-progress-circle-color: var(--lemn-color-warning);
 }
 .ui-progress-circle[data-tone="error"] {
-	--ui-progress-circle-color: var(--danger);
+	--ui-progress-circle-color: var(--lemn-color-danger);
 }
 .ui-progress-circle[data-tone="success"] {
-	--ui-progress-circle-color: var(--success);
+	--ui-progress-circle-color: var(--lemn-color-success);
 }
 
 .ui-progress-circle[data-animation="auto"][data-indeterminate="true"] svg {
-	animation: ui-progress-circle-spin 900ms var(--easing-linear) infinite;
+	animation: ui-progress-circle-spin 900ms var(--lemn-easing-linear) infinite;
 }
 
 .ui-progress-circle__label {
 	position: absolute;
-	color: var(--text);
-	font-size: var(--font-size-caption);
-	font-weight: var(--font-weight-semibold);
+	color: var(--lemn-color-text);
+	font-size: var(--lemn-font-size-caption);
+	font-weight: var(--lemn-font-weight-semibold);
 	font-variant-numeric: tabular-nums;
 }
 

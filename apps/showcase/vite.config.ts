@@ -10,6 +10,12 @@ const uiSrc = (relativePath: string): string =>
   fileURLToPath(new URL(`../../packages/ui/src/${relativePath}`, import.meta.url));
 const showcaseKitSrc = (relativePath: string): string =>
   fileURLToPath(new URL(`../../packages/showcase-kit/src/${relativePath}`, import.meta.url));
+const brandContractSrc = (relativePath: string): string =>
+  fileURLToPath(new URL(`../../packages/brand-contract/src/${relativePath}`, import.meta.url));
+const brandStudioSrc = (relativePath: string): string =>
+  fileURLToPath(new URL(`../../packages/brand-studio/src/${relativePath}`, import.meta.url));
+const providerRegistrySrc = (relativePath: string): string =>
+  fileURLToPath(new URL(`../../packages/provider-registry/${relativePath}`, import.meta.url));
 
 export default defineConfig({
   server: {
@@ -19,6 +25,13 @@ export default defineConfig({
   // single visual source of truth without a rebuild on every change.
   resolve: {
     alias: [
+      {
+        find: '@lemn-ltd/provider-registry/manifest.json',
+        replacement: providerRegistrySrc('registry/provider-registry.v1.json'),
+      },
+      { find: '@lemn-ltd/provider-registry', replacement: providerRegistrySrc('src/index.ts') },
+      { find: '@lemn-ltd/brand-studio', replacement: brandStudioSrc('index.ts') },
+      { find: '@lemn-ltd/brand-contract', replacement: brandContractSrc('index.ts') },
       { find: '@lemn-ltd/ui/styles.css', replacement: uiSrc('styles.css') },
       { find: '@lemn-ltd/ui/catalog', replacement: uiSrc('catalog.ts') },
       { find: '@lemn-ltd/ui/tokens', replacement: uiSrc('tokens.ts') },

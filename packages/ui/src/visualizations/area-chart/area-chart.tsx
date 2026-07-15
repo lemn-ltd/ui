@@ -164,7 +164,7 @@ export function AreaChart<TDatum extends ChartDatum>({
 					</defs>
 					{showGrid ? (
 						<CartesianGrid
-							stroke="var(--chart-grid)"
+							stroke="var(--lemn-chart-grid)"
 							strokeDasharray="3 3"
 							vertical={false}
 						/>
@@ -175,7 +175,7 @@ export function AreaChart<TDatum extends ChartDatum>({
 						hide={xAxisOptions.show === false}
 						interval={chartXAxisInterval(xAxisOptions.interval)}
 						minTickGap={xAxisOptions.tickGap ?? 5}
-						stroke="var(--chart-axis)"
+						stroke="var(--lemn-chart-axis)"
 						tickLine={false}
 						ticks={startEndTicks}
 					>
@@ -190,7 +190,7 @@ export function AreaChart<TDatum extends ChartDatum>({
 						axisLine={false}
 						domain={yDomain}
 						hide={yAxisOptions.show === false}
-						stroke="var(--chart-axis)"
+						stroke="var(--lemn-chart-axis)"
 						tickFormatter={
 							percent ? percentFormatter : yAxisOptions.valueFormatter
 						}
@@ -214,7 +214,7 @@ export function AreaChart<TDatum extends ChartDatum>({
 								series={series}
 							/>
 						)}
-						cursor={{ stroke: "var(--chart-cursor)" }}
+						cursor={{ stroke: "var(--lemn-chart-cursor)" }}
 						isAnimationActive={animationActive}
 					/>
 					{series.map((item, seriesIndex) => {

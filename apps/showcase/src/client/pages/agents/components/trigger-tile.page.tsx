@@ -17,7 +17,7 @@ function TriggerTilePage(): ReactElement {
 <TriggerTile icon="plug" label="Webhook" status="error" />
 <TriggerTile icon="radio" label="Repository event" status="disabled" />`}
         render={() => (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-3)' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--lemn-space-3)' }}>
             <TriggerTile icon="pointer" label="Manual" status="enabled" />
             <TriggerTile icon="code" label="API" status="enabled" />
             <TriggerTile icon="plug" label="Webhook" status="error" />

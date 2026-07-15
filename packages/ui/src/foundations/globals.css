@@ -4,15 +4,15 @@
  */
 
 body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-sans);
-  font-size: var(--font-size-body);
-  line-height: var(--line-height-body);
+  background: var(--lemn-color-canvas);
+  color: var(--lemn-color-text);
+  font-family: var(--lemn-font-body);
+  font-size: var(--lemn-font-size-body);
+  line-height: var(--lemn-line-height-body);
 }
 
 :focus-visible {
-  outline: 2px solid var(--focus-ring);
+  outline: 2px solid var(--lemn-color-focus);
   outline-offset: 2px;
 }
 
@@ -29,28 +29,28 @@ textarea:focus-visible {
  */
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  scrollbar-color: var(--lemn-scrollbar-thumb) var(--lemn-scrollbar-track);
 }
 
 ::-webkit-scrollbar {
-  width: var(--scrollbar-size);
-  height: var(--scrollbar-size);
+  width: var(--lemn-scrollbar-size);
+  height: var(--lemn-scrollbar-size);
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--scrollbar-track);
+  background: var(--lemn-scrollbar-track);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--scrollbar-thumb);
-  border: 2px solid var(--scrollbar-track);
-  border-radius: var(--radius-pill);
+  background: var(--lemn-scrollbar-thumb);
+  border: 2px solid var(--lemn-scrollbar-track);
+  border-radius: var(--lemn-radius-pill);
   background-clip: padding-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--scrollbar-thumb-hover);
-  border-color: var(--scrollbar-track);
+  background: var(--lemn-scrollbar-thumb-hover);
+  border-color: var(--lemn-scrollbar-track);
   background-clip: padding-box;
 }
 

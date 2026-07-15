@@ -2,41 +2,41 @@
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  padding: var(--space-1);
-  background: var(--surface2);
-  border-radius: var(--radius-md);
+  padding: var(--lemn-space-1);
+  background: var(--lemn-color-surface-muted);
+  border-radius: var(--lemn-radius-medium);
 }
 
 .ui-segmented-control__segment {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-1);
-  padding: 6px var(--space-3);
+  gap: var(--lemn-space-1);
+  padding: 6px var(--lemn-space-3);
   background: transparent;
   border: 0;
-  border-radius: var(--radius-sm);
-  color: var(--text-muted);
-  font-family: var(--font-sans);
-  font-size: var(--font-size-small);
-  font-weight: var(--font-weight-medium);
-  line-height: var(--line-height-small);
+  border-radius: var(--lemn-radius-small);
+  color: var(--lemn-color-text-muted);
+  font-family: var(--lemn-font-body);
+  font-size: var(--lemn-font-size-small);
+  font-weight: var(--lemn-font-weight-medium);
+  line-height: var(--lemn-line-height-small);
   white-space: nowrap;
   cursor: pointer;
   transition:
-    background-color var(--duration-fast) var(--easing-standard),
-    color var(--duration-fast) var(--easing-standard),
-    box-shadow var(--duration-fast) var(--easing-standard);
+    background-color var(--lemn-duration-fast) var(--lemn-easing-standard),
+    color var(--lemn-duration-fast) var(--lemn-easing-standard),
+    box-shadow var(--lemn-duration-fast) var(--lemn-easing-standard);
 }
 
 .ui-segmented-control__segment:not(:disabled):hover {
-  color: var(--text);
+  color: var(--lemn-color-text);
 }
 
 .ui-segmented-control__segment[data-state="on"] {
-  background: var(--surface);
-  box-shadow: var(--elev-1);
-  color: var(--text);
+  background: var(--lemn-color-surface);
+  box-shadow: var(--lemn-shadow-raised);
+  color: var(--lemn-color-text);
 }
 
 .ui-segmented-control__segment:disabled {

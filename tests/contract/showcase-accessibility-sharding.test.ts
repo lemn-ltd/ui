@@ -228,7 +228,15 @@ test("native accessibility shards are complete, disjoint, bounded, and fail clos
 			assignments.set(spec.id, assignedShards);
 		}
 	}
-	assert.deepEqual(shardSizes, [66, 66, 66, 66]);
+	const baseShardSize = Math.floor(allSpecs.length / accessibilityShardTotal);
+	const largerShardCount = allSpecs.length % accessibilityShardTotal;
+	assert.deepEqual(
+		shardSizes,
+		Array.from(
+			{ length: accessibilityShardTotal },
+			(_, index) => baseShardSize + (index < largerShardCount ? 1 : 0),
+		),
+	);
 	assert.deepEqual(
 		[...assignments.keys()].sort(),
 		allSpecs.map((spec) => spec.id).sort(),

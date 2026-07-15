@@ -1,47 +1,78 @@
-# @lemn-ltd/ui - usage guide
+# @lemn-ltd/ui agent usage guide
 
-`@lemn-ltd/ui` is the shared, brand-neutral, presentational component library:
-tokens, theme runtime, motion, and 130 catalogued components across Core and
-Agents. It is the one place product screens get their UI from — apps compose it,
-they do not fork it.
+Use this guide to select and compose public LEMN components and blocks. The
+interactive [Showcase](https://showcase.ui.le-mn.com) renders real capabilities;
+the machine-readable catalog and these docs explain when to use them.
 
-This `docs/` folder is the **agent-facing usage guide**: which component to reach
-for and how to compose screens. It is deliberately not a prop reference — the
-live showcase (`apps/showcase`) renders every component, variant, and prop.
+## Consumption contract
 
-## How to consume
-
-```ts
-import { Button, Card, componentCatalog } from "@lemn-ltd/ui";
-import "@lemn-ltd/ui/styles.css"; // once, at the app root
+```tsx
+import { Button, Card, DashboardOverviewBlock } from "@lemn-ltd/ui";
+import "@lemn-ltd/ui/styles.css";
 ```
 
-- Import the stylesheet **once** at the app root; components are styled by it.
-- Theming is Light-default with Dark and system modes via `applyTheme` /
-  `setTheme` / `getTheme`. Do not hard-code colors — every value is a token.
-- `componentCatalog` is the structured index of the component set (area, group,
-  slug, title, status, intent). It is data only and tree-shakes out of product
-  bundles.
+- Install an exact approved package version; never use `latest`, a range, URL,
+  branch, workspace link, or relative cross-repository import.
+- Import only public `@lemn-ltd/*` entrypoints. Never deep-import package
+  internals or import an upstream UI provider for a catalog-owned capability.
+- Import `@lemn-ltd/ui/styles.css` once at the application root.
+- Prefer `componentCatalog` and `blockCatalog` as the current inventories; do
+  not rely on a hard-coded component total.
 
-## The guide
+## Selection order
 
-- **[components.md](components.md)** — when to use each component, what to use
-  instead, and what it pairs with. One section per component, grouped by taxonomy.
-- **[patterns.md](patterns.md)** — recipes that compose these components into whole
-  screens (lists, detail, dashboard, settings, auth, states, responsive).
+1. Find the job in [components.md](components.md) or the public catalog.
+2. Prefer an existing stable component.
+3. Use a [block](patterns.md#blocks-versus-screen-patterns) when it is a curated
+   purpose-specific composition with the contract your screen needs.
+4. Keep one-off product behavior local and compose public primitives.
+5. For a reusable gap, propose exactly one provider of record through the
+   provider registry. Do not implement a competing local primitive.
 
-## Foundations (non-negotiable)
+LEMN owns the public API and semantic branding. Accepted upstream providers own
+their interaction, focus, accessibility, keyboard, lifecycle, and chart-engine
+behavior. Agents must not rewrite those behaviors merely to apply local style.
 
-- **Tokens, not literals.** Spacing, color, radius, type, and motion come from the
-  token layer; never hard-code a value a token already names.
-- **Compose, don't fork.** Build product screens by composing this library. Shared
-  components live here, never copied into a product app. Agent-system components
-  live under `src/agents` and are documented at `/agents/components/<slug>`.
-- **Respect area and family.** Core contains Primitives, Inputs, Forms,
-  Visualizations, Data display, Feedback, Overlays, Navigation, and Layout.
-  Agents contains Conversation, Governance, Approvals, Automation, and Runtime &
-  evidence. Compose across families instead of duplicating capabilities.
-- **Keep charts provider-neutral.** Consumers use Lemn UI chart props and types;
-  renderer details remain internal to the visualization family.
-- **Light-first, responsive, reduced-motion aware.** Layouts reflow by container
-  width and animations go static under `prefers-reduced-motion`.
+## Branding contract
+
+Components do not consume raw branding JSON. The host resolves and verifies a
+published `@lemn-ltd/brand-contract` artifact before rendering, then applies
+the selected Profile/mode scope atomically. All brands compile into the same
+scoped `--lemn-*` semantic vocabulary.
+
+- Never hard-code a project color when a semantic role exists.
+- Never create project-specific CSS variable names.
+- Never mutate global brand variables from a component.
+- Never persist profile, mode, or accent state from shared UI.
+- Never render a provider default while waiting for branding in production.
+
+Production SSR/edge hosts inject the verified critical CSS and scope attributes
+before the first HTML byte. The browser hydrates the same compiled hash. Only a
+compatible verified last-known-good or embedded branded artifact may be used as
+a failure fallback.
+
+## Boundaries
+
+- Shared UI is presentational and controlled.
+- Product fetching, routing, authentication, global state,
+  internationalization, analytics, persistence, and workflow policy remain in
+  the consuming app or a separate frontend-platform package.
+- Brand Studio is a controlled, persistence-free BrandProject wizard. Its host
+  owns project context, authorization, storage, publication, rollback, and
+  audit.
+- Showcase Admin is a protected experimentation/proposal host. Public Showcase
+  remains read-only.
+
+## Guide index
+
+- [components.md](components.md) — component selection guidance.
+- [patterns.md](patterns.md) — composition, state, branding, and block recipes.
+- [catalog.json](https://showcase.ui.le-mn.com/catalog.json) — current component
+  inventory.
+- [llms.txt](https://showcase.ui.le-mn.com/llms.txt) — concise agent index.
+- [llms-full.txt](https://showcase.ui.le-mn.com/llms-full.txt) — expanded agent
+  documentation.
+
+These rules apply `PAT-UI-LEMN-001`, `PAT-UI-PROVIDER-FIRST-001`,
+`PAT-UI-BRAND-CONTRACT-001`, `PAT-UI-SSR-BRANDING-001`,
+`PAT-UI-BLOCKS-001`, and `PAT-UI-FRONTEND-PLATFORM-BOUNDARY-001`.

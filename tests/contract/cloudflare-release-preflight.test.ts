@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
-	type CloudflareReleaseTarget,
 	CLOUDFLARE_PRODUCTION_SECRET,
 	CLOUDFLARE_TOKEN_GRANTS,
+	type CloudflareReleaseTarget,
 	cloudflareAuthFromEnvironment,
 	loadCloudflareReleaseTargets,
 	verifyCloudflareReleaseAccess,
@@ -24,6 +24,12 @@ const targets: CloudflareReleaseTarget[] = [
 		accountId,
 		workerName: "lemn-ui-showcase",
 		hostname: "showcase.ui.le-mn.com",
+	},
+	{
+		id: "showcase-admin",
+		accountId,
+		workerName: "lemn-ui-showcase-admin",
+		hostname: "admin.showcase.ui.le-mn.com",
 	},
 ];
 
@@ -79,7 +85,11 @@ function cloudflareFixture(
 			return response(
 				options.missingResources
 					? [{ id: "lemn-ui-showcase" }]
-					: [{ id: "lemn-ui-docs" }, { id: "lemn-ui-showcase" }],
+					: [
+							{ id: "lemn-ui-docs" },
+							{ id: "lemn-ui-showcase" },
+							{ id: "lemn-ui-showcase-admin" },
+						],
 			);
 		}
 		if (url.includes("/workers/domains?")) {
@@ -93,7 +103,10 @@ function cloudflareFixture(
 						? "different-worker"
 						: requestUrl.searchParams.get("hostname") === "ui.le-mn.com"
 							? "lemn-ui-docs"
-							: "lemn-ui-showcase",
+							: requestUrl.searchParams.get("hostname") ===
+									"showcase.ui.le-mn.com"
+								? "lemn-ui-showcase"
+								: "lemn-ui-showcase-admin",
 				},
 			]);
 		}
@@ -114,7 +127,7 @@ async function verifyFixture(
 	});
 }
 
-test("both Wrangler deploy targets use the confirmed Lemn DEV account", async () => {
+test("all Wrangler deploy targets use the confirmed Lemn DEV account", async () => {
 	const configuredTargets = await loadCloudflareReleaseTargets();
 	assert.deepEqual(configuredTargets, targets);
 });
@@ -122,7 +135,7 @@ test("both Wrangler deploy targets use the confirmed Lemn DEV account", async ()
 test("preflight uses only bearer-token auth and performs no mutation", async () => {
 	const fixture = cloudflareFixture();
 	await verifyFixture(fixture);
-	assert.equal(fixture.requests.length, 6);
+	assert.equal(fixture.requests.length, 8);
 	assert.ok(
 		fixture.requests[0]?.url.endsWith(`/accounts/${accountId}/tokens/verify`),
 	);
@@ -142,7 +155,10 @@ test("release auth fails closed for missing or legacy credentials", () => {
 			() => cloudflareAuthFromEnvironment(environment),
 			(error: unknown) => {
 				assert.ok(error instanceof Error);
-				assert.match(error.message, new RegExp(CLOUDFLARE_PRODUCTION_SECRET, "u"));
+				assert.match(
+					error.message,
+					new RegExp(CLOUDFLARE_PRODUCTION_SECRET, "u"),
+				);
 				assert.match(error.message, new RegExp(CLOUDFLARE_TOKEN_GRANTS, "u"));
 				return true;
 			},
@@ -188,7 +204,7 @@ test("preflight rejects malformed custom-domain items during bootstrap", async (
 	);
 });
 
-test("post-deploy resource smoke requires both Workers and exact domain mappings", async () => {
+test("post-deploy resource smoke requires all Workers and exact domain mappings", async () => {
 	await assert.rejects(
 		verifyFixture(cloudflareFixture({ missingResources: true }), true),
 		/does not contain Worker lemn-ui-docs/u,

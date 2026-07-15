@@ -29,10 +29,10 @@ const FRAME: CSSProperties = {
 	display: "grid",
 	gridTemplateColumns: "auto 1fr",
 	height: 640,
-	border: "1px solid var(--border)",
-	borderRadius: "var(--radius-lg)",
+	border: "1px solid var(--lemn-color-border)",
+	borderRadius: "var(--lemn-radius-large)",
 	overflow: "hidden",
-	background: "var(--bg)",
+	background: "var(--lemn-color-canvas)",
 };
 
 const MAIN: CSSProperties = {
@@ -50,13 +50,13 @@ const CONTENT: CSSProperties = {
 const TREND: CSSProperties = {
 	display: "flex",
 	flexDirection: "column",
-	gap: "var(--space-3)",
+	gap: "var(--lemn-space-3)",
 };
 
 const TREND_VALUE: CSSProperties = {
-	fontSize: "var(--font-size-display)",
+	fontSize: "var(--lemn-font-size-display)",
 	fontWeight: 600,
-	lineHeight: "var(--line-height-display)",
+	lineHeight: "var(--lemn-line-height-display)",
 };
 
 const TREND_CHART: CSSProperties = {

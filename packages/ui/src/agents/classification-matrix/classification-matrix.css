@@ -1,34 +1,34 @@
 .ui-classification-matrix {
   display: grid;
-  gap: var(--space-4);
-  color: var(--text);
-  font-size: var(--font-size-small);
+  gap: var(--lemn-space-4);
+  color: var(--lemn-color-text);
+  font-size: var(--lemn-font-size-small);
 }
 
 .ui-classification-matrix__top {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: var(--space-3);
+  gap: var(--lemn-space-3);
 }
 
 .ui-classification-matrix__section {
   display: grid;
-  gap: var(--space-3);
+  gap: var(--lemn-space-3);
 }
 
 .ui-classification-matrix__heading {
   margin: 0;
-  color: var(--text-muted);
-  font-size: var(--font-size-caption);
-  font-weight: var(--font-weight-medium);
+  color: var(--lemn-color-text-muted);
+  font-size: var(--lemn-font-size-caption);
+  font-weight: var(--lemn-font-weight-medium);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
 .ui-classification-matrix__table {
   display: grid;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border: 1px solid var(--lemn-color-border);
+  border-radius: var(--lemn-radius-medium);
   overflow: hidden;
 }
 
@@ -36,19 +36,19 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(180px, 220px);
   align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-2) var(--space-3);
+  gap: var(--lemn-space-3);
+  padding: var(--lemn-space-2) var(--lemn-space-3);
 }
 
 .ui-classification-matrix__row + .ui-classification-matrix__row {
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--lemn-color-border);
 }
 
 .ui-classification-matrix__row[data-head="true"] {
-  background: var(--surface2);
-  color: var(--text-muted);
-  font-size: var(--font-size-caption);
-  font-weight: var(--font-weight-medium);
+  background: var(--lemn-color-surface-muted);
+  color: var(--lemn-color-text-muted);
+  font-size: var(--lemn-font-size-caption);
+  font-weight: var(--lemn-font-weight-medium);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -58,18 +58,18 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-family: var(--font-mono);
+  font-family: var(--lemn-font-code);
 }
 
 .ui-classification-matrix__empty {
   margin: 0;
-  padding: var(--space-3);
-  color: var(--text-muted);
-  font-size: var(--font-size-caption);
+  padding: var(--lemn-space-3);
+  color: var(--lemn-color-text-muted);
+  font-size: var(--lemn-font-size-caption);
 }
 
 .ui-classification-matrix__sinks {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
+  gap: var(--lemn-space-2);
 }

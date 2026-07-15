@@ -63,7 +63,7 @@ jobs:
             exit 0
           fi
 
-          if git diff --quiet origin/main...HEAD -- packages/ui; then
+          if git diff --quiet origin/main...HEAD -- packages/brand-contract packages/ui packages/brand-studio; then
             exit 0
           fi
 
@@ -87,8 +87,8 @@ jobs:
       - name: Smoke showcase deployment locally
         run: pnpm smoke:showcase:local
 
-      - name: Pack and install package smoke
-        run: pnpm pack:ui
+      - name: Pack and install package-set smoke
+        run: pnpm pack:packages
 
       - name: Verify generated files are committed
         run: git diff --exit-code
@@ -280,19 +280,19 @@ jobs:
 
       - name: Prepare or resume release metadata
         id: release
-        run: pnpm prepare:ui:release
+        run: pnpm prepare:packages:release
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.PRODUCTION_CLOUDFLARE_API_TOKEN }}
           GITHUB_SHA: ${{ github.sha }}
 
-      - name: Build package
-        run: pnpm --filter @lemn-ltd/ui run build
+      - name: Build release packages in dependency order
+        run: pnpm build:packages:release
 
       - name: Build and smoke showcase deployment locally
         run: pnpm smoke:showcase:local
 
-      - name: Publish or verify exact package
-        run: pnpm publish:ui:release
+      - name: Publish or verify exact package set
+        run: pnpm publish:packages:release
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.PRODUCTION_CLOUDFLARE_API_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -313,6 +313,12 @@ jobs:
           PUBLIC_BUILD_VERSION: ${{ steps.release.outputs.version }}
           PUBLIC_BUILD_GIT_SHA: ${{ steps.release.outputs.sha }}
           PUBLIC_BUILD_TIME: ${{ steps.release.outputs.time }}
+
+      - name: Deploy Access-protected Showcase Admin
+        run: pnpm deploy:showcase-admin:prod
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.PRODUCTION_CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ steps.cloudflare.outputs.showcase_admin_account_id }}
 
       - name: Roll out showcase with protected rollback
         run: pnpm rollout:showcase:prod

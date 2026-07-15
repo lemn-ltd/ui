@@ -2,8 +2,8 @@
  * Foundation motion primitives.
  *
  * Loop keyframes (shimmer, spin, indeterminate) are authored to run with
- * `--easing-linear` so their cadence stays constant; entrance motion uses
- * `--easing-emphasized`. Consumers apply these via the `animation` shorthand in
+ * `--lemn-easing-linear` so their cadence stays constant; entrance motion uses
+ * `--lemn-easing-emphasized`. Consumers apply these via the `animation` shorthand in
  * their own styles; component-specific transitions live in their owning slice.
  *
  * The reduced-motion guard neutralizes movement and freezes loops globally.

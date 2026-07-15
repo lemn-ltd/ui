@@ -7327,7 +7327,7 @@ pnpm test:worker
 id: PAT-UI-LEMN-001
 domain: UI
 category: DESIGN_SYSTEM
-version: 1
+version: 2
 description: Use this pattern when creating or migrating graphical user interfaces for LEMN products.
 precedence_level: 1
 depends_on: []
@@ -7338,32 +7338,35 @@ applies_when:
 
 ## Strategy
 
-Use `@lemn-ltd/ui` from `https://ui.le-mn.com` as the required company design-system package for graphical UI. Product apps consume the published package and its public stylesheet instead of copying component CSS, deep-importing internals, or creating divergent local component systems.
+Use the exact approved release of `@lemn-ltd/ui` as the company UI surface. Product apps consume public LEMN packages instead of copying component code or CSS, deep-importing internals, importing an upstream UI provider directly, or creating a divergent design system. Functional behavior stays with the selected upstream provider; branding stays in a compiled BrandProject scope.
 
 ## Rules
 
 ### Must
 
 - Configure GitHub Packages for the package owner scope.
-- Install and use the published `@lemn-ltd/ui` package.
+- Install an exact approved `@lemn-ltd/ui` version; never use `latest`, caret, tilde, wildcard, URL, or branch dependencies.
 - Import components only from the public package surface.
 - Import `@lemn-ltd/ui/styles.css` exactly once at the app root.
+- Resolve and verify a compatible `@lemn-ltd/brand-contract` artifact before rendering branded production HTML.
 - Prefer existing catalog components before creating local UI.
 - Use the showcase/catalog to choose components and verify behavior.
-- Add reusable missing components to the UI package first, then update consumers.
+- Add or select reusable missing capabilities through the provider registry before updating consumers.
 
 ### Must not
 
 - Do not deep-import from `@lemn-ltd/ui/src`, `@lemn-ltd/ui/dist`, or component internals.
 - Do not copy package CSS into product apps.
-- Do not import Radix, `cmdk`, or `sonner` directly in product apps for shared UI behavior.
+- Do not import Radix, Tremor, Recharts, ECharts, `cmdk`, Sonner, MUI, or another UI provider directly in product apps.
 - Do not create a parallel product-specific design system for reusable UI.
+- Do not put data fetching, routing, authentication, global application state, or internationalization inside the UI package; those are frontend-platform responsibilities.
+- Do not mutate `:root`, persist theme state, or render an unbranded provider default from a component.
 - Do not commit GitHub Packages tokens or local npm auth files.
 
 ## Decision rules
 
 - If the UI component exists in `@lemn-ltd/ui`, use it.
-- If the component is reusable but missing, add it to the UI package and publish a version before product adoption.
+- If a reusable capability is missing, select its provider and ingestion mode in the registry, add its LEMN adapter, prove conformance, and publish a version before product adoption.
 - If a one-off product-specific component is unavoidable, keep it local, small, and composed from package primitives.
 - If GitHub Packages auth is missing, stop and report the auth gap instead of replacing the package with local copies.
 
@@ -7371,7 +7374,8 @@ Use `@lemn-ltd/ui` from `https://ui.le-mn.com` as the required company design-sy
 
 - Registry: `https://npm.pkg.github.com`
 - Package: `@lemn-ltd/ui`
-- Version: use the latest published release approved by the consuming repository.
+- Version: pin the exact published release approved by the consuming repository.
+- Branding contract: pin the exact compatible `@lemn-ltd/brand-contract` release.
 - Producer preflight in this repo: `pnpm validate && pnpm check && pnpm test && pnpm build`
 
 ## Example
@@ -7380,6 +7384,124 @@ Use `@lemn-ltd/ui` from `https://ui.le-mn.com` as the required company design-sy
 import { Button, Card, componentCatalog } from "@lemn-ltd/ui";
 import "@lemn-ltd/ui/styles.css";
 ```
+
+---
+id: PAT-UI-PROVIDER-FIRST-001
+domain: UI
+category: PROVIDER_GOVERNANCE
+version: 1
+description: Use this pattern when selecting, adding, updating, or replacing reusable UI behavior.
+precedence_level: 1
+depends_on:
+  - PAT-CODE-DEPENDENCIES-001
+applies_when:
+  - "Selecting, adding, updating, or replacing reusable UI behavior."
+---
+
+## Strategy
+
+Select individual battle-tested open-source capabilities, not whole provider catalogs. A version-controlled registry owns exactly one provider of record for each public capability. LEMN adapters normalize the public API and semantic branding inputs but do not rewrite upstream interaction logic.
+
+## Rules
+
+### Must
+
+- Record a stable capability ID, public export, provider, exact version or full commit SHA, integrity, license, ingestion mode, source paths, adapter paths, token roles, conformance evidence, and upstream status.
+- Use `runtime_dependency` for stable package APIs and `source_snapshot` only with a complete immutable closure, deterministic transforms, and explicit patches.
+- Preserve required LICENSE and NOTICE artifacts and generate an SPDX SBOM.
+- Keep exactly one active implementation and provider of record per capability.
+- Run behavioral, accessibility, interaction, visual, SSR, and bundle conformance as applicable before promotion.
+
+### Must not
+
+- Do not ingest every component from a provider automatically.
+- Do not expose two public implementations for the same semantic capability.
+- Do not use `latest`, floating ranges, branch references, short SHAs, unverified copied source, or silent patches.
+- Do not rewrite provider keyboard, focus, accessibility, chart-engine, lifecycle, or interaction behavior merely to make it look local.
+- Do not copy provider examples, documentation, logos, fonts, trademarks, or assets unless their separate rights are recorded.
+
+## Decision rules
+
+- If a provider package exposes a stable capability API, prefer an exact runtime dependency.
+- If composition source must be owned locally, freeze the full upstream commit and complete transitive source closure.
+- If no accepted upstream capability exists and the behavior is uniquely LEMN-specific, `native_lemn` requires rationale and a maintenance warning.
+- Replacing a provider requires an ADR, API/behavior/visual delta, migration notes, and the correct semantic-version impact.
+
+---
+id: PAT-UI-FRONTEND-PLATFORM-BOUNDARY-001
+domain: UI
+category: PLATFORM_BOUNDARY
+version: 1
+description: Use this pattern when deciding whether a frontend concern belongs in the shared UI ecosystem.
+precedence_level: 1
+depends_on: []
+applies_when:
+  - "Deciding whether a frontend concern belongs in the shared UI ecosystem."
+---
+
+## Strategy
+
+The UI ecosystem centralizes visual capabilities, visualization engines, content renderers, editors, accessibility primitives, interaction primitives, and curated blocks. Data fetching, routing, authentication, global application state, internationalization, analytics SDKs, and product policy belong to a separate frontend-platform layer or the consuming app.
+
+## Rules
+
+### Must
+
+- Keep shared UI packages presentational, controlled, provider-neutral, and free of product persistence or authorization authority.
+- Pass data, state, permissions, and actions through typed public contracts.
+- Keep host adapters explicit when Studio or a component needs an external plan/apply operation.
+
+### Must not
+
+- Do not hide raw fetch, routing, login, global stores, translations, telemetry, secrets, or product workflow policy inside a visual component.
+- Do not let the UI package become a catch-all frontend framework.
+
+## Decision rules
+
+- If the concern changes how something is rendered or interacted with, it may be a UI capability.
+- If the concern obtains, authorizes, routes, persists, translates, or globally coordinates product data, keep it outside the UI package.
+
+---
+id: PAT-UI-BRAND-CONTRACT-001
+domain: UI
+category: BRANDING
+version: 1
+description: Use this pattern when defining, editing, compiling, storing, or applying product branding.
+precedence_level: 2
+depends_on:
+  - PAT-UI-LEMN-001
+  - PAT-UI-PROVIDER-FIRST-001
+applies_when:
+  - "Defining, editing, compiling, storing, or applying product branding."
+---
+
+## Strategy
+
+One versioned BrandProject contract is the branding source of truth. A project may own many inheritable Profiles and each Profile may own multiple modes. Components consume only compiled semantic tokens and provider adapters, never raw branding JSON or project-specific variable names.
+
+## Rules
+
+### Must
+
+- Validate BrandProject JSON against its exact versioned schema.
+- Compile deterministically into scoped CSS, DOM attributes, Recharts/ECharts adapters, asset references, compatibility metadata, diagnostics, source hash, and compiled hash.
+- Namespace runtime scopes by immutable revision/profile/mode identity so multiple projects or profiles can coexist safely.
+- Keep Brand Studio controlled and persistence-free; persistence/auth/publication enter through a typed host adapter.
+- Preserve immutable revisions, optimistic concurrency, assignment sequence, audit metadata, and compatible fallback artifacts in the owning control plane.
+- Validate contrast, focus, status, chart-series, and asset constraints before publication.
+
+### Must not
+
+- Do not let components fetch, store, publish, authorize, or persist branding.
+- Do not mutate global `:root` variables or localStorage from shared UI code.
+- Do not derive project-specific `--project-*` token families; all projects compile to the same semantic `--lemn-*` vocabulary inside distinct scopes.
+- Do not treat KV as the authoritative source for mutable branding state.
+
+## Decision rules
+
+- If a new branding setting changes only appearance, extend the versioned contract compatibly and compile it to an existing or new semantic role.
+- If it changes component functionality, it is not branding and belongs in the component/provider contract.
+- If two brand styles must switch at runtime, model them as Profiles or modes and change the resolved scope atomically.
 
 ---
 id: PAT-UI-FRONTEND-001
@@ -7520,6 +7642,47 @@ tests/setup/
 ```
 
 ---
+id: PAT-UI-SSR-BRANDING-001
+domain: UI
+category: SSR_BRANDING
+version: 1
+description: Use this pattern when a production page renders branded UI on the server or edge.
+precedence_level: 3
+depends_on:
+  - PAT-UI-BRAND-CONTRACT-001
+  - PAT-SEC-SECRETS-001
+applies_when:
+  - "A production page renders branded UI on the server or edge."
+---
+
+## Strategy
+
+Resolve, authorize, verify, and inject the selected BrandRevision before emitting the first HTML byte. The browser hydrates an already branded scope; it never repairs an unbranded or provider-default first paint.
+
+## Rules
+
+### Must
+
+- Resolve by trusted project/environment/slot assignment through a least-privilege server binding or authenticated server API.
+- Verify schema/compiler compatibility and cryptographic artifact integrity before use.
+- Inject critical scoped CSS, scope attributes, color scheme, bootstrap metadata, and allowed asset references in the server response.
+- Use a bounded cache keyed by assignment sequence/revision/profile/mode and a previously verified compatible last-known-good fallback.
+- Store user-selectable profile/mode choices in secure host-owned cookies or server state and revalidate them against the current assignment.
+- Fail closed or render an explicitly compatible branded fallback when the control plane is unavailable.
+
+### Must not
+
+- Do not render raw UI and apply branding in a browser effect.
+- Do not expose control-plane credentials, capability tokens, unpublished contracts, or unauthorized Profiles to the client.
+- Do not silently use stale or hash-invalid artifacts.
+- Do not use a generic KV lookup as mutable branding authority.
+
+## Decision rules
+
+- If SSR cannot resolve the current artifact within its deadline, use only a verified compatible last-known-good or embedded branded fallback.
+- If compatibility or integrity validation fails, reject the artifact and emit operational evidence without its sensitive payload.
+
+---
 id: PAT-UI-STATES-001
 domain: UI
 category: UX_STATES
@@ -7570,6 +7733,46 @@ if (query.error) return <ErrorState onRetry={() => query.refetch()} />
 if (!query.data?.items.length) return <EmptyState />
 return <ProjectList projects={query.data.items} />
 ```
+
+---
+id: PAT-UI-BLOCKS-001
+domain: UI
+category: BLOCKS
+version: 1
+description: Use this pattern when creating a reusable purpose-specific composition of UI capabilities.
+precedence_level: 5
+depends_on:
+  - PAT-UI-LEMN-001
+  - PAT-UI-PROVIDER-FIRST-001
+  - PAT-UI-STATES-001
+applies_when:
+  - "Creating a reusable purpose-specific composition of UI capabilities."
+---
+
+## Strategy
+
+Blocks are curated compositions with a named purpose, documented data/action contract, and real consumers. They compose canonical LEMN capabilities and never introduce alternate primitives or duplicate provider behavior.
+
+## Rules
+
+### Must
+
+- Give every block a stable slug, purpose, status, component inventory, controlled data contract, and complete applicable states.
+- Compose only public LEMN components and provider-neutral types.
+- Keep product fetching, persistence, authorization, routing, and workflow policy in the host.
+- Demonstrate the block with realistic deterministic fixtures in Showcase and at least one consumer before stable promotion.
+
+### Must not
+
+- Do not call a visual fragment a block without a specific reusable purpose.
+- Do not hide a second Button, Dialog, chart engine, or product API inside a block.
+- Do not publish speculative blocks with no real consumer.
+
+## Decision rules
+
+- If the artifact is a single reusable control, it is a component, not a block.
+- If the artifact composes several canonical components into a repeatable workflow/report surface, it may be a block.
+- If its behavior is product-specific and has one consumer, keep it app-local until repeated need is proven.
 
 ---
 id: PAT-UI-SYSTEM-001

@@ -60,7 +60,9 @@ interface ProjectedEdgeState {
 
 export function executionMapMiniMapNodeColor(node: { readonly data?: unknown }): string {
   const data = node.data as RuntimeNodeData | undefined;
-  return data?.entity ? executionMapNodeColor(data.entity.entityKind) : '#172033';
+  return data?.entity
+    ? executionMapNodeColor(data.entity.entityKind)
+    : 'var(--lemn-color-surface-muted)';
 }
 
 export function activateRuntimeNodeSelection(
@@ -274,7 +276,9 @@ function executionMapEdgeLabelStyle(state: ProjectedEdgeState): CSSProperties {
 
 function executionMapEdgeLabelFill(state: ProjectedEdgeState): string {
   if (state.selected) return 'var(--ui-execution-map-text)';
-  return state.active ? '#dbeafe' : '#94a3b8';
+  return state.active
+    ? 'var(--lemn-chart-selection)'
+    : 'var(--lemn-color-text-muted)';
 }
 
 function executionMapEdgeStyle(state: ProjectedEdgeState): CSSProperties {

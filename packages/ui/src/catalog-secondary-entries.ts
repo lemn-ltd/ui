@@ -317,7 +317,7 @@ export const secondaryComponentCatalogEntries: readonly ComponentCatalogEntry[] 
     group: 'Layout',
     status: 'stable',
     intent:
-      'The reading-width column, capped at var(--content-max) with page padding; bleed spans full width.',
+      'The reading-width column, capped at var(--lemn-content-max) with page padding; bleed spans full width.',
   },
   {
     slug: 'page-section',

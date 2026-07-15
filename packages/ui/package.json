@@ -1,6 +1,6 @@
 {
   "name": "@lemn-ltd/ui",
-  "version": "0.2.5",
+  "version": "0.3.0",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -26,6 +26,10 @@
       "types": "./dist/catalog.d.ts",
       "default": "./dist/catalog.js"
     },
+    "./blocks": {
+      "types": "./dist/blocks/index.d.ts",
+      "default": "./dist/blocks/index.js"
+    },
     "./styles.css": "./dist/styles.css"
   },
   "publishConfig": {
@@ -33,14 +37,14 @@
     "access": "restricted"
   },
   "scripts": {
-    "build": "rm -rf dist && tsc && node scripts/copy-css.mjs",
+    "build": "rm -rf dist && tsc && node scripts/copy-css.mjs && node scripts/copy-provider-release-artifacts.mjs",
     "dev": "tsc --watch",
     "check": "tsc --noEmit",
     "test": "vitest run",
     "validate:brand-neutrality": "node ../../scripts/check-brand-neutrality.mjs src",
     "validate:boundaries": "node ../../scripts/check-ui-boundaries.mjs",
     "test:coverage": "vitest run --coverage",
-    "prepublishOnly": "pnpm --dir ../.. publish:ui:verify"
+    "prepublishOnly": "pnpm --dir ../.. publish:packages:verify"
   },
   "peerDependencies": {
     "react": "catalog:",
@@ -58,6 +62,7 @@
     "@uiw/react-codemirror": "4.25.10",
     "@xyflow/react": "12.11.0",
     "cmdk": "catalog:",
+    "echarts": "6.1.0",
     "hast-util-to-jsx-runtime": "2.3.6",
     "lucide-react": "catalog:",
     "radix-ui": "catalog:",

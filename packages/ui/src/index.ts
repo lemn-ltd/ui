@@ -1,9 +1,10 @@
 /**
- * Public entry for `@lemn-ltd/ui`: the theme runtime, the typed token mirror,
- * and every component taxonomy slice.
+ * Public entry for `@lemn-ltd/ui`: provider-backed components and their
+ * project-neutral semantic token vocabulary.
  */
 
 export * from "./agents/index.js";
+export * from "./blocks/index.js";
 export {
 	type AgentComponentGroup,
 	type ComponentArea,
@@ -16,13 +17,6 @@ export * from "./data-display/index.js";
 export * from "./feedback/index.js";
 export * from "./format/index.js";
 export * from "./forms/index.js";
-export {
-	applyTheme,
-	type ColorTheme,
-	getResolvedTheme,
-	getTheme,
-	setTheme,
-} from "./foundations/theme.js";
 export * from "./layout/index.js";
 export * from "./navigation/index.js";
 export * from "./overlays/index.js";
@@ -69,6 +63,9 @@ export {
 	type DonutChartSelection,
 	type DonutChartTooltipContext,
 	type DonutChartVariant,
+	HeatmapChart,
+	type HeatmapChartDatum,
+	type HeatmapChartProps,
 	LineChart,
 	type LineChartCurve,
 	type LineChartProps,
@@ -84,4 +81,4 @@ export {
 	type TrackerProps,
 	type TrackerStatus,
 } from "./visualizations/index.js";
-export { type Tokens, tokens } from "./tokens.js";
+export { type BrandTokenName, brandTokenNames, type Tokens, tokens } from "./tokens.js";

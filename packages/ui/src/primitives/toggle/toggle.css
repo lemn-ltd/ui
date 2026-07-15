@@ -5,15 +5,15 @@
   width: 36px;
   height: 20px;
   padding: 2px;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-pill);
+  background: var(--lemn-color-surface-muted);
+  border: 1px solid var(--lemn-color-border);
+  border-radius: var(--lemn-radius-pill);
   cursor: pointer;
 }
 
 .ui-toggle[data-state="checked"] {
-  background: var(--accent);
-  border-color: var(--accent);
+  background: var(--lemn-color-accent);
+  border-color: var(--lemn-color-accent);
 }
 
 .ui-toggle[data-disabled] {
@@ -25,15 +25,15 @@
   display: block;
   width: 16px;
   height: 16px;
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-pill);
-  background: var(--surface);
+  border: 1px solid var(--lemn-color-border-strong);
+  border-radius: var(--lemn-radius-pill);
+  background: var(--lemn-color-surface);
   transition:
-    transform var(--duration-fast) var(--easing-standard),
-    background-color var(--duration-fast) var(--easing-standard);
+    transform var(--lemn-duration-fast) var(--lemn-easing-standard),
+    background-color var(--lemn-duration-fast) var(--lemn-easing-standard);
 }
 
 .ui-toggle[data-state="checked"] .ui-toggle__thumb {
-  background: var(--bg);
+  background: var(--lemn-color-canvas);
   transform: translateX(16px);
 }

@@ -18,10 +18,10 @@ const FRAME: CSSProperties = {
   display: 'grid',
   gridTemplateColumns: 'auto 1fr',
   height: 640,
-  border: '1px solid var(--border)',
-  borderRadius: 'var(--radius-lg)',
+  border: '1px solid var(--lemn-color-border)',
+  borderRadius: 'var(--lemn-radius-large)',
   overflow: 'hidden',
-  background: 'var(--bg)',
+  background: 'var(--lemn-color-canvas)',
 };
 
 const MAIN: CSSProperties = {

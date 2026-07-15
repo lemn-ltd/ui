@@ -3,15 +3,15 @@
   align-items: center;
   justify-content: space-between;
   min-height: 52px;
-  padding: 0 var(--space-4);
-  border-bottom: 1px solid var(--border);
+  padding: 0 var(--lemn-space-4);
+  border-bottom: 1px solid var(--lemn-color-border);
 }
 
 .ui-entity-toolbar__identity {
   display: flex;
   align-items: center;
   gap: 10px;
-  color: var(--text-muted);
+  color: var(--lemn-color-text-muted);
 }
 
 .ui-entity-toolbar__actions {
@@ -24,8 +24,8 @@
 @media (max-width: 768px) {
   .ui-entity-toolbar {
     flex-wrap: wrap;
-    gap: var(--space-2);
-    padding: var(--space-2) var(--space-3);
+    gap: var(--lemn-space-2);
+    padding: var(--lemn-space-2) var(--lemn-space-3);
   }
 
   .ui-entity-toolbar__identity {

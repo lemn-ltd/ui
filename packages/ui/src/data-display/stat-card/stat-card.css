@@ -1,33 +1,33 @@
 .ui-stat-card {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: var(--lemn-space-1);
   width: 200px;
-  padding: var(--space-4);
-  font-family: var(--font-sans);
+  padding: var(--lemn-space-4);
+  font-family: var(--lemn-font-body);
 }
 
 .ui-stat-card__label {
-  color: var(--text-muted);
-  font-size: var(--font-size-caption);
-  font-weight: var(--font-weight-medium);
-  line-height: var(--line-height-caption);
+  color: var(--lemn-color-text-muted);
+  font-size: var(--lemn-font-size-caption);
+  font-weight: var(--lemn-font-weight-medium);
+  line-height: var(--lemn-line-height-caption);
 }
 
 .ui-stat-card__value {
-  color: var(--text);
-  font-size: var(--font-size-display);
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-display);
+  color: var(--lemn-color-text);
+  font-size: var(--lemn-font-size-display);
+  font-weight: var(--lemn-font-weight-semibold);
+  line-height: var(--lemn-line-height-display);
 }
 
 .ui-stat-card__delta {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
-  font-size: var(--font-size-caption);
-  font-weight: var(--font-weight-medium);
-  line-height: var(--line-height-caption);
+  gap: var(--lemn-space-1);
+  font-size: var(--lemn-font-size-caption);
+  font-weight: var(--lemn-font-weight-medium);
+  line-height: var(--lemn-line-height-caption);
 }
 
 .ui-stat-card__delta-icon {
@@ -36,11 +36,11 @@
 }
 
 .ui-stat-card__delta[data-direction="up"] {
-  color: var(--success);
+  color: var(--lemn-color-success);
 }
 .ui-stat-card__delta[data-direction="down"] {
-  color: var(--danger);
+  color: var(--lemn-color-danger);
 }
 .ui-stat-card__delta[data-direction="flat"] {
-  color: var(--text-muted);
+  color: var(--lemn-color-text-muted);
 }

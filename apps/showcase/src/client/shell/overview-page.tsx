@@ -1,7 +1,8 @@
-import { ContentLayout, Icon } from "@lemn-ltd/ui";
+import { blockCatalog, componentCatalog, ContentLayout, Icon } from "@lemn-ltd/ui";
 import type { ReactElement } from "react";
 import { Link } from "react-router-dom";
 import { uiShowcaseAppDescriptor } from "../../app-descriptor";
+import { PROVIDER_READ_MODEL } from "../../provider-read-model";
 import { HOME_FEATURES } from "./home-features.js";
 import {
 	navGroups,
@@ -16,6 +17,9 @@ export function OverviewPage(): ReactElement {
 	).length;
 	const patternCount = SHOWCASE_REGISTRY.filter(
 		(entry) => entry.kind === "pattern",
+	).length;
+	const stableCount = componentCatalog.filter(
+		(entry) => entry.status === "stable",
 	).length;
 
 	return (
@@ -45,6 +49,12 @@ export function OverviewPage(): ReactElement {
 					>
 						Explore patterns
 					</Link>
+					<Link className="showcase-home__cta" to="/blocks">
+						Explore blocks
+					</Link>
+					<Link className="showcase-home__cta" to="/brand-studio">
+						Open Brand Studio
+					</Link>
 				</div>
 				<dl className="showcase-home__hero-stats">
 					<div>
@@ -56,8 +66,16 @@ export function OverviewPage(): ReactElement {
 						<dd>{patternCount}</dd>
 					</div>
 					<div>
-						<dt>Curated capabilities</dt>
-						<dd>{HOME_FEATURES.length}</dd>
+						<dt>Stable capabilities</dt>
+						<dd>{stableCount}</dd>
+					</div>
+					<div>
+						<dt>Provider records</dt>
+						<dd>{PROVIDER_READ_MODEL.capabilities.length}</dd>
+					</div>
+					<div>
+						<dt>Curated blocks</dt>
+						<dd>{blockCatalog.length}</dd>
 					</div>
 				</dl>
 			</header>

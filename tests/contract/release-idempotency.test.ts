@@ -2,14 +2,15 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
 	parseReleaseCommits,
-	prepareUiRelease,
+	preparePackageRelease,
 	releaseCommitForTrigger,
-} from "../../scripts/release/prepare-ui-release.ts";
+} from "../../scripts/release/prepare-package-release.ts";
 import {
 	assertArtifactIdentity,
-	ensureUiPackageRelease,
+	ensurePackageRelease,
+	ensurePackageSetRelease,
 	type PackageArtifact,
-} from "../../scripts/release/publish-ui-release.ts";
+} from "../../scripts/release/publish-package-release.ts";
 
 const triggerSha = "a".repeat(40);
 const releaseSha = "b".repeat(40);
@@ -66,7 +67,10 @@ function resumedReleaseDependencies() {
 
 test("an old-SHA rerun adopts its existing release commit without creating a sibling", async () => {
 	const fixture = resumedReleaseDependencies();
-	const identity = await prepareUiRelease({ triggerSha }, fixture.dependencies);
+	const identity = await preparePackageRelease(
+		{ triggerSha },
+		fixture.dependencies,
+	);
 	assert.equal(identity.gitSha, releaseSha);
 	assert.equal(identity.buildTime, buildTime);
 	assert.equal(fixture.versionCalls, 0);
@@ -86,7 +90,7 @@ test("workflow dispatch from latest main resumes without a changeset or release 
 		if (args[0] === "show") return buildTime;
 		throw new Error(`Unexpected git command: ${args.join(" ")}`);
 	};
-	const identity = await prepareUiRelease(
+	const identity = await preparePackageRelease(
 		{ triggerSha: releaseSha },
 		fixture.dependencies,
 	);
@@ -105,7 +109,7 @@ test("an old run cannot deploy its release commit after protected main advances 
 		return git(args);
 	};
 	await assert.rejects(
-		prepareUiRelease({ triggerSha }, fixture.dependencies),
+		preparePackageRelease({ triggerSha }, fixture.dependencies),
 		/no longer latest protected main/u,
 	);
 	assert.equal(fixture.versionCalls, 0);
@@ -116,7 +120,7 @@ test("release metadata push is fast-forward-only and a non-FF failure stops", as
 	let version = "0.1.2";
 	const commands: string[][] = [];
 	await assert.rejects(
-		prepareUiRelease(
+		preparePackageRelease(
 			{ triggerSha },
 			{
 				git(args) {
@@ -199,14 +203,11 @@ test("failure after publish is reentrant and does not republish on rerun", async
 		async wait() {},
 	};
 	await assert.rejects(
-		ensureUiPackageRelease(artifact, dependencies),
+		ensurePackageRelease(artifact, dependencies),
 		/could not be verified/u,
 	);
 	registryAvailable = true;
-	assert.equal(
-		await ensureUiPackageRelease(artifact, dependencies),
-		"verified",
-	);
+	assert.equal(await ensurePackageRelease(artifact, dependencies), "verified");
 	assert.equal(publishCalls, 1);
 });
 
@@ -216,7 +217,7 @@ test("an already-published mismatched tarball fails closed", async () => {
 		integrity: `sha512-${Buffer.alloc(64, 2).toString("base64")}`,
 	};
 	await assert.rejects(
-		ensureUiPackageRelease(artifact, {
+		ensurePackageRelease(artifact, {
 			async packageStatus() {
 				return "published";
 			},
@@ -233,5 +234,36 @@ test("an already-published mismatched tarball fails closed", async () => {
 	assert.throws(
 		() => assertArtifactIdentity(artifact, mismatched),
 		/tarball does not match/u,
+	);
+});
+
+test("the immutable package set is verified strictly in contract then UI then Studio order", async () => {
+	const artifacts: PackageArtifact[] = [
+		{ ...artifact, packageName: "@lemn-ltd/brand-contract", version: "0.1.0" },
+		{ ...artifact, packageName: "@lemn-ltd/ui", version: "0.3.0" },
+		{ ...artifact, packageName: "@lemn-ltd/brand-studio", version: "0.1.0" },
+	];
+	const observed: string[] = [];
+	const results = await ensurePackageSetRelease(artifacts, {
+		async packageStatus(current) {
+			observed.push(current.packageName);
+			return "published";
+		},
+		async publishedArtifact(current) {
+			return current;
+		},
+		async publish() {
+			throw new Error("must not republish immutable versions");
+		},
+		async wait() {},
+	});
+	assert.deepEqual(observed, [
+		"@lemn-ltd/brand-contract",
+		"@lemn-ltd/ui",
+		"@lemn-ltd/brand-studio",
+	]);
+	assert.deepEqual(
+		results.map(({ outcome }) => outcome),
+		["verified", "verified", "verified"],
 	);
 });

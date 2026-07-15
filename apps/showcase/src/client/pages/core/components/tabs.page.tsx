@@ -19,7 +19,7 @@ function TabsPage(): ReactElement {
 	const tabsWithPanels = tabItems.map((item) => ({
 		...item,
 		content: (
-			<div style={{ padding: "var(--space-4) 0", color: "var(--text-muted)" }}>
+			<div style={{ padding: "var(--lemn-space-4) 0", color: "var(--lemn-color-text-muted)" }}>
 				{item.label} panel content remains associated with its trigger.
 			</div>
 		),

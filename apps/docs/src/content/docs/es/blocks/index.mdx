@@ -1,0 +1,31 @@
+---
+title: Blocks
+description: Composiciones con proposito construidas solo con capacidades canonicas LEMN.
+sidebar:
+  label: Blocks
+  order: 7
+---
+
+Un block es una composicion reusable con un job especifico, slug estable,
+contrato controlado de datos/acciones, estados aplicables, fixtures realistas en
+Showcase y un consumidor real antes de promoverse a stable.
+
+El host posee fetching, routing, auth, persistencia, politica y efectos. El
+block solo compone componentes/tipos publicos LEMN.
+
+| Export | Proposito | Status |
+| --- | --- | --- |
+| `DashboardOverviewBlock` | Metricas, trend y ranking | Beta |
+| `AppointmentScheduleBlock` | Cola temporal de citas con acciones del host | Beta |
+| `ApprovalQueueBlock` | Cola acotada de approvals humanos | Beta |
+
+```tsx
+import { AppointmentScheduleBlock } from "@lemn-ltd/ui/blocks";
+
+<AppointmentScheduleBlock items={appointments} onOpen={openAppointment} />
+```
+
+Un control unico es componente. Una composicion repetida con contrato estable
+puede ser block. Comportamiento de un solo producto se mantiene local hasta
+probar repeticion. Un block no oculta APIs de producto, no importa proveedores y
+no crea otra implementacion de primitives o charts.

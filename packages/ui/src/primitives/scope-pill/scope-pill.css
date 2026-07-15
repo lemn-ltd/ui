@@ -4,12 +4,12 @@
   gap: 6px;
   height: 24px;
   padding: 0 10px;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-pill);
-  color: var(--text-muted);
-  font-family: var(--font-sans);
-  font-size: var(--font-size-small);
-  font-weight: var(--font-weight-medium);
-  line-height: var(--line-height-small);
+  background: var(--lemn-color-surface-muted);
+  border: 1px solid var(--lemn-color-border);
+  border-radius: var(--lemn-radius-pill);
+  color: var(--lemn-color-text-muted);
+  font-family: var(--lemn-font-body);
+  font-size: var(--lemn-font-size-small);
+  font-weight: var(--lemn-font-weight-medium);
+  line-height: var(--lemn-line-height-small);
 }

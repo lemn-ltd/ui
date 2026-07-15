@@ -2,34 +2,34 @@
   position: relative;
   display: inline-flex;
   width: 100%;
-  font-family: var(--font-sans);
+  font-family: var(--lemn-font-body);
 }
 
 .ui-select-native__control {
   width: 100%;
   min-height: 40px;
-  padding: 0 calc(var(--space-4) + 16px) 0 var(--space-3);
+  padding: 0 calc(var(--lemn-space-4) + 16px) 0 var(--lemn-space-3);
   appearance: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--surface);
-  color: var(--text);
+  border: 1px solid var(--lemn-color-border);
+  border-radius: var(--lemn-radius-medium);
+  background: var(--lemn-color-surface);
+  color: var(--lemn-color-text);
   font: inherit;
-  font-size: var(--font-size-body);
+  font-size: var(--lemn-font-size-body);
 }
 
 .ui-select-native__control:hover:not(:disabled) {
-  border-color: var(--border-strong);
+  border-color: var(--lemn-color-border-strong);
 }
 
 .ui-select-native__control:focus-visible {
-  outline: 2px solid var(--focus-ring);
+  outline: 2px solid var(--lemn-color-focus);
   outline-offset: 2px;
 }
 
 .ui-select-native__control[data-invalid="true"],
 .ui-select-native__control[aria-invalid="true"] {
-  border-color: var(--danger);
+  border-color: var(--lemn-color-danger);
 }
 
 .ui-select-native__control:disabled {
@@ -40,8 +40,8 @@
 .ui-select-native__chevron {
   position: absolute;
   top: 50%;
-  right: var(--space-3);
-  color: var(--text-muted);
+  right: var(--lemn-space-3);
+  color: var(--lemn-color-text-muted);
   pointer-events: none;
   transform: translateY(-50%);
 }

@@ -1,0 +1,99 @@
+---
+title: Runbook de branding SSR
+description: Resuelve, verifica, inyecta, hidrata y falla sin mostrar un frame sin branding.
+sidebar:
+  label: Runbook SSR
+  order: 5
+---
+
+Owner: maintainers de LEMN UI y apps consumidoras
+Revision: 2026-07-15
+Patterns: `PAT-UI-BRAND-CONTRACT-001`, `PAT-UI-SSR-BRANDING-001`,
+`PAT-SEC-SECRETS-001`, `PAT-TEST-EVIDENCE-001`
+
+## Invariante
+
+Un browser de produccion nunca debe renderizar un componente sin branding ni el
+default crudo del proveedor. Resuelve, autoriza, verifica e inyecta la
+BrandRevision antes del primer byte HTML. Hydration confirma el mismo hash; no
+repara branding despues del paint.
+
+## Inputs confiables
+
+El server resuelve project/environment/slot mediante Service Binding
+least-privilege o API server autenticada. Query/header/cookie arbitrario no es
+autoridad. Una preferencia Profile/mode vive en cookie segura o estado del host
+y se revalida contra Profiles/modes permitidos por el Assignment.
+
+## Algoritmo de respuesta
+
+1. Deriva project, environment, slot y Profile/mode autorizados.
+2. Resuelve assignment sequence y artefacto inmutable con deadline.
+3. Verifica compatibilidad e integridad de `compiledHash`.
+4. Selecciona el scope Profile/mode.
+5. Inyecta `artifact.criticalCss` en `<head>` antes del markup.
+6. Aplica todos los `scope.attributes` al contenedor y el color scheme.
+7. Serializa/escapa el bootstrap minimo para el contexto HTML.
+8. Renderiza componentes dentro del scope.
+9. Hidrata solo si el browser recibe el mismo `compiledHash`.
+
+```ts
+import {
+  getCompiledScope,
+  serializeBrandBootstrap,
+  verifyBrandArtifact,
+} from "@lemn-ltd/brand-contract";
+
+await verifyBrandArtifact(artifact);
+const scope = getCompiledScope(artifact, profileId, modeId);
+const bootstrap = serializeBrandBootstrap(artifact, profileId, modeId);
+```
+
+Solo usa CSS critico despues de verificar el artefacto. Escapa el bootstrap para
+su contexto; nunca interpoles source JSON, assets o strings no confiables.
+
+## Cache y fallback
+
+Cachea artefactos verificados con key de assignment sequence, revision, Profile
+y mode. Orden de recovery:
+
+1. artefacto actual verificado;
+2. last-known-good compatible/verificado de la misma linea;
+3. fallback branded embedded compatible/verificado;
+4. respuesta service-unavailable explicitamente branded.
+
+Nunca uses un artefacto con hash invalido, Profile no autorizado, blob KV
+generico, provider default o fallback sin scope. Postgres transaccional del
+control plane es autoridad mutable; KV solo puede cachear inmutables.
+
+## Zero trust
+
+- Cada consumidor tiene un runtime grant limitado a project/environment.
+- Cada resolucion autentica workload y autoriza resource/slot.
+- El browser no recibe credenciales, tokens, source unpublished ni Profiles no
+  autorizados.
+- Logs solo incluyen IDs seguros, sequence/revision, hashes, fallback reason,
+  latency y correlation ID; nunca payloads, cookies, assertions o secrets.
+
+## Evidencia empirica
+
+Prueba por consumidor y modos light/dark:
+
+- JavaScript disabled retorna contenido branded y CSS de scope;
+- primer response contiene atributos/color scheme y hash correcto;
+- provider default no aparece;
+- project/Profile no autorizados fallan seguro;
+- artefacto tampered se rechaza;
+- timeout usa solo fallback verificado;
+- hydration no reporta mismatch;
+- scopes multiples no filtran valores;
+- contrast/a11y pasan.
+
+Ejecuta unit/contract/build y smokes desplegados de la revision entregada. Guarda
+comandos, URLs, identidad de release y resultado real; no reutilices evidencia
+de otro commit.
+
+Ante un incidente compara assignment/revision/Profile/mode/scope/hash, confirma
+orden de CSS y atributos, revisa telemetry de compatibilidad/fallback y valida el
+runtime grant sin leer secrets. Rollback solo ocurre por la operacion autorizada
+y auditada; nunca con un patch CSS en el consumidor.

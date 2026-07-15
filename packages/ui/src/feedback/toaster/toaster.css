@@ -1,16 +1,16 @@
 /*
  * Maps sonner's per-toast tone (data-type) onto the canonical Toast *Soft
- * tone styling so there is a single tone implementation. Theme follows the
- * package data-theme tokens; sonner is never given a fixed light/dark theme.
+ * tone styling so there is a single tone implementation. The active compiled
+ * brand scope owns the semantic values; Sonner receives no independent theme.
  */
 
 .ui-toaster[data-sonner-toaster] {
-  z-index: var(--z-toast);
+  z-index: var(--lemn-z-toast);
 }
 
 .ui-toaster [data-sonner-toast] {
   /* Enter/exit slide+fade uses the emphasized curve. */
-  transition-timing-function: var(--easing-emphasized);
+  transition-timing-function: var(--lemn-easing-emphasized);
 }
 
 /*
@@ -22,40 +22,40 @@
  * by specificity instead of `!important`.
  */
 .ui-toaster [data-sonner-toast].ui-toast {
-  color: var(--text);
+  color: var(--lemn-color-text);
 }
 .ui-toaster [data-sonner-toast].ui-toast .ui-toast__detail {
-  color: var(--text-muted);
+  color: var(--lemn-color-text-muted);
 }
 
 .ui-toaster [data-sonner-toast][data-type="success"] {
-  background: var(--success-soft);
-  border-color: var(--success);
+  background: var(--lemn-color-success-surface);
+  border-color: var(--lemn-color-success);
 }
 .ui-toaster [data-sonner-toast][data-type="success"] .ui-toast__icon {
-  color: var(--success);
+  color: var(--lemn-color-success);
 }
 
 .ui-toaster [data-sonner-toast][data-type="info"] {
-  background: var(--info-soft);
-  border-color: var(--info);
+  background: var(--lemn-color-info-surface);
+  border-color: var(--lemn-color-info);
 }
 .ui-toaster [data-sonner-toast][data-type="info"] .ui-toast__icon {
-  color: var(--info);
+  color: var(--lemn-color-info);
 }
 
 .ui-toaster [data-sonner-toast][data-type="warning"] {
-  background: var(--warn-soft);
-  border-color: var(--warn);
+  background: var(--lemn-color-warning-surface);
+  border-color: var(--lemn-color-warning);
 }
 .ui-toaster [data-sonner-toast][data-type="warning"] .ui-toast__icon {
-  color: var(--warn);
+  color: var(--lemn-color-warning);
 }
 
 .ui-toaster [data-sonner-toast][data-type="error"] {
-  background: var(--danger-soft);
-  border-color: var(--danger);
+  background: var(--lemn-color-danger-surface);
+  border-color: var(--lemn-color-danger);
 }
 .ui-toaster [data-sonner-toast][data-type="error"] .ui-toast__icon {
-  color: var(--danger);
+  color: var(--lemn-color-danger);
 }

@@ -40,8 +40,8 @@ function Frame({
 	const style: CSSProperties = {
 		width,
 		height: visualTarget ? 1000 : 420,
-		border: "1px solid var(--border)",
-		borderRadius: "var(--radius-lg)",
+		border: "1px solid var(--lemn-color-border)",
+		borderRadius: "var(--lemn-radius-large)",
 		overflow: "hidden",
 		display: "flex",
 	};
@@ -142,7 +142,7 @@ function SidebarPage(): ReactElement {
 <Sidebar variant="drill-in" groups={drillNavGroups} title="Settings" />`}
 				render={() => (
 					<div
-						style={{ display: "flex", flexWrap: "wrap", gap: "var(--space-4)" }}
+						style={{ display: "flex", flexWrap: "wrap", gap: "var(--lemn-space-4)" }}
 					>
 						<Frame width={64}>
 							<Sidebar

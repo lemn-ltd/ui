@@ -1,6 +1,6 @@
 .ui-bar-list__items {
 	display: grid;
-	gap: var(--space-2);
+	gap: var(--lemn-space-2);
 	padding: 0;
 	margin: 0;
 	list-style: none;
@@ -12,13 +12,13 @@
 	min-height: 38px;
 	align-items: center;
 	grid-template-columns: minmax(0, 1fr) auto;
-	gap: var(--space-3);
-	padding: var(--space-2) var(--space-3);
+	gap: var(--lemn-space-3);
+	padding: var(--lemn-space-2) var(--lemn-space-3);
 	overflow: hidden;
 	border: 0;
-	border-radius: var(--radius-sm);
-	background: var(--surface2);
-	color: var(--text);
+	border-radius: var(--lemn-radius-small);
+	background: var(--lemn-color-surface-muted);
+	color: var(--lemn-color-text);
 	font: inherit;
 	text-align: left;
 	text-decoration: none;
@@ -31,7 +31,7 @@ a.ui-bar-list__content {
 }
 
 .ui-bar-list__content:focus-visible {
-	outline: 2px solid var(--focus-ring);
+	outline: 2px solid var(--lemn-color-focus);
 	outline-offset: 2px;
 }
 
@@ -43,7 +43,7 @@ a.ui-bar-list__content {
 }
 
 .ui-bar-list__items[data-animation-active="true"] .ui-bar-list__bar {
-	transition: transform var(--duration-normal) var(--easing-standard);
+	transition: transform var(--lemn-duration-normal) var(--lemn-easing-standard);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -55,7 +55,7 @@ a.ui-bar-list__content {
 .ui-bar-list__label,
 .ui-bar-list__value {
 	position: relative;
-	z-index: var(--z-raised);
+	z-index: var(--lemn-z-raised);
 }
 
 .ui-bar-list__label {
@@ -65,6 +65,6 @@ a.ui-bar-list__content {
 }
 
 .ui-bar-list__value {
-	color: var(--text-muted);
+	color: var(--lemn-color-text-muted);
 	font-variant-numeric: tabular-nums;
 }

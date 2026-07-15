@@ -9,55 +9,55 @@ const FRAME: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   height: 640,
-  border: '1px solid var(--border)',
-  borderRadius: 'var(--radius-lg)',
+  border: '1px solid var(--lemn-color-border)',
+  borderRadius: 'var(--lemn-radius-large)',
   overflow: 'hidden',
-  background: 'var(--surface)',
+  background: 'var(--lemn-color-surface)',
 };
 
 const SCROLL: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
-  gap: 'var(--space-5)',
+  gap: 'var(--lemn-space-5)',
   flex: 1,
   minHeight: 0,
   overflow: 'auto',
-  padding: 'var(--space-5)',
+  padding: 'var(--lemn-space-5)',
 };
 
 const IDENTITY: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
-  gap: 'var(--space-3)',
+  gap: 'var(--lemn-space-3)',
 };
 
 const IDENTITY_TITLE: CSSProperties = {
-  fontSize: 'var(--font-size-title)',
+  fontSize: 'var(--lemn-font-size-title)',
   fontWeight: 600,
 };
 
 const PANELS: CSSProperties = {
   display: 'grid',
   gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-  gap: 'var(--space-4)',
+  gap: 'var(--lemn-space-4)',
 };
 
 const FIELD_LIST: CSSProperties = {
   display: 'grid',
   gridTemplateColumns: 'max-content 1fr',
-  columnGap: 'var(--space-5)',
-  rowGap: 'var(--space-2)',
+  columnGap: 'var(--lemn-space-5)',
+  rowGap: 'var(--lemn-space-2)',
   alignItems: 'center',
 };
 
 const FIELD_LABEL: CSSProperties = {
-  fontSize: 'var(--font-size-small)',
-  color: 'var(--text-muted)',
+  fontSize: 'var(--lemn-font-size-small)',
+  color: 'var(--lemn-color-text-muted)',
 };
 
 const FIELD_VALUE: CSSProperties = {
-  fontSize: 'var(--font-size-body)',
-  color: 'var(--text)',
+  fontSize: 'var(--lemn-font-size-body)',
+  color: 'var(--lemn-color-text)',
 };
 
 const PLACEHOLDER: CSSProperties = {
@@ -65,10 +65,10 @@ const PLACEHOLDER: CSSProperties = {
   alignItems: 'center',
   justifyContent: 'center',
   minHeight: 160,
-  border: '1px dashed var(--border-strong)',
-  borderRadius: 'var(--radius-md)',
-  color: 'var(--text-muted)',
-  fontSize: 'var(--font-size-small)',
+  border: '1px dashed var(--lemn-color-border-strong)',
+  borderRadius: 'var(--lemn-radius-medium)',
+  color: 'var(--lemn-color-text-muted)',
+  fontSize: 'var(--lemn-font-size-small)',
 };
 
 function DetailPage(): ReactElement {

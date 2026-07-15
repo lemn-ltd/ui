@@ -1,0 +1,36 @@
+{
+  "name": "@lemn-ltd/provider-registry",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "registry",
+    "third-party",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./manifest.json": "./registry/provider-registry.v1.json",
+    "./schema.json": "./registry/provider-registry.schema.json",
+    "./migration-matrix.json": "./registry/capability-migration-matrix.v1.json",
+    "./migration-matrix.schema.json": "./registry/capability-migration-matrix.schema.json",
+    "./licenses/*": "./third-party/licenses/*"
+  },
+  "scripts": {
+    "build": "rm -rf dist && tsc",
+    "check": "tsc --noEmit && pnpm run check:matrix",
+    "check:matrix": "node scripts/generate-capability-migration-matrix.mjs --check",
+    "generate:matrix": "node scripts/generate-capability-migration-matrix.mjs",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

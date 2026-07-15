@@ -4,9 +4,9 @@
   min-width: 0;
   height: 28px;
   align-items: center;
-  gap: var(--space-2);
-  color: var(--text);
-  font-size: var(--font-size-small);
+  gap: var(--lemn-space-2);
+  color: var(--lemn-color-text);
+  font-size: var(--lemn-font-size-small);
   line-height: 1;
 }
 
@@ -15,7 +15,7 @@
   flex: none;
   align-items: center;
   justify-content: center;
-  color: var(--accent);
+  color: var(--lemn-color-accent);
 }
 
 .ui-agent-activity-line__visual svg {
@@ -23,17 +23,17 @@
 }
 
 .ui-agent-activity-line[data-pulse="true"] .ui-agent-activity-line__visual {
-  animation: ui-agent-activity-line-pulse 1.5s var(--easing-standard) infinite;
+  animation: ui-agent-activity-line-pulse 1.5s var(--lemn-easing-standard) infinite;
 }
 
 .ui-agent-activity-line__name {
   overflow: hidden;
   flex: none;
   max-width: 24ch;
-  color: var(--text);
-  font-family: var(--font-mono);
-  font-size: var(--font-size-small);
-  font-weight: var(--font-weight-semibold);
+  color: var(--lemn-color-text);
+  font-family: var(--lemn-font-code);
+  font-size: var(--lemn-font-size-small);
+  font-weight: var(--lemn-font-weight-semibold);
   letter-spacing: 0;
   line-height: 1;
   text-overflow: ellipsis;
@@ -43,9 +43,9 @@
 .ui-agent-activity-line__action {
   overflow: hidden;
   min-width: 0;
-  color: var(--text-muted);
+  color: var(--lemn-color-text-muted);
   font-style: italic;
-  font-weight: var(--font-weight-medium);
+  font-weight: var(--lemn-font-weight-medium);
   letter-spacing: 0;
   line-height: 1.35;
   text-overflow: ellipsis;
@@ -53,23 +53,23 @@
 }
 
 .ui-agent-activity-line[data-tone="accent"] .ui-agent-activity-line__action {
-  color: var(--accent);
+  color: var(--lemn-color-accent);
 }
 
 .ui-agent-activity-line[data-tone="info"] .ui-agent-activity-line__action {
-  color: var(--info);
+  color: var(--lemn-color-info);
 }
 
 .ui-agent-activity-line[data-tone="warn"] .ui-agent-activity-line__action {
-  color: var(--warn);
+  color: var(--lemn-color-warning);
 }
 
 .ui-agent-activity-line[data-tone="danger"] .ui-agent-activity-line__action {
-  color: var(--danger);
+  color: var(--lemn-color-danger);
 }
 
 .ui-agent-activity-line[data-tone="success"] .ui-agent-activity-line__action {
-  color: var(--success);
+  color: var(--lemn-color-success);
 }
 
 .ui-agent-activity-line__tool {

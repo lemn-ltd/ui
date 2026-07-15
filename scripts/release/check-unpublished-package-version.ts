@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-import { appendFile, readFile } from "node:fs/promises";
+import { appendFile } from "node:fs/promises";
 import { resolve } from "node:path";
+import { readReleasePackageManifest, releasePackages } from "./package-set.ts";
 
 interface PackageManifest {
 	name?: string;
@@ -38,6 +39,7 @@ async function packageVersionsPage(input: {
 	page: number;
 	token: string;
 	fetchImplementation: FetchImplementation;
+	missingPackageIsUnpublished?: boolean;
 }): Promise<GitHubPackageVersion[]> {
 	const endpoint = new URL(
 		`/orgs/${encodeURIComponent(input.owner)}/packages/npm/${encodeURIComponent(input.packageName)}/versions`,
@@ -69,6 +71,7 @@ async function packageVersionsPage(input: {
 		);
 	}
 	if (response.status === 404) {
+		if (input.missingPackageIsUnpublished) return [];
 		throw new Error(
 			"GitHub Packages returned HTTP 404 for the package, so its version status cannot be verified",
 		);
@@ -113,6 +116,8 @@ interface PackageVersionStatusInput {
 	version: string;
 	token: string;
 	fetchImplementation?: FetchImplementation;
+	/** Only release publication may classify a package-level 404 as first publish. */
+	missingPackageIsUnpublished?: boolean;
 }
 
 export async function getPackageVersionStatus(
@@ -132,6 +137,7 @@ export async function getPackageVersionStatus(
 			page,
 			token,
 			fetchImplementation,
+			missingPackageIsUnpublished: input.missingPackageIsUnpublished,
 		});
 		for (const version of versions) {
 			if (seenVersions.has(version.name)) {
@@ -158,35 +164,54 @@ export async function assertPackageVersionUnpublished(
 
 async function main(): Promise<void> {
 	const root = resolve(import.meta.dirname, "../..");
-	const manifest = JSON.parse(
-		await readFile(resolve(root, "packages/ui/package.json"), "utf8"),
-	) as PackageManifest;
-	const packageName = requireValue(manifest.name, "UI package name");
-	const version = requireValue(manifest.version, "UI package version");
-	const input = {
-		apiUrl: process.env.GITHUB_API_URL,
-		owner: process.env.GITHUB_REPOSITORY_OWNER ?? "",
-		packageName,
-		version,
-		token: process.env.GITHUB_TOKEN ?? "",
-	};
-	const status = await getPackageVersionStatus(input);
+	const statuses: Array<{
+		readonly packageName: string;
+		readonly version: string;
+		readonly status: "published" | "unpublished";
+	}> = [];
+	for (const definition of releasePackages) {
+		const manifest = (await readReleasePackageManifest(
+			root,
+			definition,
+		)) as PackageManifest;
+		const packageName = requireValue(
+			manifest.name,
+			`${definition.id} package name`,
+		);
+		const version = requireValue(
+			manifest.version,
+			`${definition.id} package version`,
+		);
+		const status = await getPackageVersionStatus({
+			apiUrl: process.env.GITHUB_API_URL,
+			owner: process.env.GITHUB_REPOSITORY_OWNER ?? "",
+			packageName,
+			version,
+			token: process.env.GITHUB_TOKEN ?? "",
+			missingPackageIsUnpublished: true,
+		});
+		statuses.push({ packageName, version, status });
+	}
 	if (process.argv.includes("--github-output")) {
 		const outputPath = requireValue(process.env.GITHUB_OUTPUT, "GITHUB_OUTPUT");
-		await appendFile(outputPath, `published=${status === "published"}\n`, {
-			encoding: "utf8",
-			mode: 0o600,
-		});
-		console.log(`${packageName}@${version} publication status verified`);
+		await appendFile(
+			outputPath,
+			`published_all=${statuses.every(({ status }) => status === "published")}\n`,
+			{ encoding: "utf8", mode: 0o600 },
+		);
+		console.log("Package-set publication status verified");
 		return;
 	}
-	if (status === "published") {
+	const unpublished = statuses.filter(({ status }) => status === "unpublished");
+	if (unpublished.length === 0) {
 		throw new Error(
-			`${packageName}@${version} is already published; package changes require a changeset`,
+			"Every release package version is already published; package changes require a changeset",
 		);
 	}
 	console.log(
-		`${packageName}@${version} is absent from the authenticated GitHub Packages version list`,
+		`Unpublished release versions: ${unpublished
+			.map(({ packageName, version }) => `${packageName}@${version}`)
+			.join(", ")}`,
 	);
 }
 

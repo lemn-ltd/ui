@@ -1,8 +1,8 @@
 .ui-confirm-dialog__overlay {
   position: fixed;
   inset: 0;
-  z-index: var(--z-modal);
-  background: var(--overlay);
+  z-index: var(--lemn-z-modal);
+  background: var(--lemn-color-overlay-scrim);
 }
 
 /*
@@ -13,7 +13,7 @@
 .ui-confirm-dialog {
   position: fixed;
   inset: 0;
-  z-index: var(--z-modal);
+  z-index: var(--lemn-z-modal);
   display: flex;
   flex-direction: column;
   width: 92vw;
@@ -21,20 +21,20 @@
   height: fit-content;
   max-height: 85vh;
   margin: auto;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--elev-3);
-  color: var(--text);
-  font-family: var(--font-sans);
+  background: var(--lemn-color-surface);
+  border: 1px solid var(--lemn-color-border);
+  border-radius: var(--lemn-radius-large);
+  box-shadow: var(--lemn-shadow-modal);
+  color: var(--lemn-color-text);
+  font-family: var(--lemn-font-body);
 }
 
 .ui-confirm-dialog__overlay[data-state="open"] {
-  animation: fade var(--duration-fast) var(--easing-standard);
+  animation: fade var(--lemn-duration-fast) var(--lemn-easing-standard);
 }
 
 .ui-confirm-dialog[data-state="open"] {
-  animation: scale-in var(--duration-fast) var(--easing-emphasized);
+  animation: scale-in var(--lemn-duration-fast) var(--lemn-easing-emphasized);
 }
 
 /* Mobile: bottom sheet — full-width, bottom-anchored, slides up from the edge. */
@@ -52,37 +52,37 @@
   }
 
   .ui-confirm-dialog[data-state="open"] {
-    animation: slide-bottom var(--duration-normal) var(--easing-emphasized);
+    animation: slide-bottom var(--lemn-duration-normal) var(--lemn-easing-emphasized);
   }
 }
 
 .ui-confirm-dialog__body {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-5) var(--space-5) var(--space-4);
+  gap: var(--lemn-space-2);
+  padding: var(--lemn-space-5) var(--lemn-space-5) var(--lemn-space-4);
 }
 
 .ui-confirm-dialog__title {
-  font-size: var(--font-size-heading);
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-heading);
+  font-size: var(--lemn-font-size-heading);
+  font-weight: var(--lemn-font-weight-semibold);
+  line-height: var(--lemn-line-height-heading);
 }
 
 .ui-confirm-dialog__description {
-  color: var(--text-muted);
-  font-size: var(--font-size-small);
-  line-height: var(--line-height-small);
+  color: var(--lemn-color-text-muted);
+  font-size: var(--lemn-font-size-small);
+  line-height: var(--lemn-line-height-small);
 }
 
 .ui-confirm-dialog__divider {
   height: 1px;
-  background: var(--border);
+  background: var(--lemn-color-border);
 }
 
 .ui-confirm-dialog__footer {
   display: flex;
   justify-content: flex-end;
-  gap: var(--space-2);
-  padding: var(--space-4) var(--space-5);
+  gap: var(--lemn-space-2);
+  padding: var(--lemn-space-4) var(--lemn-space-5);
 }

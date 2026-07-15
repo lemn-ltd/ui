@@ -7,7 +7,7 @@ export default defineConfig({
     starlight({
       title: 'UI',
       description:
-        'Documentation, release notes, and lifecycle guidance for Lemn UI (@lemn-ltd/ui).',
+        'Provider-first components, compiled project branding, blocks, and release guidance for the LEMN UI ecosystem.',
       disable404Route: true,
       head: [
         {
@@ -41,13 +41,18 @@ export default defineConfig({
           items: [
             { label: 'Overview', slug: 'index' },
             { label: 'Install and use', slug: 'getting-started' },
+            { label: 'Architecture', slug: 'architecture' },
           ],
         },
         {
-          label: 'Design System',
+          label: 'Ecosystem',
           collapsed: false,
           items: [
+            { label: 'Branding', slug: 'branding' },
+            { label: 'SSR branding runbook', slug: 'ssr-branding' },
+            { label: 'Provider governance', slug: 'providers' },
             { label: 'Component catalog', slug: 'component-catalog' },
+            { label: 'Blocks', slug: 'blocks' },
             { label: 'Showcase', slug: 'showcase' },
           ],
         },

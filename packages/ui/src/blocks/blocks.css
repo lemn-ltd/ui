@@ -1,0 +1,74 @@
+.ui-block {
+  display: grid;
+  gap: var(--lemn-space-5);
+  min-width: 0;
+  color: var(--lemn-color-text);
+}
+
+.ui-block__header h2,
+.ui-block__header p {
+  margin: 0;
+}
+
+.ui-block__header h2 {
+  font-family: var(--lemn-font-heading);
+  font-size: var(--lemn-font-size-title);
+  line-height: var(--lemn-line-height-title);
+}
+
+.ui-block__header p {
+  margin-top: var(--lemn-space-1);
+  color: var(--lemn-color-text-muted);
+}
+
+.ui-dashboard-overview-block__metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--lemn-space-3);
+}
+
+.ui-dashboard-overview-block__metrics > .ui-skeleton {
+  min-height: 112px;
+}
+
+.ui-dashboard-overview-block__visuals {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(240px, 1fr);
+  gap: var(--lemn-space-5);
+}
+
+.ui-appointment-schedule-block__list,
+.ui-approval-queue-block__list {
+  display: grid;
+  gap: var(--lemn-space-3);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.ui-appointment-schedule-block__list > .ui-skeleton,
+.ui-approval-queue-block__list > .ui-skeleton {
+  min-height: 104px;
+}
+
+.ui-appointment-schedule-block__title,
+.ui-appointment-schedule-block__details {
+  display: flex;
+  align-items: center;
+  gap: var(--lemn-space-3);
+}
+
+.ui-appointment-schedule-block__title {
+  justify-content: space-between;
+}
+
+.ui-appointment-schedule-block__details {
+  flex-wrap: wrap;
+  color: var(--lemn-color-text-muted);
+}
+
+@media (max-width: 768px) {
+  .ui-dashboard-overview-block__visuals {
+    grid-template-columns: 1fr;
+  }
+}

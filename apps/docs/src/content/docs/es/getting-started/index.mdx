@@ -1,65 +1,80 @@
 ---
 title: Instalar y usar
-description: Instalar @lemn-ltd/ui en un producto consumidor.
+description: Instala paquetes LEMN exactos y renderiza dentro de un scope compilado y verificado.
 sidebar:
   label: Instalar y usar
   order: 2
 ---
 
-Deja en el repositorio consumidor solamente el mapeo del scope de GitHub Packages:
+## 1. Configura GitHub Packages
+
+Commitea solamente el mapping del scope en el repo consumidor:
 
 ```ini
 @lemn-ltd:registry=https://npm.pkg.github.com
 ```
 
-Configura la autenticacion en el `~/.npmrc` del usuario. Nunca commitees esta
-entrada de auth ni el valor del token en un repositorio:
+Mantiene la autenticacion en `~/.npmrc`, nunca en el repo:
 
 ```ini
-# ~/.npmrc
 //npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}
 ```
 
-Carga mediante el gestor local de secrets un personal access token clasico de
-GitHub con `read:packages` y acceso al repositorio en `NODE_AUTH_TOKEN`. El mapeo
-del scope o la variable de entorno por separado no autentican npm/pnpm.
+## 2. Instala un release set compatible y exacto
 
 ```bash
-pnpm add @lemn-ltd/ui@<published-version>
+pnpm add @lemn-ltd/brand-contract@0.1.0 @lemn-ltd/ui@0.3.0
 ```
 
-Importa componentes solo desde la superficie publica e importa el stylesheet una
-vez en la raiz de la app:
+Para un host autorizado de authoring:
+
+```bash
+pnpm add @lemn-ltd/brand-studio@0.1.0
+```
+
+No uses `latest`, rangos, branches, URLs, `workspace:*`, `link:` ni rutas
+relativas entre repositorios.
+
+## 3. Importa solo entrypoints publicos LEMN
 
 ```tsx
 import { Button, Card, componentCatalog } from "@lemn-ltd/ui";
 import "@lemn-ltd/ui/styles.css";
 ```
 
-## Controles de tema
+Carga el stylesheet una sola vez en la raiz. No hagas deep import de `src`,
+`dist`, internals ni de un proveedor UI.
 
-`ThemeToggle` cambia entre modo light y dark. `AccentColorPicker` permite mover
-un puntero por una paleta y actualiza los tokens compartidos de accent en tiempo
-real; tambien soporta flechas del teclado, un espectro de Hue y entrada
-hexadecimal validada que se aplica al presionar Enter. Sus indicadores muestran
-el color exacto seleccionado y ese mismo valor se aplica a `--accent`; los
-tokens de texto, hover, superficie suave y foco se derivan para conservar
-contraste legible.
+## 4. Aplica branding antes de renderizar
 
-```tsx
-import { AccentColorPicker, ThemeToggle } from "@lemn-ltd/ui";
+Los componentes nunca parsean BrandProject JSON. Un host confiable resuelve un
+artefacto publicado para proyecto, environment, slot, Profile y mode; verifica
+compatibilidad e integridad; e inyecta CSS critico y atributos antes de emitir
+markup.
 
-<AccentColorPicker />
-<ThemeToggle />
+```ts
+import {
+  getCompiledScope,
+  serializeBrandBootstrap,
+  verifyBrandArtifact,
+} from "@lemn-ltd/brand-contract";
+
+await verifyBrandArtifact(artifact);
+const scope = getCompiledScope(artifact, selectedProfile, selectedMode);
+const bootstrap = serializeBrandBootstrap(
+  artifact,
+  selectedProfile,
+  selectedMode,
+);
 ```
 
-Usa `applyToRoot={false}` o `persist={false}` cuando la aplicacion consumidora
-controle el estado del tema. Los helpers `applyAccentColor`, `setAccentColor` y
-`resetAccentColor` se exportan desde el mismo entrypoint publico.
+La respuesta debe incluir `artifact.criticalCss` en `<head>`, los
+`scope.attributes` sobre el contenedor y un bootstrap escapado para hydration.
+El browser debe recibir el mismo `compiledHash`. Sigue el
+[runbook SSR](/es/ssr-branding/).
 
-## Reglas
+## 5. Mantiene plataforma fuera de UI
 
-- No hagas deep imports desde `@lemn-ltd/ui/src`, `@lemn-ltd/ui/dist` o internals.
-- No importes Radix, `cmdk` o `sonner` directamente en productos para UI compartida.
-- Agrega UI reutilizable aqui primero, publica una nueva version y actualiza consumidores.
-- Usa [el showcase](https://showcase.ui.le-mn.com) para verificar comportamiento.
+El host posee clientes API, fetching, routing, auth, estado global, i18n,
+analytics, persistencia, cookies de Profile/mode y politica. Pasa valores y
+acciones controladas a los componentes y blocks.

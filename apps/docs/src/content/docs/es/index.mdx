@@ -1,31 +1,49 @@
 ---
 title: Resumen
-description: Documentacion del paquete de design system Lemn UI.
+description: Componentes provider-first, branding compilado por proyecto y blocks curados para productos LEMN.
 sidebar:
-  label: Inicio
+  label: Resumen
   order: 1
 ---
 
-`@lemn-ltd/ui` es el paquete React compartido para el design system de
-LEMN. Este sitio es la documentacion humana para instalacion, lifecycle de
-release, migraciones y ownership operativo.
+Lemn UI es un ecosistema provider-first, no una coleccion de widgets reescritos
+localmente. LEMN selecciona capacidades open source battle-tested de forma
+individual, asigna exactamente un proveedor de registro a cada capacidad
+semantica y expone una API estable y neutral con una capa minima de branding
+compilado.
 
-## Superficies de produccion
+## Que posee este workspace
 
-- Docs: [ui.le-mn.com](https://ui.le-mn.com)
-- Showcase: [showcase.ui.le-mn.com](https://showcase.ui.le-mn.com)
-- Catalogo JSON: [showcase.ui.le-mn.com/catalog.json](https://showcase.ui.le-mn.com/catalog.json)
-- Guia para agentes: [showcase.ui.le-mn.com/llms.txt](https://showcase.ui.le-mn.com/llms.txt)
-- Repositorio: [github.com/lemn-ltd/ui](https://github.com/lemn-ltd/ui)
+- `@lemn-ltd/brand-contract`: schema BrandProject versionado, validacion,
+  compilador determinista, diagnosticos, CSS con scope, adaptadores de
+  proveedores e integridad.
+- `@lemn-ltd/ui`: componentes controlados, visualizaciones, estilos semanticos,
+  blocks y catalogos publicos.
+- `@lemn-ltd/brand-studio`: wizard controlado y sin persistencia para crear y
+  previsualizar BrandProject JSON.
+- Registry Git-authoritative con origen exacto, licencias, notices, adaptadores,
+  conformance y estado de updates.
+- Docs y Showcase publicos, mas Showcase Admin protegido por separado.
 
-## Ownership
+## Limites no negociables
 
-Usa este repositorio cuando un producto necesita un componente reutilizable,
-token, layout o migracion de estilo compartido. Las apps consumidoras deben usar
-el paquete publicado, no copiar CSS ni hacer imports internos.
+- Los productos importan versiones exactas aprobadas de `@lemn-ltd/*`.
+- Los productos no importan un proveedor UI para capacidades del catalogo.
+- Los componentes consumen roles `--lemn-*` compilados, nunca BrandProject JSON
+  crudo ni variables especificas por proyecto.
+- El host resuelve y verifica branding antes del primer byte HTML.
+- Fetching, routing, autenticacion, estado global, internacionalizacion,
+  analytics, persistencia y politica quedan fuera de los paquetes UI.
 
-## Modelo de documentacion
+## Superficies
 
-Este sitio explica lifecycle, releases e integracion. El showcase sigue siendo
-la fuente interactiva para comportamiento, ejemplos, estados responsive y review
-visual.
+- [Docs](https://ui.le-mn.com)
+- [Showcase publico](https://showcase.ui.le-mn.com)
+- [Showcase Admin protegido](https://admin.showcase.ui.le-mn.com)
+- [Catalogo JSON](https://showcase.ui.le-mn.com/catalog.json)
+- [Indice para agentes](https://showcase.ui.le-mn.com/llms.txt)
+- [Repositorio](https://github.com/lemn-ltd/ui)
+
+Empieza por [Instalar y usar](/es/getting-started/), despues revisa
+[Arquitectura](/es/architecture/), [Branding](/es/branding/) y el
+[runbook SSR](/es/ssr-branding/).

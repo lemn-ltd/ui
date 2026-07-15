@@ -2,9 +2,9 @@ import { FoundationPage } from '@lemn-ltd/showcase-kit';
 import type { ReactElement } from 'react';
 
 const LEVELS = [
-  { label: 'elev-1', cssVar: '--elev-1' },
-  { label: 'elev-2', cssVar: '--elev-2' },
-  { label: 'elev-3', cssVar: '--elev-3' },
+  { label: 'elev-1', cssVar: '--lemn-shadow-raised' },
+  { label: 'elev-2', cssVar: '--lemn-shadow-overlay' },
+  { label: 'elev-3', cssVar: '--lemn-shadow-modal' },
 ];
 
 function ElevationPage(): ReactElement {

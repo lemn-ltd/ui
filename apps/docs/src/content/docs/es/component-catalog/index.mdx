@@ -1,40 +1,34 @@
 ---
 title: Catalogo de componentes
-description: Donde inspeccionar y consumir el catalogo de @lemn-ltd/ui.
+description: Selecciona la capacidad canonica LEMN sin depender del proveedor upstream.
 sidebar:
   label: Catalogo
-  order: 3
+  order: 6
 ---
 
-El catalogo de componentes vive en `packages/ui/src/catalog*.ts`. Contiene
-exactamente 130 componentes: 101 en Core y 29 en Agents. Cada entrada declara su
-area y familia de capacidad, y alimenta la navegacion del showcase, las docs para
-agentes y los checks contra drift.
+`componentCatalog` es el inventario data-only actual de componentes publicos.
+Cada entrada declara slug, area, familia, madurez, titulo e intent. El export,
+Showcase y los drift tests son autoridad; las docs no congelan un total.
 
-## Areas y familias
+Core cubre primitives, inputs, forms, visualizations, data display, feedback,
+overlays, navigation y layout. Agents cubre conversation, governance,
+approvals, automation y runtime/evidence.
 
-Core contiene Primitives, Inputs, Forms, Visualizations, Data display, Feedback,
-Overlays, Navigation y Layout. Agents contiene Conversation, Governance,
-Approvals, Automation y Runtime & evidence.
+`blockCatalog` es independiente. Un block es una composicion con proposito, no
+otra implementacion de un primitive. Ve [Blocks](/es/blocks/).
 
-La familia de visualizaciones incluye graficos de lineas, areas, barras,
-combinaciones, donuts, tendencias compactas, progreso, categorias y tracking.
-Sus APIs publicas son neutrales respecto al renderer; los detalles del proveedor
-permanecen internos a Lemn UI.
+Cada capacidad semantica mapea a exactamente un proveedor activo en el registry
+versionado. Origen exacto, integridad, licencia, notices, adaptador, roles de
+branding, conformance y estado upstream pertenecen al registry; el consumidor
+solo importa el export LEMN.
 
-## Catalogo runtime
+## Discovery
 
-- JSON: [showcase.ui.le-mn.com/catalog.json](https://showcase.ui.le-mn.com/catalog.json)
-- Resumen para agentes: [showcase.ui.le-mn.com/llms.txt](https://showcase.ui.le-mn.com/llms.txt)
-- Guia completa: [showcase.ui.le-mn.com/llms-full.txt](https://showcase.ui.le-mn.com/llms-full.txt)
+- [Catalogo JSON](https://showcase.ui.le-mn.com/catalog.json)
+- [Resumen para agentes](https://showcase.ui.le-mn.com/llms.txt)
+- [Guia expandida](https://showcase.ui.le-mn.com/llms-full.txt)
+- [Showcase interactivo](https://showcase.ui.le-mn.com)
 
-## Fuentes locales
-
-- Catalogo: `packages/ui/src/catalog.ts`
-- Guia de componentes: `packages/ui/docs/components.md`
-- Guia de patrones: `packages/ui/docs/patterns.md`
-- Paginas del showcase: `apps/showcase/src/client/pages`
-
-Cuando agregues o cambies un componente, actualiza catalogo, docs, showcase,
-exports y tests en el mismo cambio. Las paginas del showcase usan componentes
-reales interactivos y contienen como maximo tres ejemplos.
+Agregar una capacidad exige alinear registry/provenance, adaptador, exports,
+catalogos, docs, Showcase, conformance, release y licencias. Cada pagina de
+componente usa el componente real y como maximo tres ejemplos.

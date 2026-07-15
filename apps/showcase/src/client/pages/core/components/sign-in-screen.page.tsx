@@ -6,8 +6,8 @@ import type { CSSProperties, ReactElement } from 'react';
 // reads as a preview rather than re-centering the whole page. An inline
 // min-height overrides the component's 100vh for the embedded example.
 const FRAME: CSSProperties = {
-  border: '1px solid var(--border)',
-  borderRadius: 'var(--radius-lg)',
+  border: '1px solid var(--lemn-color-border)',
+  borderRadius: 'var(--lemn-radius-large)',
   overflow: 'hidden',
 };
 

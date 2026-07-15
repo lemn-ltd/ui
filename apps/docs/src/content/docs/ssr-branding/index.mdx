@@ -1,0 +1,148 @@
+---
+title: SSR branding runbook
+description: Resolve, verify, inject, hydrate, cache, and fail safely without an unbranded first frame.
+sidebar:
+  label: SSR branding runbook
+  order: 5
+---
+
+Owner: LEMN UI and consuming-app maintainers
+Last reviewed: 2026-07-15
+Patterns: `PAT-UI-BRAND-CONTRACT-001`, `PAT-UI-SSR-BRANDING-001`,
+`PAT-SEC-SECRETS-001`, `PAT-TEST-EVIDENCE-001`
+
+## Invariant
+
+A production browser must never render an unbranded component or raw provider
+default. Resolve, authorize, verify, and inject the selected immutable
+BrandRevision before emitting the first HTML byte. Client hydration confirms
+the same compiled hash; it does not repair branding after paint.
+
+## Trusted inputs
+
+The server resolves branding by a trusted project/environment/slot assignment
+through a least-privilege Service Binding or authenticated server API. A browser
+query, arbitrary header, or unvalidated cookie is not assignment authority.
+
+A user-selectable Profile/mode may be stored in a secure host-owned cookie or
+server state, but the server must revalidate it against the assignment's
+currently allowed Profiles/modes on every resolution.
+
+## Response algorithm
+
+1. Derive the trusted project, environment, slot, and authorized Profile/mode.
+2. Resolve the current assignment sequence and immutable artifact with a strict
+   deadline.
+3. Check schema/compiler compatibility and verify `compiledHash` over the
+   canonical artifact payload.
+4. Select the compiled Profile/mode scope.
+5. Put verified `artifact.criticalCss` in a `<style>` element in `<head>` before
+   any branded markup.
+6. Put every `scope.attributes` entry on the branded container and set the
+   resolved color scheme.
+7. Serialize the minimal bootstrap with `serializeBrandBootstrap`, escape it for
+   the HTML context, and include it as non-executable JSON.
+8. Render components inside that scope.
+9. Hydrate only when the bootstrap `compiledHash` matches the server artifact.
+
+Core package operations:
+
+```ts
+import {
+  getCompiledScope,
+  serializeBrandBootstrap,
+  verifyBrandArtifact,
+  type CompiledBrandArtifact,
+} from "@lemn-ltd/brand-contract";
+
+export async function prepareBrand(
+  artifact: CompiledBrandArtifact,
+  profileId: string,
+  modeId: string,
+) {
+  await verifyBrandArtifact(artifact);
+  const scope = getCompiledScope(artifact, profileId, modeId);
+
+  return {
+    criticalCss: artifact.criticalCss,
+    scope,
+    bootstrap: serializeBrandBootstrap(artifact, profileId, modeId),
+  };
+}
+```
+
+`criticalCss` is safe only after verification and because it came from the
+version-compatible compiler. Escape the bootstrap for its exact HTML context;
+do not interpolate raw source JSON, asset URLs, or untrusted strings into HTML.
+
+## Cache and fallback
+
+Use a bounded server cache keyed by assignment sequence, revision, Profile, and
+mode. Cache only verified immutable artifacts. Keep a previously verified
+compatible last-known-good artifact and an embedded compatible branded fallback
+for cold-start/control-plane failure.
+
+Resolution order:
+
+1. current verified assignment artifact;
+2. verified compatible last-known-good for that assignment lineage;
+3. embedded verified compatible branded fallback;
+4. fail closed with an explicitly branded service-unavailable response.
+
+Never silently use a hash-invalid artifact, an unauthorized Profile, a generic
+KV blob, a provider default, or unscoped package fallback as production
+recovery. Mutable branding state remains authoritative in transactional control
+plane storage; KV may only cache immutable/compatibility data.
+
+## Workload security
+
+- Give each consumer a project/environment-scoped runtime grant, not database,
+  publication, asset-store, queue, or admin credentials.
+- Authenticate the workload and authorize the requested project/environment/
+  slot on every resolution.
+- Do not expose the server credential, capability token, unpublished source
+  contract, unauthorized Profiles, or control-plane internals to the browser.
+- Log only safe identifiers, assignment sequence, revision, hashes, fallback
+  reason, latency, and correlation ID. Never log artifacts, source JSON, cookies,
+  assertions, tokens, or secrets.
+
+## Profile/mode switching
+
+A browser action requests a host-owned server transition. The host validates the
+choice, stores it in a secure cookie or server state, and returns the next
+server-rendered response with the complete verified scope. A client navigation
+may atomically replace a preverified complete scope, but it must not mutate a
+subset of global variables or synthesize a brand locally.
+
+## Empirical acceptance
+
+For every SSR consumer and both light/dark modes, capture evidence that:
+
+- JavaScript disabled still returns branded content with critical scoped CSS;
+- the first response contains the expected scope attributes and color scheme;
+- server bootstrap and artifact expose the same `compiledHash`;
+- no direct provider CSS/default first frame appears;
+- unauthorized project/Profile requests fail safely;
+- a tampered artifact is rejected;
+- timeout uses only the verified last-known-good or embedded branded fallback;
+- hydration reports no brand/hash mismatch;
+- multiple scopes can coexist without leaking semantic values;
+- accessibility and contrast checks pass for the selected scope.
+
+Run the consumer's unit/contract/build suite plus deployed no-JavaScript and
+authenticated/unauthenticated smokes against the delivered source revision.
+Record actual commands, URLs, release identity, and result; do not claim stale
+evidence from another commit.
+
+## Incident checks
+
+When a branded page is wrong or unbranded:
+
+1. Compare the response's assignment sequence, revision/Profile/mode, scope ID,
+   and compiled hash with the authorized runtime resolution.
+2. Confirm critical CSS precedes branded markup and the exact attributes wrap
+   every component surface.
+3. Check compatibility/integrity rejection and fallback telemetry.
+4. Verify the workload grant and allowed Profiles without reading secret values.
+5. Roll back the assignment only through the authorized audited control-plane
+   operation; never patch CSS or provider code in the consumer.

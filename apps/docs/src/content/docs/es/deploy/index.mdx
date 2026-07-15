@@ -1,146 +1,70 @@
 ---
 title: Deploy
-description: CI/CD para docs, showcase y paquete.
+description: Publicacion coordinada de paquetes y limites de deploy en Cloudflare.
 sidebar:
   label: Deploy
-  order: 7
+  order: 11
 ---
 
-Produccion tiene dos dominios publicos:
+## Superficies
 
-- `ui.le-mn.com` sirve este sitio Starlight de docs.
-- `showcase.ui.le-mn.com` sirve el showcase interactivo como Worker SPA.
+- Tres paquetes publicos se publican en GitHub Packages en orden de dependencia.
+- `ui.le-mn.com` sirve Docs.
+- `showcase.ui.le-mn.com` sirve Showcase publico read-only.
+- `admin.showcase.ui.le-mn.com` sirve Admin separado con Cloudflare Access.
 
-CI valida pull requests con typecheck, tests, build, metadata de release y
-changeset status. Los pushes a `main` ejecutan el release workflow:
+La identidad del paquete, commit, provenance/notices/SBOM y deploy deben referir
+al mismo release aprobado.
 
-1. Valida sin mutar Cloudflare que el API token de cuenta con scope limitado este activo para la cuenta configurada, pueda leer la zona requerida e inspeccionar los Workers y mapeos de custom domains objetivo.
-2. Hace fetch de `main` protegido. Un rerun antiguo solo puede retomar el commit
-   unico de release con su trailer `Release-Origin`; en otro caso se detiene sin
-   crear un sibling ni intentar un push non-fast-forward.
-3. Si quedan changesets, crea y pushea un unico commit fast-forward. Version,
-   SHA completo, timestamp del commit y release ID son entradas inmutables para
-   todos los retries.
-4. Empaqueta el paquete exacto y calcula su integridad `sha512`. Publica solo si
-   la version no existe; si existe, exige identidad e integridad inmutable igual.
-5. Despliega docs con la identidad inmutable del release.
-6. Sube codigo, assets, identidad y `PRODUCTION_STATUS_TOKEN` como una version
-   inactiva del Worker etiquetada por release. Su metadata guarda baseline,
-   identidad anterior y rol del token de rollback.
-7. Crea una lease sin trafico nuevo (`baseline=100%`, `candidate=0%`), hace smoke
-   de la candidata con version override, vuelve a comprobar la lease y activa
-   exactamente esa candidata al 100%.
-8. Hace smoke del deployment activo. Un fallo normal restaura y verifica el
-   baseline; una interrupcion deja un estado durable recuperable por release ID.
-
-CI consulta la lista autenticada de GitHub Packages antes de publicar y la
-metadata npm despues. Solo una consulta exitosa que omita la version exacta
-permite publicarla. Una version presente nunca se republica: su `dist.integrity`
-debe coincidir con el `sha512` local o el release falla cerrado.
-
-El job `Release And Deploy` es el unico que puede resolver credenciales de
-produccion. Usa el GitHub Environment `production`, que exige al reviewer
-`angelllemn` y solo permite deployments desde la rama `main`.
-
-Los unicos nombres de secrets propios del Environment `production` son:
-
-- `PRODUCTION_CLOUDFLARE_API_TOKEN` con un API token propiedad de la cuenta
-- `PRODUCTION_STATUS_TOKEN`
-
-GitHub Actions aporta `GITHUB_TOKEN`; no es un secret configurado en el
-Environment. Los nombres `PRODUCTION_*` hacen que un secret ausente falle cerrado
-en lugar de resolver silenciosamente una credencial del repositorio.
-
-Crea el token de Cloudflare con exactamente estos recursos y permisos:
-
-- Recurso Account: incluye solo `Lemn DEV`; permiso `Workers Scripts: Edit`.
-- Recurso Zone: incluye solo `le-mn.com`; permiso `Zone: Read`.
-
-El token se usa como `CLOUDFLARE_API_TOKEN`. El preflight rechaza un token
-ausente, deshabilitado o expirado, y tambien el modo legacy key/email. `Workers
-Scripts: Edit` (llamado `Workers Scripts Write` por el API) cubre uploads,
-versiones, deployments, secrets y custom domains de Workers para este release;
-`Zone: Read` solo se usa para comprobar el scope de la zona sin mutaciones. No
-agregues permisos de usuario, account settings, KV, R2, Workers Routes ni scopes
-mas amplios de cuenta o zona.
-
-## Rotacion Y Rollback Del Status Token
-
-El showcase no tiene consumidores inbound de status. Se confirmo el 2026-07-14
-buscando en 79 repositorios/worktrees locales, 14 repositorios GitHub,
-LaunchAgents y procesos activos, y las dos bases D1 de Monitor. `STATUS_TOKEN` es
-obligatorio en produccion; no existe deployment de staging.
-
-Rota el valor del GitHub Environment sin exponerlo al historial del shell,
-filesystem, logs ni argumentos del comando:
+## Gates
 
 ```bash
-openssl rand -hex 32 | gh secret set PRODUCTION_STATUS_TOKEN --env production --repo lemn-ltd/ui
+pnpm validate
+pnpm check
+pnpm test
+pnpm build
+pnpm audit --prod
+pnpm changeset status
 ```
 
-El workflow aprobado de `main` ejecuta este orden exacto:
+Ademas se prueba registry exacto, una implementacion activa por capacidad,
+installs limpios, conformance aplicable, dry-runs de Cloudflare, credenciales
+least-privilege, rutas publicas/protegidas, identidad del build y recovery. No
+se reutiliza evidencia de otro commit.
 
-1. Lee `wrangler deployments list --json` y versiones etiquetadas por release. Un retry retoma su
-   candidata; un release nuevo exige un baseline unico al 100%.
-2. Hace smoke de `/_status`, `/_status.json` y `/health/deep` sin token (`401`) y
-   con el `STATUS_TOKEN` retenido en el repositorio (`200`). Si produccion ya fue
-   rotada, reintenta con `PRODUCTION_STATUS_TOKEN`.
-3. Crea el documento JSON de secretos de Wrangler como fichero regular dentro
-   de un directorio temporal aleatorio con modo `0700`. El fichero se crea de
-   forma exclusiva con modo `0600` y solo su ruta se pasa a `wrangler versions
-   upload --secrets-file`. El cleanup siempre se intenta en `finally`; un fallo
-   solo de cleanup detiene el rollout, y un fallo simultaneo de upload y cleanup
-   reporta ambos con el fallo de upload primero. El token nunca aparece en
-   argumentos ni logs. La candidata inactiva incluye codigo, assets, identidad,
-   token y metadata de recovery sin cambiar trafico.
-4. Despliega baseline al 100% y candidata al 0% con una lease del release. Hace
-   smoke publico/protegido de la candidata mediante
-   `Cloudflare-Workers-Version-Overrides`, manteniendo trafico normal en baseline.
-5. Relee deployments, exige el mismo deployment ID y reparto de trafico, activa
-   la candidata al 100% y repite mappings y smoke sin override.
-6. Escribe el summary solo despues de que todo pase.
+El GitHub Environment protegido aporta exactamente
+`PRODUCTION_CLOUDFLARE_API_TOKEN` y `PRODUCTION_STATUS_TOKEN`. El API token de
+Cloudflare pertenece a Account `Lemn DEV` y tiene solo `Workers Scripts: Edit`
+(la API lo reporta como `Workers Scripts Write`); sobre Zone `le-mn.com` tiene
+solo `Zone: Read`. No se otorga Workers Routes, KV, R2, account settings,
+permisos de usuario ni zonas mas amplias. El guard rechaza Global API Key,
+modo key/email, tokens ausentes/expirados/deshabilitados y cuentas incorrectas.
 
-El concurrency group usa `cancel-in-progress: false`; los releases conformes se
-serializan y respetan la lease durable. La API de Cloudflare no ofrece update
-condicional atomico para deployments, por lo que ningun operador externo debe
-desplegar este Worker mientras exista la lease. Cualquier cambio de deployment
-ID, trafico o mensaje detiene el run sin sobrescribir el deployment concurrente.
+## Secuencia
 
-Los fallos normales despues de la lease ejecutan `wrangler rollback
-<captured-version-id> --yes` y verifican el baseline con el rol de token y la
-identidad guardados. Los fallos de rollback no ocultan el error original.
-`SIGTERM`/`SIGINT` terminan el child activo y un retry retoma candidata, lease o
-candidata activa. `SIGKILL` no puede ejecutar el cleanup; los datos temporales
-permanecen privados y limitados al runner hasta que este termina. El token nuevo
-no recibe trafico antes del smoke y todos los limites quedan visibles en
-Cloudflare.
+1. Valida y empaqueta la revision exacta.
+2. Publica Brand Contract, UI y Brand Studio; una version existente debe tener
+   integridad inmutable identica.
+3. Instala paquetes exactos en consumidores externos limpios.
+4. Despliega Docs y Showcase.
+5. Despliega Admin y verifica denial sin auth mas comportamiento autenticado.
+6. Hace smoke de catalogos, branding, Profiles/modes, blocks, registry e
+   identidad.
+7. Registra el receipt solo cuando pasan todos los gates.
 
-Conserva los cuatro repository secrets legacy hasta que el deploy aprobado sea
-estable: `CLOUDFLARE_API_KEY`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_EMAIL` y
-`STATUS_TOKEN`. Estable significa que el SHA objetivo de `main` completo
-`Release And Deploy` sin rollback, pasaron los smokes de mappings, publicos y las
-tres rutas protegidas autenticadas/no autenticadas, y el operador reviso el
-summary final.
+Secrets, tokens, account keys, headers y credenciales nunca entran en archivos,
+args, artifacts, logs o docs. Un fallo de identidad/integridad/concurrencia/smoke
+detiene el rollout.
 
-Solo entonces elimina los repository secrets en este orden, verificando nombre y
-timestamp despues de cada operacion y sin leer valores:
+Para Showcase se inspecciona el baseline con `wrangler deployments list
+--json`, se sube una candidata inactiva, se prueban rutas publicas y protegidas
+con su `PRODUCTION_STATUS_TOKEN`, y solo entonces se activa esa version exacta.
+La credencial de status del baseline se conserva en el proceso de rollout hasta
+el smoke estable. Un fallo posterior ejecuta `wrangler rollback
+<captured-version-id> --yes` y vuelve a verificar el baseline. Las credenciales
+viven solo en el Environment; no queda ninguna credencial retirada key/email a
+nivel de repositorio.
 
-```bash
-gh secret delete CLOUDFLARE_API_TOKEN --repo lemn-ltd/ui
-gh secret delete CLOUDFLARE_API_KEY --repo lemn-ltd/ui
-gh secret delete CLOUDFLARE_EMAIL --repo lemn-ltd/ui
-gh secret delete STATUS_TOKEN --repo lemn-ltd/ui
-```
-
-`STATUS_TOKEN` va ultimo porque es la credencial de rollback de la primera
-rotacion. No elimines ni renombres los dos secrets `PRODUCTION_*` del
-Environment.
-
-Los dos `wrangler.jsonc` son la fuente de verdad de cuenta y Worker. No derives
-`CLOUDFLARE_API_TOKEN` desde una Global API Key ni configures
-`CLOUDFLARE_API_KEY`/`CLOUDFLARE_EMAIL`; el release guard acepta solo el API
-token de cuenta con scope limitado.
-
-Este runbook aplica `PAT-SEC-SECRETS-001`, `PAT-SEC-RISK-001`,
-`PAT-SEC-LOGGING-001`, `PAT-OPS-LEAST-PRIVILEGE-001`,
-`PAT-CLOUDFLARE-WRANGLER-CONFIG-001` y `PAT-TEST-EVIDENCE-001`.
+La evidencia final incluye nombres/versiones/integridad de paquetes, commit y
+deploy IDs, dominios/Access, smokes, y respuesta SSR sin JavaScript con CSS de
+scope y `compiledHash` antes de hydration.

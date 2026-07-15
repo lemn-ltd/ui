@@ -48,7 +48,7 @@ function SeparatorPage(): ReactElement {
 						style={{
 							display: "flex",
 							alignItems: "center",
-							gap: "var(--space-4)",
+							gap: "var(--lemn-space-4)",
 							height: 40,
 						}}
 					>

@@ -12,9 +12,9 @@ import type { CSSProperties, ReactElement } from 'react';
 
 const SECTION_TITLE: CSSProperties = {
   margin: 0,
-  color: 'var(--text)',
-  fontSize: 'var(--font-size-heading)',
-  fontWeight: 'var(--font-weight-semibold)',
+  color: 'var(--lemn-color-text)',
+  fontSize: 'var(--lemn-font-size-heading)',
+  fontWeight: 'var(--lemn-font-weight-semibold)',
 };
 
 const NODES: readonly GraphCanvasNode[] = [

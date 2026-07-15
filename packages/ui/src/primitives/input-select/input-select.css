@@ -2,65 +2,65 @@
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-2);
+  gap: var(--lemn-space-2);
   width: 100%;
   height: 40px;
-  padding: 0 var(--space-3);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  color: var(--text);
-  font-family: var(--font-sans);
-  font-size: var(--font-size-small);
-  line-height: var(--line-height-small);
+  padding: 0 var(--lemn-space-3);
+  background: var(--lemn-color-surface);
+  border: 1px solid var(--lemn-color-border);
+  border-radius: var(--lemn-radius-medium);
+  color: var(--lemn-color-text);
+  font-family: var(--lemn-font-body);
+  font-size: var(--lemn-font-size-small);
+  line-height: var(--lemn-line-height-small);
   cursor: pointer;
   outline: none;
-  transition: border-color var(--duration-fast) var(--easing-standard);
+  transition: border-color var(--lemn-duration-fast) var(--lemn-easing-standard);
 }
 
 .ui-input-select:focus-visible,
 .ui-input-select[data-state="open"] {
-  border-color: var(--accent);
+  border-color: var(--lemn-color-accent);
 }
 
 .ui-input-select[data-invalid="true"] {
-  border-color: var(--danger);
+  border-color: var(--lemn-color-danger);
 }
 
 .ui-input-select[data-placeholder] {
-  color: var(--text-muted);
+  color: var(--lemn-color-text-muted);
 }
 
 .ui-input-select[data-disabled] {
-  color: var(--text-dim);
+  color: var(--lemn-color-disabled-text);
   cursor: not-allowed;
 }
 
 .ui-input-select__chevron {
   display: inline-flex;
   flex-shrink: 0;
-  color: var(--text-muted);
+  color: var(--lemn-color-text-muted);
 }
 
 /* The popup is a design-system surface, not a native control: same tokens as
-   the Menu so its dark matches the rest of the catalog. It sits on --z-popover
+   the Menu so its dark matches the rest of the catalog. It sits on --lemn-z-popover
    like Menu/Popover/Tooltip so the dropdown is clickable above a modal overlay,
    not occluded by it. */
 .ui-input-select__content {
-  z-index: var(--z-popover);
+  z-index: var(--lemn-z-popover);
   min-width: var(--radix-select-trigger-width);
   max-height: var(--radix-select-content-available-height);
-  padding: var(--space-1);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--elev-2);
-  color: var(--text);
-  font-family: var(--font-sans);
+  padding: var(--lemn-space-1);
+  background: var(--lemn-color-surface);
+  border: 1px solid var(--lemn-color-border);
+  border-radius: var(--lemn-radius-medium);
+  box-shadow: var(--lemn-shadow-overlay);
+  color: var(--lemn-color-text);
+  font-family: var(--lemn-font-body);
 }
 
 .ui-input-select__content[data-state="open"] {
-  animation: scale-in var(--duration-fast) var(--easing-emphasized);
+  animation: scale-in var(--lemn-duration-fast) var(--lemn-easing-emphasized);
   transform-origin: var(--radix-select-content-transform-origin);
 }
 
@@ -76,31 +76,31 @@
   justify-content: space-between;
   gap: 10px;
   height: 36px;
-  padding: 0 var(--space-3);
-  border-radius: var(--radius-sm);
-  color: var(--text);
-  font-size: var(--font-size-small);
-  line-height: var(--line-height-small);
+  padding: 0 var(--lemn-space-3);
+  border-radius: var(--lemn-radius-small);
+  color: var(--lemn-color-text);
+  font-size: var(--lemn-font-size-small);
+  line-height: var(--lemn-line-height-small);
   cursor: pointer;
   outline: none;
   user-select: none;
 }
 
 .ui-input-select__option[data-highlighted] {
-  background: var(--surface2);
+  background: var(--lemn-color-surface-muted);
 }
 
 .ui-input-select__option[data-state="checked"] {
-  color: var(--accent);
+  color: var(--lemn-color-accent);
 }
 
 .ui-input-select__option[data-disabled] {
-  color: var(--text-dim);
+  color: var(--lemn-color-disabled-text);
   pointer-events: none;
 }
 
 .ui-input-select__indicator {
   display: inline-flex;
   flex-shrink: 0;
-  color: var(--accent);
+  color: var(--lemn-color-accent);
 }

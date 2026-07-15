@@ -1,0 +1,41 @@
+---
+title: Gobierno de proveedores
+description: Seleccion individual de capacidades upstream con provenance y conformance inmutables.
+sidebar:
+  label: Proveedores
+  order: 5
+---
+
+LEMN puede usar varios proveedores, incluso varios motores de charts, si
+resuelven capacidades distintas. Cada capacidad semantica publica mantiene una
+sola implementacion activa y un proveedor de registro. Nunca se importan todos
+los componentes ni se exponen dos Buttons/Dialog equivalentes.
+
+Prefiere una dependencia runtime exacta. Un source snapshot exige closure
+transitiva completa, commit full, transforms deterministas, patches explicitos,
+provenance y licencia. `native_lemn` solo aplica a comportamiento unico sin una
+opcion upstream aceptable y registra warning de maintenance.
+
+## Registro obligatorio
+
+- capability ID y export estables;
+- categoria, madurez y proveedor;
+- ingestion mode, version exacta/full commit e integridad;
+- repo/source paths, licencia SPDX y notices;
+- transforms, patches y adaptadores;
+- roles semanticos de branding;
+- conformance behavior/a11y/interaction/visual/SSR/bundle;
+- ultima sync, estado upstream y replacement/deprecation.
+
+No se permiten floats, short SHA, branch, copia no verificada, silent patch ni
+assets/examples sin derechos.
+
+## Flujo
+
+Confirma el gap, compara candidatos, selecciona uno, registra origen/licencia,
+crea el adaptador minimo, mapea roles compilados, agrega conformance/catalogo/
+Showcase/docs/SBOM/changeset y prueba un install exacto limpio.
+
+Showcase Admin puede preparar proposals mediante un plan/apply least-privilege,
+pero no escribe el manifest ni posee un token personal. Los productos solo
+importan paquetes publicos `@lemn-ltd/*`.

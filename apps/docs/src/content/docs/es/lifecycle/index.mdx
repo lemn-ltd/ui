@@ -1,53 +1,52 @@
 ---
 title: Lifecycle
-description: SemVer, changelog, commits de release y ownership de publicacion.
+description: SemVer coordinado, updates de proveedores y publicacion inmutable.
 sidebar:
   label: Lifecycle
-  order: 5
+  order: 9
 ---
 
-`@lemn-ltd/ui` usa SemVer para el paquete publicado.
+El release publico incluye `@lemn-ltd/brand-contract`, `@lemn-ltd/ui` y
+`@lemn-ltd/brand-studio`. Los consumidores pinnean versiones exactas compatibles.
 
-- `PATCH`: bug fixes, fixes internos, correcciones de docs y polish visual no breaking.
-- `MINOR`: nuevos componentes, nuevos exports, variantes, props aditivas y comportamiento no breaking.
-- `MAJOR`: exports removidos, props renombradas, cambio de semantica o cambios que requieren migracion.
+- **PATCH**: fixes compatibles sin cambiar el contrato publico.
+- **MINOR**: componentes/blocks/props/campos aditivos con defaults compatibles.
+- **MAJOR**: exports removidos/renombrados, semantica incompatible, nuevo major
+  de schema/compiler o reemplazo que requiere migracion.
 
-## Ownership de release
+## Update de proveedor
 
-El autor del feature o el agente agrega un changeset con la intencion de
-release. La automatizacion convierte los changesets mergeados en un commit de
-metadata de release que actualiza `packages/ui/package.json` y
-`packages/ui/CHANGELOG.md`.
+1. Detecta upstream sin cambiar produccion.
+2. Propone origen/integridad/licencia exactos en el registry.
+3. Revisa delta API, comportamiento, a11y, interaction, visual, SSR y bundle de
+   las capacidades seleccionadas.
+4. Actualiza adaptador o patch explicito sin reescribir comportamiento.
+5. Ejecuta conformance, notices/SBOM, migration y changeset.
+6. Publica por el workflow normal.
 
-Todas las operaciones de Changesets usan el wrapper catalogado
-`pnpm changeset ...`. El wrapper protege `version` antes de cualquier mutacion.
-`pnpm exec changeset version` invoca el binario de la dependencia fuera de la
-gobernanza de package scripts y no es una ruta de release soportada.
+No se permiten catalogos completos, versiones flotantes, branches ni patches
+silenciosos.
 
-El workflow de produccion completa el preflight no mutante del API token de
-cuenta de Cloudflare con scope limitado antes de que Changesets pueda versionar,
-pushear o publicar. El token solo tiene `Workers Scripts: Edit` sobre Account
-`Lemn DEV` y `Zone: Read` sobre Zone `le-mn.com`. Luego captura el SHA del commit
-de release y despliega ese SHA y version exactos. El mismo guard exclusivo de
-`main` protege los entrypoints CLI directos, por lo que las credenciales en un
-feature checkout no autorizan versionado, publicacion ni deploy.
+## Orden de publicacion
 
-CI publica el paquete solo cuando una lista autenticada de GitHub Packages omite
-la version generada exacta y el package scope coincide con el owner del
-repositorio. Un estado de registry no verificable falla cerrado antes de la
-publicacion.
+1. `@lemn-ltd/brand-contract`
+2. `@lemn-ltd/ui`
+3. `@lemn-ltd/brand-studio`
+4. Docs, Showcase y Showcase Admin del mismo release
 
-## Comandos
+Despues se prueban installs limpios desde GitHub Packages y consumidores reales
+con versiones exactas, nunca links de workspace.
 
 ```bash
 pnpm changeset:add
+pnpm validate
+pnpm check
+pnpm test
+pnpm build
 pnpm version:packages
 pnpm release
 ```
 
-Ejecuta comandos mutantes de produccion solo desde `main`. `pnpm publish:ui`
-builda el paquete y `prepublishOnly` exige todos los exports y completa el smoke
-estricto del tarball instalado, TypeScript y Vite antes de que npm pueda
-publicar metadata inmutable.
-
-Usa prereleases solo para rollouts staged explicitos.
+El preflight de produccion acepta solo `PRODUCTION_CLOUDFLARE_API_TOKEN`, con
+scope Account `Lemn DEV` / `Workers Scripts: Edit` y Zone `le-mn.com` / `Zone:
+Read`. Credenciales o modos de autenticacion mas amplios fallan cerrado.

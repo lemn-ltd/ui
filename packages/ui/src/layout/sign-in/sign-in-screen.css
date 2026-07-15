@@ -2,8 +2,8 @@
   display: grid;
   min-height: 100vh;
   place-items: center;
-  padding: var(--space-5);
-  background: var(--bg);
+  padding: var(--lemn-space-5);
+  background: var(--lemn-color-canvas);
 }
 
 .ui-signin__card {
@@ -13,34 +13,34 @@
 .ui-signin__brand {
   display: flex;
   justify-content: center;
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--lemn-space-4);
 }
 
 .ui-signin__app-identity {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-3);
-  margin-bottom: var(--space-5);
+  gap: var(--lemn-space-3);
+  margin-bottom: var(--lemn-space-5);
 }
 
 .ui-signin__app-mark {
-  --service-mark-ink: var(--bg);
+  --service-mark-ink: var(--lemn-color-canvas);
 
   display: block;
   width: 58px;
   height: 58px;
   filter: drop-shadow(
-    0 0 18px color-mix(in srgb, var(--ui-signin-app-accent, var(--accent)) 34%, transparent)
+    0 0 18px color-mix(in srgb, var(--ui-signin-app-accent, var(--lemn-color-accent)) 34%, transparent)
   );
 }
 
 .ui-signin__app-name {
   margin: 0;
-  color: var(--ui-signin-app-accent, var(--accent));
-  font-size: var(--font-size-heading);
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-heading);
+  color: var(--ui-signin-app-accent, var(--lemn-color-accent));
+  font-size: var(--lemn-font-size-heading);
+  font-weight: var(--lemn-font-weight-semibold);
+  line-height: var(--lemn-line-height-heading);
   text-align: center;
 }
 
@@ -48,30 +48,30 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-2);
-  margin-bottom: var(--space-5);
+  gap: var(--lemn-space-2);
+  margin-bottom: var(--lemn-space-5);
   text-align: center;
 }
 
 .ui-signin__title {
   margin: 0;
-  color: var(--text);
-  font-size: var(--font-size-title);
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-title);
+  color: var(--lemn-color-text);
+  font-size: var(--lemn-font-size-title);
+  font-weight: var(--lemn-font-weight-semibold);
+  line-height: var(--lemn-line-height-title);
 }
 
 .ui-signin__subtitle {
   margin: 0;
-  color: var(--text-muted);
-  font-size: var(--font-size-small);
-  line-height: var(--line-height-small);
+  color: var(--lemn-color-text-muted);
+  font-size: var(--lemn-font-size-small);
+  line-height: var(--lemn-line-height-small);
 }
 
 .ui-signin__form {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--lemn-space-4);
 }
 
 .ui-signin__form > button[type="submit"] {
@@ -79,6 +79,6 @@
 }
 
 .ui-signin__footer {
-  margin-top: var(--space-4);
+  margin-top: var(--lemn-space-4);
   text-align: center;
 }

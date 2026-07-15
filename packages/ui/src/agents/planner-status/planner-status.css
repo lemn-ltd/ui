@@ -3,7 +3,7 @@
 }
 
 .ui-planner-status[data-pulse="true"]::before {
-  animation: ui-planner-status-pulse 1.4s var(--easing-standard) infinite;
+  animation: ui-planner-status-pulse 1.4s var(--lemn-easing-standard) infinite;
 }
 
 @keyframes ui-planner-status-pulse {

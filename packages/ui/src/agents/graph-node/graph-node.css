@@ -2,77 +2,77 @@
   display: inline-flex;
   width: 100%;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
-  border: 1.5px solid var(--gn-color, var(--border-strong));
-  border-radius: var(--radius-md);
-  background: var(--surface2);
-  color: var(--text);
+  gap: var(--lemn-space-2);
+  padding: var(--lemn-space-2) var(--lemn-space-3);
+  border: 1.5px solid var(--gn-color, var(--lemn-color-border-strong));
+  border-radius: var(--lemn-radius-medium);
+  background: var(--lemn-color-surface-muted);
+  color: var(--lemn-color-text);
   font-family: inherit;
   text-align: left;
   cursor: pointer;
   transition:
-    box-shadow var(--duration-fast) var(--easing-standard),
-    border-color var(--duration-fast) var(--easing-standard);
+    box-shadow var(--lemn-duration-fast) var(--lemn-easing-standard),
+    border-color var(--lemn-duration-fast) var(--lemn-easing-standard);
 }
 
 .ui-graph-node:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px var(--focus-ring);
+  box-shadow: 0 0 0 3px var(--lemn-color-focus);
 }
 
 .ui-graph-node[data-selected="true"] {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--focus-ring);
+  border-color: var(--lemn-color-accent);
+  box-shadow: 0 0 0 3px var(--lemn-color-focus);
 }
 
 .ui-graph-node__dot {
   width: 9px;
   height: 9px;
   flex: none;
-  border-radius: var(--radius-pill);
-  background: var(--gn-color, var(--text-muted));
+  border-radius: var(--lemn-radius-pill);
+  background: var(--gn-color, var(--lemn-color-text-muted));
 }
 
 .ui-graph-node__label {
   overflow: hidden;
-  font-size: var(--font-size-caption);
-  font-weight: var(--font-weight-medium);
-  line-height: var(--line-height-caption);
+  font-size: var(--lemn-font-size-caption);
+  font-weight: var(--lemn-font-weight-medium);
+  line-height: var(--lemn-line-height-caption);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .ui-graph-node__kind {
-  color: var(--text);
+  color: var(--lemn-color-text);
 }
 
 .ui-graph-node__name {
-  color: var(--text);
+  color: var(--lemn-color-text);
 }
 
 .ui-graph-node[data-state="idle"] {
-  --gn-color: var(--border-strong);
+  --gn-color: var(--lemn-color-border-strong);
 }
 
 .ui-graph-node[data-state="running"] {
-  --gn-color: var(--info);
+  --gn-color: var(--lemn-color-info);
 }
 
 .ui-graph-node[data-state="waiting"] {
-  --gn-color: var(--warn);
+  --gn-color: var(--lemn-color-warning);
 }
 
 .ui-graph-node[data-state="completed"] {
-  --gn-color: var(--success);
+  --gn-color: var(--lemn-color-success);
 }
 
 .ui-graph-node[data-state="failed"] {
-  --gn-color: var(--danger);
+  --gn-color: var(--lemn-color-danger);
 }
 
 .ui-graph-node[data-state="skipped"] {
-  --gn-color: var(--text-dim);
+  --gn-color: var(--lemn-color-disabled-text);
 }
 
 @media (prefers-reduced-motion: reduce) {

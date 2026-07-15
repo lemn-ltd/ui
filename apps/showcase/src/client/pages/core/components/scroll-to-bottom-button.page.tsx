@@ -31,9 +31,9 @@ function ScrollToBottomButtonPage(): ReactElement {
               position: 'relative',
               width: 'min(520px, 100%)',
               padding: '16px',
-              background: 'var(--surface)',
-              border: '1px solid var(--border)',
-              borderRadius: 'var(--radius-lg)',
+              background: 'var(--lemn-color-surface)',
+              border: '1px solid var(--lemn-color-border)',
+              borderRadius: 'var(--lemn-radius-large)',
             }}
           >
             <div
@@ -41,9 +41,9 @@ function ScrollToBottomButtonPage(): ReactElement {
               style={{
                 display: 'grid',
                 maxHeight: 220,
-                gap: 'var(--space-2)',
+                gap: 'var(--lemn-space-2)',
                 overflowY: 'auto',
-                padding: '0 var(--space-2)',
+                padding: '0 var(--lemn-space-2)',
                 scrollbarWidth: 'thin',
               }}
             >
@@ -52,10 +52,10 @@ function ScrollToBottomButtonPage(): ReactElement {
                   key={line}
                   style={{
                     margin: 0,
-                    padding: 'var(--space-3)',
-                    background: 'var(--surface2)',
-                    borderRadius: 'var(--radius-md)',
-                    color: 'var(--text-muted)',
+                    padding: 'var(--lemn-space-3)',
+                    background: 'var(--lemn-color-surface-muted)',
+                    borderRadius: 'var(--lemn-radius-medium)',
+                    color: 'var(--lemn-color-text-muted)',
                   }}
                 >
                   {line}

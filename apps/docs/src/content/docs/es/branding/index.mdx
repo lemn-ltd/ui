@@ -1,0 +1,49 @@
+---
+title: Branding
+description: Profiles, modes, tokens compilados, Studio y limites de publicacion.
+sidebar:
+  label: Branding
+  order: 4
+---
+
+`@lemn-ltd/brand-contract` define
+`https://schemas.ui.le-mn.com/brand-project/v1.json`. Un BrandProject tiene una
+identidad, assets gestionados, Profiles y un Profile por defecto. Cada Profile
+puede heredar de un solo padre aciclico y contener multiples modes.
+
+El contrato cubre colores semanticos, tipografia, shape, elevation,
+spacing/density, motion, visualizaciones, iconografia, accesibilidad y
+apariencia restringida. Arbitrary CSS y behavior flags no son branding.
+
+## Output compilado
+
+`compileBrandProject` produce un artefacto inmutable con compatibilidad de
+schema/compiler, hashes SHA-256, Profiles resueltos, CSS critico con scope,
+atributos DOM, adaptadores de charts, assets y diagnosticos. Todos los proyectos
+usan el mismo vocabulario `--lemn-*`; identidad vive en el scope, no en el nombre
+de variables.
+
+## Brand Studio
+
+```bash
+pnpm add @lemn-ltd/brand-studio@0.1.0
+```
+
+```tsx
+import { BrandStudio } from "@lemn-ltd/brand-studio";
+import "@lemn-ltd/brand-studio/styles.css";
+
+<BrandStudio value={draft} onChange={setDraft} onIntent={authorizedIntent} />
+```
+
+El wizard cubre identity, presets, assets, Profiles/modes, colors, typography,
+shape/elevation, density/motion, visualizations, accessibility, apariencia y
+review JSON/compiled.
+
+Studio es controlado y sin persistencia. El host autentica/autoriza, guarda
+drafts, valida expected revision/idempotency, planifica/aplica publicacion,
+separa aprobacion de produccion y registra audit.
+
+Publication verifica WCAG 2.2 AA para relaciones declaradas. Correcciones
+automaticas solo modifican roles derivados dentro de politica; nunca cambian
+silenciosamente el color primario. Errores bloquean publicacion.

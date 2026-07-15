@@ -1,26 +1,51 @@
 ---
-title: Showcase
-description: Interactive component docs and visual regression surface.
+title: Showcase and Admin
+description: Public read-only catalog, protected experimentation, and Brand Studio hosting boundaries.
 sidebar:
   label: Showcase
-  order: 4
+  order: 8
 ---
 
-The showcase is deployed separately at
-[showcase.ui.le-mn.com](https://showcase.ui.le-mn.com).
+## Public Showcase
+
+[showcase.ui.le-mn.com](https://showcase.ui.le-mn.com) is public and read-only.
+It renders real LEMN components and blocks, exposes current catalog/agent read
+models, and demonstrates Profile/mode scope switching without changing
+component functionality.
 
 It owns:
 
-- interactive component examples
-- responsive visual states
-- accessibility and behavior checks
-- `catalog.json`, `llms.txt`, and `llms-full.txt`
-- visual regression baselines
+- interactive component and block examples;
+- responsive, accessibility, interaction, and visual evidence;
+- public provider and capability read models with no credentials;
+- `catalog.json`, `llms.txt`, and `llms-full.txt`;
+- deterministic fixtures for review.
 
-Local development:
+## Showcase Admin
+
+[admin.showcase.ui.le-mn.com](https://admin.showcase.ui.le-mn.com) is a separate
+Cloudflare Access-protected deployment. It is the safe place to experiment with
+provider mappings, compare variations, inspect conformance, host project/Profile
+previews, and create proposal bundles.
+
+Admin does not write the active registry manifest directly and never receives a
+personal GitHub token. A least-privilege AgentOps/GitHub-sync plan/apply flow
+creates a reviewable branch or pull request. Registry changes still pass normal
+review, conformance, license, changeset, and release gates.
+
+## Brand Studio
+
+Brand Studio is a reusable package, not a deployment or control plane. It edits
+a controlled BrandProject value, compiles a live preview, exposes diagnostics,
+and emits typed validate/plan/apply intents. The Admin or AgentOps host supplies
+authorization, persistence, expected revision, idempotency, publication,
+rollback, and audit.
+
+## Local development
 
 ```bash
 pnpm dev:showcase
+pnpm dev:showcase-admin
 ```
 
-The local showcase runs at `http://localhost:6500`.
+The default local ports are `6500` for Showcase and `6502` for Showcase Admin.

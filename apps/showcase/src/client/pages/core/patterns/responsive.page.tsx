@@ -21,10 +21,10 @@ const FRAME: CSSProperties = {
   display: 'grid',
   gridTemplateColumns: 'auto 1fr',
   height: 640,
-  border: '1px solid var(--border)',
-  borderRadius: 'var(--radius-lg)',
+  border: '1px solid var(--lemn-color-border)',
+  borderRadius: 'var(--lemn-radius-large)',
   overflow: 'hidden',
-  background: 'var(--bg)',
+  background: 'var(--lemn-color-canvas)',
 };
 
 const MAIN: CSSProperties = {
@@ -42,19 +42,19 @@ const CONTENT: CSSProperties = {
 const NOTE: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
-  gap: 'var(--space-2)',
-  padding: 'var(--space-4)',
-  border: '1px solid var(--border)',
-  borderRadius: 'var(--radius-md)',
-  background: 'var(--surface2)',
-  fontSize: 'var(--font-size-small)',
-  color: 'var(--text-muted)',
+  gap: 'var(--lemn-space-2)',
+  padding: 'var(--lemn-space-4)',
+  border: '1px solid var(--lemn-color-border)',
+  borderRadius: 'var(--lemn-radius-medium)',
+  background: 'var(--lemn-color-surface-muted)',
+  fontSize: 'var(--lemn-font-size-small)',
+  color: 'var(--lemn-color-text-muted)',
 };
 
 const NOTE_TITLE: CSSProperties = {
-  fontSize: 'var(--font-size-body)',
+  fontSize: 'var(--lemn-font-size-body)',
   fontWeight: 600,
-  color: 'var(--text)',
+  color: 'var(--lemn-color-text)',
 };
 
 function ResponsivePage(): ReactElement {

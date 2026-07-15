@@ -7,8 +7,8 @@ import type { CSSProperties, ReactElement } from 'react';
 const FRAME: CSSProperties = {
   width: 520,
   height: 420,
-  border: '1px solid var(--border)',
-  borderRadius: 'var(--radius-lg)',
+  border: '1px solid var(--lemn-color-border)',
+  borderRadius: 'var(--lemn-radius-large)',
   overflow: 'hidden',
   display: 'grid',
 };
@@ -18,9 +18,9 @@ const PANE: CSSProperties = {
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
-  gap: 'var(--space-3)',
+  gap: 'var(--lemn-space-3)',
   height: '100%',
-  padding: 'var(--space-6)',
+  padding: 'var(--lemn-space-6)',
   textAlign: 'center',
 };
 
@@ -36,11 +36,11 @@ function Pane({
   return (
     <div style={PANE}>
       <Icon name={icon} size={32} />
-      <strong style={{ color: 'var(--text)', fontSize: 'var(--font-size-heading)' }}>
+      <strong style={{ color: 'var(--lemn-color-text)', fontSize: 'var(--lemn-font-size-heading)' }}>
         {title}
       </strong>
       <span
-        style={{ color: 'var(--text-muted)', fontSize: 'var(--font-size-small)', maxWidth: 240 }}
+        style={{ color: 'var(--lemn-color-text-muted)', fontSize: 'var(--lemn-font-size-small)', maxWidth: 240 }}
       >
         {description}
       </span>

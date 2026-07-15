@@ -21,20 +21,20 @@
  * over the content without forcing the left pane to reflow. */
 .ui-resizable-split__pane--right {
   right: 0;
-  z-index: var(--z-chrome);
-  background: var(--bg);
+  z-index: var(--lemn-z-chrome);
+  background: var(--lemn-color-canvas);
 }
 
 .ui-resizable-split__handle {
   position: absolute;
   top: 0;
   bottom: 0;
-  z-index: var(--z-chrome);
+  z-index: var(--lemn-z-chrome);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--space-2);
+  gap: var(--lemn-space-2);
   width: 16px;
   transform: translateX(-50%);
   cursor: col-resize;
@@ -48,28 +48,28 @@
 .ui-resizable-split__line {
   flex: 1;
   width: 1px;
-  border-radius: var(--radius-pill);
-  background: var(--border);
+  border-radius: var(--lemn-radius-pill);
+  background: var(--lemn-color-border);
 }
 
 .ui-resizable-split__grip {
   display: grid;
   place-items: center;
-  color: var(--text-muted);
+  color: var(--lemn-color-text-muted);
 }
 
 .ui-resizable-split__handle:hover .ui-resizable-split__line {
-  background: var(--border-strong);
+  background: var(--lemn-color-border-strong);
 }
 
 .ui-resizable-split__handle:hover .ui-resizable-split__grip {
-  color: var(--text);
+  color: var(--lemn-color-text);
 }
 
 .ui-resizable-split__handle[data-state="dragging"] .ui-resizable-split__line {
-  background: var(--accent);
+  background: var(--lemn-color-accent);
 }
 
 .ui-resizable-split__handle[data-state="dragging"] .ui-resizable-split__grip {
-  color: var(--accent);
+  color: var(--lemn-color-accent);
 }

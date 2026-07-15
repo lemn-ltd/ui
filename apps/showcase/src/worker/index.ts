@@ -1,19 +1,34 @@
 import { WorkerEntrypoint } from "cloudflare:workers";
 import {
+	BRAND_PROJECT_SCHEMA_URL,
+	brandProjectJsonSchema,
+} from "@lemn-ltd/brand-contract";
+import {
 	componentCatalog,
 	componentExportsFromSlug,
 } from "@lemn-ltd/ui/catalog";
 import type { UiShowcaseEnv } from "./env";
+import { blockCatalog } from "@lemn-ltd/ui";
+import { PROVIDER_READ_MODEL } from "../provider-read-model";
 import { buildStatusReport, validateUiShowcaseEnv } from "./service-descriptor";
 
 export default class UiShowcaseWorker extends WorkerEntrypoint<UiShowcaseEnv> {
 	override async fetch(request: Request): Promise<Response> {
 		const env = this.env;
-		const pathname = new URL(request.url).pathname;
+		const url = new URL(request.url);
+		const pathname = url.pathname;
+
+		if (url.hostname === "schemas.ui.le-mn.com") {
+			return brandProjectSchemaResponse(request, pathname);
+		}
 
 		if (pathname === "/health") return healthResponse(env);
 		if (pathname === "/health/ready") return readyResponse(env);
 		if (pathname === "/catalog.json") return catalogResponse(env);
+		if (pathname === "/provider-registry.json") {
+			return Response.json(PROVIDER_READ_MODEL);
+		}
+		if (pathname === "/blocks.json") return Response.json({ blocks: blockCatalog });
 		if (pathname === "/llms.txt") return llmsResponse();
 		if (pathname === "/llms-full.txt") return llmsFullResponse();
 
@@ -29,6 +44,37 @@ export default class UiShowcaseWorker extends WorkerEntrypoint<UiShowcaseEnv> {
 
 		return readinessFailureResponse(env);
 	}
+}
+
+function brandProjectSchemaResponse(
+	request: Request,
+	pathname: string,
+): Response {
+	if (pathname !== "/brand-project/v1.json") {
+		return Response.json(
+			{ error: "schema_not_found" },
+			{ status: 404, headers: { "cache-control": "no-store" } },
+		);
+	}
+	if (request.method !== "GET" && request.method !== "HEAD") {
+		return new Response(null, {
+			status: 405,
+			headers: { allow: "GET, HEAD" },
+		});
+	}
+
+	const headers = new Headers({
+		"access-control-allow-origin": "*",
+		"cache-control": "public, max-age=31536000, immutable",
+		"content-type": "application/schema+json; charset=utf-8",
+		"x-content-type-options": "nosniff",
+	});
+	if (request.method === "HEAD") return new Response(null, { headers });
+
+	return new Response(
+		JSON.stringify({ ...brandProjectJsonSchema, $id: BRAND_PROJECT_SCHEMA_URL }),
+		{ headers },
+	);
 }
 
 function readinessFailureResponse(env: UiShowcaseEnv): Response {
@@ -123,6 +169,11 @@ function catalogResponse(env: UiShowcaseEnv): Response {
 		version: env.BUILD_VERSION ?? "0.0.0",
 		source: "https://github.com/lemn-ltd/ui",
 		components: componentCatalog,
+		blocks: blockCatalog,
+		providerRegistry: {
+			revision: PROVIDER_READ_MODEL.revision,
+			capabilityCount: PROVIDER_READ_MODEL.capabilities.length,
+		},
 	});
 }
 
@@ -136,6 +187,8 @@ function llmsResponse(): Response {
 			"",
 			"Catalog:",
 			"- JSON: https://showcase.ui.le-mn.com/catalog.json",
+			"- Provider provenance: https://showcase.ui.le-mn.com/provider-registry.json",
+			"- Curated blocks: https://showcase.ui.le-mn.com/blocks.json",
 			"- Full agent guide: https://showcase.ui.le-mn.com/llms-full.txt",
 			"",
 			"Rules:",

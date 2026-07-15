@@ -1,35 +1,35 @@
 .ui-textarea {
   width: 100%;
   min-height: 96px;
-  padding: var(--space-3);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  color: var(--text);
-  font-family: var(--font-sans);
-  font-size: var(--font-size-small);
-  line-height: var(--line-height-body);
+  padding: var(--lemn-space-3);
+  background: var(--lemn-color-surface);
+  border: 1px solid var(--lemn-color-border);
+  border-radius: var(--lemn-radius-medium);
+  color: var(--lemn-color-text);
+  font-family: var(--lemn-font-body);
+  font-size: var(--lemn-font-size-small);
+  line-height: var(--lemn-line-height-body);
   resize: vertical;
   /* A textarea wraps, so it never needs horizontal scroll; suppress the phantom
      one that fractional browser zoom produces (sub-pixel scrollWidth > clientWidth),
      and break long tokens so they wrap instead of being clipped by overflow-x. */
   overflow-wrap: break-word;
   overflow-x: hidden;
-  transition: border-color var(--duration-fast) var(--easing-standard);
+  transition: border-color var(--lemn-duration-fast) var(--lemn-easing-standard);
 }
 
 .ui-textarea::placeholder {
-  color: var(--text-muted);
+  color: var(--lemn-color-text-muted);
 }
 
 .ui-textarea:focus {
-  border-color: var(--accent);
+  border-color: var(--lemn-color-accent);
   outline: none;
 }
 
 .ui-textarea[data-invalid="true"],
 .ui-textarea[data-invalid="true"]:focus {
-  border-color: var(--danger);
+  border-color: var(--lemn-color-danger);
 }
 
 .ui-textarea:disabled {

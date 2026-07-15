@@ -5,24 +5,24 @@
   height: 36px;
   background: transparent;
   border: 1px solid transparent;
-  border-radius: var(--radius-md);
-  color: var(--text);
+  border-radius: var(--lemn-radius-medium);
+  color: var(--lemn-color-text);
   overflow: hidden;
   vertical-align: middle;
   transition:
-    width var(--duration-slow) var(--easing-emphasized),
-    border-color var(--duration-normal) var(--easing-standard);
+    width var(--lemn-duration-slow) var(--lemn-easing-emphasized),
+    border-color var(--lemn-duration-normal) var(--lemn-easing-standard);
 }
 
 /* Height stays constant across states — only width and border-color animate, so
  * expanding never reflows the surrounding row. */
 .ui-input-search[data-expanded="expanded"] {
   width: 280px;
-  border-color: var(--border);
+  border-color: var(--lemn-color-border);
 }
 
 .ui-input-search[data-expanded="expanded"]:focus-within {
-  border-color: var(--accent);
+  border-color: var(--lemn-color-accent);
 }
 
 .ui-input-search__trigger {
@@ -35,19 +35,19 @@
   padding: 0;
   background: transparent;
   border: 0;
-  color: var(--text-muted);
+  color: var(--lemn-color-text-muted);
   cursor: pointer;
-  transition: color var(--duration-fast) var(--easing-standard);
+  transition: color var(--lemn-duration-fast) var(--lemn-easing-standard);
 }
 
 .ui-input-search__trigger:hover {
-  color: var(--text);
+  color: var(--lemn-color-text);
 }
 
 .ui-input-search[data-expanded="expanded"] .ui-input-search__trigger {
   width: auto;
   justify-content: flex-start;
-  padding-left: var(--space-3);
+  padding-left: var(--lemn-space-3);
   pointer-events: none;
   cursor: default;
 }
@@ -61,17 +61,17 @@
   background: transparent;
   border: 0;
   color: inherit;
-  font-family: var(--font-sans);
-  font-size: var(--font-size-small);
+  font-family: var(--lemn-font-body);
+  font-size: var(--lemn-font-size-small);
   opacity: 0;
   pointer-events: none;
   outline: none;
-  transition: opacity var(--duration-normal) var(--easing-standard);
+  transition: opacity var(--lemn-duration-normal) var(--lemn-easing-standard);
 }
 
 .ui-input-search[data-expanded="expanded"] .ui-input-search__input {
-  padding-left: var(--space-2);
-  padding-right: var(--space-2);
+  padding-left: var(--lemn-space-2);
+  padding-right: var(--lemn-space-2);
   opacity: 1;
   pointer-events: auto;
 }
@@ -89,16 +89,16 @@
   justify-content: center;
   width: 24px;
   height: 24px;
-  margin-right: var(--space-3);
+  margin-right: var(--lemn-space-3);
   padding: 0;
   background: transparent;
   border: 0;
-  border-radius: var(--radius-sm);
-  color: var(--text-muted);
+  border-radius: var(--lemn-radius-small);
+  color: var(--lemn-color-text-muted);
   cursor: pointer;
 }
 
 .ui-input-search__clear:hover {
-  background: var(--surface2);
-  color: var(--text);
+  background: var(--lemn-color-surface-muted);
+  color: var(--lemn-color-text);
 }

@@ -1,51 +1,51 @@
 .ui-preset-selector {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-3);
-  font-family: var(--font-sans);
+  gap: var(--lemn-space-3);
+  font-family: var(--lemn-font-body);
 }
 
 .ui-preset-selector__label {
-  color: var(--text-muted);
-  font-size: var(--font-size-small);
-  font-weight: var(--font-weight-medium);
-  line-height: var(--line-height-small);
+  color: var(--lemn-color-text-muted);
+  font-size: var(--lemn-font-size-small);
+  font-weight: var(--lemn-font-weight-medium);
+  line-height: var(--lemn-line-height-small);
 }
 
 .ui-preset-selector__segments {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--lemn-space-1);
   padding: 2px;
-  background: var(--surface2);
-  border-radius: var(--radius-md);
+  background: var(--lemn-color-surface-muted);
+  border-radius: var(--lemn-radius-medium);
 }
 
 .ui-preset-selector__segment {
   height: 28px;
-  padding: 0 var(--space-3);
+  padding: 0 var(--lemn-space-3);
   background: transparent;
   border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  color: var(--text-muted);
+  border-radius: var(--lemn-radius-small);
+  color: var(--lemn-color-text-muted);
   font-family: inherit;
-  font-size: var(--font-size-small);
-  font-weight: var(--font-weight-medium);
-  line-height: var(--line-height-small);
+  font-size: var(--lemn-font-size-small);
+  font-weight: var(--lemn-font-weight-medium);
+  line-height: var(--lemn-line-height-small);
   cursor: pointer;
   transition:
-    background-color var(--duration-fast) var(--easing-standard),
-    border-color var(--duration-fast) var(--easing-standard),
-    color var(--duration-fast) var(--easing-standard);
+    background-color var(--lemn-duration-fast) var(--lemn-easing-standard),
+    border-color var(--lemn-duration-fast) var(--lemn-easing-standard),
+    color var(--lemn-duration-fast) var(--lemn-easing-standard);
 }
 
 .ui-preset-selector__segment:hover {
-  color: var(--text);
+  color: var(--lemn-color-text);
 }
 
 .ui-preset-selector__segment[data-active="true"] {
-  background: var(--surface);
-  border-color: var(--border-strong);
-  color: var(--text);
-  font-weight: var(--font-weight-semibold);
+  background: var(--lemn-color-surface);
+  border-color: var(--lemn-color-border-strong);
+  color: var(--lemn-color-text);
+  font-weight: var(--lemn-font-weight-semibold);
 }

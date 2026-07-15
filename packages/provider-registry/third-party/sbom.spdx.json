@@ -1,0 +1,226 @@
+{
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "spdxVersion": "SPDX-2.3",
+  "dataLicense": "CC0-1.0",
+  "name": "LEMN UI provider registry 1.0.0",
+  "documentNamespace": "https://schemas.ui.le-mn.com/sbom/provider-registry/1.0.0",
+  "creationInfo": {
+    "created": "2026-07-15T00:00:00Z",
+    "creators": [
+      "Organization: LEMN"
+    ]
+  },
+  "documentDescribes": [
+    "SPDXRef-Package-radix-ui",
+    "SPDXRef-Package-recharts",
+    "SPDXRef-Package-echarts",
+    "SPDXRef-Package-uiw-react-codemirror",
+    "SPDXRef-Package-shiki",
+    "SPDXRef-Package-react-markdown",
+    "SPDXRef-Package-cmdk",
+    "SPDXRef-Package-sonner",
+    "SPDXRef-Package-xyflow-react"
+  ],
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Package-radix-ui",
+      "name": "radix-ui",
+      "versionInfo": "1.4.3",
+      "downloadLocation": "https://registry.npmjs.org/radix-ui/-/radix-ui-1.4.3.tgz",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "Copyright (c) 2022 WorkOS",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:npm/radix-ui@1.4.3"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-recharts",
+      "name": "recharts",
+      "versionInfo": "3.9.2",
+      "downloadLocation": "https://registry.npmjs.org/recharts/-/recharts-3.9.2.tgz",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "Copyright (c) 2015-present recharts",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:npm/recharts@3.9.2"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-echarts",
+      "name": "echarts",
+      "versionInfo": "6.1.0",
+      "downloadLocation": "https://registry.npmjs.org/echarts/-/echarts-6.1.0.tgz",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "Copyright 2017-2026 The Apache Software Foundation",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:npm/echarts@6.1.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-uiw-react-codemirror",
+      "name": "@uiw/react-codemirror",
+      "versionInfo": "4.25.10",
+      "downloadLocation": "https://registry.npmjs.org/@uiw/react-codemirror/-/react-codemirror-4.25.10.tgz",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "Copyright (c) 2021 uiw",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:npm/%40uiw/react-codemirror@4.25.10"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-shiki",
+      "name": "shiki",
+      "versionInfo": "4.2.0",
+      "downloadLocation": "https://registry.npmjs.org/shiki/-/shiki-4.2.0.tgz",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "Copyright (c) 2021 Pine Wu; Copyright (c) 2023 Anthony Fu",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:npm/shiki@4.2.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-react-markdown",
+      "name": "react-markdown",
+      "versionInfo": "10.1.0",
+      "downloadLocation": "https://registry.npmjs.org/react-markdown/-/react-markdown-10.1.0.tgz",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "Copyright (c) Espen Hovlandsdal",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:npm/react-markdown@10.1.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cmdk",
+      "name": "cmdk",
+      "versionInfo": "1.1.1",
+      "downloadLocation": "https://registry.npmjs.org/cmdk/-/cmdk-1.1.1.tgz",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "Copyright (c) 2022 Paco Coursey",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:npm/cmdk@1.1.1"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-sonner",
+      "name": "sonner",
+      "versionInfo": "2.0.7",
+      "downloadLocation": "https://registry.npmjs.org/sonner/-/sonner-2.0.7.tgz",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "Copyright (c) 2023 Emil Kowalski",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:npm/sonner@2.0.7"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-xyflow-react",
+      "name": "@xyflow/react",
+      "versionInfo": "12.11.0",
+      "downloadLocation": "https://registry.npmjs.org/@xyflow/react/-/react-12.11.0.tgz",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "Copyright (c) 2019-2025 webkid GmbH",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:npm/%40xyflow/react@12.11.0"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-Package-radix-ui"
+    },
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-Package-recharts"
+    },
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-Package-echarts"
+    },
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-Package-uiw-react-codemirror"
+    },
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-Package-shiki"
+    },
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-Package-react-markdown"
+    },
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-Package-cmdk"
+    },
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-Package-sonner"
+    },
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-Package-xyflow-react"
+    }
+  ]
+}

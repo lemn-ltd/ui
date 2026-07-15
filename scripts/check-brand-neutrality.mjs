@@ -6,10 +6,14 @@ const targets = process.argv.slice(2);
 const scanRoots =
   targets.length > 0
     ? targets
-    : ['packages/ui/src', 'apps/showcase/src', 'apps/brand-lab/src'];
+    : [
+        'packages/ui/src',
+        'packages/brand-contract/src',
+        'packages/brand-studio/src',
+        'apps/showcase/src',
+        'apps/showcase-admin/src',
+      ];
 
-const publicBrandPattern = /\blemn\b/i;
-const officialPackageScopePattern = /@lemn-ltd\//i;
 const forbiddenPatterns = [
   /brainsforce/i,
   /brainstask/i,
@@ -18,13 +22,6 @@ const forbiddenPatterns = [
   /code[- ]state/i,
   /local organization/i,
   /angel loor/i,
-  publicBrandPattern,
-];
-
-const publicBrandSurfacePrefixes = [
-  'apps/showcase/src/client/pages/',
-  'apps/showcase/src/worker/',
-  'apps/brand-lab/src/',
 ];
 
 const textExtensions = new Set([
@@ -74,14 +71,6 @@ for (const scanRoot of scanRoots) {
     lines.forEach((line, index) => {
       const match = forbiddenPatterns.find((pattern) => pattern.test(line));
       if (!match) return;
-
-      if (
-        match === publicBrandPattern &&
-        (officialPackageScopePattern.test(line) ||
-          publicBrandSurfacePrefixes.some((prefix) => relativeFile.startsWith(prefix)))
-      ) {
-        return;
-      }
 
       failures.push(`${relativeFile}:${index + 1}: ${line.trim()}`);
     });

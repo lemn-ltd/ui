@@ -1,187 +1,152 @@
 /**
- * Design tokens as CSS custom properties.
+ * LEMN semantic token fallback.
  *
- * `:root` holds the canonical token declarations. Theme-dependent tokens use
- * CSS `light-dark()` and resolve from `color-scheme`: system preference when no
- * `data-theme` choice exists, or the explicit theme selected by the app.
- *
- * Each mode also fixes `color-scheme` so the browser paints native controls —
- * select popups, scrollbars, date/time pickers, autofill — in the active mode.
- *
- * Line-heights are unitless ratios. Status colors ship both base and soft
- * variants in both modes. The emphasized easing is distinct from the standard
- * easing, and a dedicated linear easing drives loops.
+ * Product hosts normally inject the exact compiled BrandRevision scope before
+ * first paint. These values are the branded, light-first fallback used by
+ * isolated components, tests and unconfigured development surfaces. Token
+ * names stay project-neutral; a compiled scope replaces values atomically.
  */
 
 :root {
-  /* Native controls (select popups, scrollbars, pickers) follow the mode */
-  color-scheme: light dark;
-
-  /* Surfaces & lines */
-  --bg: light-dark(#ffffff, oklch(0.13 0.028 261.692));
-  --surface: light-dark(#ffffff, oklch(0.13 0.028 261.692));
-  --surface2: light-dark(#f3f5f8, #090e1a);
-  --border: light-dark(#e3e8ef, oklch(0.278 0.033 256.848));
-  --border-strong: light-dark(#cbd3df, oklch(0.373 0.034 259.733));
-
-  /* Text */
-  --text: light-dark(#0e141b, oklch(0.985 0.002 247.839));
-  --text-muted: light-dark(#5a6b82, oklch(0.707 0.022 261.325));
-  --text-dim: light-dark(#8a98ad, oklch(0.551 0.027 264.364));
-
-  /* Accents */
-  --accent: light-dark(#0d9488, #5eead4);
-  --accent-foreground: light-dark(#ffffff, #0e141b);
-  --accent-strong: light-dark(#0f766e, #2dd4bf);
-  --accent-soft: light-dark(#e6fbf6, #0f2a2a);
-  --accent2: light-dark(#7c3aed, #a78bfa);
-  --accent2-soft: light-dark(#f1ebfd, #1f1a33);
-
-  /* Status */
-  --success: light-dark(#16a34a, #34d399);
-  --warn: light-dark(#d97706, #fbbf24);
-  --danger: light-dark(#dc2626, #f87171);
-  --info: light-dark(#2563eb, #60a5fa);
-
-  /* Soft status */
-  --success-soft: light-dark(#e6f6ec, #0e2a1a);
-  --warn-soft: light-dark(#fdf2e3, #2a2310);
-  --danger-soft: light-dark(#fdeaea, #2a1414);
-  --info-soft: light-dark(#e8f0fd, #112038);
-
-  /* Charts — categorical series are independent from semantic status colors. */
-  --chart-series-1: light-dark(#2563eb, #60a5fa);
-  --chart-series-2: light-dark(#0f766e, #2dd4bf);
-  --chart-series-3: light-dark(#d97706, #fbbf24);
-  --chart-series-4: light-dark(#7c3aed, #a78bfa);
-  --chart-series-5: light-dark(#e11d48, #fb7185);
-  --chart-series-6: light-dark(#15803d, #4ade80);
-  --chart-series-7: light-dark(#0369a1, #38bdf8);
-  --chart-series-8: light-dark(#a16207, #f59e0b);
-  --chart-grid: light-dark(#e3e8ef, oklch(0.278 0.033 256.848));
-  --chart-axis: light-dark(#5a6b82, oklch(0.707 0.022 261.325));
-  --chart-cursor: light-dark(rgba(37, 99, 235, 0.08), rgba(96, 165, 250, 0.12));
-  --chart-hover: light-dark(rgba(13, 148, 136, 0.12), rgba(94, 234, 212, 0.14));
-  --chart-selection: light-dark(rgba(37, 99, 235, 0.18), rgba(96, 165, 250, 0.2));
-  --chart-tooltip-surface: light-dark(#ffffff, #090e1a);
-  --chart-tooltip-border: light-dark(#cbd3df, oklch(0.373 0.034 259.733));
-  --chart-positive: light-dark(#15803d, #4ade80);
-  --chart-negative: light-dark(#dc2626, #f87171);
-
-  /* Interaction */
-  --focus-ring: light-dark(rgba(13, 148, 136, 0.45), rgba(94, 234, 212, 0.55));
-  --overlay: light-dark(rgba(14, 20, 27, 0.45), rgba(0, 0, 0, 0.6));
-
-  /*
-   * Layers — the single stacking hierarchy for the whole system, low to high.
-   * Every `z-index` resolves to one of these so surfaces never fight by accident:
-   * raised content < in-app chrome < non-modal floating window < drawer scrim <
-   * drawer < anchored dropdown < modal (dialog / command palette) <
-   * floating popover/menu/tooltip < toast.
-   */
-  --z-raised: 1;
-  --z-chrome: 10;
-  --z-window: 50;
-  --z-scrim: 100;
-  --z-drawer: 101;
-  --z-dropdown: 1000;
-  --z-modal: 1100;
-  --z-popover: 1200;
-  --z-toast: 1300;
-
-  /* Decorative identity hue without a semantic equivalent (Avatar palette) */
-  --avatar-pink: light-dark(#db2777, #f472b6);
-
-  /* Spacing (px; non-contiguous index — 7,9,11,13,14,15 absent) */
-  --space-0: 0;
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 20px;
-  --space-6: 24px;
-  --space-8: 32px;
-  --space-10: 40px;
-  --space-12: 48px;
-  --space-16: 64px;
-
-  /* Radii */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-pill: 999px;
-
-  /* Typography — families */
-  --font-sans:
-    "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-mono: "SFMono-Regular", ui-monospace, Consolas, "Liberation Mono", monospace;
-
-  /* Typography — sizes */
-  --font-size-display: 28px;
-  --font-size-title: 20px;
-  --font-size-heading: 16px;
-  --font-size-body: 14px;
-  --font-size-small: 13px;
-  --font-size-caption: 12px;
-  --font-size-mono: 13px;
-
-  /* Typography — line-heights (unitless ratios) */
-  --line-height-display: 1.29;
-  --line-height-title: 1.4;
-  --line-height-heading: 1.5;
-  --line-height-body: 1.43;
-  --line-height-small: 1.38;
-  --line-height-caption: 1.33;
-  --line-height-mono: 1.54;
-
-  /* Typography — weights */
-  --font-weight-regular: 400;
-  --font-weight-medium: 500;
-  --font-weight-semibold: 600;
-
-  /* Motion — durations */
-  --duration-instant: 80ms;
-  --duration-fast: 160ms;
-  --duration-normal: 240ms;
-  --duration-slow: 360ms;
-
-  /* Motion — easings */
-  --easing-standard: cubic-bezier(0.2, 0, 0, 1);
-  --easing-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1);
-  --easing-linear: linear;
-
-  /* Elevation */
-  --elev-0: none;
-  --elev-1-light: 0 1px 2px rgba(14, 20, 27, 0.06), 0 1px 3px rgba(14, 20, 27, 0.1);
-  --elev-1-dark: 0 1px 2px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.5);
-  --elev-2-light: 0 2px 4px rgba(14, 20, 27, 0.08), 0 4px 12px rgba(14, 20, 27, 0.1);
-  --elev-2-dark: 0 2px 4px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.5);
-  --elev-3-light: 0 12px 32px rgba(14, 20, 27, 0.14);
-  --elev-3-dark: 0 12px 32px rgba(0, 0, 0, 0.5);
-  --elev-1: light-dark(var(--elev-1-light), var(--elev-1-dark));
-  --elev-2: light-dark(var(--elev-2-light), var(--elev-2-dark));
-  --elev-3: light-dark(var(--elev-3-light), var(--elev-3-dark));
-
-  /* Breakpoints (reference thresholds) */
-  --breakpoint-sm: 640px;
-  --breakpoint-md: 768px;
-  --breakpoint-lg: 1024px;
-  --breakpoint-xl: 1280px;
-
-  /* Content cap */
-  --content-max: 1200px;
-
-  /* Scrollbar — semantic tokens that resolve per theme through the base tokens. */
-  --scrollbar-track: var(--surface2);
-  --scrollbar-thumb: var(--border-strong);
-  --scrollbar-thumb-hover: var(--text-dim);
-  --scrollbar-size: 10px;
-}
-
-:root[data-theme="light"] {
   color-scheme: light;
-}
 
-:root[data-theme="dark"] {
-  color-scheme: dark;
+  --lemn-color-canvas: #ffffff;
+  --lemn-color-surface: #ffffff;
+  --lemn-color-surface-muted: #f3f5f8;
+  --lemn-color-surface-elevated: #ffffff;
+  --lemn-color-surface-overlay: #ffffff;
+  --lemn-color-text: #0e141b;
+  --lemn-color-text-muted: #5a6b82;
+  --lemn-color-text-inverse: #ffffff;
+  --lemn-color-disabled-text: #8a98ad;
+  --lemn-color-disabled-surface: #f3f5f8;
+  --lemn-color-border: #e3e8ef;
+  --lemn-color-border-strong: #cbd3df;
+  --lemn-color-accent: #0d9488;
+  --lemn-color-accent-foreground: #ffffff;
+  --lemn-color-accent-hover: #0c857a;
+  --lemn-color-accent-pressed: #0b796f;
+  --lemn-color-accent-soft: rgb(13 148 136 / 0.12);
+  --lemn-color-focus: #0d9488;
+  --lemn-color-selection: #d9f5f1;
+  --lemn-color-overlay-scrim: rgb(14 20 27 / 0.45);
+
+  --lemn-color-success: #15803d;
+  --lemn-color-success-surface: #e6f6ec;
+  --lemn-color-success-foreground: #14532d;
+  --lemn-color-warning: #b45309;
+  --lemn-color-warning-surface: #fdf2e3;
+  --lemn-color-warning-foreground: #78350f;
+  --lemn-color-danger: #b91c1c;
+  --lemn-color-danger-surface: #fdeaea;
+  --lemn-color-danger-foreground: #7f1d1d;
+  --lemn-color-info: #1d4ed8;
+  --lemn-color-info-surface: #e8f0fd;
+  --lemn-color-info-foreground: #1e3a8a;
+
+  --lemn-chart-series-1: #2563eb;
+  --lemn-chart-series-2: #0f766e;
+  --lemn-chart-series-3: #d97706;
+  --lemn-chart-series-4: #7c3aed;
+  --lemn-chart-series-5: #e11d48;
+  --lemn-chart-series-6: #15803d;
+  --lemn-chart-series-7: #0369a1;
+  --lemn-chart-series-8: #a16207;
+  --lemn-chart-grid: #e3e8ef;
+  --lemn-chart-axis: #5a6b82;
+  --lemn-chart-label: #334155;
+  --lemn-chart-cursor: #2563eb;
+  --lemn-chart-crosshair: #2563eb;
+  --lemn-chart-hover: rgb(13 148 136 / 0.12);
+  --lemn-chart-selection: #dbeafe;
+  --lemn-chart-tooltip-surface: #0f172a;
+  --lemn-chart-tooltip-border: #334155;
+  --lemn-chart-tooltip-text: #ffffff;
+  --lemn-chart-positive: #15803d;
+  --lemn-chart-negative: #dc2626;
+  --lemn-chart-neutral: #64748b;
+  --lemn-chart-muted-opacity: 0.55;
+  --lemn-chart-inactive-opacity: 0.25;
+
+  --lemn-space-0: 0;
+  --lemn-space-1: 4px;
+  --lemn-space-2: 8px;
+  --lemn-space-3: 12px;
+  --lemn-space-4: 16px;
+  --lemn-space-5: 20px;
+  --lemn-space-6: 24px;
+  --lemn-space-8: 32px;
+  --lemn-space-10: 40px;
+  --lemn-space-12: 48px;
+  --lemn-space-16: 64px;
+  --lemn-density-scale: 1;
+  --lemn-control-height: 40px;
+  --lemn-content-gutter: 24px;
+
+  --lemn-radius-small: 6px;
+  --lemn-radius-medium: 10px;
+  --lemn-radius-large: 14px;
+  --lemn-radius-control: 10px;
+  --lemn-radius-card: 14px;
+  --lemn-radius-pill: 999px;
+  --lemn-radius-full: 999px;
+  --lemn-border-width: 1px;
+  --lemn-border-style: solid;
+  --lemn-outline-treatment: outside;
+
+  --lemn-font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --lemn-font-heading: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --lemn-font-label: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --lemn-font-code: ui-monospace, monospace;
+  --lemn-font-display: swap;
+  --lemn-font-size-base: 14px;
+  --lemn-font-size-display: 28px;
+  --lemn-font-size-title: 20px;
+  --lemn-font-size-heading: 16px;
+  --lemn-font-size-body: 14px;
+  --lemn-font-size-small: 13px;
+  --lemn-font-size-caption: 12px;
+  --lemn-font-size-mono: 13px;
+  --lemn-line-height-display: 1.29;
+  --lemn-line-height-title: 1.4;
+  --lemn-line-height-heading: 1.5;
+  --lemn-line-height-body: 1.43;
+  --lemn-line-height-small: 1.38;
+  --lemn-line-height-caption: 1.33;
+  --lemn-line-height-mono: 1.54;
+  --lemn-letter-spacing: 0;
+  --lemn-font-weight-regular: 400;
+  --lemn-font-weight-medium: 500;
+  --lemn-font-weight-semibold: 600;
+
+  --lemn-duration-instant: 80ms;
+  --lemn-duration-fast: 160ms;
+  --lemn-duration-normal: 240ms;
+  --lemn-duration-slow: 360ms;
+  --lemn-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+  --lemn-easing-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --lemn-easing-linear: linear;
+
+  --lemn-shadow-none: none;
+  --lemn-shadow-raised: 0 1px 2px rgb(14 20 27 / 0.06), 0 1px 3px rgb(14 20 27 / 0.1);
+  --lemn-shadow-overlay: 0 2px 4px rgb(14 20 27 / 0.08), 0 4px 12px rgb(14 20 27 / 0.1);
+  --lemn-shadow-modal: 0 12px 32px rgb(14 20 27 / 0.14);
+  --lemn-focus-ring-width: 2px;
+  --lemn-focus-ring-offset: 2px;
+
+  --lemn-z-raised: 1;
+  --lemn-z-chrome: 10;
+  --lemn-z-window: 50;
+  --lemn-z-scrim: 100;
+  --lemn-z-drawer: 101;
+  --lemn-z-dropdown: 1000;
+  --lemn-z-modal: 1100;
+  --lemn-z-popover: 1200;
+  --lemn-z-toast: 1300;
+
+  --lemn-content-max: 1200px;
+  --lemn-scrollbar-track: var(--lemn-color-surface-muted);
+  --lemn-scrollbar-thumb: var(--lemn-color-border-strong);
+  --lemn-scrollbar-thumb-hover: var(--lemn-color-text-muted);
+  --lemn-scrollbar-size: 10px;
 }

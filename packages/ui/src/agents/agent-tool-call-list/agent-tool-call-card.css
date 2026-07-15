@@ -9,13 +9,13 @@
   align-items: center;
   gap: 5px;
   /* Level 2: align each tool chevron below the group title. */
-  padding: var(--space-2) var(--space-3) var(--space-2) var(--ui-agent-tool-call-row-indent);
+  padding: var(--lemn-space-2) var(--lemn-space-3) var(--lemn-space-2) var(--ui-agent-tool-call-row-indent);
   background: transparent;
   border: 0;
-  color: var(--text);
+  color: var(--lemn-color-text);
   cursor: pointer;
   text-align: left;
-  font-family: var(--font-sans);
+  font-family: var(--lemn-font-body);
 }
 
 .ui-agent-tool-call-card__row:hover {
@@ -24,15 +24,15 @@
 
 .ui-agent-tool-call-card__chevron {
   flex: none;
-  color: var(--text-dim);
+  color: var(--lemn-color-disabled-text);
   transform-origin: center;
   transition:
-    color var(--duration-fast) var(--easing-standard),
-    transform 500ms var(--easing-standard);
+    color var(--lemn-duration-fast) var(--lemn-easing-standard),
+    transform 500ms var(--lemn-easing-standard);
 }
 
 .ui-agent-tool-call-card__row:hover .ui-agent-tool-call-card__chevron {
-  color: var(--accent);
+  color: var(--lemn-color-accent);
 }
 
 .ui-agent-tool-call-card__row[aria-expanded="true"] .ui-agent-tool-call-card__chevron {
@@ -46,7 +46,7 @@
   justify-content: center;
   width: 13px;
   height: 13px;
-  color: var(--text-dim);
+  color: var(--lemn-color-disabled-text);
 }
 
 .ui-agent-tool-call-card__status-indicator .ui-icon {
@@ -63,87 +63,87 @@
 
 /* The status glyph carries the status tone; running uses the spinner instead. */
 .ui-agent-tool-call-card[data-tool-status="running"] .ui-agent-tool-call-card__status-indicator {
-  color: var(--info);
+  color: var(--lemn-color-info);
 }
 .ui-agent-tool-call-card[data-tool-status="completed"] .ui-agent-tool-call-card__status-indicator {
-  color: var(--success);
+  color: var(--lemn-color-success);
 }
 .ui-agent-tool-call-card[data-tool-status="error"] .ui-agent-tool-call-card__status-indicator,
 .ui-agent-tool-call-card[data-tool-status="denied"] .ui-agent-tool-call-card__status-indicator {
-  color: var(--danger);
+  color: var(--lemn-color-danger);
 }
 .ui-agent-tool-call-card[data-tool-status="interrupted"] .ui-agent-tool-call-card__status-indicator,
 .ui-agent-tool-call-card[data-tool-status="confirming"] .ui-agent-tool-call-card__status-indicator {
-  color: var(--warn);
+  color: var(--lemn-color-warning);
 }
 
 .ui-agent-tool-call-card__name {
   flex: none;
-  color: var(--text);
-  font-family: var(--font-mono);
-  font-size: calc(var(--font-size-small) - 2px);
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-small);
-  transition: color var(--duration-fast) var(--easing-standard);
+  color: var(--lemn-color-text);
+  font-family: var(--lemn-font-code);
+  font-size: calc(var(--lemn-font-size-small) - 2px);
+  font-weight: var(--lemn-font-weight-semibold);
+  line-height: var(--lemn-line-height-small);
+  transition: color var(--lemn-duration-fast) var(--lemn-easing-standard);
 }
 
 .ui-agent-tool-call-card__row:hover .ui-agent-tool-call-card__name {
-  color: var(--accent);
+  color: var(--lemn-color-accent);
 }
 
 .ui-agent-tool-call-card__title {
   flex: 1;
   min-width: 0;
   overflow: hidden;
-  color: var(--text-muted);
-  font-size: var(--font-size-small);
+  color: var(--lemn-color-text-muted);
+  font-size: var(--lemn-font-size-small);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .ui-agent-tool-call-card__time {
   flex: none;
-  color: var(--text-dim);
-  font-size: var(--font-size-caption);
+  color: var(--lemn-color-disabled-text);
+  font-size: var(--lemn-font-size-caption);
   text-align: right;
 }
 
 .ui-agent-tool-call-card__detail {
   /* Level 3: align field chevrons below the tool name. */
-  padding: 0 var(--space-3) var(--space-3) var(--ui-agent-tool-call-detail-indent);
+  padding: 0 var(--lemn-space-3) var(--lemn-space-3) var(--ui-agent-tool-call-detail-indent);
 }
 
 .ui-agent-tool-call-card__section {
-  margin-top: var(--space-3);
+  margin-top: var(--lemn-space-3);
   padding-left: var(--ui-agent-tool-call-row-indent);
 }
 
 .ui-agent-tool-call-card__section:first-child {
-  margin-top: var(--space-2);
+  margin-top: var(--lemn-space-2);
 }
 
 .ui-agent-tool-call-card__label {
-  margin: 0 0 var(--space-1);
-  color: var(--text-dim);
-  font-size: var(--font-size-caption);
+  margin: 0 0 var(--lemn-space-1);
+  color: var(--lemn-color-disabled-text);
+  font-size: var(--lemn-font-size-caption);
 }
 
 .ui-agent-tool-call-card__execution {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
-  margin-top: var(--space-3);
-  padding: var(--space-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--surface2);
+  gap: var(--lemn-space-2);
+  margin-top: var(--lemn-space-3);
+  padding: var(--lemn-space-2);
+  border: 1px solid var(--lemn-color-border);
+  border-radius: var(--lemn-radius-medium);
+  background: var(--lemn-color-surface-muted);
 }
 
 .ui-agent-tool-call-card__execution-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-2);
+  gap: var(--lemn-space-2);
 }
 
 .ui-agent-tool-call-card__execution-header .ui-agent-tool-call-card__label {
@@ -152,25 +152,25 @@
 
 .ui-agent-tool-call-card__execution-decision {
   flex: none;
-  padding: 2px var(--space-2);
-  border-radius: var(--radius-pill);
-  background: var(--surface);
-  color: var(--text-muted);
-  font-size: var(--font-size-caption);
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-caption);
+  padding: 2px var(--lemn-space-2);
+  border-radius: var(--lemn-radius-pill);
+  background: var(--lemn-color-surface);
+  color: var(--lemn-color-text-muted);
+  font-size: var(--lemn-font-size-caption);
+  font-weight: var(--lemn-font-weight-semibold);
+  line-height: var(--lemn-line-height-caption);
 }
 
 .ui-agent-tool-call-card__execution-decision[data-decision="allowed"] {
-  color: var(--success);
+  color: var(--lemn-color-success);
 }
 
 .ui-agent-tool-call-card__execution-decision[data-decision="requires_approval"] {
-  color: var(--warn);
+  color: var(--lemn-color-warning);
 }
 
 .ui-agent-tool-call-card__execution-decision[data-decision="denied"] {
-  color: var(--danger);
+  color: var(--lemn-color-danger);
 }
 
 .ui-agent-tool-call-card__execution-rail {
@@ -189,7 +189,7 @@
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  color: var(--text-dim);
+  color: var(--lemn-color-disabled-text);
 }
 
 .ui-agent-tool-call-card__execution-stage::before {
@@ -198,7 +198,7 @@
   right: 50%;
   left: -50%;
   height: 2px;
-  background: var(--border);
+  background: var(--lemn-color-border);
   content: "";
 }
 
@@ -210,23 +210,23 @@
   z-index: 1;
   width: 12px;
   height: 12px;
-  border: 2px solid var(--border-strong);
-  border-radius: var(--radius-pill);
-  background: var(--surface);
+  border: 2px solid var(--lemn-color-border-strong);
+  border-radius: var(--lemn-radius-pill);
+  background: var(--lemn-color-surface);
 }
 
 .ui-agent-tool-call-card__execution-label {
   max-width: 100%;
   overflow: hidden;
-  font-size: var(--font-size-caption);
-  line-height: var(--line-height-caption);
+  font-size: var(--lemn-font-size-caption);
+  line-height: var(--lemn-line-height-caption);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .ui-agent-tool-call-card__execution-stage[data-state="below"]::before,
 .ui-agent-tool-call-card__execution-stage[data-state="selected"]::before {
-  background: var(--accent);
+  background: var(--lemn-color-accent);
 }
 
 .ui-agent-tool-call-card__execution-stage[data-state="below"]
@@ -235,23 +235,23 @@
   .ui-agent-tool-call-card__execution-dot,
 .ui-agent-tool-call-card__execution-stage[data-state="minimum"]
   .ui-agent-tool-call-card__execution-dot {
-  border-color: var(--accent);
+  border-color: var(--lemn-color-accent);
 }
 
 .ui-agent-tool-call-card__execution-stage[data-state="selected"] {
-  color: var(--text);
-  font-weight: var(--font-weight-semibold);
+  color: var(--lemn-color-text);
+  font-weight: var(--lemn-font-weight-semibold);
 }
 
 .ui-agent-tool-call-card__execution-stage[data-state="selected"]
   .ui-agent-tool-call-card__execution-dot {
-  background: var(--accent);
+  background: var(--lemn-color-accent);
 }
 
 .ui-agent-tool-call-card__execution-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-1);
+  gap: var(--lemn-space-1);
   margin: 0;
 }
 
@@ -261,12 +261,12 @@
   min-width: 0;
   align-items: center;
   gap: 4px;
-  padding: 2px var(--space-2);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-  color: var(--text-muted);
-  font-size: var(--font-size-caption);
-  line-height: var(--line-height-caption);
+  padding: 2px var(--lemn-space-2);
+  border-radius: var(--lemn-radius-small);
+  background: var(--lemn-color-surface);
+  color: var(--lemn-color-text-muted);
+  font-size: var(--lemn-font-size-caption);
+  line-height: var(--lemn-line-height-caption);
 }
 
 .ui-agent-tool-call-card__execution-chip dt,
@@ -276,21 +276,21 @@
 }
 
 .ui-agent-tool-call-card__execution-chip dt {
-  color: var(--text-dim);
+  color: var(--lemn-color-disabled-text);
 }
 
 .ui-agent-tool-call-card__execution-chip dd {
   overflow: hidden;
-  font-family: var(--font-mono);
+  font-family: var(--lemn-font-code);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .ui-agent-tool-call-card__execution-reason {
   margin: 0;
-  color: var(--text-muted);
-  font-size: var(--font-size-caption);
-  line-height: var(--line-height-caption);
+  color: var(--lemn-color-text-muted);
+  font-size: var(--lemn-font-size-caption);
+  line-height: var(--lemn-line-height-caption);
 }
 
 .ui-agent-tool-call-card__field-toggle {
@@ -301,7 +301,7 @@
   padding: 0;
   background: transparent;
   border: 0;
-  color: var(--text-dim);
+  color: var(--lemn-color-disabled-text);
   cursor: pointer;
   text-align: left;
   font: inherit;
@@ -312,12 +312,12 @@
   margin-left: calc(-16px - 5px);
   transform-origin: center;
   transition:
-    color var(--duration-fast) var(--easing-standard),
-    transform 500ms var(--easing-standard);
+    color var(--lemn-duration-fast) var(--lemn-easing-standard),
+    transform 500ms var(--lemn-easing-standard);
 }
 
 .ui-agent-tool-call-card__field-toggle:hover .ui-agent-tool-call-card__field-chevron {
-  color: var(--accent);
+  color: var(--lemn-color-accent);
 }
 
 .ui-agent-tool-call-card__field-toggle[aria-expanded="true"]
@@ -327,50 +327,50 @@
 
 .ui-agent-tool-call-card__field-toggle .ui-agent-tool-call-card__label {
   margin: 0;
-  font-size: calc(var(--font-size-small) - 2px);
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-small);
-  transition: color var(--duration-fast) var(--easing-standard);
+  font-size: calc(var(--lemn-font-size-small) - 2px);
+  font-weight: var(--lemn-font-weight-semibold);
+  line-height: var(--lemn-line-height-small);
+  transition: color var(--lemn-duration-fast) var(--lemn-easing-standard);
 }
 
 .ui-agent-tool-call-card__field-toggle:hover .ui-agent-tool-call-card__label {
-  color: var(--accent);
+  color: var(--lemn-color-accent);
 }
 
 .ui-agent-tool-call-card__field-body {
-  margin-top: var(--space-2);
+  margin-top: var(--lemn-space-2);
 }
 
 .ui-agent-tool-call-card__mono {
   margin: 0;
-  padding: var(--space-2);
-  background: var(--surface2);
-  border-radius: var(--radius-md);
-  color: var(--text);
-  font-family: var(--font-mono);
-  font-size: var(--font-size-mono);
-  line-height: var(--line-height-mono);
+  padding: var(--lemn-space-2);
+  background: var(--lemn-color-surface-muted);
+  border-radius: var(--lemn-radius-medium);
+  color: var(--lemn-color-text);
+  font-family: var(--lemn-font-code);
+  font-size: var(--lemn-font-size-mono);
+  line-height: var(--lemn-line-height-mono);
   white-space: pre-wrap;
   word-break: break-word;
 }
 
 .ui-agent-tool-call-card__truncation {
-  margin: var(--space-1) 0 0;
-  color: var(--text-dim);
-  font-size: var(--font-size-caption);
+  margin: var(--lemn-space-1) 0 0;
+  color: var(--lemn-color-disabled-text);
+  font-size: var(--lemn-font-size-caption);
 }
 
 .ui-agent-tool-call-card__image {
   max-width: 100%;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border: 1px solid var(--lemn-color-border);
+  border-radius: var(--lemn-radius-medium);
 }
 
 .ui-agent-tool-call-card__hint {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
-  margin: var(--space-3) 0 0;
-  color: var(--text-muted);
-  font-size: var(--font-size-caption);
+  gap: var(--lemn-space-2);
+  margin: var(--lemn-space-3) 0 0;
+  color: var(--lemn-color-text-muted);
+  font-size: var(--lemn-font-size-caption);
 }

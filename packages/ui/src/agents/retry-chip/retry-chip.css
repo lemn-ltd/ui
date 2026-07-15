@@ -7,6 +7,6 @@
 }
 
 .ui-retry-chip__note {
-  color: var(--text-muted);
-  font-weight: var(--font-weight-regular);
+  color: var(--lemn-color-text-muted);
+  font-weight: var(--lemn-font-weight-regular);
 }

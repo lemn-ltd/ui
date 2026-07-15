@@ -2,28 +2,28 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-4);
-  font-family: var(--font-sans);
+  gap: var(--lemn-space-4);
+  font-family: var(--lemn-font-body);
 }
 
 .ui-list-filters-bar__pills {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--lemn-space-2);
   min-width: 0;
 }
 
 .ui-list-filters-bar__end {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--lemn-space-2);
   flex-shrink: 0;
 }
 
 .ui-list-filters-bar__trailing {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--lemn-space-2);
 }
 
 /* Mobile: search goes full-width on top; pills become a scrollable row below. */
@@ -31,7 +31,7 @@
   .ui-list-filters-bar {
     flex-direction: column;
     align-items: stretch;
-    gap: var(--space-2);
+    gap: var(--lemn-space-2);
   }
 
   .ui-list-filters-bar__end {

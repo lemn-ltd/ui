@@ -5,6 +5,7 @@ export * from "./category-bar/index.js";
 export * from "./chart-frame/index.js";
 export * from "./combo-chart/index.js";
 export * from "./donut-chart/index.js";
+export * from "./heatmap-chart/index.js";
 export * from "./line-chart/index.js";
 export * from "./progress-circle/index.js";
 export * from "./spark-chart/index.js";

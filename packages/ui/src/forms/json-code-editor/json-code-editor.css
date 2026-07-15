@@ -2,20 +2,20 @@
   min-height: var(--ui-json-code-editor-min-height);
   max-height: var(--ui-json-code-editor-max-height, none);
   overflow: hidden;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  color: var(--text);
-  transition: border-color var(--duration-fast) var(--easing-standard);
+  background: var(--lemn-color-surface-muted);
+  border: 1px solid var(--lemn-color-border);
+  border-radius: var(--lemn-radius-medium);
+  color: var(--lemn-color-text);
+  transition: border-color var(--lemn-duration-fast) var(--lemn-easing-standard);
 }
 
 .ui-json-code-editor:focus-within {
-  border-color: var(--accent);
+  border-color: var(--lemn-color-accent);
 }
 
 .ui-json-code-editor[data-invalid="true"],
 .ui-json-code-editor[data-invalid="true"]:focus-within {
-  border-color: var(--danger);
+  border-color: var(--lemn-color-danger);
 }
 
 .ui-json-code-editor[data-disabled="true"] {
@@ -29,14 +29,14 @@
 }
 
 .ui-json-code-editor .cm-tooltip {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text);
+  background: var(--lemn-color-surface);
+  border: 1px solid var(--lemn-color-border);
+  border-radius: var(--lemn-radius-small);
+  color: var(--lemn-color-text);
 }
 
 .ui-json-code-editor .cm-tooltip-lint {
-  font-family: var(--font-sans);
-  font-size: var(--font-size-small);
-  line-height: var(--line-height-small);
+  font-family: var(--lemn-font-body);
+  font-size: var(--lemn-font-size-small);
+  line-height: var(--lemn-line-height-small);
 }

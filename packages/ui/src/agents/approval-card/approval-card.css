@@ -1,48 +1,48 @@
 .ui-approval-card__header {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--lemn-space-2);
 }
 
 .ui-approval-card__prompt {
   margin: 0;
-  color: var(--text);
-  font-size: var(--font-size-body);
-  font-weight: var(--font-weight-medium);
-  line-height: var(--line-height-body);
+  color: var(--lemn-color-text);
+  font-size: var(--lemn-font-size-body);
+  font-weight: var(--lemn-font-weight-medium);
+  line-height: var(--lemn-line-height-body);
 }
 
 .ui-approval-card__meta {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--lemn-space-2);
 }
 
 .ui-approval-card__ref,
 .ui-approval-card__integration {
   display: inline-flex;
   align-items: center;
-  padding: var(--space-1) var(--space-2);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  color: var(--text-muted);
-  font-size: var(--font-size-caption);
+  padding: var(--lemn-space-1) var(--lemn-space-2);
+  background: var(--lemn-color-surface);
+  border: 1px solid var(--lemn-color-border);
+  border-radius: var(--lemn-radius-medium);
+  color: var(--lemn-color-text-muted);
+  font-size: var(--lemn-font-size-caption);
   font-variant-numeric: tabular-nums;
 }
 
 .ui-approval-card__body {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--lemn-space-3);
 }
 
 .ui-approval-card__actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--lemn-space-2);
 }
 
 .ui-approval-card__actions--choices {
@@ -52,9 +52,9 @@
 
 .ui-approval-card__note {
   margin: 0;
-  color: var(--text-muted);
-  font-size: var(--font-size-small);
-  line-height: var(--line-height-small);
+  color: var(--lemn-color-text-muted);
+  font-size: var(--lemn-font-size-small);
+  line-height: var(--lemn-line-height-small);
 }
 
 .ui-approval-card__footer {
@@ -67,9 +67,9 @@
 .ui-approval-card__requested {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
-  color: var(--text-muted);
-  font-size: var(--font-size-caption);
+  gap: var(--lemn-space-1);
+  color: var(--lemn-color-text-muted);
+  font-size: var(--lemn-font-size-caption);
 }
 
 .ui-approval-card[data-busy="true"] {

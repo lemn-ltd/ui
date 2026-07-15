@@ -1,8 +1,8 @@
 .ui-markdown {
-  color: var(--text);
-  font-family: var(--font-sans);
-  font-size: var(--font-size-body);
-  line-height: var(--line-height-body);
+  color: var(--lemn-color-text);
+  font-family: var(--lemn-font-body);
+  font-size: var(--lemn-font-size-body);
+  line-height: var(--lemn-line-height-body);
   overflow-wrap: break-word;
 }
 
@@ -16,48 +16,48 @@
 
 /* Headings map one step below the page scale: content h1 is a section title. */
 .ui-markdown h1 {
-  margin: var(--space-6) 0 var(--space-2);
-  font-size: var(--font-size-title);
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-title);
+  margin: var(--lemn-space-6) 0 var(--lemn-space-2);
+  font-size: var(--lemn-font-size-title);
+  font-weight: var(--lemn-font-weight-semibold);
+  line-height: var(--lemn-line-height-title);
 }
 
 .ui-markdown h2 {
-  margin: var(--space-5) 0 var(--space-2);
-  font-size: var(--font-size-heading);
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-heading);
+  margin: var(--lemn-space-5) 0 var(--lemn-space-2);
+  font-size: var(--lemn-font-size-heading);
+  font-weight: var(--lemn-font-weight-semibold);
+  line-height: var(--lemn-line-height-heading);
 }
 
 .ui-markdown h3 {
-  margin: var(--space-4) 0 var(--space-1);
-  font-size: var(--font-size-body);
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-body);
+  margin: var(--lemn-space-4) 0 var(--lemn-space-1);
+  font-size: var(--lemn-font-size-body);
+  font-weight: var(--lemn-font-weight-semibold);
+  line-height: var(--lemn-line-height-body);
 }
 
 .ui-markdown h4,
 .ui-markdown h5,
 .ui-markdown h6 {
-  margin: var(--space-4) 0 var(--space-1);
-  font-size: var(--font-size-small);
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-small);
+  margin: var(--lemn-space-4) 0 var(--lemn-space-1);
+  font-size: var(--lemn-font-size-small);
+  font-weight: var(--lemn-font-weight-semibold);
+  line-height: var(--lemn-line-height-small);
 }
 
 .ui-markdown p {
-  margin: var(--space-3) 0;
+  margin: var(--lemn-space-3) 0;
 }
 
 .ui-markdown ul,
 .ui-markdown ol {
-  margin: var(--space-3) 0;
-  padding-left: var(--space-5);
+  margin: var(--lemn-space-3) 0;
+  padding-left: var(--lemn-space-5);
 }
 
 .ui-markdown ol {
   --ui-markdown-ordered-marker-width: 4ch;
-  --ui-markdown-ordered-marker-gap: var(--space-2);
+  --ui-markdown-ordered-marker-gap: var(--lemn-space-2);
 
   padding-left: 0;
   counter-reset: ui-markdown-ordered var(--ui-markdown-ordered-start, 0);
@@ -65,7 +65,7 @@
 }
 
 .ui-markdown li {
-  margin: var(--space-1) 0;
+  margin: var(--lemn-space-1) 0;
 }
 
 .ui-markdown ol > li {
@@ -89,11 +89,11 @@
 
 .ui-markdown li > ul,
 .ui-markdown li > ol {
-  margin: var(--space-1) 0;
+  margin: var(--lemn-space-1) 0;
 }
 
 .ui-markdown a {
-  color: var(--accent);
+  color: var(--lemn-color-accent);
   text-decoration: none;
 }
 
@@ -102,63 +102,63 @@
 }
 
 .ui-markdown strong {
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--lemn-font-weight-semibold);
 }
 
 .ui-markdown hr {
-  margin: var(--space-5) 0;
+  margin: var(--lemn-space-5) 0;
   border: 0;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--lemn-color-border);
 }
 
 .ui-markdown blockquote {
-  margin: var(--space-3) 0;
-  padding-left: var(--space-3);
-  color: var(--text-muted);
-  border-left: 3px solid var(--border);
+  margin: var(--lemn-space-3) 0;
+  padding-left: var(--lemn-space-3);
+  color: var(--lemn-color-text-muted);
+  border-left: 3px solid var(--lemn-color-border);
 }
 
 .ui-markdown img {
   max-width: 100%;
-  border-radius: var(--radius-md);
+  border-radius: var(--lemn-radius-medium);
 }
 
 .ui-markdown__inline-code {
   padding: 1px 5px;
-  font-family: var(--font-mono);
-  font-size: var(--font-size-caption);
-  background: var(--surface2);
-  border-radius: var(--radius-sm);
+  font-family: var(--lemn-font-code);
+  font-size: var(--lemn-font-size-caption);
+  background: var(--lemn-color-surface-muted);
+  border-radius: var(--lemn-radius-small);
 }
 
 .ui-markdown .ui-syntax-code-block {
-  margin: var(--space-3) 0;
+  margin: var(--lemn-space-3) 0;
 }
 
 .ui-markdown__table-wrap {
-  margin: var(--space-3) 0;
+  margin: var(--lemn-space-3) 0;
   overflow-x: auto;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border: 1px solid var(--lemn-color-border);
+  border-radius: var(--lemn-radius-medium);
 }
 
 .ui-markdown__table-wrap table {
   width: 100%;
-  font-size: var(--font-size-small);
-  line-height: var(--line-height-small);
+  font-size: var(--lemn-font-size-small);
+  line-height: var(--lemn-line-height-small);
   border-collapse: separate;
   border-spacing: 0;
 }
 
 .ui-markdown__table-wrap th {
-  padding: var(--space-2) var(--space-3);
-  font-size: var(--font-size-caption);
-  font-weight: var(--font-weight-semibold);
+  padding: var(--lemn-space-2) var(--lemn-space-3);
+  font-size: var(--lemn-font-size-caption);
+  font-weight: var(--lemn-font-weight-semibold);
   text-align: left;
-  background: var(--surface2);
+  background: var(--lemn-color-surface-muted);
 }
 
 .ui-markdown__table-wrap td {
-  padding: var(--space-2) var(--space-3);
-  border-top: 1px solid var(--border);
+  padding: var(--lemn-space-2) var(--lemn-space-3);
+  border-top: 1px solid var(--lemn-color-border);
 }

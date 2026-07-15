@@ -1,143 +1,189 @@
-# Lemn UI
+# Lemn UI ecosystem
 
-Shared, brand-neutral UI system for LEMN projects. The repository owns the
-published `@lemn-ltd/ui` React package, its public component catalog, the docs
-site at `https://ui.le-mn.com`, and the showcase site at
-`https://showcase.ui.le-mn.com`.
+Provider-first, brand-neutral UI infrastructure for LEMN products. This
+workspace publishes a stable LEMN API over selected, battle-tested open-source
+capabilities; it does not ask product teams to import upstream providers or
+maintain local rewrites of their behavior.
 
-`@lemn-ltd/ui` is the source of truth for shared styles. If a consuming product
-needs a reusable component, token, layout, or style migration, make that change
-in this repository first, publish a new package version, then update the
-consumer. Do not patch `node_modules` or copy shared component CSS into product
-apps as a permanent fix.
+LEMN owns the public contract, semantic branding vocabulary, curated provider
+mapping, blocks, conformance evidence, documentation, and release process.
+Keyboard interaction, accessibility primitives, chart engines, and lifecycle
+behavior remain upstream-owned wherever an approved provider exists.
 
-## Packages
+This architecture applies `PAT-UI-LEMN-001`,
+`PAT-UI-PROVIDER-FIRST-001`, `PAT-UI-BRAND-CONTRACT-001`,
+`PAT-UI-SSR-BRANDING-001`, `PAT-UI-BLOCKS-001`, and
+`PAT-UI-FRONTEND-PLATFORM-BOUNDARY-001`.
 
-- `@lemn-ltd/ui` - public component and token package, published to GitHub Packages.
-- `@lemn-ltd/showcase-kit` - internal workspace package for showcase page chrome.
-- `@lemn-ltd/ui-docs` - Astro Starlight docs deployed to `https://ui.le-mn.com`.
-- `@lemn-ltd/ui-showcase` - Cloudflare Worker SPA deployed to `https://showcase.ui.le-mn.com`.
+## Published packages
 
-## Requirements
+- `@lemn-ltd/brand-contract` validates and deterministically compiles a
+  versioned BrandProject into scoped `--lemn-*` tokens, critical CSS, provider
+  adapters, diagnostics, and integrity hashes.
+- `@lemn-ltd/ui` exposes provider-neutral components, visualizations, curated
+  blocks, semantic token fallbacks, and catalog metadata.
+- `@lemn-ltd/brand-studio` provides a controlled, persistence-free branding
+  wizard and preview surface. Its host owns authorization, persistence,
+  publication, and audit.
 
-- Node.js `>=22`.
-- pnpm `11.8.0` through Corepack.
-- Access to GitHub Packages for the `@lemn-ltd` scope.
-- A GitHub token with package read access for local installs. Publishing requires
-  package write access.
+Internal workspace packages and applications:
+
+- `@lemn-ltd/provider-registry` is the Git-authoritative mapping from each
+  public capability to exactly one provider of record, immutable origin,
+  license, adapter, and conformance evidence.
+- `@lemn-ltd/showcase-kit` contains reusable showcase chrome.
+- `apps/showcase` is the public, read-only catalog at
+  [showcase.ui.le-mn.com](https://showcase.ui.le-mn.com).
+- `apps/showcase-admin` is the separate Cloudflare Access-protected proposal
+  and experimentation surface at
+  [admin.showcase.ui.le-mn.com](https://admin.showcase.ui.le-mn.com).
+- `apps/docs` is this ecosystem's Starlight documentation at
+  [ui.le-mn.com](https://ui.le-mn.com).
+
+## Consumer rule
+
+A product installs exact approved releases. Never use `latest`, a caret, a
+tilde, a wildcard, a branch, a URL, a workspace link, or a relative import
+across repositories.
+
+```ini
+# repository .npmrc
+@lemn-ltd:registry=https://npm.pkg.github.com
+```
+
+Keep GitHub Packages authentication in the user's `~/.npmrc`, never in a
+repository:
+
+```ini
+//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}
+```
+
+For the first compatible release set:
+
+```bash
+pnpm add @lemn-ltd/brand-contract@0.1.0 @lemn-ltd/ui@0.3.0
+```
+
+Import only the LEMN public surface and load its stylesheet once at the app
+root:
+
+```tsx
+import { Button, DashboardOverviewBlock } from "@lemn-ltd/ui";
+import "@lemn-ltd/ui/styles.css";
+```
+
+Product applications must not import Radix, Tremor, Recharts, ECharts, MUI,
+or another UI provider for a capability owned by the LEMN catalog. A missing
+reusable capability is selected through the provider registry, adapted once,
+proved by conformance, and published before consumer adoption.
+
+## Branding contract
+
+A BrandProject is authoring data, not runtime component configuration. It may
+contain multiple inheritable Profiles, and each Profile may contain multiple
+modes. The compiler resolves that source into the same scoped semantic token
+vocabulary for every project:
+
+```css
+[data-lemn-brand-scope="<compiled-scope-id>"] {
+  --lemn-color-canvas: #ffffff;
+  --lemn-color-surface: #ffffff;
+  --lemn-color-text: #0e141b;
+  --lemn-color-accent: #0d9488;
+}
+```
+
+Components consume only those compiled semantic values. They never parse raw
+BrandProject JSON, persist brand state, fetch a project, publish a revision, or
+mutate global tokens.
+
+Production hosts resolve an authorized project/environment/slot assignment,
+verify the immutable compiled artifact, and inject its critical CSS and scope
+attributes before emitting the first HTML byte. Hydration receives the same
+compiled hash. If resolution fails, the host may use only a verified compatible
+last-known-good or embedded branded fallback; it must never show an unbranded
+provider default.
+
+See [SSR branding runbook](apps/docs/src/content/docs/ssr-branding/index.mdx)
+and [package consumption guide](packages/ui/README.md).
+
+## Studio, Admin, and frontend-platform boundaries
+
+- Brand Studio edits a controlled BrandProject and emits typed intents such as
+  validate, plan publication, and apply publication. It has no credentials or
+  persistence authority.
+- Showcase Admin hosts experimentation, provider proposals, and project/profile
+  previews behind Cloudflare Access. It cannot mutate the active provider
+  manifest directly.
+- Data fetching, routing, authentication, global application state,
+  internationalization, analytics SDKs, and product workflow policy belong to
+  a consuming app or a future frontend-platform package, not these UI packages.
+
+## Blocks
+
+Blocks are curated purpose-specific compositions such as a dashboard overview,
+an appointment schedule, or an approval queue. They compose canonical LEMN
+components, accept controlled data/actions, model applicable UI states, and
+contain no product API, authorization, persistence, routing, or alternate
+provider implementation.
+
+## Agent discovery
+
+Agents should start from the LEMN catalog and never guess an upstream import:
+
+- [catalog.json](https://showcase.ui.le-mn.com/catalog.json)
+- [llms.txt](https://showcase.ui.le-mn.com/llms.txt)
+- [llms-full.txt](https://showcase.ui.le-mn.com/llms-full.txt)
+- [component selection guide](packages/ui/docs/components.md)
+- [composition patterns](packages/ui/docs/patterns.md)
+
+Selection order:
+
+1. Reuse an existing public LEMN component or block.
+2. Keep one-off product behavior local and compose public primitives.
+3. For a reusable gap, propose one provider of record in the registry.
+4. Add the LEMN adapter, provenance, license, conformance, docs, showcase, and
+   changeset before publishing an exact release.
+
+## Local development
+
+Requirements are Node.js `>=22`, pnpm `11.8.0` through Corepack, and GitHub
+Packages read access for private dependencies.
 
 ```bash
 corepack enable
 corepack prepare pnpm@11.8.0 --activate
 pnpm install
-```
-
-## Install In A Consumer Repo
-
-Keep only the package scope mapping in the consuming repository:
-
-```ini
-# .npmrc
-@lemn-ltd:registry=https://npm.pkg.github.com
-```
-
-Configure authentication in the user's `~/.npmrc`, which must never be
-committed to a repository:
-
-```ini
-# ~/.npmrc
-@lemn-ltd:registry=https://npm.pkg.github.com
-//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}
-```
-
-Load a classic GitHub personal access token with `read:packages` and repository
-access into `NODE_AUTH_TOKEN` through the local secret manager. The registry
-mapping alone, or `NODE_AUTH_TOKEN` without the user-level `_authToken` entry,
-does not authenticate npm or pnpm.
-
-```bash
-pnpm add @lemn-ltd/ui@<published-version>
-```
-
-Consumers need compatible React peer dependencies. This workspace currently
-catalogs React and React DOM at `19.2.4`.
-
-Import the package from its public surface only:
-
-```tsx
-import { Button, Card, componentCatalog } from "@lemn-ltd/ui";
-import "@lemn-ltd/ui/styles.css";
-```
-
-Import `@lemn-ltd/ui/styles.css` once at the application root. Do not deep-import
-from `@lemn-ltd/ui/dist`, `@lemn-ltd/ui/src`, Radix, `cmdk`, or `sonner` in
-product apps.
-
-## Agent Access
-
-Agents should discover available components through:
-
-- `https://showcase.ui.le-mn.com/catalog.json`
-- `https://showcase.ui.le-mn.com/llms.txt`
-- `https://showcase.ui.le-mn.com/llms-full.txt`
-
-Rules:
-
-- Use existing `@lemn-ltd/ui` components before creating app-local UI.
-- Import only from the public package surface.
-- Do not deep-import package internals.
-- Do not import Radix, cmdk, or sonner directly in product apps.
-
-## Local Development
-
-```bash
-pnpm install
 pnpm dev:showcase
+pnpm dev:showcase-admin
+pnpm dev:docs
 ```
 
-The showcase runs at `http://localhost:6500`.
-
-Useful package commands:
+Primary verification:
 
 ```bash
-pnpm --filter @lemn-ltd/ui run build
-pnpm --filter @lemn-ltd/ui run check
-pnpm --filter @lemn-ltd/ui run test
-pnpm validate:identity
-pnpm validate:domains
-pnpm validate:package-identity
-pnpm validate:brand-neutrality
-pnpm validate:boundaries
+pnpm validate
+pnpm check
+pnpm test
+pnpm build
+pnpm audit --prod
 ```
 
-## Release Flow
+Provider updates are reviewed changes against immutable registry entries; they
+are never automatic production upgrades. Publish order for the compatible
+release set is Brand Contract, UI, then Brand Studio, followed by clean
+consumer installs from GitHub Packages and deployed smoke evidence.
 
-1. Make shared UI changes in `packages/ui/src`.
-2. Update package docs and showcase coverage when the public surface changes.
-3. Run `pnpm validate:brand-neutrality`, `pnpm validate:boundaries`,
-   `pnpm --filter @lemn-ltd/ui run check`, `pnpm --filter @lemn-ltd/ui run test`,
-   and `pnpm --filter @lemn-ltd/ui run build`.
-4. Add a changeset with `pnpm changeset:add` for every publishable package change.
-   The release workflow turns merged changesets into a release metadata commit
-   that updates `packages/ui/package.json`, `packages/ui/CHANGELOG.md`, and the
-   docs changelog.
-5. Before versioning, pushing, or publishing, CI validates the scoped,
-   account-owned Cloudflare API token without mutating Cloudflare. The
-   `production` Environment secret is `PRODUCTION_CLOUDFLARE_API_TOKEN`; its
-   only grants are Account `Lemn DEV` -> `Workers Scripts: Edit` and Zone
-   `le-mn.com` -> `Zone: Read`. Legacy key/email authentication fails closed.
-6. CI publishes `@lemn-ltd/ui` only when the package version is not already
-   available in the authenticated GitHub Packages version list and the package
-   scope matches the repository owner. Authentication, authorization, package
-   lookup, or network failures stop the release instead of being treated as an
-   unpublished version.
-7. Update each consuming repo to the newly published version and regenerate its
-   lockfile.
+Production Cloudflare mutation is main-only and uses the protected Environment
+secret `PRODUCTION_CLOUDFLARE_API_TOKEN`. It is scoped to Account `Lemn DEV`
+with `Workers Scripts: Edit` and Zone `le-mn.com` with `Zone: Read`; broader
+credentials fail closed.
 
 ## Documentation
 
-- [Package usage guide](packages/ui/README.md)
-- [Agent-facing component guide](packages/ui/docs/README.md)
+- [Architecture](apps/docs/src/content/docs/architecture/index.mdx)
+- [Branding](apps/docs/src/content/docs/branding/index.mdx)
+- [Provider governance](apps/docs/src/content/docs/providers/index.mdx)
+- [Blocks](apps/docs/src/content/docs/blocks/index.mdx)
+- [SSR branding runbook](apps/docs/src/content/docs/ssr-branding/index.mdx)
 - [Contribution rules](CONTRIBUTING.md)
-- [Human docs](https://ui.le-mn.com)
-- [Interactive showcase](https://showcase.ui.le-mn.com)

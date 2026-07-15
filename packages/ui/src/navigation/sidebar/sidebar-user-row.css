@@ -4,23 +4,23 @@
   gap: 10px;
   width: 100%;
   height: 48px;
-  padding: 0 var(--space-2);
+  padding: 0 var(--lemn-space-2);
   background: transparent;
   border: 0;
-  border-radius: var(--radius-md);
-  color: var(--text);
+  border-radius: var(--lemn-radius-medium);
+  color: var(--lemn-color-text);
   cursor: pointer;
   text-align: left;
 }
 
 .ui-sidebar-user-row:hover {
-  background: var(--surface2);
+  background: var(--lemn-color-surface-muted);
 }
 
 .ui-sidebar-user-row[data-collapsed="true"] {
   width: auto;
   justify-content: center;
-  padding: var(--space-1);
+  padding: var(--lemn-space-1);
 }
 
 .ui-sidebar-user-row__meta {
@@ -33,22 +33,22 @@
 
 .ui-sidebar-user-row__trigger {
   flex-shrink: 0;
-  color: var(--text-muted);
+  color: var(--lemn-color-text-muted);
 }
 
 .ui-sidebar-user-row__name {
   overflow: hidden;
-  color: var(--text);
-  font-size: var(--font-size-small);
-  font-weight: var(--font-weight-medium);
+  color: var(--lemn-color-text);
+  font-size: var(--lemn-font-size-small);
+  font-weight: var(--lemn-font-weight-medium);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .ui-sidebar-user-row__email {
   overflow: hidden;
-  color: var(--text-muted);
-  font-size: var(--font-size-caption);
+  color: var(--lemn-color-text-muted);
+  font-size: var(--lemn-font-size-caption);
   text-overflow: ellipsis;
   white-space: nowrap;
 }

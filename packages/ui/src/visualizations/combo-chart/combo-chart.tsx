@@ -157,7 +157,7 @@ export function ComboChart<TDatum extends ChartDatum>({
 				>
 					{showGrid ? (
 						<CartesianGrid
-							stroke="var(--chart-grid)"
+							stroke="var(--lemn-chart-grid)"
 							strokeDasharray="3 3"
 							vertical={false}
 						/>
@@ -168,7 +168,7 @@ export function ComboChart<TDatum extends ChartDatum>({
 						hide={xAxisOptions.show === false}
 						interval={chartXAxisInterval(xAxisOptions.interval)}
 						minTickGap={xAxisOptions.tickGap ?? 5}
-						stroke="var(--chart-axis)"
+						stroke="var(--lemn-chart-axis)"
 						tickLine={false}
 						ticks={startEndTicks}
 					>
@@ -183,7 +183,7 @@ export function ComboChart<TDatum extends ChartDatum>({
 						axisLine={false}
 						domain={primaryDomain}
 						hide={yAxisOptions.show === false}
-						stroke="var(--chart-axis)"
+						stroke="var(--lemn-chart-axis)"
 						tickFormatter={yAxisOptions.valueFormatter}
 						tickLine={false}
 						width={yAxisOptions.width ?? 56}
@@ -202,7 +202,7 @@ export function ComboChart<TDatum extends ChartDatum>({
 							domain={secondaryDomain}
 							hide={secondaryAxisOptions.show === false}
 							orientation="right"
-							stroke="var(--chart-axis)"
+							stroke="var(--lemn-chart-axis)"
 							tickFormatter={secondaryAxisOptions.valueFormatter}
 							tickLine={false}
 							width={secondaryAxisOptions.width ?? 56}
@@ -226,7 +226,7 @@ export function ComboChart<TDatum extends ChartDatum>({
 								series={series}
 							/>
 						)}
-						cursor={{ fill: "var(--chart-cursor)" }}
+						cursor={{ fill: "var(--lemn-chart-cursor)" }}
 						isAnimationActive={animationActive}
 					/>
 					{series.map((item, seriesIndex) => {

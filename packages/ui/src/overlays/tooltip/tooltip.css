@@ -1,5 +1,5 @@
 .ui-tooltip {
-  z-index: var(--z-popover);
+  z-index: var(--lemn-z-popover);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -7,60 +7,60 @@
      disclaimer) wraps and grows instead of clipping. */
   min-height: 28px;
   max-width: 240px;
-  padding: var(--space-1) var(--space-2);
+  padding: var(--lemn-space-1) var(--lemn-space-2);
   text-align: left;
-  background: var(--surface2);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--elev-2);
-  color: var(--text);
-  font-family: var(--font-sans);
-  font-size: var(--font-size-caption);
-  font-weight: var(--font-weight-medium);
-  line-height: var(--line-height-caption);
+  background: var(--lemn-color-surface-muted);
+  border: 1px solid var(--lemn-color-border-strong);
+  border-radius: var(--lemn-radius-small);
+  box-shadow: var(--lemn-shadow-overlay);
+  color: var(--lemn-color-text);
+  font-family: var(--lemn-font-body);
+  font-size: var(--lemn-font-size-caption);
+  font-weight: var(--lemn-font-weight-medium);
+  line-height: var(--lemn-line-height-caption);
 }
 
 .ui-tooltip[data-state="delayed-open"],
 .ui-tooltip[data-state="instant-open"] {
-  animation: fade var(--duration-fast) var(--easing-standard);
+  animation: fade var(--lemn-duration-fast) var(--lemn-easing-standard);
 }
 
 .ui-tooltip__arrow {
-  fill: var(--surface2);
+  fill: var(--lemn-color-surface-muted);
 }
 
 .ui-tooltip[data-tone="info"] {
-  background: var(--info-soft);
-  border-color: var(--info);
+  background: var(--lemn-color-info-surface);
+  border-color: var(--lemn-color-info);
 }
 
 .ui-tooltip[data-tone="info"] .ui-tooltip__arrow {
-  fill: var(--info);
+  fill: var(--lemn-color-info);
 }
 
 .ui-tooltip[data-tone="warn"] {
-  background: var(--warn-soft);
-  border-color: var(--warn);
+  background: var(--lemn-color-warning-surface);
+  border-color: var(--lemn-color-warning);
 }
 
 .ui-tooltip[data-tone="warn"] .ui-tooltip__arrow {
-  fill: var(--warn);
+  fill: var(--lemn-color-warning);
 }
 
 .ui-tooltip[data-tone="danger"] {
-  background: var(--danger-soft);
-  border-color: var(--danger);
+  background: var(--lemn-color-danger-surface);
+  border-color: var(--lemn-color-danger);
 }
 
 .ui-tooltip[data-tone="danger"] .ui-tooltip__arrow {
-  fill: var(--danger);
+  fill: var(--lemn-color-danger);
 }
 
 .ui-tooltip[data-tone="success"] {
-  background: var(--success-soft);
-  border-color: var(--success);
+  background: var(--lemn-color-success-surface);
+  border-color: var(--lemn-color-success);
 }
 
 .ui-tooltip[data-tone="success"] .ui-tooltip__arrow {
-  fill: var(--success);
+  fill: var(--lemn-color-success);
 }

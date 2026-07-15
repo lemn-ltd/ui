@@ -2,40 +2,40 @@
 	position: relative;
 	display: flex;
 	align-items: center;
-	gap: var(--space-2);
+	gap: var(--lemn-space-2);
 	width: 100%;
 	height: 8px;
-	background: var(--surface2);
-	border-radius: var(--radius-pill);
+	background: var(--lemn-color-surface-muted);
+	border-radius: var(--lemn-radius-pill);
 	overflow: hidden;
 }
 
 .ui-progress-bar__fill {
 	height: 100%;
-	background: var(--ui-progress-color, var(--accent));
-	border-radius: var(--radius-pill);
+	background: var(--ui-progress-color, var(--lemn-color-accent));
+	border-radius: var(--lemn-radius-pill);
 }
 
 .ui-progress-bar[data-tone="neutral"] {
-	--ui-progress-color: var(--text-muted);
+	--ui-progress-color: var(--lemn-color-text-muted);
 }
 .ui-progress-bar[data-tone="warning"] {
-	--ui-progress-color: var(--warn);
+	--ui-progress-color: var(--lemn-color-warning);
 }
 .ui-progress-bar[data-tone="error"] {
-	--ui-progress-color: var(--danger);
+	--ui-progress-color: var(--lemn-color-danger);
 }
 .ui-progress-bar[data-tone="success"] {
-	--ui-progress-color: var(--success);
+	--ui-progress-color: var(--lemn-color-success);
 }
 
 .ui-progress-bar__label {
 	position: absolute;
-	right: var(--space-2);
-	color: var(--text-muted);
-	font-family: var(--font-sans);
-	font-size: var(--font-size-caption);
-	line-height: var(--line-height-caption);
+	right: var(--lemn-space-2);
+	color: var(--lemn-color-text-muted);
+	font-family: var(--lemn-font-body);
+	font-size: var(--lemn-font-size-caption);
+	line-height: var(--lemn-line-height-caption);
 }
 
 .ui-progress-bar[data-variant="determinate"] .ui-progress-bar__fill {
@@ -44,13 +44,13 @@
 
 .ui-progress-bar[data-animation="auto"][data-variant="determinate"]
 	.ui-progress-bar__fill {
-	transition: width var(--duration-normal) var(--easing-standard);
+	transition: width var(--lemn-duration-normal) var(--lemn-easing-standard);
 }
 
 .ui-progress-bar[data-animation="auto"][data-variant="indeterminate"]
 	.ui-progress-bar__fill {
 	width: 25%;
-	animation: indeterminate calc(var(--duration-slow) * 2) var(--easing-linear)
+	animation: indeterminate calc(var(--lemn-duration-slow) * 2) var(--lemn-easing-linear)
 		infinite;
 }
 
@@ -60,14 +60,14 @@
 	left: 0;
 	height: 3px;
 	border-radius: 0;
-	z-index: var(--z-drawer);
+	z-index: var(--lemn-z-drawer);
 }
 
 .ui-progress-bar[data-animation="auto"][data-variant="route"]
 	.ui-progress-bar__fill {
 	width: 25%;
 	border-radius: 0;
-	animation: indeterminate calc(var(--duration-slow) * 2) var(--easing-linear)
+	animation: indeterminate calc(var(--lemn-duration-slow) * 2) var(--lemn-easing-linear)
 		infinite;
 }
 

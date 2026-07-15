@@ -10,15 +10,11 @@ import {
 } from "react";
 import { Button, Icon, IconButton, Input } from "../../primitives/index.js";
 import {
-	applyAccentColor,
 	DEFAULT_ACCENT_COLOR,
-	getAccentColor,
 	type HsvColor,
 	hexToHsv,
 	hsvToHex,
 	normalizeAccentColor,
-	resetAccentColor,
-	setAccentColor,
 } from "./accent-color.js";
 import "./accent-color-picker.css";
 
@@ -26,8 +22,6 @@ export interface AccentColorPickerProps {
 	readonly value?: string;
 	readonly defaultValue?: string;
 	readonly onValueChange?: (value: string) => void;
-	readonly applyToRoot?: boolean;
-	readonly persist?: boolean;
 	readonly disabled?: boolean;
 	readonly label?: string;
 	readonly className?: string;
@@ -42,14 +36,12 @@ export function AccentColorPicker({
 	value,
 	defaultValue,
 	onValueChange,
-	applyToRoot = true,
-	persist = true,
 	disabled,
 	label = "Change accent color",
 	className,
 }: AccentColorPickerProps): ReactElement {
 	const [localValue, setLocalValue] = useState(
-		() => normalizeAccentColor(defaultValue ?? "") ?? getAccentColor(),
+		() => normalizeAccentColor(defaultValue ?? "") ?? DEFAULT_ACCENT_COLOR,
 	);
 	const currentValue = normalizeAccentColor(value ?? "") ?? localValue;
 	const hsv = hexToHsv(currentValue);
@@ -58,12 +50,6 @@ export function AccentColorPicker({
 	const [hexEditing, setHexEditing] = useState(false);
 	const hexErrorId = useId();
 	const dragCleanupRef = useRef<(() => void) | undefined>(undefined);
-
-	useEffect(() => {
-		if (!applyToRoot) return;
-		if (persist) setAccentColor(currentValue);
-		else applyAccentColor(currentValue);
-	}, [applyToRoot, currentValue, persist]);
 
 	useEffect(() => {
 		if (hexEditing) return;
@@ -144,10 +130,7 @@ export function AccentColorPicker({
 	}
 
 	function reset(): void {
-		if (value === undefined) {
-			setLocalValue(DEFAULT_ACCENT_COLOR);
-			if (applyToRoot) resetAccentColor();
-		}
+		if (value === undefined) setLocalValue(DEFAULT_ACCENT_COLOR);
 		onValueChange?.(DEFAULT_ACCENT_COLOR);
 	}
 
@@ -299,10 +282,4 @@ export function AccentColorPicker({
 	);
 }
 
-export {
-	applyAccentColor,
-	DEFAULT_ACCENT_COLOR,
-	getAccentColor,
-	resetAccentColor,
-	setAccentColor,
-};
+export { DEFAULT_ACCENT_COLOR };

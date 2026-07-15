@@ -3,10 +3,10 @@
   grid-template-columns: auto 1fr;
   height: 100vh;
   min-height: 0;
-  /* Shell shares the content surface so the page reads as one plane — --bg and
-   * --surface are identical in light, this aligns them in dark too. */
-  background: var(--surface);
-  color: var(--text);
+  /* Shell shares the content surface so the page reads as one plane — --lemn-color-canvas and
+   * --lemn-color-surface are identical in light, this aligns them in dark too. */
+  background: var(--lemn-color-surface);
+  color: var(--lemn-color-text);
 }
 
 .ui-screen-shell__sidebar {
@@ -39,9 +39,9 @@
 
 .ui-screen-shell__dock-open {
   position: absolute;
-  top: var(--space-3);
-  right: var(--space-3);
-  z-index: var(--z-chrome);
+  top: var(--lemn-space-3);
+  right: var(--lemn-space-3);
+  z-index: var(--lemn-z-chrome);
 }
 
 /*
@@ -52,7 +52,7 @@
 .ui-screen-shell__backdrop {
   position: fixed;
   inset: 0;
-  z-index: var(--z-scrim);
-  background: var(--overlay);
+  z-index: var(--lemn-z-scrim);
+  background: var(--lemn-color-overlay-scrim);
   cursor: pointer;
 }

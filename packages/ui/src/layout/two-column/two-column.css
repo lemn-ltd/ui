@@ -1,7 +1,7 @@
 .ui-two-column {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--space-6);
+  gap: var(--lemn-space-6);
 }
 
 /* At and above the lg breakpoint the aside sits beside the main column. */
@@ -15,5 +15,5 @@
 .ui-two-column__aside {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--lemn-space-4);
 }

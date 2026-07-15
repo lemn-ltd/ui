@@ -5,17 +5,17 @@
   grid-template-columns: minmax(0, 1fr) auto;
   grid-template-areas: "input actions";
   align-items: end;
-  column-gap: var(--space-3);
-  row-gap: var(--space-2);
-  padding: var(--space-3) var(--space-4);
-  background: color-mix(in srgb, var(--surface2) 72%, var(--surface));
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-lg);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border) 50%, transparent);
+  column-gap: var(--lemn-space-3);
+  row-gap: var(--lemn-space-2);
+  padding: var(--lemn-space-3) var(--lemn-space-4);
+  background: color-mix(in srgb, var(--lemn-color-surface-muted) 72%, var(--lemn-color-surface));
+  border: 1px solid var(--lemn-color-border-strong);
+  border-radius: var(--lemn-radius-large);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--lemn-color-border) 50%, transparent);
   transition:
-    background-color var(--duration-fast) var(--easing-standard),
-    border-color var(--duration-fast) var(--easing-standard),
-    box-shadow var(--duration-fast) var(--easing-standard);
+    background-color var(--lemn-duration-fast) var(--lemn-easing-standard),
+    border-color var(--lemn-duration-fast) var(--lemn-easing-standard),
+    box-shadow var(--lemn-duration-fast) var(--lemn-easing-standard);
 }
 
 .ui-composer[data-width="content"] {
@@ -30,10 +30,10 @@
 }
 
 .ui-composer:focus-within {
-  border-color: var(--accent);
+  border-color: var(--lemn-color-accent);
   box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--accent) 42%, transparent),
-    0 0 0 3px color-mix(in srgb, var(--focus-ring) 36%, transparent);
+    inset 0 0 0 1px color-mix(in srgb, var(--lemn-color-accent) 42%, transparent),
+    0 0 0 3px color-mix(in srgb, var(--lemn-color-focus) 36%, transparent);
 }
 
 .ui-composer[data-status="disabled"] {
@@ -44,26 +44,26 @@
   grid-area: leading;
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--lemn-space-2);
 }
 
 /* The message area sheds the standalone Textarea chrome — the card is the surface. */
 .ui-composer__textarea.ui-textarea {
-  min-height: calc(var(--line-height-heading) * 1em);
+  min-height: calc(var(--lemn-line-height-heading) * 1em);
   grid-area: input;
   align-self: start;
-  padding: var(--space-1) 0;
+  padding: var(--lemn-space-1) 0;
   background: transparent;
   border: 0;
   border-radius: 0;
-  color: var(--text);
-  font-size: var(--font-size-heading);
-  line-height: var(--line-height-heading);
+  color: var(--lemn-color-text);
+  font-size: var(--lemn-font-size-heading);
+  line-height: var(--lemn-line-height-heading);
   resize: none;
 }
 
 .ui-composer__textarea.ui-textarea::placeholder {
-  color: var(--text-muted);
+  color: var(--lemn-color-text-muted);
 }
 
 .ui-composer__textarea.ui-textarea:focus {
@@ -80,7 +80,7 @@
   display: flex;
   align-items: flex-end;
   justify-content: flex-end;
-  gap: var(--space-2);
+  gap: var(--lemn-space-2);
   align-self: end;
 }
 
@@ -88,27 +88,27 @@
   width: 44px;
   height: 44px;
   flex: 0 0 auto;
-  border-radius: var(--radius-md);
+  border-radius: var(--lemn-radius-medium);
 }
 
 .ui-composer__actions .ui-icon-button[data-variant="primary"] {
   background: transparent;
   border-color: transparent;
-  color: var(--text-dim);
+  color: var(--lemn-color-disabled-text);
 }
 
 .ui-composer[data-can-submit="true"] .ui-composer__actions .ui-icon-button[data-variant="primary"] {
-  color: var(--accent);
+  color: var(--lemn-color-accent);
 }
 
 .ui-composer__actions .ui-icon-button[data-variant="primary"]:not(:disabled):hover {
   background: transparent;
-  color: color-mix(in srgb, var(--accent) 86%, var(--text));
+  color: color-mix(in srgb, var(--lemn-color-accent) 86%, var(--lemn-color-text));
 }
 
 .ui-composer__actions .ui-icon-button[data-variant="primary"]:disabled {
   background: transparent;
-  color: var(--text-dim);
+  color: var(--lemn-color-disabled-text);
   opacity: 1;
 }
 
@@ -117,7 +117,7 @@
   flex: 1 1 auto;
   align-items: center;
   min-width: 0;
-  color: var(--text-muted);
-  font-size: var(--font-size-small);
-  line-height: var(--line-height-small);
+  color: var(--lemn-color-text-muted);
+  font-size: var(--lemn-font-size-small);
+  line-height: var(--lemn-line-height-small);
 }

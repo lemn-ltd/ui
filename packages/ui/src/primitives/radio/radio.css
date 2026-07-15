@@ -1,7 +1,7 @@
 .ui-radio-group {
   display: inline-flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--lemn-space-2);
 }
 
 .ui-radio {
@@ -11,14 +11,14 @@
   width: 18px;
   height: 18px;
   padding: 0;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-pill);
+  background: var(--lemn-color-surface);
+  border: 1px solid var(--lemn-color-border);
+  border-radius: var(--lemn-radius-pill);
   cursor: pointer;
 }
 
 .ui-radio[data-state="checked"] {
-  border-color: var(--accent);
+  border-color: var(--lemn-color-accent);
 }
 
 .ui-radio[data-disabled] {
@@ -36,6 +36,6 @@
   content: "";
   width: 8px;
   height: 8px;
-  border-radius: var(--radius-pill);
-  background: var(--accent);
+  border-radius: var(--lemn-radius-pill);
+  background: var(--lemn-color-accent);
 }

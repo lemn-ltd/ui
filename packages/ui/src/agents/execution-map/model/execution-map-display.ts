@@ -106,47 +106,47 @@ function executionMapEventDisplayForKind(
 export function executionMapEdgeColor(kind: ExecutionMapEdge['edgeKind']): string {
   switch (kind) {
     case 'delegates':
-      return 'var(--ui-color-success-500, #22c55e)';
+      return 'var(--lemn-color-success)';
     case 'requests':
-      return 'var(--ui-color-warning-500, #f59e0b)';
+      return 'var(--lemn-color-warning)';
     case 'executes':
-      return 'var(--ui-color-accent-500, #a78bfa)';
+      return 'var(--lemn-chart-series-4)';
     case 'produces':
-      return 'var(--ui-color-info-500, #60a5fa)';
+      return 'var(--lemn-color-info)';
     case 'emits':
-      return 'var(--ui-color-danger-500, #fb7185)';
+      return 'var(--lemn-color-danger)';
     case 'replies_to':
-      return '#38bdf8';
+      return 'var(--lemn-chart-series-7)';
     case 'summarizes':
-      return 'var(--ui-color-text-muted, #94a3b8)';
+      return 'var(--lemn-color-text-muted)';
     default:
-      return 'var(--ui-color-text-subtle, #64748b)';
+      return 'var(--lemn-chart-neutral)';
   }
 }
 
 export function executionMapNodeColor(kind: unknown): string {
   switch (kind) {
     case 'agent_instance':
-      return '#2dd4bf';
+      return 'var(--lemn-chart-series-2)';
     case 'runtime_input':
     case 'agent_communication':
-      return '#fbbf24';
+      return 'var(--lemn-chart-series-3)';
     case 'attempt':
     case 'child_run':
     case 'turn':
     case 'attempt_result':
-      return '#60a5fa';
+      return 'var(--lemn-chart-series-1)';
     case 'inference_run':
     case 'tool_call':
     case 'tool_call_execution':
-      return '#a78bfa';
+      return 'var(--lemn-chart-series-4)';
     case 'hitl_request':
-      return '#fb7185';
+      return 'var(--lemn-chart-series-5)';
     case 'runtime_event':
     case 'usage_summary':
-      return '#f59e0b';
+      return 'var(--lemn-color-warning)';
     default:
-      return '#64748b';
+      return 'var(--lemn-chart-neutral)';
   }
 }
 

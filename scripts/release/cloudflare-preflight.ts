@@ -7,8 +7,7 @@ const CLOUDFLARE_API = "https://api.cloudflare.com/client/v4";
 const EXPECTED_ACCOUNT_NAME = "Lemn DEV";
 const EXPECTED_ZONE_NAME = "le-mn.com";
 
-export const CLOUDFLARE_PRODUCTION_SECRET =
-	"PRODUCTION_CLOUDFLARE_API_TOKEN";
+export const CLOUDFLARE_PRODUCTION_SECRET = "PRODUCTION_CLOUDFLARE_API_TOKEN";
 export const CLOUDFLARE_TOKEN_GRANTS =
 	'Account "Lemn DEV" -> Workers Scripts: Edit; Zone "le-mn.com" -> Zone: Read';
 
@@ -28,7 +27,7 @@ interface WranglerConfig extends WranglerEnvironment {
 }
 
 export interface CloudflareReleaseTarget {
-	id: "docs" | "showcase";
+	id: "docs" | "showcase" | "showcase-admin";
 	accountId: string;
 	workerName: string;
 	hostname: string;
@@ -103,12 +102,18 @@ function targetFromConfig(
 		throw new Error(`Missing Wrangler environment ${environment} for ${id}`);
 
 	const routes = selected?.routes ?? config.routes ?? [];
+	const expectedHostname = {
+		docs: "ui.le-mn.com",
+		showcase: "showcase.ui.le-mn.com",
+		"showcase-admin": "admin.showcase.ui.le-mn.com",
+	}[id];
 	const customDomains = routes.filter(
-		(route) => route.custom_domain === true && route.pattern,
+		(route) =>
+			route.custom_domain === true && route.pattern === expectedHostname,
 	);
 	if (customDomains.length !== 1) {
 		throw new Error(
-			`${id} must declare exactly one custom domain; received ${customDomains.length}`,
+			`${id} must declare its exact custom domain ${expectedHostname}; received ${customDomains.length}`,
 		);
 	}
 
@@ -129,14 +134,24 @@ function targetFromConfig(
 export async function loadCloudflareReleaseTargets(
 	root = resolve(import.meta.dirname, "../.."),
 ): Promise<CloudflareReleaseTarget[]> {
-	const [docs, showcase] = await Promise.all([
+	const [docs, showcase, showcaseAdmin] = await Promise.all([
 		readWranglerConfig(resolve(root, "apps/docs/wrangler.jsonc")),
 		readWranglerConfig(resolve(root, "apps/showcase/wrangler.jsonc")),
+		readWranglerConfig(resolve(root, "apps/showcase-admin/wrangler.jsonc")),
 	]);
 
+	const docsTarget = targetFromConfig("docs", docs);
 	return [
-		targetFromConfig("docs", docs),
+		docsTarget,
 		targetFromConfig("showcase", showcase, "production"),
+		targetFromConfig(
+			"showcase-admin",
+			{
+				...showcaseAdmin,
+				account_id: showcaseAdmin.account_id ?? docsTarget.accountId,
+			},
+			"production",
+		),
 	];
 }
 
@@ -253,7 +268,7 @@ export async function verifyCloudflareReleaseAccess(input: {
 	const accounts = new Set(input.targets.map((target) => target.accountId));
 	if (accounts.size !== 1) {
 		throw new Error(
-			"Docs and showcase must deploy through the same configured Cloudflare account",
+			"Docs, showcase, and Showcase Admin must deploy through the same configured Cloudflare account",
 		);
 	}
 	const accountId = requireValue([...accounts][0], "release account id");
@@ -340,7 +355,7 @@ export async function verifyCloudflareReleaseAccess(input: {
 }
 
 export function githubOutputs(targets: CloudflareReleaseTarget[]): string {
-	return `${targets.map((target) => `${target.id}_account_id=${target.accountId}`).join("\n")}\n`;
+	return `${targets.map((target) => `${target.id.replaceAll("-", "_")}_account_id=${target.accountId}`).join("\n")}\n`;
 }
 
 async function main(): Promise<void> {

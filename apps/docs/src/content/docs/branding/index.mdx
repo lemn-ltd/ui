@@ -1,0 +1,103 @@
+---
+title: Branding
+description: BrandProject Profiles, modes, compiled tokens, Studio, and publication boundaries.
+sidebar:
+  label: Branding
+  order: 4
+---
+
+## Source contract
+
+`@lemn-ltd/brand-contract` defines the versioned authoring format:
+
+```json
+{
+  "$schema": "https://schemas.ui.le-mn.com/brand-project/v1.json",
+  "schemaVersion": 1,
+  "brandId": "example_brand",
+  "name": "Example Brand",
+  "defaultProfileId": "core",
+  "profiles": {
+    "core": {
+      "name": "Core",
+      "defaultMode": "light",
+      "modes": {
+        "light": {},
+        "dark": {}
+      }
+    }
+  }
+}
+```
+
+The abbreviated mode bodies above are illustrative. A valid source provides
+the schema's complete color, typography, shape, elevation,
+spacing/density, motion, visualization, iconography, accessibility, and
+component-appearance sections.
+
+Profiles are intentional expressions such as Core, Pediatrics, Executive, or
+Campaign. A Profile may inherit from one acyclic parent and contain multiple
+modes. Runtime selection changes a complete Profile/mode scope atomically; it
+does not patch individual root variables.
+
+## Compiler output
+
+`compileBrandProject` validates and resolves source data, applies safe derived
+values, and emits an immutable artifact with:
+
+- schema/compiler compatibility;
+- source and compiled SHA-256 hashes;
+- inheritance-free Profiles and modes;
+- critical scoped CSS using stable `--lemn-*` roles;
+- DOM scope attributes and color scheme;
+- chart-provider adapters behind artifact fields;
+- managed asset references; and
+- errors/warnings for contrast, focus, visualization, assets, and policy.
+
+Every project compiles to the same semantic vocabulary. Project or Profile IDs
+belong in the scope attributes and artifact identity, never in CSS variable
+names.
+
+## Authoring with Brand Studio
+
+Install Studio with an exact compatible release:
+
+```bash
+pnpm add @lemn-ltd/brand-studio@0.1.0
+```
+
+```tsx
+import { BrandStudio } from "@lemn-ltd/brand-studio";
+import "@lemn-ltd/brand-studio/styles.css";
+
+<BrandStudio
+  value={draft}
+  onChange={setDraft}
+  onIntent={handleAuthorizedIntent}
+/>
+```
+
+The wizard exposes identity, starting presets, managed assets, Profiles/modes,
+semantic colors, typography, shape/elevation, density/motion, visualization,
+accessibility, constrained component appearance, and source/resolved/compiled
+review.
+
+Studio is controlled and persistence-free. The host must authenticate and
+authorize the project, validate expected revision/idempotency, persist drafts,
+plan/apply publication, separate production approval, record audit, and deliver
+runtime artifacts.
+
+## Contrast policy
+
+Publication validates declared text/surface, accent/on-accent, state,
+border/focus, and chart-label relationships against WCAG 2.2 AA policy.
+Automatic correction may adjust derived on-colors, hover/pressed tones,
+borders, and chart labels within policy; it never silently changes the authored
+primary brand color. Blocking diagnostics prevent publication.
+
+## Evolution
+
+Additive fields may remain in schema major 1 only when defaults preserve
+behavior. Incompatible meaning/removal requires a new schema major and explicit
+migration. Future settings belong under validated standard fields or namespaced
+`extensions`; arbitrary CSS and behavior flags are not branding.

@@ -1,0 +1,50 @@
+---
+title: Arquitectura
+description: Limites de paquetes, control plane, proveedores y consumidores.
+sidebar:
+  label: Arquitectura
+  order: 3
+---
+
+Owner: maintainers de LEMN UI
+Decision: 2026-07-15
+
+## Decision
+
+LEMN expone una sola superficie UI neutral formada por capacidades open source
+battle-tested seleccionadas individualmente. El proveedor de registro conserva
+el comportamiento funcional. LEMN posee API publica, branding semantico minimo,
+catalogo/blocks, provenance, conformance y release.
+
+Branding es un contrato BrandProject versionado que se compila a artefactos
+inmutables con scope. Los componentes nunca parsean el JSON de authoring.
+
+## Responsabilidades
+
+| Limite | Posee | No posee |
+| --- | --- | --- |
+| `@lemn-ltd/brand-contract` | Schema, validacion, compilacion, diagnosticos, tokens/adaptadores, hashes | Persistencia, auth, publicacion |
+| `@lemn-ltd/ui` | Componentes, charts, estilos, blocks, catalogos | APIs de producto, auth, routing, estado global, JSON crudo |
+| `@lemn-ltd/brand-studio` | Wizard/preview controlado e intents tipados | Credenciales, persistencia, publicacion |
+| Provider registry | Un proveedor por capacidad, origen/licencia/conformance | Estado runtime o auto-updates |
+| Showcase | Ejemplos/read models publicos | Mutacion admin |
+| Showcase Admin | Experimentacion y proposals protegidos | Escritura directa del manifest |
+| AgentOps/control plane | Projects, environments, Brands, revisions, assignments, auth, audit, delivery | Forks del contrato UI |
+| Product host | Datos, auth, routing, plataforma, resolucion SSR | Forks compartidos o imports upstream |
+
+```text
+registry + providers -> adapters @lemn-ltd/ui -> product SSR host
+@lemn-ltd/brand-contract -> compiled scope ------^
+@lemn-ltd/brand-studio -> typed intents -> control plane autorizado
+```
+
+Una Brand contiene Profiles en cada BrandRevision inmutable; cada Profile tiene
+modes. Un Assignment de project/environment/slot selecciona revision, Profile
+por defecto y Profiles permitidos. El cambio es atomico sobre un scope completo.
+
+El storage transaccional del control plane es autoridad de drafts/assignments.
+KV puede cachear artefactos inmutables, pero no es autoridad mutable.
+
+La consecuencia es que LEMN hereda fixes upstream via proposals revisables,
+puede cambiar identidades sin nombres de token por proyecto, prueba SSR branded
+first paint y mantiene plataforma frontend fuera del contrato visual.

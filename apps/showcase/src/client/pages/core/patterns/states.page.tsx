@@ -7,24 +7,24 @@ import type { CSSProperties, ReactElement, ReactNode } from 'react';
 const ROW: CSSProperties = {
   display: 'grid',
   gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-  gap: 'var(--space-4)',
+  gap: 'var(--lemn-space-4)',
 };
 
 const FRAME: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
-  gap: 'var(--space-3)',
+  gap: 'var(--lemn-space-3)',
   minHeight: 320,
-  padding: 'var(--space-5)',
-  border: '1px solid var(--border)',
-  borderRadius: 'var(--radius-lg)',
-  background: 'var(--surface)',
+  padding: 'var(--lemn-space-5)',
+  border: '1px solid var(--lemn-color-border)',
+  borderRadius: 'var(--lemn-radius-large)',
+  background: 'var(--lemn-color-surface)',
 };
 
 const FRAME_LABEL: CSSProperties = {
-  fontSize: 'var(--font-size-small)',
+  fontSize: 'var(--lemn-font-size-small)',
   fontWeight: 600,
-  color: 'var(--text-muted)',
+  color: 'var(--lemn-color-text-muted)',
 };
 
 const CENTER: CSSProperties = {
@@ -37,7 +37,7 @@ const CENTER: CSSProperties = {
 const LOADING_ROWS: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
-  gap: 'var(--space-3)',
+  gap: 'var(--lemn-space-3)',
 };
 
 function Frame({ label, children }: { label: string; children: ReactNode }): ReactElement {

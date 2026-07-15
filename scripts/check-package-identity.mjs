@@ -26,7 +26,6 @@ const canonicalRepositoryFiles = [
   'apps/docs/src/content/docs/index.mdx',
   'apps/docs/src/content/docs/es/index.mdx',
 ];
-const legacyPackagePolicyFiles = new Set(['docs/showcase-component-documentation-migration/SPEC.md']);
 
 const ignoredDirectories = new Set([
   '.git',
@@ -94,6 +93,8 @@ async function collectTextFiles(directory) {
 
 const rootPackage = await readJson('package.json');
 const uiPackage = await readJson('packages/ui/package.json');
+const brandContractPackage = await readJson('packages/brand-contract/package.json');
+const brandStudioPackage = await readJson('packages/brand-studio/package.json');
 const showcasePackage = await readJson('apps/showcase/package.json');
 const showcaseKitPackage = await readJson('packages/showcase-kit/package.json');
 const changesetConfig = await readJson('.changeset/config.json');
@@ -108,51 +109,63 @@ const deploymentSmoke = await readFile(
   join(root, 'scripts/release/deployment-smoke.ts'),
   'utf8',
 );
-const packageIdentitySpec = await readFile(
-  join(root, 'docs/showcase-component-documentation-migration/SPEC.md'),
-  'utf8',
-);
 
 assert(
   uiPackage.name === canonicalPackageName,
   `packages/ui/package.json must declare name ${canonicalPackageName}; received ${uiPackage.name}`,
 );
+const releasePackages = [
+  [brandContractPackage, '@lemn-ltd/brand-contract', '0.1.0'],
+  [uiPackage, canonicalPackageName, '0.3.0'],
+  [brandStudioPackage, '@lemn-ltd/brand-studio', '0.1.0'],
+];
+for (const [manifest, name, version] of releasePackages) {
+  assert(manifest.name === name, `Release package must be ${name}`);
+  assert(manifest.version === version, `${name} must release exact version ${version}`);
+  assert(
+    manifest.publishConfig?.registry === canonicalRegistry,
+    `${name} must publish to ${canonicalRegistry}`,
+  );
+  assert(manifest.publishConfig?.access === 'restricted', `${name} publish access must be restricted`);
+  assert(
+    manifest.scripts?.prepublishOnly === 'pnpm --dir ../.. publish:packages:verify',
+    `${name} must run the governed package-set dist and consumer smoke before publish`,
+  );
+}
 assert(
-  uiPackage.publishConfig?.registry === canonicalRegistry,
-  `packages/ui/package.json must publish to ${canonicalRegistry}`,
+  brandStudioPackage.dependencies?.['@lemn-ltd/brand-contract'] === 'workspace:0.1.0' &&
+    brandStudioPackage.peerDependencies?.[canonicalPackageName] === '0.3.0' &&
+    brandStudioPackage.devDependencies?.[canonicalPackageName] === 'workspace:0.3.0',
+  'Brand Studio must use exact brand-contract 0.1.0 and UI 0.3.0 contracts',
 );
-assert(uiPackage.publishConfig?.access === 'restricted', 'UI package publish access must be restricted');
 assert(
-  uiPackage.scripts?.prepublishOnly === 'pnpm --dir ../.. publish:ui:verify',
-  'UI package must run the guarded dist and consumer smoke before publish',
+  rootPackage.scripts?.['pack:packages'] ===
+    'pnpm validate:package-identity && node scripts/smoke-package-set-tarballs.mjs',
+  'pack:packages must validate and smoke-test every canonical pnpm tarball',
 );
 assert(
-  rootPackage.scripts?.['pack:ui'] ===
-    'pnpm validate:package-identity && node scripts/smoke-package-tarball.mjs',
-  'pack:ui must validate identity and smoke-test the canonical pnpm tarball',
+  rootPackage.scripts?.['build:packages:release'] ===
+    'pnpm --filter @lemn-ltd/brand-contract run build && pnpm --filter @lemn-ltd/ui run build && pnpm --filter @lemn-ltd/brand-studio run build',
+  'Release package builds must preserve contract -> UI -> Studio order',
 );
 assert(
-  rootPackage.scripts?.['publish:ui'] ===
-    'pnpm guard:release:mutation && pnpm --filter @lemn-ltd/ui run build && pnpm --filter @lemn-ltd/ui publish --access restricted --no-git-checks',
-  'publish:ui must guard main, build, and invoke the lifecycle-protected publisher',
-);
-assert(
-  rootPackage.scripts?.['publish:ui:verify'] ===
-    'pnpm guard:release:mutation && node scripts/release/verify-ui-dist.mjs && pnpm pack:ui',
-  'publish:ui:verify must guard main and smoke an existing built package',
+  rootPackage.scripts?.['publish:packages:verify'] ===
+    'pnpm guard:release:mutation && node scripts/release/verify-package-dists.ts && pnpm pack:packages',
+  'publish:packages:verify must guard main and smoke the complete built package set',
 );
 assert(
   rootPackage.scripts?.release ===
-    'pnpm release:preflight && pnpm check && pnpm test && pnpm publish:ui:release',
-  'release must use the guarded canonical publisher after validation',
+    'pnpm release:preflight && pnpm check && pnpm test && pnpm build:packages:release && pnpm publish:packages:release',
+  'release must build and use the guarded canonical package-set publisher after validation',
 );
 assert(
-  !rootPackage.scripts?.['publish:ui:internal'],
-  'An unguarded internal publisher must not exist',
+  !Object.keys(rootPackage.scripts ?? {}).some((name) => name.startsWith('publish:ui') || name === 'pack:ui'),
+  'Legacy UI-only package release entrypoints must not exist',
 );
 assert(
-  makefile.includes('pack-ui:\n\t$(PNPM) pack:ui'),
-  'Makefile pack-ui must use the canonical pnpm package smoke',
+  makefile.includes('pack-packages:\n\t$(PNPM) pack:packages') &&
+    !makefile.includes('pack-ui:'),
+  'Makefile must use only the canonical package-set smoke',
 );
 assert(
   npmrc.split(/\r?\n/u).includes(`@lemn-ltd:registry=${canonicalRegistry}`),
@@ -185,11 +198,6 @@ assert(
   'Release smoke checks must use the canonical LEMN hosts and catalog title',
 );
 assert(
-  packageIdentitySpec.includes(`Se prohíben la identidad legacy \`${legacyPackageName}\``) &&
-    packageIdentitySpec.includes(`el paquete recomendado es \`${canonicalPackageName}\``),
-  'Package identity policy must prohibit only the legacy identity and recommend the canonical package',
-);
-assert(
   showcasePackage.dependencies?.[canonicalPackageName] === 'workspace:*',
   `apps/showcase must resolve ${canonicalPackageName} through workspace:*`,
 );
@@ -215,7 +223,7 @@ for (const file of await collectTextFiles(root)) {
   const content = await readFile(file, 'utf8');
   const relativePath = relative(root, file);
   if (
-    (legacyPackagePattern.test(content) && !legacyPackagePolicyFiles.has(relativePath)) ||
+    legacyPackagePattern.test(content) ||
     legacyRepositoryPattern.test(content) ||
     legacyProductDomainPattern.test(content)
   ) {

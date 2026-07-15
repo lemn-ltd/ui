@@ -1,0 +1,83 @@
+---
+title: Architecture
+description: Package, control-plane, provider, and consumer responsibility boundaries.
+sidebar:
+  label: Architecture
+  order: 3
+---
+
+Owner: LEMN UI maintainers
+Decision date: 2026-07-15
+
+## Decision
+
+LEMN exposes one provider-neutral UI surface assembled from individually
+selected, battle-tested open-source capabilities. Functional behavior remains
+with the provider of record. LEMN owns the public API, minimal semantic branding
+adapter, curated catalog/blocks, provenance, conformance, and release process.
+
+Branding is a versioned BrandProject data contract compiled into immutable,
+scoped runtime artifacts. Product components never parse that authoring JSON.
+
+## Responsibility map
+
+| Boundary | Owns | Must not own |
+| --- | --- | --- |
+| `@lemn-ltd/brand-contract` | Schema, validation, deterministic compilation, diagnostics, scope/tokens, provider theme adapters, hashes | Persistence, authorization, publication, product selection |
+| `@lemn-ltd/ui` | Controlled public components, visualizations, styles, blocks, catalogs | Product APIs, auth, routes, global state, raw branding JSON |
+| `@lemn-ltd/brand-studio` | Controlled wizard, preview, JSON review, typed host intents | Credentials, persistence, publication authority, project policy |
+| Provider registry | One provider of record per capability, immutable origin, license, adapter, conformance, update status | Runtime product state or automatic production upgrades |
+| Public Showcase | Read-only examples, catalogs, evidence, Profile/mode demonstrations | Administrative mutation |
+| Showcase Admin | Protected experimentation and proposal creation | Direct writes to the active manifest or production approval |
+| AgentOps/control plane | Projects, environments, Brands, Profiles/revisions, assignments, authorization, audit, publication, runtime delivery | Forked UI contracts or component behavior |
+| Product host | Data, auth, routes, platform state, SSR resolution, controlled props/actions | Shared component forks or direct provider imports |
+
+## Dependency direction
+
+```text
+provider registry + upstream packages
+                 │
+                 ▼
+        @lemn-ltd/ui adapters
+                 │
+@lemn-ltd/brand-contract ──► compiled semantic scope
+                 │                         │
+                 └──────────────┬──────────┘
+                                ▼
+                         product SSR host
+
+@lemn-ltd/brand-studio ──typed intents──► authorized control plane
+```
+
+The UI package does not depend on a product control plane. Studio depends on the
+public brand contract and UI peer only. Consumers depend on exact published
+versions; no repository is connected through workspace links in production.
+
+## Domain model
+
+A Brand is a reusable identity family. One immutable BrandRevision contains all
+Profiles for that Brand; each Profile contains switchable modes such as light
+and dark. A project/environment/slot Assignment selects a published revision,
+default Profile, and allowed Profile set. Switching Profile/mode changes one
+complete compiled scope atomically.
+
+Mutable source drafts remain authoritative in transactional control-plane
+storage. Runtime caches or KV may accelerate immutable artifact delivery, but
+they are not the authority for mutable branding state.
+
+## Consequences
+
+- The team inherits provider fixes and additions through reviewable registry
+  updates without maintaining rewritten behavior.
+- Brand identity can switch across projects, Profiles, and modes without
+  project-specific token names or component branches.
+- SSR consumers can prove a branded first response and fail to a verified
+  branded fallback.
+- Adding a provider increases governance/conformance work only for selected
+  capabilities, not an entire catalog.
+- Frontend-platform concerns can be centralized later without bloating the UI
+  contract.
+
+This decision implements `PAT-UI-PROVIDER-FIRST-001`,
+`PAT-UI-BRAND-CONTRACT-001`, `PAT-UI-SSR-BRANDING-001`,
+`PAT-UI-BLOCKS-001`, and `PAT-UI-FRONTEND-PLATFORM-BOUNDARY-001`.

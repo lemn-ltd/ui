@@ -11,7 +11,7 @@ import type { ReactElement, ReactNode } from 'react';
 
 export const CAPABILITY_PREVIEW_STYLE = {
   display: 'grid',
-  gap: 'var(--space-4)',
+  gap: 'var(--lemn-space-4)',
   width: 'min(720px, 100%)',
 } as const;
 

@@ -1,8 +1,8 @@
 .ui-dialog__overlay {
   position: fixed;
   inset: 0;
-  z-index: var(--z-modal);
-  background: var(--overlay);
+  z-index: var(--lemn-z-modal);
+  background: var(--lemn-color-overlay-scrim);
 }
 
 /*
@@ -13,7 +13,7 @@
 .ui-dialog {
   position: fixed;
   inset: 0;
-  z-index: var(--z-modal);
+  z-index: var(--lemn-z-modal);
   display: flex;
   flex-direction: column;
   width: 92vw;
@@ -21,12 +21,12 @@
   height: fit-content;
   max-height: 85vh;
   margin: auto;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--elev-3);
-  color: var(--text);
-  font-family: var(--font-sans);
+  background: var(--lemn-color-surface);
+  border: 1px solid var(--lemn-color-border);
+  border-radius: var(--lemn-radius-large);
+  box-shadow: var(--lemn-shadow-modal);
+  color: var(--lemn-color-text);
+  font-family: var(--lemn-font-body);
 }
 
 /*
@@ -49,11 +49,11 @@
 }
 
 .ui-dialog__overlay[data-state="open"] {
-  animation: fade var(--duration-fast) var(--easing-standard);
+  animation: fade var(--lemn-duration-fast) var(--lemn-easing-standard);
 }
 
 .ui-dialog[data-state="open"] {
-  animation: scale-in var(--duration-fast) var(--easing-emphasized);
+  animation: scale-in var(--lemn-duration-fast) var(--lemn-easing-emphasized);
 }
 
 /* Mobile: bottom sheet — full-width, bottom-anchored, slides up from the edge. */
@@ -71,7 +71,7 @@
   }
 
   .ui-dialog[data-state="open"] {
-    animation: slide-bottom var(--duration-normal) var(--easing-emphasized);
+    animation: slide-bottom var(--lemn-duration-normal) var(--lemn-easing-emphasized);
   }
 }
 
@@ -79,28 +79,28 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-4) var(--space-5);
+  padding: var(--lemn-space-4) var(--lemn-space-5);
 }
 
 /* Master→detail back affordance: sits where the title would, left-aligned. */
 .ui-dialog__back {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-1) var(--space-2);
-  margin-left: calc(var(--space-2) * -1);
+  gap: var(--lemn-space-2);
+  padding: var(--lemn-space-1) var(--lemn-space-2);
+  margin-left: calc(var(--lemn-space-2) * -1);
   border: 0;
-  border-radius: var(--radius-md);
+  border-radius: var(--lemn-radius-medium);
   background: transparent;
-  color: var(--text);
+  color: var(--lemn-color-text);
   font-family: inherit;
-  font-size: var(--font-size-body);
-  font-weight: var(--font-weight-medium);
+  font-size: var(--lemn-font-size-body);
+  font-weight: var(--lemn-font-weight-medium);
   cursor: pointer;
 }
 
 .ui-dialog__back:hover {
-  background: var(--surface2);
+  background: var(--lemn-color-surface-muted);
 }
 
 /* Title kept for assistive tech while the Back control replaces it visually. */
@@ -117,38 +117,38 @@
 }
 
 .ui-dialog__title {
-  font-size: var(--font-size-heading);
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-heading);
+  font-size: var(--lemn-font-size-heading);
+  font-weight: var(--lemn-font-weight-semibold);
+  line-height: var(--lemn-line-height-heading);
 }
 
 .ui-dialog__content {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--lemn-space-3);
   overflow: auto;
-  padding: 0 var(--space-5) var(--space-4);
+  padding: 0 var(--lemn-space-5) var(--lemn-space-4);
 }
 
 .ui-dialog__description {
-  color: var(--text-muted);
-  font-size: var(--font-size-small);
-  line-height: var(--line-height-small);
+  color: var(--lemn-color-text-muted);
+  font-size: var(--lemn-font-size-small);
+  line-height: var(--lemn-line-height-small);
 }
 
 .ui-dialog__body {
-  font-size: var(--font-size-body);
-  line-height: var(--line-height-body);
+  font-size: var(--lemn-font-size-body);
+  line-height: var(--lemn-line-height-body);
 }
 
 .ui-dialog__divider {
   height: 1px;
-  background: var(--border);
+  background: var(--lemn-color-border);
 }
 
 .ui-dialog__footer {
   display: flex;
   justify-content: flex-end;
-  gap: var(--space-2);
-  padding: var(--space-4) var(--space-5);
+  gap: var(--lemn-space-2);
+  padding: var(--lemn-space-4) var(--lemn-space-5);
 }

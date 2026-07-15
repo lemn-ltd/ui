@@ -81,7 +81,7 @@ function ProgressBarPage(): ReactElement {
 				<div
 					style={{
 						display: "grid",
-						gap: "var(--space-4)",
+						gap: "var(--lemn-space-4)",
 						width: "min(520px, 100%)",
 					}}
 				>

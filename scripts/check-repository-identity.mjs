@@ -7,16 +7,18 @@ const legacyBrand = ['app', 'ranks'].join('');
 const retiredDocsLabel = ['docs', 'ui'].join(' - ');
 const legacyBrandExceptions = new Set([
   '.agentops/project.json',
-  'docs/showcase-component-documentation-migration/SPEC.md',
 ]);
 
 const expectedPackageNames = new Map([
   ['package.json', 'lemn-ui-workspace'],
+  ['packages/brand-contract/package.json', '@lemn-ltd/brand-contract'],
+  ['packages/brand-studio/package.json', '@lemn-ltd/brand-studio'],
+  ['packages/provider-registry/package.json', '@lemn-ltd/provider-registry'],
   ['packages/ui/package.json', '@lemn-ltd/ui'],
   ['packages/showcase-kit/package.json', '@lemn-ltd/showcase-kit'],
   ['apps/docs/package.json', '@lemn-ltd/ui-docs'],
   ['apps/showcase/package.json', '@lemn-ltd/ui-showcase'],
-  ['apps/brand-lab/package.json', '@lemn-ltd/ui-brand-lab'],
+  ['apps/showcase-admin/package.json', '@lemn-ltd/ui-showcase-admin'],
 ]);
 
 const files = execFileSync(

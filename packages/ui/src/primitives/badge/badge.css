@@ -5,18 +5,18 @@
   gap: 6px;
   height: 22px;
   padding: 0 10px;
-  background: var(--surface2);
-  border-radius: var(--radius-pill);
-  color: var(--badge-color, var(--text-muted));
-  font-family: var(--font-sans);
-  font-size: var(--font-size-caption);
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-caption);
+  background: var(--lemn-color-surface-muted);
+  border-radius: var(--lemn-radius-pill);
+  color: var(--badge-color, var(--lemn-color-text-muted));
+  font-family: var(--lemn-font-body);
+  font-size: var(--lemn-font-size-caption);
+  font-weight: var(--lemn-font-weight-semibold);
+  line-height: var(--lemn-line-height-caption);
 }
 
 .ui-badge[data-size="sm"] {
   height: 20px;
-  padding: 0 var(--space-2);
+  padding: 0 var(--lemn-space-2);
   font-size: 11px;
 }
 
@@ -33,36 +33,36 @@
 /* Each tone maps to its strong color and its soft surface; every variant reads
    these two custom properties, so adding a tone is one entry and never repeats. */
 .ui-badge[data-tone="neutral"] {
-  --badge-color: var(--text-muted);
-  --badge-soft: var(--surface2);
+  --badge-color: var(--lemn-color-text-muted);
+  --badge-soft: var(--lemn-color-surface-muted);
 }
 .ui-badge[data-tone="dim"] {
-  --badge-color: var(--text-dim);
-  --badge-soft: var(--surface2);
+  --badge-color: var(--lemn-color-disabled-text);
+  --badge-soft: var(--lemn-color-surface-muted);
 }
 .ui-badge[data-tone="success"] {
-  --badge-color: var(--success);
-  --badge-soft: var(--success-soft);
+  --badge-color: var(--lemn-color-success);
+  --badge-soft: var(--lemn-color-success-surface);
 }
 .ui-badge[data-tone="warn"] {
-  --badge-color: var(--warn);
-  --badge-soft: var(--warn-soft);
+  --badge-color: var(--lemn-color-warning);
+  --badge-soft: var(--lemn-color-warning-surface);
 }
 .ui-badge[data-tone="danger"] {
-  --badge-color: var(--danger);
-  --badge-soft: var(--danger-soft);
+  --badge-color: var(--lemn-color-danger);
+  --badge-soft: var(--lemn-color-danger-surface);
 }
 .ui-badge[data-tone="info"] {
-  --badge-color: var(--info);
-  --badge-soft: var(--info-soft);
+  --badge-color: var(--lemn-color-info);
+  --badge-soft: var(--lemn-color-info-surface);
 }
 .ui-badge[data-tone="accent"] {
-  --badge-color: var(--accent);
-  --badge-soft: var(--accent-soft);
+  --badge-color: var(--lemn-color-accent);
+  --badge-soft: var(--lemn-color-accent-soft);
 }
 .ui-badge[data-tone="accent2"] {
-  --badge-color: var(--accent2);
-  --badge-soft: var(--accent2-soft);
+  --badge-color: var(--lemn-chart-series-4);
+  --badge-soft: var(--lemn-color-info-surface);
 }
 
 /* Soft fills the pill with the tone's soft surface and its strong color. */
@@ -78,11 +78,11 @@
 
 .ui-badge[data-variant="solid"] {
   background: var(--badge-color);
-  color: var(--surface);
+  color: var(--lemn-color-surface);
 }
 
 .ui-badge[data-variant="solid"][data-tone="accent"] {
-  color: var(--accent-foreground);
+  color: var(--lemn-color-accent-foreground);
 }
 
 /* Accent tones keep their soft surface in the default subtle variant. */
@@ -96,6 +96,6 @@
   content: "";
   width: 6px;
   height: 6px;
-  border-radius: var(--radius-pill);
+  border-radius: var(--lemn-radius-pill);
   background: currentColor;
 }

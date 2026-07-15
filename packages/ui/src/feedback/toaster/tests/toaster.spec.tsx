@@ -63,7 +63,7 @@ describe('Toaster', () => {
     toast.info('Heads up');
     await flush();
     // sonner only reflects an explicit theme prop; the package never passes one,
-    // so it stays on the light default and tone colors resolve from data-theme.
+    // so tone colors remain owned by the surrounding compiled brand scope.
     expect(
       container.querySelector('[data-sonner-toaster]')?.getAttribute('data-sonner-theme'),
     ).toBe('light');

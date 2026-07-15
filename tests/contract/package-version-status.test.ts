@@ -85,6 +85,14 @@ test("does not misclassify a package-level 404 as an unpublished version", async
 	);
 });
 
+test("release publication may explicitly classify a missing package as its first publish", async () => {
+	await assertPackageVersionUnpublished({
+		...input,
+		missingPackageIsUnpublished: true,
+		fetchImplementation: async () => response({}, 404),
+	});
+});
+
 test("reports authentication failures separately from package absence", async () => {
 	await assert.rejects(
 		assertPackageVersionUnpublished({

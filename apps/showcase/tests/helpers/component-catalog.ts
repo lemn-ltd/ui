@@ -5,7 +5,7 @@ import { primaryComponentCatalogEntries } from "../../../../packages/ui/src/cata
 import { secondaryComponentCatalogEntries } from "../../../../packages/ui/src/catalog-secondary-entries.ts";
 import { visualizationComponentCatalogEntries } from "../../../../packages/ui/src/catalog-visualization-entries.ts";
 
-export const COMPONENT_CATALOG_ROUTE_COUNT = 130;
+export const COMPONENT_CATALOG_ROUTE_COUNT = 131;
 export const COMPONENT_ACCESSIBILITY_THEMES = ["light", "dark"] as const;
 export const COMPONENT_ACCESSIBILITY_CASE_COUNT =
 	COMPONENT_CATALOG_ROUTE_COUNT * COMPONENT_ACCESSIBILITY_THEMES.length;
@@ -70,7 +70,7 @@ function assertSourceCatalogInventory(): void {
 	if (
 		catalogComponentRoutes.length !== COMPONENT_CATALOG_ROUTE_COUNT ||
 		uniqueRoutes.size !== COMPONENT_CATALOG_ROUTE_COUNT ||
-		coreRoutes !== 101 ||
+		coreRoutes !== 102 ||
 		agentRoutes !== 29
 	) {
 		throw new Error(
@@ -105,10 +105,10 @@ export async function componentRoutesFromCatalog(
 
 	expect(catalog.package).toBe("@lemn-ltd/ui");
 	expect(catalog.source).toBe("https://github.com/lemn-ltd/ui");
-	expect(catalog.components).toHaveLength(130);
+	expect(catalog.components).toHaveLength(131);
 	expect(
 		catalog.components.filter((component) => component.area === "core"),
-	).toHaveLength(101);
+	).toHaveLength(102);
 	expect(
 		catalog.components.filter((component) => component.area === "agents"),
 	).toHaveLength(29);

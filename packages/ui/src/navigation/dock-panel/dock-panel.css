@@ -3,8 +3,8 @@
   flex-direction: column;
   height: 100%;
   min-width: 0;
-  background: var(--bg);
-  border-left: 1px solid var(--border);
+  background: var(--lemn-color-canvas);
+  border-left: 1px solid var(--lemn-color-border);
   overflow: hidden;
 }
 
@@ -13,16 +13,16 @@
   flex-shrink: 0;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-2);
+  gap: var(--lemn-space-2);
   height: 40px;
-  padding: 0 var(--space-2);
-  border-bottom: 1px solid var(--border);
+  padding: 0 var(--lemn-space-2);
+  border-bottom: 1px solid var(--lemn-color-border);
 }
 
 .ui-dock-panel__tabs {
   display: flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--lemn-space-1);
 }
 
 .ui-dock-panel__tab {
@@ -31,29 +31,29 @@
   gap: 6px;
   height: 26px;
   padding: 0 10px;
-  border-radius: var(--radius-md);
-  color: var(--text-muted);
-  font-family: var(--font-sans);
-  font-size: var(--font-size-caption);
-  font-weight: var(--font-weight-medium);
+  border-radius: var(--lemn-radius-medium);
+  color: var(--lemn-color-text-muted);
+  font-family: var(--lemn-font-body);
+  font-size: var(--lemn-font-size-caption);
+  font-weight: var(--lemn-font-weight-medium);
   cursor: pointer;
 }
 
 .ui-dock-panel__tab:hover {
-  background: var(--surface2);
-  color: var(--text);
+  background: var(--lemn-color-surface-muted);
+  color: var(--lemn-color-text);
 }
 
 .ui-dock-panel__tab[data-active="true"],
 .ui-dock-panel__tab[data-active="true"]:hover {
-  background: var(--accent-soft);
-  color: var(--accent);
+  background: var(--lemn-color-accent-soft);
+  color: var(--lemn-color-accent);
 }
 
 .ui-dock-panel__controls {
   display: flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--lemn-space-1);
 }
 
 .ui-dock-panel__controls .ui-icon-button {

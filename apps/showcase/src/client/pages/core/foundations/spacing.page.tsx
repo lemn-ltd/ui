@@ -17,9 +17,9 @@ const STEPS: { step: number; px: number }[] = [
 ];
 
 const RADII = [
-  { label: 'sm', cssVar: '--radius-sm' },
-  { label: 'md', cssVar: '--radius-md' },
-  { label: 'lg', cssVar: '--radius-lg' },
+  { label: 'sm', cssVar: '--lemn-radius-small' },
+  { label: 'md', cssVar: '--lemn-radius-medium' },
+  { label: 'lg', cssVar: '--lemn-radius-large' },
   { label: 'pill', cssVar: '--radius-pill' },
 ];
 
@@ -37,7 +37,7 @@ function SpacingPage(): ReactElement {
               </span>
               <span
                 className="showcase-space-bar"
-                style={{ width: `var(--space-${entry.step})` }}
+                style={{ width: `var(--lemn-space-${entry.step})` }}
               />
             </div>
           ))}

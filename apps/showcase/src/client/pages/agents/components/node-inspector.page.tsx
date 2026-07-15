@@ -47,7 +47,7 @@ function NodeInspectorPage(): ReactElement {
   fields={fields}
 />`}
         render={() => (
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-4)' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--lemn-space-4)' }}>
             <div style={{ width: 240 }}>
               <NodePalette items={PALETTE} selectedKind="agent" />
             </div>

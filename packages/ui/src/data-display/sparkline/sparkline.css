@@ -7,6 +7,6 @@
 
 .ui-sparkline__bar {
   width: 3px;
-  border-radius: var(--radius-sm);
-  background: var(--accent);
+  border-radius: var(--lemn-radius-small);
+  background: var(--lemn-color-accent);
 }

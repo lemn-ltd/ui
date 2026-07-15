@@ -1,31 +1,31 @@
 .ui-input {
   width: 100%;
   height: 40px;
-  padding: 0 var(--space-3);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  color: var(--text);
-  font-family: var(--font-sans);
-  font-size: var(--font-size-small);
-  line-height: var(--line-height-small);
-  transition: border-color var(--duration-fast) var(--easing-standard);
+  padding: 0 var(--lemn-space-3);
+  background: var(--lemn-color-surface);
+  border: 1px solid var(--lemn-color-border);
+  border-radius: var(--lemn-radius-medium);
+  color: var(--lemn-color-text);
+  font-family: var(--lemn-font-body);
+  font-size: var(--lemn-font-size-small);
+  line-height: var(--lemn-line-height-small);
+  transition: border-color var(--lemn-duration-fast) var(--lemn-easing-standard);
 }
 
 .ui-input::placeholder {
-  color: var(--text-muted);
+  color: var(--lemn-color-text-muted);
 }
 
 .ui-input:focus {
-  border-color: var(--accent);
+  border-color: var(--lemn-color-accent);
   outline: none;
 }
 
 .ui-input[data-invalid="true"] {
-  border-color: var(--danger);
+  border-color: var(--lemn-color-danger);
 }
 .ui-input[data-invalid="true"]:focus {
-  border-color: var(--danger);
+  border-color: var(--lemn-color-danger);
 }
 
 .ui-input:disabled {

@@ -1,19 +1,19 @@
 .ui-node-palette {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
-  padding: var(--space-3);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
+  gap: var(--lemn-space-1);
+  padding: var(--lemn-space-3);
+  border: 1px solid var(--lemn-color-border);
+  border-radius: var(--lemn-radius-large);
+  background: var(--lemn-color-surface);
 }
 
 .ui-node-palette__title {
   margin: 0;
-  padding: var(--space-1) var(--space-2);
-  color: var(--text-dim);
-  font-size: var(--font-size-caption);
-  font-weight: var(--font-weight-semibold);
+  padding: var(--lemn-space-1) var(--lemn-space-2);
+  color: var(--lemn-color-disabled-text);
+  font-size: var(--lemn-font-size-caption);
+  font-weight: var(--lemn-font-weight-semibold);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -21,46 +21,46 @@
 .ui-node-palette__list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: var(--lemn-space-1);
 }
 
 .ui-node-palette__item {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2);
+  gap: var(--lemn-space-2);
+  padding: var(--lemn-space-2);
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--lemn-radius-small);
   background: transparent;
-  color: var(--text);
+  color: var(--lemn-color-text);
   font-family: inherit;
-  font-size: var(--font-size-small);
+  font-size: var(--lemn-font-size-small);
   text-align: left;
   cursor: pointer;
-  transition: background var(--duration-fast) var(--easing-standard);
+  transition: background var(--lemn-duration-fast) var(--lemn-easing-standard);
 }
 
 .ui-node-palette__item:hover {
-  background: var(--surface2);
+  background: var(--lemn-color-surface-muted);
 }
 
 .ui-node-palette__item:focus-visible {
   outline: none;
-  box-shadow: inset 0 0 0 2px var(--focus-ring);
+  box-shadow: inset 0 0 0 2px var(--lemn-color-focus);
 }
 
 .ui-node-palette__item[data-selected="true"] {
-  background: var(--accent-soft);
-  color: var(--accent-strong);
+  background: var(--lemn-color-accent-soft);
+  color: var(--lemn-color-accent-pressed);
 }
 
 .ui-node-palette__icon {
   flex: none;
-  color: var(--text-muted);
+  color: var(--lemn-color-text-muted);
 }
 
 .ui-node-palette__item[data-selected="true"] .ui-node-palette__icon {
-  color: var(--accent-strong);
+  color: var(--lemn-color-accent-pressed);
 }
 
 @media (prefers-reduced-motion: reduce) {

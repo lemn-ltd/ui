@@ -1,14 +1,14 @@
 .ui-org-switcher {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--lemn-space-2);
   width: 100%;
-  padding: var(--space-2);
-  background: var(--surface2);
-  border-radius: var(--radius-md);
-  color: var(--text);
-  font-family: var(--font-sans);
-  font-size: var(--font-size-small);
+  padding: var(--lemn-space-2);
+  background: var(--lemn-color-surface-muted);
+  border-radius: var(--lemn-radius-medium);
+  color: var(--lemn-color-text);
+  font-family: var(--lemn-font-body);
+  font-size: var(--lemn-font-size-small);
   cursor: pointer;
 }
 
@@ -26,25 +26,25 @@
 
 /*
  * Align the dropdown row marks under the trigger mark: the trigger insets its
- * mark by --space-2, so the menu rows drop the default item left padding to
+ * mark by --lemn-space-2, so the menu rows drop the default item left padding to
  * line up (the dropdown left edge already matches the trigger via align=start).
  */
 .ui-org-switcher__menu .ui-menu__item {
-  padding-left: var(--space-1);
+  padding-left: var(--lemn-space-1);
 }
 
 /*
- * The selected org row carries the tinted `--accent-soft` background (the same
+ * The selected org row carries the tinted `--lemn-color-accent-soft` background (the same
  * selected token the sidebar uses), wrapping the mark, name, and active-org
  * action as one unit. Selection is the background, not a trailing check glyph.
  */
 .ui-org-switcher__active-row {
   display: flex;
   align-items: center;
-  gap: var(--space-1);
-  padding-right: var(--space-1);
-  background: var(--accent-soft);
-  border-radius: var(--radius-sm);
+  gap: var(--lemn-space-1);
+  padding-right: var(--lemn-space-1);
+  background: var(--lemn-color-accent-soft);
+  border-radius: var(--lemn-radius-small);
 }
 
 /* The row owns the background, so the item inside stays transparent — even when
@@ -64,13 +64,13 @@
  */
 .ui-org-switcher__menu .ui-menu__item[data-highlighted],
 .ui-org-switcher__menu .ui-menu__item:focus-visible {
-  outline: 2px solid var(--focus-ring);
+  outline: 2px solid var(--lemn-color-focus);
   outline-offset: -2px;
 }
 
 .ui-org-switcher__active-row:has(.ui-menu__item[data-highlighted]),
 .ui-org-switcher__active-row:has(.ui-menu__item:focus-visible) {
-  outline: 2px solid var(--focus-ring);
+  outline: 2px solid var(--lemn-color-focus);
   outline-offset: -2px;
 }
 
@@ -88,15 +88,15 @@
   height: 28px;
   background: transparent;
   border: 0;
-  border-radius: var(--radius-sm);
-  color: var(--accent);
+  border-radius: var(--lemn-radius-small);
+  color: var(--lemn-color-accent);
   cursor: pointer;
 }
 
 .ui-org-switcher__active-action:hover,
 .ui-org-switcher__active-action:focus-visible {
-  background: var(--surface);
-  color: var(--accent);
+  background: var(--lemn-color-surface);
+  color: var(--lemn-color-accent);
   outline: none;
 }
 
@@ -108,18 +108,18 @@
   flex-shrink: 0;
   width: 28px;
   height: 28px;
-  background: var(--accent-soft);
-  border-radius: var(--radius-sm);
-  color: var(--accent);
-  font-size: var(--font-size-small);
-  font-weight: var(--font-weight-semibold);
+  background: var(--lemn-color-accent-soft);
+  border-radius: var(--lemn-radius-small);
+  color: var(--lemn-color-accent);
+  font-size: var(--lemn-font-size-small);
+  font-weight: var(--lemn-font-weight-semibold);
 }
 
 /* On the tinted row the mark goes solid so it does not blend into its own soft tint.
  * Declared after the base mark rule so specificity ascends in source order. */
 .ui-org-switcher__active-row .ui-org-switcher__row-mark {
-  background: var(--accent);
-  color: var(--accent-foreground);
+  background: var(--lemn-color-accent);
+  color: var(--lemn-color-accent-foreground);
 }
 
 .ui-org-switcher__name {
@@ -128,14 +128,14 @@
   text-align: left;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--lemn-font-weight-semibold);
 }
 
 .ui-org-switcher__chevron {
   flex-shrink: 0;
-  color: var(--text-muted);
+  color: var(--lemn-color-text-muted);
   transform-origin: center;
-  transition: transform 1s var(--easing-standard);
+  transition: transform 1s var(--lemn-easing-standard);
 }
 
 .ui-org-switcher[data-open="true"] .ui-org-switcher__chevron {

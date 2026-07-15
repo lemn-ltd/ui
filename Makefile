@@ -3,7 +3,7 @@ SHELL := /bin/bash
 
 PNPM ?= pnpm
 
-.PHONY: help install dev dev-docs validate-agentops validate-identity validate-package-identity validate-brand-neutrality validate-boundaries validate-release-preconditions validate check test test-e2e-ui-showcase test-e2e-ui-showcase-shard build pack-ui release-preflight clean
+.PHONY: help install dev dev-docs validate-agentops validate-identity validate-package-identity validate-brand-neutrality validate-boundaries validate-release-preconditions validate check test test-e2e-ui-showcase test-e2e-ui-showcase-shard build pack-packages release-preflight clean
 
 help:
 	@printf 'Useful targets:\n'
@@ -21,7 +21,7 @@ help:
 	@printf '  make test                     Run all workspace test suites.\n'
 	@printf '  make test-e2e-ui-showcase     Run the complete isolated Playwright showcase suite.\n'
 	@printf '  make build                    Build all workspace packages and the showcase.\n'
-	@printf '  make pack-ui                  Pack and smoke-test @lemn-ltd/ui with a clean npm consumer.\n'
+	@printf '  make pack-packages            Pack and smoke-test the exact release package set with a clean npm consumer.\n'
 	@printf '  make release-preflight        Run validation, check, test, build, and package smoke.\n'
 	@printf '  make clean                    Remove generated local build/test artifacts.\n'
 
@@ -72,11 +72,11 @@ test-e2e-ui-showcase-shard:
 build:
 	$(PNPM) build
 
-pack-ui:
-	$(PNPM) pack:ui
+pack-packages:
+	$(PNPM) pack:packages
 
-release-preflight: validate-release-preconditions check test build pack-ui
+release-preflight: validate-release-preconditions check test build pack-packages
 
 clean:
 	rm -rf .turbo coverage playwright-report test-results
-	rm -rf apps/showcase/dist packages/showcase-kit/dist packages/ui/dist
+	rm -rf apps/showcase/dist packages/showcase-kit/dist packages/brand-contract/dist packages/ui/dist packages/brand-studio/dist

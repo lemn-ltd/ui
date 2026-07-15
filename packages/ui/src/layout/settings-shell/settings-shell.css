@@ -6,14 +6,14 @@
   min-width: 0;
   min-height: 0;
   height: 100%;
-  background: var(--surface);
-  color: var(--text);
-  font-family: var(--font-sans);
+  background: var(--lemn-color-surface);
+  color: var(--lemn-color-text);
+  font-family: var(--lemn-font-body);
 }
 
 .ui-settings-shell[data-variant="surface"] {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border: 1px solid var(--lemn-color-border);
+  border-radius: var(--lemn-radius-large);
   overflow: hidden;
 }
 
@@ -22,17 +22,17 @@
   flex-shrink: 0;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-3);
-  padding: var(--space-4) var(--space-5);
-  border-bottom: 1px solid var(--border);
+  gap: var(--lemn-space-3);
+  padding: var(--lemn-space-4) var(--lemn-space-5);
+  border-bottom: 1px solid var(--lemn-color-border);
 }
 
 .ui-settings-shell__title {
   margin: 0;
-  color: var(--text);
-  font-size: var(--font-size-heading);
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-heading);
+  color: var(--lemn-color-text);
+  font-size: var(--lemn-font-size-heading);
+  font-weight: var(--lemn-font-weight-semibold);
+  line-height: var(--lemn-line-height-heading);
 }
 
 .ui-settings-shell__body {
@@ -52,26 +52,26 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
-  background: var(--surface);
-  border-right: 1px solid var(--border);
+  background: var(--lemn-color-surface);
+  border-right: 1px solid var(--lemn-color-border);
 }
 
 .ui-settings-shell__nav-controls {
   display: flex;
   flex-shrink: 0;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-3);
-  border-bottom: 1px solid var(--border);
+  gap: var(--lemn-space-2);
+  padding: var(--lemn-space-3);
+  border-bottom: 1px solid var(--lemn-color-border);
 }
 
 .ui-settings-shell__search {
   display: flex;
   flex: 1;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--lemn-space-2);
   min-width: 0;
-  color: var(--text-muted);
+  color: var(--lemn-color-text-muted);
 }
 
 .ui-settings-shell__search-input {
@@ -79,23 +79,23 @@
   min-width: 0;
   background: none;
   border: 0;
-  color: var(--text);
+  color: var(--lemn-color-text);
   font: inherit;
-  font-size: var(--font-size-small);
+  font-size: var(--lemn-font-size-small);
   outline: none;
 }
 
 .ui-settings-shell__search-input::placeholder {
-  color: var(--text-dim);
+  color: var(--lemn-color-disabled-text);
 }
 
 .ui-settings-shell__list {
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--lemn-space-3);
   min-height: 0;
-  padding: var(--space-2);
+  padding: var(--lemn-space-2);
   overflow-y: auto;
 }
 
@@ -106,10 +106,10 @@
 }
 
 .ui-settings-shell__group-header {
-  padding: 6px var(--space-3);
-  color: var(--text-dim);
-  font-size: var(--font-size-caption);
-  font-weight: var(--font-weight-semibold);
+  padding: 6px var(--lemn-space-3);
+  color: var(--lemn-color-disabled-text);
+  font-size: var(--lemn-font-size-caption);
+  font-weight: var(--lemn-font-weight-semibold);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -124,26 +124,26 @@
   padding: 0 10px 0 12px;
   background: transparent;
   border: 0;
-  border-radius: var(--radius-md);
-  color: var(--text-muted);
-  font-family: var(--font-sans);
-  font-size: var(--font-size-small);
+  border-radius: var(--lemn-radius-medium);
+  color: var(--lemn-color-text-muted);
+  font-family: var(--lemn-font-body);
+  font-size: var(--lemn-font-size-small);
   text-align: left;
   cursor: pointer;
 }
 
 .ui-settings-shell__item:hover:not(:disabled) {
-  background: var(--surface2);
-  color: var(--text);
+  background: var(--lemn-color-surface-muted);
+  color: var(--lemn-color-text);
 }
 
 /* Inset bar, not border-left — an asymmetric border on a rounded box leaks
  * stray corner pixels; the inset shadow clips cleanly to the radius. */
 .ui-settings-shell__item[data-active="true"] {
-  box-shadow: inset 2px 0 0 var(--accent);
-  background: var(--accent-soft);
-  color: var(--text);
-  font-weight: var(--font-weight-medium);
+  box-shadow: inset 2px 0 0 var(--lemn-color-accent);
+  background: var(--lemn-color-accent-soft);
+  color: var(--lemn-color-text);
+  font-weight: var(--lemn-font-weight-medium);
 }
 
 .ui-settings-shell__item:disabled {
@@ -152,7 +152,7 @@
 }
 
 .ui-settings-shell__item:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--lemn-color-accent);
   outline-offset: -2px;
 }
 
@@ -168,9 +168,9 @@
 }
 
 .ui-settings-shell__empty {
-  padding: var(--space-4) var(--space-3);
-  color: var(--text-muted);
-  font-size: var(--font-size-small);
+  padding: var(--lemn-space-4) var(--lemn-space-3);
+  color: var(--lemn-color-text-muted);
+  font-size: var(--lemn-font-size-small);
 }
 
 .ui-settings-shell[data-nav-collapsed="true"] .ui-settings-shell__nav {
@@ -191,8 +191,8 @@
 
 .ui-settings-shell__detail-header {
   flex-shrink: 0;
-  padding: var(--space-4) var(--space-5);
-  border-bottom: 1px solid var(--border);
+  padding: var(--lemn-space-4) var(--lemn-space-5);
+  border-bottom: 1px solid var(--lemn-color-border);
 }
 
 .ui-settings-shell__detail-content {
@@ -200,9 +200,9 @@
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: var(--space-5);
+  gap: var(--lemn-space-5);
   min-height: 0;
-  padding: var(--space-5);
+  padding: var(--lemn-space-5);
   overflow-y: auto;
   scrollbar-gutter: stable;
 }
@@ -210,7 +210,7 @@
 .ui-settings-shell__detail-content
   .ui-page-section__body
   > .ui-card:has(> .ui-card__body > .ui-field) {
-  gap: var(--space-4);
+  gap: var(--lemn-space-4);
   padding: 0;
   background: transparent;
   border: 0;
@@ -223,7 +223,7 @@
   > .ui-card__body {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--lemn-space-4);
   color: inherit;
   font-size: inherit;
   line-height: inherit;
@@ -231,8 +231,8 @@
 
 .ui-settings-shell__detail-content > .ui-settings-shell__nav-toggle {
   position: absolute;
-  top: calc(var(--space-5) - 4px);
-  left: calc(var(--space-5) - 10px);
+  top: calc(var(--lemn-space-5) - 4px);
+  left: calc(var(--lemn-space-5) - 10px);
 }
 
 .ui-settings-shell__detail-content[data-nav-toggle="true"]
@@ -265,10 +265,10 @@
   display: flex;
   flex-shrink: 0;
   justify-content: flex-end;
-  gap: var(--space-2);
-  padding: var(--space-4) var(--space-5);
-  background: var(--surface);
-  border-top: 1px solid var(--border);
+  gap: var(--lemn-space-2);
+  padding: var(--lemn-space-4) var(--lemn-space-5);
+  background: var(--lemn-color-surface);
+  border-top: 1px solid var(--lemn-color-border);
 }
 
 /* Modal presentation ------------------------------------------------------- */
@@ -276,32 +276,32 @@
 .ui-settings-shell__overlay {
   position: fixed;
   inset: 0;
-  z-index: var(--z-modal);
-  background: var(--overlay);
+  z-index: var(--lemn-z-modal);
+  background: var(--lemn-color-overlay-scrim);
 }
 
 .ui-settings-shell__overlay[data-state="open"] {
-  animation: fade var(--duration-fast) var(--easing-standard);
+  animation: fade var(--lemn-duration-fast) var(--lemn-easing-standard);
 }
 
 .ui-settings-shell__modal {
   position: fixed;
   inset: 0;
-  z-index: var(--z-modal);
+  z-index: var(--lemn-z-modal);
   display: flex;
   width: min(1040px, 94vw);
   height: min(720px, 86vh);
   margin: auto;
   overflow: hidden;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--elev-3);
-  color: var(--text);
+  background: var(--lemn-color-surface);
+  border: 1px solid var(--lemn-color-border);
+  border-radius: var(--lemn-radius-large);
+  box-shadow: var(--lemn-shadow-modal);
+  color: var(--lemn-color-text);
 }
 
 .ui-settings-shell__modal[data-state="open"] {
-  animation: scale-in var(--duration-fast) var(--easing-emphasized);
+  animation: scale-in var(--lemn-duration-fast) var(--lemn-easing-emphasized);
 }
 
 /* The surface is the modal's only flex child. Without an explicit main-size it
@@ -339,7 +339,7 @@
 
   .ui-settings-shell__nav {
     border-right: 0;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 1px solid var(--lemn-color-border);
   }
 
   .ui-settings-shell__modal {

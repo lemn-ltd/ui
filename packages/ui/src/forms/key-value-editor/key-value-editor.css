@@ -1,7 +1,7 @@
 .ui-key-value-editor {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--lemn-space-2);
   width: 100%;
   min-inline-size: 0;
   padding: 0;
@@ -25,38 +25,38 @@
 .ui-key-value-editor__row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 2.25rem;
-  gap: var(--space-2);
+  gap: var(--lemn-space-2);
   align-items: center;
 }
 
 .ui-key-value-editor__header {
-  color: var(--text-muted);
-  font-size: var(--font-size-small);
-  line-height: var(--line-height-small);
+  color: var(--lemn-color-text-muted);
+  font-size: var(--lemn-font-size-small);
+  line-height: var(--lemn-line-height-small);
 }
 
 .ui-key-value-editor__rows {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--lemn-space-2);
 }
 
 .ui-key-value-editor__empty {
   margin: 0;
-  padding: var(--space-3);
-  color: var(--text-muted);
-  font-size: var(--font-size-small);
-  line-height: var(--line-height-body);
-  background: var(--surface2);
-  border: 1px dashed var(--border);
-  border-radius: var(--radius-md);
+  padding: var(--lemn-space-3);
+  color: var(--lemn-color-text-muted);
+  font-size: var(--lemn-font-size-small);
+  line-height: var(--lemn-line-height-body);
+  background: var(--lemn-color-surface-muted);
+  border: 1px dashed var(--lemn-color-border);
+  border-radius: var(--lemn-radius-medium);
 }
 
 .ui-key-value-editor__add.ui-button {
   align-self: flex-start;
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--lemn-space-2);
 }
 
 @media (max-width: 640px) {

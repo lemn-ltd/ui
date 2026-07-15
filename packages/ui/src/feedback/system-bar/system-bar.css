@@ -1,10 +1,10 @@
 .ui-system-bar {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--lemn-space-3);
   width: 100%;
-  padding: var(--space-2) var(--space-4);
-  font-family: var(--font-sans);
+  padding: var(--lemn-space-2) var(--lemn-space-4);
+  font-family: var(--lemn-font-body);
 }
 
 .ui-system-bar__icon {
@@ -14,9 +14,9 @@
 .ui-system-bar__message {
   flex: 1 1 auto;
   min-width: 0;
-  color: var(--text);
-  font-size: var(--font-size-small);
-  line-height: var(--line-height-small);
+  color: var(--lemn-color-text);
+  font-size: var(--lemn-font-size-small);
+  line-height: var(--lemn-line-height-small);
 }
 
 .ui-system-bar__action {
@@ -30,22 +30,22 @@
 }
 
 .ui-system-bar[data-tone="info"] {
-  background: var(--info-soft);
+  background: var(--lemn-color-info-surface);
 }
 .ui-system-bar[data-tone="info"] .ui-system-bar__icon {
-  color: var(--info);
+  color: var(--lemn-color-info);
 }
 
 .ui-system-bar[data-tone="warn"] {
-  background: var(--warn-soft);
+  background: var(--lemn-color-warning-surface);
 }
 .ui-system-bar[data-tone="warn"] .ui-system-bar__icon {
-  color: var(--warn);
+  color: var(--lemn-color-warning);
 }
 
 .ui-system-bar[data-tone="danger"] {
-  background: var(--danger-soft);
+  background: var(--lemn-color-danger-surface);
 }
 .ui-system-bar[data-tone="danger"] .ui-system-bar__icon {
-  color: var(--danger);
+  color: var(--lemn-color-danger);
 }

@@ -1,39 +1,53 @@
 ---
 title: Component catalog
-description: Where to inspect and consume the @lemn-ltd/ui component catalog.
+description: Select the canonical LEMN capability without depending on its upstream provider.
 sidebar:
   label: Component catalog
-  order: 3
+  order: 6
 ---
 
-The component catalog is data-first and lives in `packages/ui/src/catalog*.ts`.
-It contains exactly 130 components: 101 in Core and 29 in Agents. Every entry
-declares its area and capability family, and drives showcase navigation,
-agent-facing docs, and catalog drift checks.
+`componentCatalog` is the current data-only inventory of public components.
+Every entry declares a stable slug, area, capability family, maturity, title,
+and intent. The exported catalog, Showcase, and drift tests are authoritative;
+documentation intentionally does not freeze a component total.
 
 ## Areas and families
 
-Core contains Primitives, Inputs, Forms, Visualizations, Data display, Feedback,
-Overlays, Navigation, and Layout. Agents contains Conversation, Governance,
-Approvals, Automation, and Runtime & evidence.
+Core covers primitives, inputs, forms, visualizations, data display, feedback,
+overlays, navigation, and layout. Agents covers conversation, governance,
+approvals, automation, and runtime/evidence UI.
 
-The visualization family includes charts for lines, areas, bars, combinations,
-donuts, compact trends, progress, categories, and tracking. Their public APIs
-are renderer-neutral; provider details remain internal to Lemn UI.
+`blockCatalog` is separate. A block is a purpose-specific composition, not a
+second implementation of a primitive. See [Blocks](/blocks/).
 
-## Runtime catalog
+## Provider-neutral contract
 
-- JSON: [showcase.ui.le-mn.com/catalog.json](https://showcase.ui.le-mn.com/catalog.json)
-- Agent summary: [showcase.ui.le-mn.com/llms.txt](https://showcase.ui.le-mn.com/llms.txt)
-- Full agent guide: [showcase.ui.le-mn.com/llms-full.txt](https://showcase.ui.le-mn.com/llms-full.txt)
+Each semantic capability maps to exactly one active provider of record in the
+version-controlled registry. The catalog's public API stays stable even when a
+reviewed provider replacement is justified. Product code therefore imports the
+LEMN export, never the provider.
 
-## Local sources
+Provider provenance—including exact version or full source commit, integrity,
+license, notices, adapter, semantic token roles, conformance, and update
+status—belongs to the provider registry. See
+[Provider governance](/providers/).
 
-- Catalog source: `packages/ui/src/catalog.ts`
-- Component guide: `packages/ui/docs/components.md`
-- Pattern guide: `packages/ui/docs/patterns.md`
-- Showcase pages: `apps/showcase/src/client/pages`
+## Runtime discovery
 
-When adding or changing a component, update the catalog, docs, showcase page,
-exports, and tests in the same change. Showcase pages use real interactive
-components and contain no more than three examples.
+- [Catalog JSON](https://showcase.ui.le-mn.com/catalog.json)
+- [Agent summary](https://showcase.ui.le-mn.com/llms.txt)
+- [Expanded agent guide](https://showcase.ui.le-mn.com/llms-full.txt)
+- [Interactive Showcase](https://showcase.ui.le-mn.com)
+
+## Source and guidance
+
+- Component catalog: `packages/ui/src/catalog*.ts`
+- Block catalog: `packages/ui/src/blocks/block-catalog.ts`
+- Selection guide: `packages/ui/docs/components.md`
+- Composition guide: `packages/ui/docs/patterns.md`
+- Registry: `packages/provider-registry`
+
+Adding or changing a public capability requires one aligned change across
+registry/provenance, adapter, exports, catalogs, package guidance, Showcase,
+conformance, release metadata, and license evidence. A Showcase component page
+uses real interactive components and no more than three examples.

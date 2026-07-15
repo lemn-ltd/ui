@@ -25,10 +25,10 @@ const FRAME: CSSProperties = {
   display: 'grid',
   gridTemplateColumns: 'auto 1fr',
   height: 720,
-  border: '1px solid var(--border)',
-  borderRadius: 'var(--radius-lg)',
+  border: '1px solid var(--lemn-color-border)',
+  borderRadius: 'var(--lemn-radius-large)',
   overflow: 'hidden',
-  background: 'var(--bg)',
+  background: 'var(--lemn-color-canvas)',
 };
 
 const MAIN: CSSProperties = { display: 'flex', flexDirection: 'column', minWidth: 0 };
@@ -37,14 +37,14 @@ const CONTENT: CSSProperties = { flex: 1, minHeight: 0, overflow: 'auto' };
 const MONITOR_GRID: CSSProperties = {
   display: 'grid',
   gridTemplateColumns: 'minmax(0, 1fr) 360px',
-  gap: 'var(--space-4)',
+  gap: 'var(--lemn-space-4)',
   alignItems: 'start',
 };
 
 const STACK: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
-  gap: 'var(--space-4)',
+  gap: 'var(--lemn-space-4)',
   minWidth: 0,
 };
 

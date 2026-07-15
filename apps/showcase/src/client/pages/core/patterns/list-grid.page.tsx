@@ -21,10 +21,10 @@ const FRAME: CSSProperties = {
   display: 'grid',
   gridTemplateColumns: 'auto 1fr',
   height: 640,
-  border: '1px solid var(--border)',
-  borderRadius: 'var(--radius-lg)',
+  border: '1px solid var(--lemn-color-border)',
+  borderRadius: 'var(--lemn-radius-large)',
   overflow: 'hidden',
-  background: 'var(--bg)',
+  background: 'var(--lemn-color-canvas)',
 };
 
 const MAIN: CSSProperties = {
@@ -43,7 +43,7 @@ const CARD_FOOTER: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  gap: 'var(--space-3)',
+  gap: 'var(--lemn-space-3)',
 };
 
 function ListGridPage(): ReactElement {

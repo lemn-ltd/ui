@@ -1,24 +1,24 @@
-import { type ReactElement, useState } from 'react';
-import { getResolvedTheme, setTheme } from '../../foundations/theme.js';
+import { type ReactElement } from 'react';
 import { Icon, IconButton } from '../../primitives/index.js';
 
+export type ThemeMode = 'light' | 'dark';
+
+export interface ThemeToggleProps {
+  /** Concrete mode selected by the host's BrandRevision runtime. */
+  readonly mode: ThemeMode;
+  /** Requests a mode change; the component never owns or persists theme state. */
+  readonly onModeChange: (mode: ThemeMode) => void;
+}
+
 /**
- * Minimalist icon-only theme switch: a sun in light, a moon in dark. It owns the
- * theme runtime so any consumer gets a working light/dark toggle by dropping it in.
+ * Controlled icon-only mode switch for a host-owned BrandRevision runtime.
  */
-export function ThemeToggle(): ReactElement {
-  const [dark, setDark] = useState(() => getResolvedTheme() === 'dark');
-
-  function toggle(): void {
-    const next = !dark;
-    setDark(next);
-    setTheme(next ? 'dark' : 'light');
-  }
-
+export function ThemeToggle({ mode, onModeChange }: ThemeToggleProps): ReactElement {
+  const dark = mode === 'dark';
   return (
     <IconButton
       aria-label={dark ? 'Switch to light theme' : 'Switch to dark theme'}
-      onClick={toggle}
+      onClick={() => onModeChange(dark ? 'light' : 'dark')}
       variant="ghost"
     >
       <Icon name={dark ? 'moon' : 'sun'} size={18} />

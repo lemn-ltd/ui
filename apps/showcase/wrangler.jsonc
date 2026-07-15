@@ -17,6 +17,9 @@
       "/health/ready",
       "/health/deep",
       "/catalog.json",
+      "/provider-registry.json",
+      "/blocks.json",
+      "/brand-project/v1.json",
       "/llms.txt",
       "/llms-full.txt",
     ],
@@ -43,7 +46,12 @@
           "pattern": "showcase.ui.le-mn.com",
           "custom_domain": true,
         },
+        {
+          "pattern": "schemas.ui.le-mn.com",
+          "custom_domain": true,
+        },
       ],
+      "workers_dev": false,
       "observability": {
         "enabled": true,
         "head_sampling_rate": 1,

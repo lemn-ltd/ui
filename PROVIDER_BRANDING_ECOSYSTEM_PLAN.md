@@ -86,7 +86,7 @@ Data fetching, routing, authentication, global application state, and internatio
 
 - No permanent compatibility aliases.
 - No parallel legacy token/runtime path.
-- No old `lemn.ai`, `@appranks/*`, `Appranks UI`, or redundant `Docs - UI` identity.
+- No retired pre-LEMN domain, package namespace, product name, or redundant documentation label.
 - No old Brand Lab KV runtime after the new control plane and Studio are proven.
 - No stale docs, examples, package commands, catalog counts, or release metadata.
 - Temporary migration code must be removed before the goal is complete.
@@ -900,7 +900,7 @@ The goal is complete only when:
 - current Docs and Showcase explain the final system accurately;
 - managed patterns/profile/audit describe the final ownership and evidence;
 - standalone Brand Lab and incompatible legacy branding paths are removed;
-- automated zero-legacy gates pass across source trees and packed artifacts: no `lemn.ai`, `@appranks/*`, `Appranks UI`, unpinned published provider/package reference, cross-repo filesystem link, legacy runtime/token/KV path, or direct consumer provider import remains outside the explicit narrow allowlist described in Phase 8;
+- automated zero-legacy gates pass across source trees and packed artifacts: no retired domain/namespace/product identity, unpinned published provider/package reference, cross-repo filesystem link, legacy runtime/token/KV path, or direct consumer provider import remains outside the explicit narrow allowlist described in Phase 8;
 - no TODO, stub, fake success path, skipped required test, or secret is left in production paths;
 - a final receipt identifies commits, package versions, deployed URLs, infrastructure, tests, evidence, and any explicitly accepted operational limitation.
 

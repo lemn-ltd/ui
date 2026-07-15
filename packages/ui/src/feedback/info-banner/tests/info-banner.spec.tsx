@@ -85,7 +85,7 @@ describe('InfoBanner', () => {
     const rule = css.match(/\.ui-info-banner\[data-floating="true"\]\s*{([^}]*)}/)?.[1];
     expect(rule).toBeTruthy();
     expect(rule).toContain('position: sticky');
-    expect(rule).toContain('bottom: calc(var(--space-3) + env(safe-area-inset-bottom, 0px))');
+    expect(rule).toContain('bottom: calc(var(--lemn-space-3) + env(safe-area-inset-bottom, 0px))');
     expect(rule).toContain('margin-top: auto');
     expect(rule).toContain('flex-shrink: 0');
   });
@@ -95,8 +95,8 @@ describe('InfoBanner', () => {
     expect(rule).toBeTruthy();
     expect(rule).toContain('box-sizing: border-box');
     expect(rule).toContain('width: fit-content');
-    expect(rule).toContain('padding: var(--space-1) var(--space-2)');
-    expect(rule).toContain('border-radius: var(--radius-sm)');
+    expect(rule).toContain('padding: var(--lemn-space-1) var(--lemn-space-2)');
+    expect(rule).toContain('border-radius: var(--lemn-radius-small)');
   });
 
   it('allows compact body text to wrap inside the available width', () => {

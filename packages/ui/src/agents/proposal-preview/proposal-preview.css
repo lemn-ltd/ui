@@ -1,18 +1,18 @@
 .ui-proposal-preview {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
-  padding: var(--space-5);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
+  gap: var(--lemn-space-4);
+  padding: var(--lemn-space-5);
+  border: 1px solid var(--lemn-color-border);
+  border-radius: var(--lemn-radius-large);
+  background: var(--lemn-color-surface);
 }
 
 .ui-proposal-preview__title {
   margin: 0;
-  color: var(--text-dim);
-  font-size: var(--font-size-caption);
-  font-weight: var(--font-weight-semibold);
+  color: var(--lemn-color-disabled-text);
+  font-size: var(--lemn-font-size-caption);
+  font-weight: var(--lemn-font-weight-semibold);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -20,39 +20,39 @@
 .ui-proposal-preview__graph {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-3);
-  border-radius: var(--radius-md);
-  background: var(--surface2);
+  gap: var(--lemn-space-2);
+  padding: var(--lemn-space-3);
+  border-radius: var(--lemn-radius-medium);
+  background: var(--lemn-color-surface-muted);
 }
 
 .ui-proposal-preview__line {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--lemn-space-2);
 }
 
 .ui-proposal-preview__dot {
   width: 8px;
   height: 8px;
   flex: none;
-  border-radius: var(--radius-pill);
-  background: var(--accent2);
+  border-radius: var(--lemn-radius-pill);
+  background: var(--lemn-chart-series-4);
 }
 
 .ui-proposal-preview__node {
-  color: var(--text);
-  font-family: var(--font-mono);
-  font-size: var(--font-size-mono);
-  line-height: var(--line-height-mono);
+  color: var(--lemn-color-text);
+  font-family: var(--lemn-font-code);
+  font-size: var(--lemn-font-size-mono);
+  line-height: var(--lemn-line-height-mono);
 }
 
 .ui-proposal-preview__kind {
-  color: var(--text-muted);
+  color: var(--lemn-color-text-muted);
 }
 
 .ui-proposal-preview__actions {
   display: flex;
   justify-content: flex-end;
-  gap: var(--space-2);
+  gap: var(--lemn-space-2);
 }

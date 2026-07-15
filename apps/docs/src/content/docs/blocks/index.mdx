@@ -1,0 +1,51 @@
+---
+title: Blocks
+description: Curated purpose-specific compositions built only from canonical LEMN capabilities.
+sidebar:
+  label: Blocks
+  order: 7
+---
+
+Blocks are reusable compositions with a specific job, stable slug, controlled
+data/action contract, complete applicable states, realistic deterministic
+Showcase fixtures, and a real consumer before stable promotion.
+
+They are not templates that hide product infrastructure. The host owns data
+fetching, routing, authorization, persistence, workflow policy, and side
+effects. A block composes only public provider-neutral LEMN components and types.
+
+## Current blocks
+
+| Export | Purpose | Status |
+| --- | --- | --- |
+| `DashboardOverviewBlock` | Metrics, trend, and ranked breakdown in one report surface | Beta |
+| `AppointmentScheduleBlock` | Time-ordered appointment queue with explicit status and host-owned actions | Beta |
+| `ApprovalQueueBlock` | Bounded human approval queue with loading, empty, and error handling | Beta |
+
+```tsx
+import {
+  AppointmentScheduleBlock,
+  blockCatalog,
+} from "@lemn-ltd/ui/blocks";
+
+<AppointmentScheduleBlock
+  items={appointments}
+  onOpen={openAppointment}
+/>
+```
+
+Consult the installed package types for the exact controlled contract; do not
+invent transport DTOs in a shared block.
+
+## Component, block, or local composition?
+
+- One reusable control is a **component**.
+- A repeated multi-component workflow/report surface with a stable host contract
+  may be a **block**.
+- Product-specific behavior with one consumer remains a **local composition**
+  until repeated need is proven.
+
+A block must not include a second Button/Dialog/chart implementation, import an
+upstream provider, or acquire product data itself. Promotion requires catalog,
+Showcase, documentation, state, accessibility, interaction, visual, SSR, and
+consumer evidence as applicable.

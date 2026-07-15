@@ -15,15 +15,15 @@
 .ui-tracker__block {
 	display: block;
 	height: 12px;
-	border: 1px solid var(--border-strong);
+	border: 1px solid var(--lemn-color-border-strong);
 	border-radius: 3px;
-	background: var(--surface2);
+	background: var(--lemn-color-surface-muted);
 }
 
 .ui-tracker[data-hover-effect="true"] .ui-tracker__item {
 	transition:
-		opacity var(--duration-fast) var(--easing-standard),
-		transform var(--duration-fast) var(--easing-standard);
+		opacity var(--lemn-duration-fast) var(--lemn-easing-standard),
+		transform var(--lemn-duration-fast) var(--lemn-easing-standard);
 }
 
 .ui-tracker[data-hover-effect="true"]:hover .ui-tracker__item:not(:hover) {
@@ -35,28 +35,28 @@
 }
 
 .ui-tracker__item[data-status="complete"] .ui-tracker__block {
-	border-color: var(--chart-positive);
-	background: var(--chart-positive);
+	border-color: var(--lemn-chart-positive);
+	background: var(--lemn-chart-positive);
 }
 
 .ui-tracker__item[data-status="active"] .ui-tracker__block {
-	border-color: var(--chart-series-1);
+	border-color: var(--lemn-chart-series-1);
 	background: repeating-linear-gradient(
 		45deg,
-		var(--chart-series-1),
-		var(--chart-series-1) 3px,
+		var(--lemn-chart-series-1),
+		var(--lemn-chart-series-1) 3px,
 		transparent 3px,
 		transparent 6px
 	);
 }
 
 .ui-tracker__item[data-status="error"] .ui-tracker__block {
-	border-color: var(--chart-negative);
+	border-color: var(--lemn-chart-negative);
 	background: linear-gradient(
 		135deg,
 		transparent 35%,
-		var(--chart-negative) 35%,
-		var(--chart-negative) 65%,
+		var(--lemn-chart-negative) 35%,
+		var(--lemn-chart-negative) 65%,
 		transparent 65%
 	);
 }

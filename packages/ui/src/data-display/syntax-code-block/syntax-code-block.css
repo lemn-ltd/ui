@@ -1,34 +1,34 @@
 .ui-syntax-code-block {
   position: relative;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  color: var(--text);
-  font-family: var(--font-mono);
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: var(--lemn-radius-medium);
+  color: #f8fafc;
+  font-family: var(--lemn-font-code);
 }
 
 .ui-syntax-code-block__chrome {
   position: absolute;
-  top: var(--space-2);
-  right: var(--space-2);
-  left: var(--space-2);
+  top: var(--lemn-space-2);
+  right: var(--lemn-space-2);
+  left: var(--lemn-space-2);
   z-index: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-2);
+  gap: var(--lemn-space-2);
   pointer-events: none;
 }
 
 .ui-syntax-code-block__language {
-  padding: 2px var(--space-2);
-  color: var(--text-dim);
-  font-family: var(--font-mono);
-  font-size: var(--font-size-caption);
-  line-height: var(--line-height-caption);
-  background: color-mix(in srgb, var(--surface2) 88%, var(--bg));
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  padding: 2px var(--lemn-space-2);
+  color: #cbd5e1;
+  font-family: var(--lemn-font-code);
+  font-size: var(--lemn-font-size-caption);
+  line-height: var(--lemn-line-height-caption);
+  background: #1e293b;
+  border: 1px solid #475569;
+  border-radius: var(--lemn-radius-small);
   user-select: none;
 }
 
@@ -39,10 +39,10 @@
   height: 24px;
   min-height: 24px;
   margin-left: auto;
-  color: var(--text-dim);
-  background: color-mix(in srgb, var(--surface2) 90%, var(--bg));
-  border-color: var(--border);
-  border-radius: var(--radius-sm);
+  color: #cbd5e1;
+  background: #1e293b;
+  border-color: #475569;
+  border-radius: var(--lemn-radius-small);
   opacity: 0.86;
   pointer-events: auto;
 }
@@ -58,19 +58,19 @@
 }
 
 .ui-syntax-code-block[data-copied="true"] .ui-syntax-code-block__copy {
-  color: var(--success);
+  color: var(--lemn-color-success);
 }
 
 .ui-syntax-code-block__content {
   overflow-x: auto;
-  font-family: var(--font-mono);
-  font-size: var(--font-size-mono);
-  line-height: var(--line-height-mono);
+  font-family: var(--lemn-font-code);
+  font-size: var(--lemn-font-size-mono);
+  line-height: var(--lemn-line-height-mono);
 }
 
 .ui-syntax-code-block__content pre {
   margin: 0;
-  padding: calc(var(--space-6) + var(--space-2)) var(--space-3) var(--space-3);
+  padding: calc(var(--lemn-space-6) + var(--lemn-space-2)) var(--lemn-space-3) var(--lemn-space-3);
   overflow: visible;
   color: inherit;
   font-family: inherit;
@@ -104,19 +104,11 @@
   background: transparent !important;
 }
 
-/* Dual-theme flip: dark mode reads the --shiki-dark variables shiki inlines. */
-:root[data-theme="dark"] .ui-syntax-code-block .shiki,
-:root[data-theme="dark"] .ui-syntax-code-block .shiki span {
-  /* biome-ignore lint/complexity/noImportantStyles: Shiki emits inline colors; dark mode must select the paired theme variable. */
+/* Code views are intentionally dark and invariant across brand modes. */
+.ui-syntax-code-block .shiki,
+.ui-syntax-code-block .shiki span {
+  /* biome-ignore lint/complexity/noImportantStyles: Shiki emits inline colors; code views always select the paired dark theme. */
   color: var(--shiki-dark) !important;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) .ui-syntax-code-block .shiki,
-  :root:not([data-theme]) .ui-syntax-code-block .shiki span {
-    /* biome-ignore lint/complexity/noImportantStyles: Shiki emits inline colors; system dark mode must select the paired theme variable. */
-    color: var(--shiki-dark) !important;
-  }
 }
 
 @media (max-width: 768px) {
@@ -135,9 +127,9 @@
     right: 10px;
     width: 24px;
     height: 24px;
-    background: color-mix(in srgb, var(--surface2) 90%, var(--bg));
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
+    background: #1e293b;
+    border: 1px solid #475569;
+    border-radius: var(--lemn-radius-small);
     content: "";
   }
 }

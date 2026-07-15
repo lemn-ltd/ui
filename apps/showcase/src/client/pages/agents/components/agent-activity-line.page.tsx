@@ -47,12 +47,12 @@ function AgentActivityLinePage(): ReactElement {
           <div
             style={{
               display: 'grid',
-              gap: 'var(--space-5)',
+              gap: 'var(--lemn-space-5)',
               width: 'min(760px, 100%)',
-              padding: 'var(--space-6)',
-              background: 'var(--bg)',
-              border: '1px solid var(--border)',
-              borderRadius: 'var(--radius-lg)',
+              padding: 'var(--lemn-space-6)',
+              background: 'var(--lemn-color-canvas)',
+              border: '1px solid var(--lemn-color-border)',
+              borderRadius: 'var(--lemn-radius-large)',
             }}
           >
             <AgentActivityLine state="idle" />

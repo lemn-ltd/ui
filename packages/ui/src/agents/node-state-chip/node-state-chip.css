@@ -5,43 +5,43 @@
 .ui-node-state-chip[data-appearance="inline"] {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
-  font-size: var(--font-size-caption);
-  line-height: var(--line-height-caption);
+  gap: var(--lemn-space-1);
+  font-size: var(--lemn-font-size-caption);
+  line-height: var(--lemn-line-height-caption);
 }
 
 .ui-node-state-chip__dot {
   width: 8px;
   height: 8px;
   flex: none;
-  border-radius: var(--radius-pill);
+  border-radius: var(--lemn-radius-pill);
   background: var(--node-state-color);
 }
 
 .ui-node-state-chip__label {
-  color: var(--text-muted);
+  color: var(--lemn-color-text-muted);
 }
 
 .ui-node-state-chip[data-node-state="idle"] {
-  --node-state-color: var(--text-muted);
+  --node-state-color: var(--lemn-color-text-muted);
 }
 
 .ui-node-state-chip[data-node-state="running"] {
-  --node-state-color: var(--info);
+  --node-state-color: var(--lemn-color-info);
 }
 
 .ui-node-state-chip[data-node-state="waiting"] {
-  --node-state-color: var(--warn);
+  --node-state-color: var(--lemn-color-warning);
 }
 
 .ui-node-state-chip[data-node-state="completed"] {
-  --node-state-color: var(--success);
+  --node-state-color: var(--lemn-color-success);
 }
 
 .ui-node-state-chip[data-node-state="failed"] {
-  --node-state-color: var(--danger);
+  --node-state-color: var(--lemn-color-danger);
 }
 
 .ui-node-state-chip[data-node-state="skipped"] {
-  --node-state-color: var(--text-dim);
+  --node-state-color: var(--lemn-color-disabled-text);
 }

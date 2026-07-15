@@ -2,12 +2,12 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--surface);
-  border-right: 1px solid var(--border);
+  background: var(--lemn-color-surface);
+  border-right: 1px solid var(--lemn-color-border);
   /* Clip content so it does not spill while the rail width animates. */
   overflow: hidden;
   /* Width transition is owned here so the shell grid column follows it. */
-  transition: width var(--duration-slow) var(--easing-emphasized);
+  transition: width var(--lemn-duration-slow) var(--lemn-easing-emphasized);
 }
 
 .ui-sidebar[data-mode="rail"] {
@@ -28,8 +28,8 @@
 .ui-sidebar__top {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-3);
+  gap: var(--lemn-space-3);
+  padding: var(--lemn-space-3);
 }
 
 /* The search trigger spans the rail when docked in the sidebar header. */
@@ -44,45 +44,45 @@
 .ui-sidebar__drill {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: var(--lemn-space-1);
 }
 
 .ui-sidebar__back {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--lemn-space-2);
   padding: 0;
   background: none;
   border: 0;
-  color: var(--text-muted);
+  color: var(--lemn-color-text-muted);
   font: inherit;
-  font-size: var(--font-size-small);
-  font-weight: var(--font-weight-medium);
+  font-size: var(--lemn-font-size-small);
+  font-weight: var(--lemn-font-weight-medium);
   cursor: pointer;
 }
 
 .ui-sidebar__back:hover {
-  color: var(--text);
+  color: var(--lemn-color-text);
 }
 
 .ui-sidebar__title {
-  color: var(--text);
-  font-size: var(--font-size-title);
-  font-weight: var(--font-weight-semibold);
+  color: var(--lemn-color-text);
+  font-size: var(--lemn-font-size-title);
+  font-weight: var(--lemn-font-weight-semibold);
 }
 
 .ui-sidebar__hint {
-  color: var(--text-muted);
-  font-size: var(--font-size-caption);
+  color: var(--lemn-color-text-muted);
+  font-size: var(--lemn-font-size-caption);
 }
 
 .ui-sidebar__nav {
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--lemn-space-2);
   min-height: 0;
-  padding: var(--space-2);
+  padding: var(--lemn-space-2);
   overflow-y: auto;
 }
 
@@ -93,18 +93,18 @@
 }
 
 .ui-sidebar__group-header {
-  padding: 6px var(--space-3);
-  color: var(--text-dim);
-  font-size: var(--font-size-caption);
-  font-weight: var(--font-weight-semibold);
+  padding: 6px var(--lemn-space-3);
+  color: var(--lemn-color-disabled-text);
+  font-size: var(--lemn-font-size-caption);
+  font-weight: var(--lemn-font-weight-semibold);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
 .ui-sidebar__divider {
   height: 1px;
-  margin: var(--space-1) var(--space-2);
-  background: var(--border);
+  margin: var(--lemn-space-1) var(--lemn-space-2);
+  background: var(--lemn-color-border);
 }
 
 .ui-sidebar__item {
@@ -117,11 +117,11 @@
    * one indent step per --sidebar-depth (0 for flat items, so unchanged). */
   padding: 0 10px 0 calc(12px + var(--sidebar-depth, 0) * 16px);
   border: 0;
-  border-radius: var(--radius-md);
+  border-radius: var(--lemn-radius-medium);
   background: transparent;
-  color: var(--text-muted);
-  font-family: var(--font-sans);
-  font-size: var(--font-size-small);
+  color: var(--lemn-color-text-muted);
+  font-family: var(--lemn-font-body);
+  font-size: var(--lemn-font-size-small);
   text-align: left;
   cursor: pointer;
 }
@@ -132,16 +132,16 @@
 }
 
 .ui-sidebar__item:hover {
-  background: var(--surface2);
-  color: var(--text);
+  background: var(--lemn-color-surface-muted);
+  color: var(--lemn-color-text);
 }
 
 /* Inset bar, not border-left — an asymmetric border on a rounded box leaks
  * stray corner pixels; the inset shadow clips cleanly to the radius. */
 .ui-sidebar__item[data-active="true"] {
-  box-shadow: inset 2px 0 0 var(--accent);
-  background: var(--accent-soft);
-  color: var(--text);
+  box-shadow: inset 2px 0 0 var(--lemn-color-accent);
+  background: var(--lemn-color-accent-soft);
+  color: var(--lemn-color-text);
 }
 
 .ui-sidebar__item-label {
@@ -170,7 +170,7 @@
 
 /* Focus the row, not the bare <li>, so the ring hugs the rounded surface. */
 .ui-sidebar__treeitem:focus-visible > .ui-sidebar__item {
-  outline: 2px solid var(--focus-ring);
+  outline: 2px solid var(--lemn-color-focus);
   outline-offset: -2px;
 }
 
@@ -187,7 +187,7 @@
   bottom: 2px;
   left: calc(12px + var(--sidebar-depth, 0) * 16px + 18px);
   width: 1px;
-  background: var(--border);
+  background: var(--lemn-color-border);
 }
 
 .ui-sidebar__chevron {
@@ -199,19 +199,19 @@
   height: 20px;
   margin-left: auto;
   border: 0;
-  border-radius: var(--radius-sm);
+  border-radius: var(--lemn-radius-small);
   background: none;
-  color: var(--text-dim);
+  color: var(--lemn-color-disabled-text);
   cursor: pointer;
 }
 
 .ui-sidebar__chevron:hover {
-  background: var(--surface2);
-  color: var(--text);
+  background: var(--lemn-color-surface-muted);
+  color: var(--lemn-color-text);
 }
 
 .ui-sidebar__chevron .ui-icon {
-  transition: transform var(--duration-fast) var(--easing-standard);
+  transition: transform var(--lemn-duration-fast) var(--lemn-easing-standard);
 }
 
 .ui-sidebar__chevron[data-expanded] .ui-icon {
@@ -222,16 +222,16 @@
   flex: none;
   margin-left: auto;
   padding: 0 6px;
-  border-radius: var(--radius-pill);
-  background: var(--surface2);
-  color: var(--text-muted);
-  font-size: var(--font-size-caption);
+  border-radius: var(--lemn-radius-pill);
+  background: var(--lemn-color-surface-muted);
+  color: var(--lemn-color-text-muted);
+  font-size: var(--lemn-font-size-caption);
   line-height: 18px;
 }
 
 /* A badge sitting next to a chevron should not also claim the auto margin. */
 .ui-sidebar__badge + .ui-sidebar__chevron {
-  margin-left: var(--space-1);
+  margin-left: var(--lemn-space-1);
 }
 
 /* ---- Rail flyout -------------------------------------------------------- */
@@ -243,22 +243,22 @@
 }
 
 .ui-sidebar__rail-mark {
-  font-size: var(--font-size-caption);
-  font-weight: var(--font-weight-semibold);
+  font-size: var(--lemn-font-size-caption);
+  font-weight: var(--lemn-font-weight-semibold);
 }
 
 .ui-sidebar__flyout {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: var(--lemn-space-1);
   min-width: 200px;
 }
 
 .ui-sidebar__flyout-title {
-  padding: 6px var(--space-3);
-  color: var(--text-dim);
-  font-size: var(--font-size-caption);
-  font-weight: var(--font-weight-semibold);
+  padding: 6px var(--lemn-space-3);
+  color: var(--lemn-color-disabled-text);
+  font-size: var(--lemn-font-size-caption);
+  font-weight: var(--lemn-font-weight-semibold);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
@@ -272,28 +272,28 @@
 .ui-sidebar__footer {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-3);
-  border-top: 1px solid var(--border);
+  gap: var(--lemn-space-2);
+  padding: var(--lemn-space-3);
+  border-top: 1px solid var(--lemn-color-border);
 }
 
 /* Drawer close affordance — only shown on mobile, anchored to the fixed drawer. */
 .ui-sidebar__close {
   display: none;
   position: absolute;
-  top: var(--space-3);
-  right: var(--space-3);
+  top: var(--lemn-space-3);
+  right: var(--lemn-space-3);
   align-items: center;
   justify-content: center;
   width: 36px;
   height: 36px;
-  border-radius: var(--radius-md);
-  color: var(--text-muted);
+  border-radius: var(--lemn-radius-medium);
+  color: var(--lemn-color-text-muted);
 }
 
 .ui-sidebar__close:hover {
-  background: var(--surface2);
-  color: var(--text);
+  background: var(--lemn-color-surface-muted);
+  color: var(--lemn-color-text);
 }
 
 /*
@@ -307,10 +307,10 @@
     top: 0;
     bottom: 0;
     left: 0;
-    z-index: var(--z-drawer);
+    z-index: var(--lemn-z-drawer);
     width: 264px;
-    box-shadow: var(--elev-3);
-    transition: transform var(--duration-normal) var(--easing-emphasized);
+    box-shadow: var(--lemn-shadow-modal);
+    transition: transform var(--lemn-duration-normal) var(--lemn-easing-emphasized);
   }
 
   .ui-sidebar[data-shell="true"][data-mode="hidden"] {

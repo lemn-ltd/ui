@@ -57,6 +57,15 @@ export const visualizationComponentCatalogEntries: readonly ComponentCatalogEntr
 				"A selectable donut or pie chart with normalized tooltips and an explicit zero-total state.",
 		},
 		{
+			slug: "heatmap-chart",
+			title: "Heatmap chart",
+			area: "core",
+			group: "Visualizations",
+			status: "beta",
+			intent:
+				"An ECharts-backed categorical heatmap with a provider-neutral contract, live brand tokens, selection, and an SSR data table.",
+		},
+		{
 			slug: "line-chart",
 			title: "Line chart",
 			area: "core",

@@ -10,12 +10,12 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--space-4);
+  gap: var(--lemn-space-4);
   width: 100%;
-  padding-block: var(--space-8);
-  padding-inline: var(--space-6);
+  padding-block: var(--lemn-space-8);
+  padding-inline: var(--lemn-space-6);
   text-align: center;
-  font-family: var(--font-sans);
+  font-family: var(--lemn-font-body);
 }
 
 .ui-empty-state__icon {
@@ -24,28 +24,28 @@
   justify-content: center;
   width: 56px;
   height: 56px;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-pill);
-  color: var(--text-muted);
+  background: var(--lemn-color-surface-muted);
+  border: 1px solid var(--lemn-color-border);
+  border-radius: var(--lemn-radius-pill);
+  color: var(--lemn-color-text-muted);
 }
 
 .ui-empty-state__title {
   margin: 0;
-  color: var(--text);
-  font-size: var(--font-size-heading);
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-heading);
+  color: var(--lemn-color-text);
+  font-size: var(--lemn-font-size-heading);
+  font-weight: var(--lemn-font-weight-semibold);
+  line-height: var(--lemn-line-height-heading);
 }
 
 .ui-empty-state__description {
   margin: 0;
   max-width: 300px;
-  color: var(--text-muted);
-  font-size: var(--font-size-small);
-  line-height: var(--line-height-body);
+  color: var(--lemn-color-text-muted);
+  font-size: var(--lemn-font-size-small);
+  line-height: var(--lemn-line-height-body);
 }
 
 .ui-empty-state__action {
-  margin-top: var(--space-2);
+  margin-top: var(--lemn-space-2);
 }

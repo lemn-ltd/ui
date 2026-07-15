@@ -38,6 +38,7 @@ const allowedRuntimePackages = new Set([
   '@uiw/react-codemirror',
   '@xyflow/react',
   'cmdk',
+  'echarts',
   'hast-util-to-jsx-runtime',
   'lucide-react',
   'radix-ui',
@@ -118,8 +119,8 @@ for (const file of files) {
       continue;
     }
 
-    if (basePackage === 'recharts' && !relativeFile.startsWith('packages/ui/src/visualizations/')) {
-      failures.push(`${relativeFile}: Recharts imports are confined to packages/ui/src/visualizations`);
+    if ((basePackage === 'recharts' || basePackage === 'echarts') && !relativeFile.startsWith('packages/ui/src/visualizations/')) {
+      failures.push(`${relativeFile}: chart-provider imports are confined to packages/ui/src/visualizations`);
       continue;
     }
 

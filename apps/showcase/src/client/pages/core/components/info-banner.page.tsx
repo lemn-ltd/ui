@@ -103,11 +103,11 @@ function InfoBannerPage(): ReactElement {
 							maxHeight: 220,
 							overflowY: "auto",
 							display: "grid",
-							gap: "var(--space-3)",
+							gap: "var(--lemn-space-3)",
 						}}
 					>
 						{Array.from({ length: 8 }, (_, index) => (
-							<p key={index} style={{ color: "var(--text-muted)", margin: 0 }}>
+							<p key={index} style={{ color: "var(--lemn-color-text-muted)", margin: 0 }}>
 								Scrolling content row {index + 1} — the floating banner below
 								stays pinned to the bottom edge while you scroll.
 							</p>

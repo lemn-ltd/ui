@@ -1,20 +1,20 @@
 import { ShowcaseRenderModeProvider } from "@lemn-ltd/showcase-kit";
+import { brandPresets } from "@lemn-ltd/brand-studio";
 import {
 	AccentColorPicker,
-	applyTheme,
 	Brand,
 	Breadcrumb,
 	CommandPalette,
 	type CommandPaletteGroup,
 	DockPanel,
 	type DockTab,
-	getTheme,
 	Icon,
 	type IconName,
 	MenuItem,
 	OrgSwitcher,
 	ScreenShell,
 	SearchCommand,
+	SelectNative,
 	Sidebar,
 	type SidebarNavGroup,
 	SidebarUserRow,
@@ -29,6 +29,8 @@ import {
 } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { uiShowcaseAppDescriptor } from "../../app-descriptor";
+import { useShowcaseBrand } from "../branding/brand-runtime";
+import { ECOSYSTEM_ROUTES } from "../registry/ecosystem-routes";
 import {
 	DEFAULT_SHOWCASE_MODULE_ID,
 	entriesForModule,
@@ -48,9 +50,9 @@ const DOCK_PANE: CSSProperties = {
 	flexDirection: "column",
 	alignItems: "center",
 	justifyContent: "center",
-	gap: "var(--space-3)",
+	gap: "var(--lemn-space-3)",
 	height: "100%",
-	padding: "var(--space-6)",
+	padding: "var(--lemn-space-6)",
 	textAlign: "center",
 };
 
@@ -67,14 +69,14 @@ function DockPane({
 		<div style={DOCK_PANE}>
 			<Icon name={icon} size={32} />
 			<strong
-				style={{ color: "var(--text)", fontSize: "var(--font-size-heading)" }}
+				style={{ color: "var(--lemn-color-text)", fontSize: "var(--lemn-font-size-heading)" }}
 			>
 				{title}
 			</strong>
 			<span
 				style={{
-					color: "var(--text-muted)",
-					fontSize: "var(--font-size-small)",
+					color: "var(--lemn-color-text-muted)",
+					fontSize: "var(--lemn-font-size-small)",
 					maxWidth: 240,
 				}}
 			>
@@ -126,17 +128,36 @@ const DOCK_TABS: readonly DockTab[] = [
 export function ShowcaseShell(): ReactElement {
 	const location = useLocation();
 	const navigate = useNavigate();
+	const {
+		compiling,
+		modeId,
+		profileId,
+		project,
+		presetId,
+		scope,
+		setAccentColor,
+		setModeByColorScheme,
+		setPresetId,
+		setProfileId,
+	} = useShowcaseBrand();
 	const searchParams = new URLSearchParams(location.search);
 	const embeddedPlayground = searchParams.get("embed") === "playground";
 	const embeddedTheme = searchParams.get("theme") === "dark" ? "dark" : "light";
+	const requestedMode = searchParams.get("brandMode");
 	const [paletteOpen, setPaletteOpen] = useState(false);
 	const [moduleId, setModuleId] = useState<ShowcaseModuleId>(() =>
 		moduleIdForPathname(location.pathname),
 	);
 
 	useEffect(() => {
-		applyTheme(embeddedPlayground ? embeddedTheme : getTheme());
-	}, [embeddedPlayground, embeddedTheme]);
+		if (embeddedPlayground) {
+			setModeByColorScheme(embeddedTheme);
+			return;
+		}
+		if (requestedMode === "dark" || requestedMode === "light") {
+			setModeByColorScheme(requestedMode);
+		}
+	}, [embeddedPlayground, embeddedTheme, requestedMode, setModeByColorScheme]);
 
 	useEffect(() => {
 		if (location.pathname !== "/")
@@ -167,6 +188,17 @@ export function ShowcaseShell(): ReactElement {
 			onSelect: () => navigate(pathFor(entry)),
 		})),
 	}));
+	if (moduleId === "core") {
+		sidebarGroups.unshift({
+			header: "Ecosystem",
+			items: ECOSYSTEM_ROUTES.map((entry) => ({
+				id: entry.path,
+				label: entry.label,
+				active: location.pathname === entry.path,
+				onSelect: () => navigate(entry.path),
+			})),
+		});
+	}
 
 	const selectModule = (nextId: string): void => {
 		const nextModule = moduleForId(nextId);
@@ -190,6 +222,9 @@ export function ShowcaseShell(): ReactElement {
 
 	const activeEntry = SHOWCASE_REGISTRY.find(
 		(entry) => pathFor(entry) === location.pathname,
+	);
+	const activeEcosystem = ECOSYSTEM_ROUTES.find(
+		(entry) => entry.path === location.pathname,
 	);
 	const settingsEntry = SHOWCASE_REGISTRY.find(
 		(entry) => entry.slug === "settings-form",
@@ -241,8 +276,36 @@ export function ShowcaseShell(): ReactElement {
 		<TopBar
 			actions={
 				<div className="showcase-topbar-actions">
-					<AccentColorPicker />
-					<ThemeToggle />
+					<SelectNative
+						aria-label="Brand preset"
+						className="showcase-brand-select"
+						disabled={compiling}
+						onValueChange={(value) => void setPresetId(value)}
+						options={brandPresets.map((preset) => ({
+							label: preset.name,
+							value: preset.id,
+						}))}
+						value={presetId}
+					/>
+					<SelectNative
+						aria-label="Brand profile"
+						className="showcase-profile-select"
+						onValueChange={setProfileId}
+						options={Object.entries(project.profiles).map(([id, profile]) => ({
+							label: profile.name,
+							value: id,
+						}))}
+						value={profileId}
+					/>
+					<AccentColorPicker
+						disabled={compiling}
+						onValueChange={(value) => void setAccentColor(value)}
+						value={project.profiles[profileId]?.modes[modeId]?.colors.accent}
+					/>
+					<ThemeToggle
+						mode={scope.colorScheme}
+						onModeChange={setModeByColorScheme}
+					/>
 				</div>
 			}
 			breadcrumb={
@@ -250,7 +313,7 @@ export function ShowcaseShell(): ReactElement {
 					items={[
 						{ label: uiShowcaseAppDescriptor.displayName },
 						{ label: activeModule?.name ?? "Core" },
-						{ label: activeEntry?.group ?? "Overview" },
+						{ label: activeEcosystem?.label ?? activeEntry?.group ?? "Overview" },
 					]}
 				/>
 			}

@@ -76,7 +76,7 @@ describe('SignInScreen', () => {
   it('lets the service mark robot ink follow the sign-in background token', () => {
     const markRule = css.match(/\.ui-signin__app-mark\s*{([^}]*)}/)?.[1];
 
-    expect(markRule).toContain('--service-mark-ink: var(--bg)');
+    expect(markRule).toContain('--service-mark-ink: var(--lemn-color-canvas)');
   });
 
   it('wires onSubmit to the form and spreads rest onto the root', () => {

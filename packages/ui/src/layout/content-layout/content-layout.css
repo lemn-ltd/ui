@@ -1,15 +1,15 @@
 .ui-content-layout {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  gap: var(--lemn-space-5);
 
   width: 100%;
   min-height: 100%;
-  max-width: var(--content-max);
+  max-width: var(--lemn-content-max);
   margin: 0 auto;
-  padding: var(--space-5);
+  padding: var(--lemn-space-5);
 
-  background: var(--surface);
+  background: var(--lemn-color-surface);
 }
 
 .ui-content-layout[data-bleed="true"] {

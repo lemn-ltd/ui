@@ -226,7 +226,7 @@ export function SparkChart<TDatum extends ChartDatum>({
 								series={resolvedSeries}
 							/>
 						)}
-						cursor={{ fill: "var(--chart-cursor)" }}
+						cursor={{ fill: "var(--lemn-chart-cursor)" }}
 						isAnimationActive={animationActive}
 						labelFormatter={(_, payload) => {
 							const datum = payload[0]?.payload;

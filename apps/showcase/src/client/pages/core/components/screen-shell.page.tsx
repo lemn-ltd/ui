@@ -7,8 +7,8 @@ import type { CSSProperties, ReactElement, ReactNode } from 'react';
 function Frame({ children }: { readonly children: ReactNode }): ReactElement {
   const style: CSSProperties = {
     height: 360,
-    border: '1px solid var(--border)',
-    borderRadius: 'var(--radius-lg)',
+    border: '1px solid var(--lemn-color-border)',
+    borderRadius: 'var(--lemn-radius-large)',
     overflow: 'hidden',
   };
   return <div style={style}>{children}</div>;
@@ -17,20 +17,20 @@ function Frame({ children }: { readonly children: ReactNode }): ReactElement {
 const railStyle: CSSProperties = {
   width: 200,
   height: '100%',
-  padding: 'var(--space-4)',
-  background: 'var(--surface)',
-  borderRight: '1px solid var(--border)',
-  color: 'var(--text-muted)',
+  padding: 'var(--lemn-space-4)',
+  background: 'var(--lemn-color-surface)',
+  borderRight: '1px solid var(--lemn-color-border)',
+  color: 'var(--lemn-color-text-muted)',
 };
 
 const barStyle: CSSProperties = {
-  padding: 'var(--space-3) var(--space-4)',
-  borderBottom: '1px solid var(--border)',
-  color: 'var(--text-muted)',
+  padding: 'var(--lemn-space-3) var(--lemn-space-4)',
+  borderBottom: '1px solid var(--lemn-color-border)',
+  color: 'var(--lemn-color-text-muted)',
 };
 
 const contentStyle: CSSProperties = {
-  padding: 'var(--space-4)',
+  padding: 'var(--lemn-space-4)',
 };
 
 function ScreenShellPage(): ReactElement {

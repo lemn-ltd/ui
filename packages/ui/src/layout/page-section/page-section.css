@@ -1,14 +1,14 @@
 .ui-page-section {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  gap: var(--lemn-space-5);
 }
 
 .ui-page-section__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-4);
+  gap: var(--lemn-space-4);
 }
 
 /* The body owns the stack rhythm between its children (a dropzone and its
@@ -17,32 +17,32 @@
 .ui-page-section__body {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--lemn-space-4);
 }
 
 .ui-page-section__heading {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: var(--lemn-space-1);
 }
 
 .ui-page-section__title {
-  color: var(--text);
-  font-size: var(--font-size-title);
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-title);
+  color: var(--lemn-color-text);
+  font-size: var(--lemn-font-size-title);
+  font-weight: var(--lemn-font-weight-semibold);
+  line-height: var(--lemn-line-height-title);
 }
 
 .ui-page-section__caption {
-  color: var(--text-muted);
-  font-size: var(--font-size-small);
-  line-height: var(--line-height-small);
+  color: var(--lemn-color-text-muted);
+  font-size: var(--lemn-font-size-small);
+  line-height: var(--lemn-line-height-small);
 }
 
 .ui-page-section__actions {
   display: flex;
   flex-shrink: 0;
-  gap: var(--space-2);
+  gap: var(--lemn-space-2);
 }
 
 /* Mobile: section header stacks the actions below the heading. */

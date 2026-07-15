@@ -1,9 +1,9 @@
 .ui-run-timeline {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-4);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
+  gap: var(--lemn-space-3);
+  padding: var(--lemn-space-4);
+  border: 1px solid var(--lemn-color-border);
+  border-radius: var(--lemn-radius-large);
+  background: var(--lemn-color-surface);
 }

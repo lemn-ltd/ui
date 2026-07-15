@@ -18,10 +18,10 @@ const FRAME: CSSProperties = {
   display: 'grid',
   gridTemplateColumns: 'auto 1fr',
   height: 600,
-  border: '1px solid var(--border)',
-  borderRadius: 'var(--radius-lg)',
+  border: '1px solid var(--lemn-color-border)',
+  borderRadius: 'var(--lemn-radius-large)',
   overflow: 'hidden',
-  background: 'var(--bg)',
+  background: 'var(--lemn-color-canvas)',
 };
 
 const MAIN: CSSProperties = {
@@ -33,22 +33,22 @@ const MAIN: CSSProperties = {
 const CONTENT: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
-  gap: 'var(--space-6)',
+  gap: 'var(--lemn-space-6)',
   flex: 1,
   minHeight: 0,
   overflow: 'auto',
-  padding: 'var(--space-6)',
+  padding: 'var(--lemn-space-6)',
 };
 
 const SECTION: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
-  gap: 'var(--space-4)',
+  gap: 'var(--lemn-space-4)',
 };
 
 const SECTION_TITLE: CSSProperties = {
   margin: 0,
-  fontSize: 'var(--font-size-heading)',
+  fontSize: 'var(--lemn-font-size-heading)',
   fontWeight: 600,
 };
 
@@ -56,9 +56,9 @@ const TOGGLE_ROW: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  gap: 'var(--space-4)',
-  padding: 'var(--space-3) 0',
-  borderTop: '1px solid var(--border)',
+  gap: 'var(--lemn-space-4)',
+  padding: 'var(--lemn-space-3) 0',
+  borderTop: '1px solid var(--lemn-color-border)',
 };
 
 const TOGGLE_TEXT: CSSProperties = {
@@ -68,27 +68,27 @@ const TOGGLE_TEXT: CSSProperties = {
 };
 
 const TOGGLE_LABEL: CSSProperties = {
-  fontSize: 'var(--font-size-body)',
-  color: 'var(--text)',
+  fontSize: 'var(--lemn-font-size-body)',
+  color: 'var(--lemn-color-text)',
 };
 
 const TOGGLE_HINT: CSSProperties = {
-  fontSize: 'var(--font-size-small)',
-  color: 'var(--text-muted)',
+  fontSize: 'var(--lemn-font-size-small)',
+  color: 'var(--lemn-color-text-muted)',
 };
 
 const FOOTER: CSSProperties = {
   display: 'flex',
   justifyContent: 'flex-end',
-  gap: 'var(--space-3)',
-  paddingTop: 'var(--space-4)',
-  borderTop: '1px solid var(--border)',
+  gap: 'var(--lemn-space-3)',
+  paddingTop: 'var(--lemn-space-4)',
+  borderTop: '1px solid var(--lemn-color-border)',
 };
 
 const VERSION_ROW: CSSProperties = {
   display: 'flex',
   justifyContent: 'flex-start',
-  marginTop: 'var(--space-2)',
+  marginTop: 'var(--lemn-space-2)',
 };
 
 function SettingsFormPage(): ReactElement {

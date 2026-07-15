@@ -101,10 +101,10 @@ describe("ui showcase worker", () => {
 			version: "1.2.3",
 			source: "https://github.com/lemn-ltd/ui",
 		});
-		expect(catalog.components).toHaveLength(130);
+		expect(catalog.components).toHaveLength(131);
 		expect(
 			catalog.components.filter((component) => component.area === "core"),
-		).toHaveLength(101);
+		).toHaveLength(102);
 		expect(
 			catalog.components.filter((component) => component.area === "agents"),
 		).toHaveLength(29);
@@ -124,6 +124,28 @@ describe("ui showcase worker", () => {
 		expect(full).toContain("import { GraphCanvas } from '@lemn-ltd/ui';");
 		expect(full).not.toMatch(LEGACY_UI_PACKAGE_PATTERN);
 		expect(full).not.toContain("@latest");
+	});
+
+	it("serves the immutable v1 brand schema only on the schema host", async () => {
+		const worker = createWorker();
+		const schema = await worker.fetch(
+			new Request(
+				"https://schemas.ui.le-mn.com/brand-project/v1.json",
+			),
+		);
+		expect(schema.status).toBe(200);
+		expect(schema.headers.get("content-type")).toContain(
+			"application/schema+json",
+		);
+		expect(schema.headers.get("cache-control")).toContain("immutable");
+		expect(await schema.json()).toMatchObject({
+			$id: "https://schemas.ui.le-mn.com/brand-project/v1.json",
+		});
+
+		const missing = await worker.fetch(
+			new Request("https://schemas.ui.le-mn.com/unknown.json"),
+		);
+		expect(missing.status).toBe(404);
 	});
 
 	it("has no api branch — /api/* falls through to the SPA assets", async () => {

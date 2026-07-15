@@ -1,37 +1,37 @@
 .ui-skeleton {
-  background-color: var(--surface2);
+  background-color: var(--lemn-color-surface-muted);
   background-image: linear-gradient(
     90deg,
-    var(--surface2) 0%,
-    var(--border) 50%,
-    var(--surface2) 100%
+    var(--lemn-color-surface-muted) 0%,
+    var(--lemn-color-border) 50%,
+    var(--lemn-color-surface-muted) 100%
   );
   background-size: 200% 100%;
   background-repeat: no-repeat;
-  border-radius: var(--radius-sm);
-  animation: shimmer calc(var(--duration-slow) * 2) var(--easing-linear) infinite;
+  border-radius: var(--lemn-radius-small);
+  animation: shimmer calc(var(--lemn-duration-slow) * 2) var(--lemn-easing-linear) infinite;
 }
 
 .ui-skeleton[data-shape="line"] {
   width: 100%;
-  height: var(--space-4);
+  height: var(--lemn-space-4);
 }
 
 .ui-skeleton[data-shape="circle"] {
-  width: var(--space-10);
-  height: var(--space-10);
-  border-radius: var(--radius-pill);
+  width: var(--lemn-space-10);
+  height: var(--lemn-space-10);
+  border-radius: var(--lemn-radius-pill);
 }
 
 .ui-skeleton[data-shape="rect"] {
   width: 100%;
-  height: var(--space-16);
+  height: var(--lemn-space-16);
 }
 
 .ui-skeleton-text {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--lemn-space-3);
 }
 
 .ui-skeleton-text__line:nth-child(1) {
@@ -47,11 +47,11 @@
 .ui-skeleton-card {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-4);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  gap: var(--lemn-space-3);
+  padding: var(--lemn-space-4);
+  background: var(--lemn-color-surface);
+  border: 1px solid var(--lemn-color-border);
+  border-radius: var(--lemn-radius-medium);
 }
 
 .ui-skeleton-card__line:nth-child(3) {
@@ -61,11 +61,11 @@
 .ui-skeleton-table {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--lemn-space-2);
 }
 
 .ui-skeleton-table__row {
-  height: var(--space-8);
+  height: var(--lemn-space-8);
 }
 
 /* Static fallback: no shimmer gradient when motion is reduced. */

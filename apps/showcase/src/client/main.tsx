@@ -1,17 +1,23 @@
 import { createRoot } from "react-dom/client";
-import { applyTheme, getTheme, setTheme } from "@lemn-ltd/ui";
+import { compileBrandProject } from "@lemn-ltd/brand-contract";
+import { createBrandFromPreset } from "@lemn-ltd/brand-studio";
 import "@lemn-ltd/ui/styles.css";
 import "@lemn-ltd/showcase-kit/styles.css";
 import "./styles.css";
 import { UiShowcaseApp } from "./ui-showcase-app";
 
-// A first visit is light by default. Once a visitor uses the theme control,
-// their explicit light/dark choice remains authoritative.
-const initialTheme = getTheme();
-if (initialTheme === "system") setTheme("light");
-else applyTheme(initialTheme);
-
 const root = document.getElementById("root");
 if (!root) throw new Error("Missing #root");
 
-createRoot(root).render(<UiShowcaseApp />);
+const initialProject = createBrandFromPreset("verdant-ledger");
+const initialCompilation = await compileBrandProject(initialProject);
+if (!initialCompilation.ok) {
+	throw new Error("The bundled Showcase brand must compile before rendering.");
+}
+
+createRoot(root).render(
+	<UiShowcaseApp
+		initialArtifact={initialCompilation.artifact}
+		initialProject={initialProject}
+	/>,
+);

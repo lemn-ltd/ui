@@ -1,7 +1,7 @@
 .ui-separator {
   flex: none;
   border: 0;
-  background: var(--border);
+  background: var(--lemn-color-border);
 }
 
 .ui-separator[data-orientation="horizontal"] {

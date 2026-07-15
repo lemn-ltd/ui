@@ -26,7 +26,7 @@ describe("Tracker", () => {
 				hoverEffect
 				items={[
 					{
-						color: "var(--chart-series-2)",
+						color: "var(--lemn-chart-series-2)",
 						label: "Deploy",
 						tooltip: "Deploying now",
 					},

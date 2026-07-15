@@ -1,12 +1,12 @@
 .ui-toast {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--lemn-space-3);
   width: 100%;
-  padding: var(--space-3);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--elev-2);
-  font-family: var(--font-sans);
+  padding: var(--lemn-space-3);
+  border-radius: var(--lemn-radius-large);
+  box-shadow: var(--lemn-shadow-overlay);
+  font-family: var(--lemn-font-body);
 }
 
 .ui-toast__icon {
@@ -17,21 +17,21 @@
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: var(--lemn-space-1);
   min-width: 0;
 }
 
 .ui-toast__title {
-  color: var(--text);
-  font-size: var(--font-size-small);
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-small);
+  color: var(--lemn-color-text);
+  font-size: var(--lemn-font-size-small);
+  font-weight: var(--lemn-font-weight-semibold);
+  line-height: var(--lemn-line-height-small);
 }
 
 .ui-toast__detail {
-  color: var(--text-muted);
-  font-size: var(--font-size-caption);
-  line-height: var(--line-height-caption);
+  color: var(--lemn-color-text-muted);
+  font-size: var(--lemn-font-size-caption);
+  line-height: var(--lemn-line-height-caption);
 }
 
 .ui-toast__dismiss {
@@ -41,29 +41,29 @@
 }
 
 .ui-toast[data-tone="success"] {
-  background: var(--success-soft);
+  background: var(--lemn-color-success-surface);
 }
 .ui-toast[data-tone="success"] .ui-toast__icon {
-  color: var(--success);
+  color: var(--lemn-color-success);
 }
 
 .ui-toast[data-tone="info"] {
-  background: var(--info-soft);
+  background: var(--lemn-color-info-surface);
 }
 .ui-toast[data-tone="info"] .ui-toast__icon {
-  color: var(--info);
+  color: var(--lemn-color-info);
 }
 
 .ui-toast[data-tone="warn"] {
-  background: var(--warn-soft);
+  background: var(--lemn-color-warning-surface);
 }
 .ui-toast[data-tone="warn"] .ui-toast__icon {
-  color: var(--warn);
+  color: var(--lemn-color-warning);
 }
 
 .ui-toast[data-tone="danger"] {
-  background: var(--danger-soft);
+  background: var(--lemn-color-danger-surface);
 }
 .ui-toast[data-tone="danger"] .ui-toast__icon {
-  color: var(--danger);
+  color: var(--lemn-color-danger);
 }

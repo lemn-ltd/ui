@@ -12,7 +12,7 @@ import { resolve } from "node:path";
 import test from "node:test";
 import { runChangesetCommand } from "../../scripts/release/changeset-command.ts";
 import { runReleaseMutationGuard } from "../../scripts/release/release-mutation-guard.ts";
-import { verifyUiDist } from "../../scripts/release/verify-ui-dist.mjs";
+import { verifyPackageDists } from "../../scripts/release/verify-package-dists.ts";
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -22,6 +22,12 @@ const rootPackage = JSON.parse(
 ) as UnknownRecord;
 const uiPackage = JSON.parse(
 	await readFile(resolve(root, "packages/ui/package.json"), "utf8"),
+) as UnknownRecord;
+const brandContractPackage = JSON.parse(
+	await readFile(resolve(root, "packages/brand-contract/package.json"), "utf8"),
+) as UnknownRecord;
+const brandStudioPackage = JSON.parse(
+	await readFile(resolve(root, "packages/brand-studio/package.json"), "utf8"),
 ) as UnknownRecord;
 const docsPackage = JSON.parse(
 	await readFile(resolve(root, "apps/docs/package.json"), "utf8"),
@@ -82,9 +88,10 @@ test("all production mutation entrypoints share the guarded release path", () =>
 	for (const name of [
 		"deploy:showcase:prod",
 		"deploy:docs:prod",
-		"prepare:ui:release",
-		"publish:ui",
-		"publish:ui:release",
+		"deploy:showcase-admin:prod",
+		"prepare:packages:release",
+		"publish:packages:release",
+		"publish:packages:verify",
 		"rollout:showcase:prod",
 	]) {
 		assert.match(String(scripts[name]), /^pnpm guard:release:mutation && /u);
@@ -113,7 +120,7 @@ test("all production mutation entrypoints share the guarded release path", () =>
 	);
 	assert.equal(
 		scripts.release,
-		"pnpm release:preflight && pnpm check && pnpm test && pnpm publish:ui:release",
+		"pnpm release:preflight && pnpm check && pnpm test && pnpm build:packages:release && pnpm publish:packages:release",
 	);
 });
 
@@ -169,23 +176,27 @@ test("changeset version rejects CI feature refs before an isolated CLI can run",
 	}
 });
 
-test("publish lifecycle builds then requires dist and a strict consumer smoke", () => {
+test("package-set lifecycle builds in order then requires dist and a strict consumer smoke", () => {
 	const scripts = record(rootPackage.scripts, "root scripts");
-	const publish = String(scripts["publish:ui"]);
-	assert.ok(
-		publish.indexOf("guard:release:mutation") < publish.indexOf("run build"),
-	);
-	assert.ok(publish.indexOf("run build") < publish.indexOf(" publish "));
 	assert.equal(
-		scripts["publish:ui:verify"],
-		"pnpm guard:release:mutation && node scripts/release/verify-ui-dist.mjs && pnpm pack:ui",
+		scripts["build:packages:release"],
+		"pnpm --filter @lemn-ltd/brand-contract run build && pnpm --filter @lemn-ltd/ui run build && pnpm --filter @lemn-ltd/brand-studio run build",
 	);
-	assert.equal(
-		record(uiPackage.scripts, "UI package scripts").prepublishOnly,
-		"pnpm --dir ../.. publish:ui:verify",
+	for (const [label, manifest] of [
+		["brand contract", brandContractPackage],
+		["UI", uiPackage],
+		["brand studio", brandStudioPackage],
+	] as const) {
+		assert.equal(
+			record(manifest.scripts, `${label} scripts`).prepublishOnly,
+			"pnpm --dir ../.. publish:packages:verify",
+		);
+	}
+	assert.equal(scripts["publish:ui"], undefined);
+	assert.match(
+		String(scripts["pack:packages"]),
+		/smoke-package-set-tarballs\.mjs/u,
 	);
-	assert.equal(scripts["publish:ui:internal"], undefined);
-	assert.match(String(scripts["pack:ui"]), /smoke-package-tarball\.mjs/u);
 });
 
 test("publish-ready verification fails closed without complete dist exports", async () => {
@@ -193,13 +204,21 @@ test("publish-ready verification fails closed without complete dist exports", as
 		resolve(tmpdir(), "lemn-ui-dist-contract-"),
 	);
 	try {
-		const packageRoot = resolve(temporaryRoot, "packages/ui");
-		await mkdir(packageRoot, { recursive: true });
+		for (const directory of ["brand-contract", "ui", "brand-studio"]) {
+			await mkdir(resolve(temporaryRoot, "packages", directory), {
+				recursive: true,
+			});
+		}
 		await writeFile(
-			resolve(packageRoot, "package.json"),
+			resolve(temporaryRoot, "packages/ui/package.json"),
 			JSON.stringify({
 				name: "@lemn-ltd/ui",
-				version: "1.2.3",
+				version: "0.3.0",
+				publishConfig: {
+					registry: "https://npm.pkg.github.com",
+					access: "restricted",
+				},
+				scripts: { prepublishOnly: "pnpm --dir ../.. publish:packages:verify" },
 				exports: {
 					".": { types: "./dist/index.d.ts", default: "./dist/index.js" },
 					"./tokens": {
@@ -210,13 +229,56 @@ test("publish-ready verification fails closed without complete dist exports", as
 						types: "./dist/catalog.d.ts",
 						default: "./dist/catalog.js",
 					},
+					"./blocks": {
+						types: "./dist/blocks/index.d.ts",
+						default: "./dist/blocks/index.js",
+					},
 					"./styles.css": "./dist/styles.css",
 				},
 			}),
 		);
+		for (const [directory, name, version, exports] of [
+			[
+				"brand-contract",
+				"@lemn-ltd/brand-contract",
+				"0.1.0",
+				{ ".": { types: "./dist/index.d.ts", default: "./dist/index.js" } },
+			],
+			[
+				"brand-studio",
+				"@lemn-ltd/brand-studio",
+				"0.1.0",
+				{
+					".": { types: "./dist/index.d.ts", default: "./dist/index.js" },
+					"./styles.css": "./dist/styles.css",
+				},
+			],
+		] as const) {
+			await writeFile(
+				resolve(temporaryRoot, `packages/${directory}/package.json`),
+				JSON.stringify({
+					name,
+					version,
+					exports,
+					publishConfig: {
+						registry: "https://npm.pkg.github.com",
+						access: "restricted",
+					},
+					scripts: {
+						prepublishOnly: "pnpm --dir ../.. publish:packages:verify",
+					},
+					...(directory === "brand-studio"
+						? {
+								dependencies: { "@lemn-ltd/brand-contract": "workspace:0.1.0" },
+								peerDependencies: { "@lemn-ltd/ui": "0.3.0" },
+							}
+						: {}),
+				}),
+			);
+		}
 		await assert.rejects(
-			verifyUiDist(temporaryRoot),
-			/Built package is missing export/u,
+			verifyPackageDists(temporaryRoot),
+			/built dist is missing/u,
 		);
 	} finally {
 		await rm(temporaryRoot, { recursive: true, force: true });

@@ -1,40 +1,40 @@
 .ui-capability-matrix {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  font-family: var(--font-sans);
+  gap: var(--lemn-space-3);
+  font-family: var(--lemn-font-body);
 }
 
 .ui-capability-matrix__scroll {
   overflow: auto;
   max-height: 480px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  background: var(--lemn-color-surface);
+  border: 1px solid var(--lemn-color-border);
+  border-radius: var(--lemn-radius-large);
 }
 
 .ui-capability-matrix__table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  font-size: var(--font-size-small);
-  line-height: var(--line-height-small);
+  font-size: var(--lemn-font-size-small);
+  line-height: var(--lemn-line-height-small);
 }
 
 .ui-capability-matrix__head {
   position: sticky;
   top: 0;
-  z-index: var(--z-raised);
+  z-index: var(--lemn-z-raised);
 }
 
 .ui-capability-matrix__th {
-  padding: var(--space-2) var(--space-3);
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  color: var(--text);
-  font-size: var(--font-size-small);
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-small);
+  padding: var(--lemn-space-2) var(--lemn-space-3);
+  background: var(--lemn-color-surface);
+  border-bottom: 1px solid var(--lemn-color-border);
+  color: var(--lemn-color-text);
+  font-size: var(--lemn-font-size-small);
+  font-weight: var(--lemn-font-weight-semibold);
+  line-height: var(--lemn-line-height-small);
   text-align: center;
   white-space: nowrap;
   vertical-align: bottom;
@@ -43,37 +43,37 @@
 .ui-capability-matrix__th--capability {
   position: sticky;
   left: 0;
-  z-index: var(--z-raised);
+  z-index: var(--lemn-z-raised);
   min-width: 240px;
   text-align: left;
 }
 
 .ui-capability-matrix__target-label {
   display: block;
-  color: var(--text);
+  color: var(--lemn-color-text);
 }
 
 .ui-capability-matrix__target-kind {
   display: block;
-  margin-top: var(--space-1);
-  color: var(--text-dim);
-  font-size: var(--font-size-caption);
-  font-weight: var(--font-weight-regular);
-  line-height: var(--line-height-caption);
+  margin-top: var(--lemn-space-1);
+  color: var(--lemn-color-disabled-text);
+  font-size: var(--lemn-font-size-caption);
+  font-weight: var(--lemn-font-weight-regular);
+  line-height: var(--lemn-line-height-caption);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
 .ui-capability-matrix__td {
-  padding: var(--space-2) var(--space-3);
-  border-bottom: 1px solid var(--border);
-  background: var(--surface);
+  padding: var(--lemn-space-2) var(--lemn-space-3);
+  border-bottom: 1px solid var(--lemn-color-border);
+  background: var(--lemn-color-surface);
   vertical-align: middle;
-  transition: background-color var(--duration-fast) var(--easing-standard);
+  transition: background-color var(--lemn-duration-fast) var(--lemn-easing-standard);
 }
 
 .ui-capability-matrix__row:hover .ui-capability-matrix__td {
-  background: var(--surface2);
+  background: var(--lemn-color-surface-muted);
 }
 
 .ui-capability-matrix__row:last-child .ui-capability-matrix__td {
@@ -83,12 +83,12 @@
 .ui-capability-matrix__td--capability {
   position: sticky;
   left: 0;
-  z-index: var(--z-base);
+  z-index: var(--lemn-z-raised);
   display: table-cell;
   min-width: 240px;
-  border-right: 1px solid var(--border);
+  border-right: 1px solid var(--lemn-color-border);
   text-align: left;
-  font-weight: var(--font-weight-regular);
+  font-weight: var(--lemn-font-weight-regular);
 }
 
 .ui-capability-matrix__td--cell {
@@ -102,29 +102,29 @@
 }
 
 .ui-capability-matrix__td[data-clickable]:hover {
-  background: var(--accent-soft);
+  background: var(--lemn-color-accent-soft);
 }
 
 .ui-capability-matrix__capability-name {
   display: block;
-  color: var(--text);
-  font-weight: var(--font-weight-semibold);
+  color: var(--lemn-color-text);
+  font-weight: var(--lemn-font-weight-semibold);
 }
 
 .ui-capability-matrix__capability-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-1);
-  margin-top: var(--space-1);
+  gap: var(--lemn-space-1);
+  margin-top: var(--lemn-space-1);
 }
 
 .ui-capability-matrix__capability-ref {
   display: block;
-  margin-top: var(--space-1);
-  color: var(--text-dim);
-  font-family: var(--font-mono);
-  font-size: var(--font-size-mono);
-  line-height: var(--line-height-mono);
+  margin-top: var(--lemn-space-1);
+  color: var(--lemn-color-disabled-text);
+  font-family: var(--lemn-font-code);
+  font-size: var(--lemn-font-size-mono);
+  line-height: var(--lemn-line-height-mono);
 }
 
 .ui-capability-matrix__mark-icon {
@@ -133,31 +133,31 @@
 }
 
 .ui-capability-matrix__td--cell[data-state="granted"] .ui-capability-matrix__mark-icon {
-  color: var(--accent);
+  color: var(--lemn-color-accent);
 }
 
 .ui-capability-matrix__td--cell[data-state="assigned"] .ui-capability-matrix__mark-icon {
-  color: var(--success);
+  color: var(--lemn-color-success);
 }
 
 .ui-capability-matrix__dot {
   display: inline-block;
   width: 6px;
   height: 6px;
-  border-radius: var(--radius-pill);
-  background: var(--info);
+  border-radius: var(--lemn-radius-pill);
+  background: var(--lemn-color-info);
   vertical-align: middle;
 }
 
 .ui-capability-matrix__dash {
-  color: var(--text-dim);
+  color: var(--lemn-color-disabled-text);
   font-variant-numeric: tabular-nums;
 }
 
 .ui-capability-matrix__legend {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-3);
+  gap: var(--lemn-space-3);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -166,10 +166,10 @@
 .ui-capability-matrix__legend-item {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
-  color: var(--text-dim);
-  font-size: var(--font-size-caption);
-  line-height: var(--line-height-caption);
+  gap: var(--lemn-space-1);
+  color: var(--lemn-color-disabled-text);
+  font-size: var(--lemn-font-size-caption);
+  line-height: var(--lemn-line-height-caption);
 }
 
 .ui-capability-matrix__legend-mark {
@@ -180,9 +180,9 @@
 }
 
 .ui-capability-matrix__legend-item[data-state="granted"] .ui-capability-matrix__mark-icon {
-  color: var(--accent);
+  color: var(--lemn-color-accent);
 }
 
 .ui-capability-matrix__legend-item[data-state="assigned"] .ui-capability-matrix__mark-icon {
-  color: var(--success);
+  color: var(--lemn-color-success);
 }

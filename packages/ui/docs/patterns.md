@@ -4,10 +4,42 @@
 > mirrors a live pattern page in the showcase (`/<module>/patterns/<slug>`).
 > Component names link to their selection guidance in [components.md](components.md).
 
+## Rules before composing
+
+- Install and import only exact approved `@lemn-ltd/*` package releases. Do not
+  import an upstream UI provider or deep-import a LEMN package.
+- Treat components and blocks as controlled visual contracts. Fetching,
+  routing, authentication, global state, internationalization, analytics,
+  persistence, authorization, and product workflow policy stay in the host.
+- Render production UI inside a verified compiled BrandProject scope. The host
+  injects critical `--lemn-*` CSS and scope attributes before the first HTML
+  byte; components never repair branding in a browser effect.
+- Preserve provider-owned behavior. Compose public APIs and semantic tokens;
+  do not recreate keyboard, focus, accessibility, chart, or lifecycle logic.
+- Model loading, empty, error, permission, validation, pending, success, and
+  retry states when they apply.
+
 ## Module routes
 
 - Core patterns live under `/core/patterns/*`.
 - Agent workflow patterns live under `/agents/patterns/*`.
+
+## Blocks versus screen patterns
+
+A **block** is a published, purpose-specific composition with a stable slug,
+controlled data/action contract, complete applicable states, Showcase evidence,
+and a real consumer. A **screen pattern** is guidance that a product uses to
+assemble its own screen and product policy.
+
+Use `DashboardOverviewBlock` for an operational metric/trend/ranking surface,
+`AppointmentScheduleBlock` for a host-controlled appointment queue, and
+`ApprovalQueueBlock` for bounded human approvals. Import block components and
+`blockCatalog` from `@lemn-ltd/ui/blocks` when the host needs the block-only
+entrypoint.
+
+Do not turn a single control into a block, hide a product API inside a block,
+or create another Button/Dialog/chart implementation within a composition.
+Keep a one-consumer product composition app-local until repeated need is proven.
 
 ## List + table
 

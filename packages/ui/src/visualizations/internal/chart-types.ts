@@ -96,17 +96,17 @@ export interface ChartStateProps {
 export type ChartAnimation = "auto" | "none";
 
 export const CHART_COLORS: readonly ChartColor[] = [
-	"var(--chart-series-1)",
-	"var(--chart-series-2)",
-	"var(--chart-series-3)",
-	"var(--chart-series-4)",
-	"var(--chart-series-5)",
-	"var(--chart-series-6)",
-	"var(--chart-series-7)",
-	"var(--chart-series-8)",
+	"var(--lemn-chart-series-1)",
+	"var(--lemn-chart-series-2)",
+	"var(--lemn-chart-series-3)",
+	"var(--lemn-chart-series-4)",
+	"var(--lemn-chart-series-5)",
+	"var(--lemn-chart-series-6)",
+	"var(--lemn-chart-series-7)",
+	"var(--lemn-chart-series-8)",
 ];
 
-const DEFAULT_CHART_COLOR: ChartColor = "var(--chart-series-1)";
+const DEFAULT_CHART_COLOR: ChartColor = "var(--lemn-chart-series-1)";
 
 export function chartColor(
 	color: ChartColor | undefined,

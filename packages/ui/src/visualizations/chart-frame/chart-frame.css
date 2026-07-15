@@ -1,20 +1,20 @@
 .ui-chart-frame {
   display: grid;
-  gap: var(--space-4);
+  gap: var(--lemn-space-4);
   min-width: 0;
-  color: var(--text);
+  color: var(--lemn-color-text);
 }
 
 .ui-chart-frame__header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: var(--space-4);
+  gap: var(--lemn-space-4);
 }
 
 .ui-chart-frame__heading {
   display: grid;
-  gap: var(--space-1);
+  gap: var(--lemn-space-1);
   min-width: 0;
 }
 
@@ -24,15 +24,15 @@
 }
 
 .ui-chart-frame__title {
-  font-size: var(--font-size-heading);
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-heading);
+  font-size: var(--lemn-font-size-heading);
+  font-weight: var(--lemn-font-weight-semibold);
+  line-height: var(--lemn-line-height-heading);
 }
 
 .ui-chart-frame__description {
-  color: var(--text-muted);
-  font-size: var(--font-size-small);
-  line-height: var(--line-height-small);
+  color: var(--lemn-color-text-muted);
+  font-size: var(--lemn-font-size-small);
+  line-height: var(--lemn-line-height-small);
 }
 
 .ui-chart-frame__action {
@@ -49,21 +49,21 @@
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-6);
-  border: 1px dashed var(--border);
-  border-radius: var(--radius-md);
-  color: var(--text-muted);
+  gap: var(--lemn-space-3);
+  padding: var(--lemn-space-6);
+  border: 1px dashed var(--lemn-color-border);
+  border-radius: var(--lemn-radius-medium);
+  color: var(--lemn-color-text-muted);
   text-align: center;
 }
 
 .ui-chart-frame__loading {
   width: 60%;
   height: 12px;
-  border-radius: var(--radius-pill);
-  background: linear-gradient(90deg, var(--surface2), var(--chart-hover), var(--surface2));
+  border-radius: var(--lemn-radius-pill);
+  background: linear-gradient(90deg, var(--lemn-color-surface-muted), var(--lemn-chart-hover), var(--lemn-color-surface-muted));
   background-size: 200% 100%;
-  animation: ui-chart-frame-loading var(--duration-slow) var(--easing-linear) infinite;
+  animation: ui-chart-frame-loading var(--lemn-duration-slow) var(--lemn-easing-linear) infinite;
 }
 
 @keyframes ui-chart-frame-loading {

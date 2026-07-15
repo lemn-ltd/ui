@@ -109,7 +109,7 @@ pnpm dev:showcase
   and Cloudflare release access. A scope, owner, authentication, version,
   package-content, or Cloudflare mismatch fails closed before package
   publication or docs/showcase deployment.
-- `pnpm version:packages`, `pnpm publish:ui`, `pnpm deploy:docs:prod`,
+- `pnpm version:packages`, `pnpm publish:packages:release`, `pnpm deploy:docs:prod`,
   `pnpm deploy:showcase:prod`, and `pnpm release` are production mutation
   entrypoints. They require branch `main` and the non-mutating Cloudflare
   account and production-domain preflight; a credentialed feature checkout still fails

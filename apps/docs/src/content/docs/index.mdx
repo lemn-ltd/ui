@@ -1,31 +1,50 @@
 ---
 title: Overview
-description: Documentation hub for the Lemn UI design-system package.
+description: Provider-first components, compiled project branding, and curated blocks for LEMN products.
 sidebar:
   label: Overview
   order: 1
 ---
 
-`@lemn-ltd/ui` is the shared React design-system package for LEMN products.
-This site is the human-facing documentation surface for installation, release
-lifecycle, migrations, and operational ownership.
+Lemn UI is a provider-first UI ecosystem, not a collection of locally rewritten
+widgets. LEMN selects individual battle-tested open-source capabilities, gives
+each semantic capability exactly one provider of record, and exposes a stable
+provider-neutral API with a minimal compiled branding layer.
+
+## What this workspace owns
+
+- `@lemn-ltd/brand-contract`: versioned BrandProject schema, validator,
+  deterministic compiler, diagnostics, scoped CSS, provider adapters, and
+  integrity hashes.
+- `@lemn-ltd/ui`: controlled components, visualizations, semantic styles,
+  blocks, and public catalog metadata.
+- `@lemn-ltd/brand-studio`: controlled, persistence-free wizard and live
+  preview for authoring BrandProject JSON.
+- A Git-authoritative provider registry with exact immutable origins, licenses,
+  notices, adapters, conformance, and upstream update status.
+- Public Docs and Showcase plus a separately protected Showcase Admin surface.
+
+## Non-negotiable boundaries
+
+- Product code imports only exact approved `@lemn-ltd/*` package versions.
+- Product code never imports an upstream UI provider for a catalog-owned
+  capability.
+- Components consume compiled `--lemn-*` semantic roles, never raw BrandProject
+  JSON or project-specific variable names.
+- Production hosts resolve and verify branding before the first HTML byte.
+- Data fetching, routing, authentication, global state, internationalization,
+  analytics, persistence, and product policy stay outside the UI packages.
+- Provider updates are reviewed registry proposals, never silent upgrades.
 
 ## Production surfaces
 
-- Docs: [ui.le-mn.com](https://ui.le-mn.com)
-- Showcase: [showcase.ui.le-mn.com](https://showcase.ui.le-mn.com)
-- Component catalog JSON: [showcase.ui.le-mn.com/catalog.json](https://showcase.ui.le-mn.com/catalog.json)
-- Agent guide: [showcase.ui.le-mn.com/llms.txt](https://showcase.ui.le-mn.com/llms.txt)
-- Repository: [github.com/lemn-ltd/ui](https://github.com/lemn-ltd/ui)
+- [Docs](https://ui.le-mn.com)
+- [Public Showcase](https://showcase.ui.le-mn.com)
+- [Protected Showcase Admin](https://admin.showcase.ui.le-mn.com)
+- [Catalog JSON](https://showcase.ui.le-mn.com/catalog.json)
+- [Agent index](https://showcase.ui.le-mn.com/llms.txt)
+- [Repository](https://github.com/lemn-ltd/ui)
 
-## Ownership
-
-Use this repository when a product needs a reusable component, token, layout, or
-shared style migration. Product apps should consume the published package instead
-of copying component CSS or deep-importing package internals.
-
-## Documentation model
-
-The docs site explains lifecycle, releases, and integration guidance. The
-showcase remains the interactive source for component behavior, examples,
-responsive states, and visual review.
+Start with [Install and use](/getting-started/), then read
+[Architecture](/architecture/), [Branding](/branding/), and the
+[SSR branding runbook](/ssr-branding/).

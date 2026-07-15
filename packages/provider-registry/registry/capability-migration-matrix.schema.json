@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.ui.le-mn.com/provider-registry/capability-migration-matrix/v1.json",
+  "title": "LEMN UI capability migration matrix",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "schemaVersion",
+    "matrixId",
+    "catalogCount",
+    "targetPackage",
+    "targetPackageVersion",
+    "capabilities"
+  ],
+  "properties": {
+    "$schema": {
+      "const": "https://schemas.ui.le-mn.com/provider-registry/capability-migration-matrix/v1.json"
+    },
+    "schemaVersion": { "const": 1 },
+    "matrixId": { "const": "lemn-ui-provider-first-cutover" },
+    "catalogCount": { "type": "integer", "minimum": 1 },
+    "targetPackage": { "const": "@lemn-ltd/ui" },
+    "targetPackageVersion": { "$ref": "#/$defs/exactVersion" },
+    "capabilities": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/capability" }
+    }
+  },
+  "$defs": {
+    "exactVersion": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$"
+    },
+    "provider": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["implementationId", "id", "name", "repository", "ingestionMode"],
+      "properties": {
+        "implementationId": { "type": "string", "minLength": 1 },
+        "id": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "repository": { "type": "string", "format": "uri", "pattern": "^https://" },
+        "ingestionMode": { "enum": ["runtime_dependency", "source_snapshot"] },
+        "packageName": { "type": "string", "minLength": 1 },
+        "packageVersion": { "$ref": "#/$defs/exactVersion" },
+        "packageIntegrity": { "type": "string", "pattern": "^sha512-[A-Za-z0-9+/]+={0,2}$" },
+        "commitSha": { "type": "string", "pattern": "^[a-f0-9]{40}$" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "ingestionMode": { "const": "runtime_dependency" } } },
+          "then": { "required": ["packageName", "packageVersion", "packageIntegrity"] }
+        },
+        {
+          "if": { "properties": { "ingestionMode": { "const": "source_snapshot" } } },
+          "then": { "required": ["commitSha"] }
+        }
+      ]
+    },
+    "migration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "publicVersionEffect", "targetPackageVersion", "summary"],
+      "properties": {
+        "status": { "enum": ["complete", "planned"] },
+        "publicVersionEffect": { "enum": ["none", "patch", "minor", "major"] },
+        "targetPackageVersion": { "$ref": "#/$defs/exactVersion" },
+        "summary": { "type": "string", "minLength": 20 }
+      }
+    },
+    "capability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "catalogSlug",
+        "capabilityId",
+        "finalCapabilityId",
+        "finalPublicExports",
+        "disposition",
+        "migration",
+        "conformanceProof"
+      ],
+      "properties": {
+        "catalogSlug": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "capabilityId": { "type": "string", "pattern": "^ui\\.[a-z0-9.-]+$" },
+        "finalCapabilityId": { "type": "string", "pattern": "^ui\\.[a-z0-9.-]+$" },
+        "finalPublicExports": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[A-Za-z_$][A-Za-z0-9_$]*$" }
+        },
+        "disposition": {
+          "enum": ["keep-provider-backed", "replace", "native-with-rationale", "remove"]
+        },
+        "provider": { "$ref": "#/$defs/provider" },
+        "nativeRationale": { "type": "string", "minLength": 40 },
+        "migration": { "$ref": "#/$defs/migration" },
+        "conformanceProof": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "disposition": { "enum": ["keep-provider-backed", "replace"] } } },
+          "then": { "required": ["provider"], "not": { "required": ["nativeRationale"] } }
+        },
+        {
+          "if": { "properties": { "disposition": { "const": "native-with-rationale" } } },
+          "then": { "required": ["nativeRationale"], "not": { "required": ["provider"] } }
+        }
+      ]
+    }
+  }
+}

@@ -32,9 +32,9 @@ function EntityToolbarPage(): ReactElement {
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: 'var(--space-2)',
-              color: 'var(--text-muted)',
-              fontSize: 'var(--font-size-small)',
+              gap: 'var(--lemn-space-2)',
+              color: 'var(--lemn-color-text-muted)',
+              fontSize: 'var(--lemn-font-size-small)',
             }}
           >
             <EntityToolbar />

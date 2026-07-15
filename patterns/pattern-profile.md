@@ -9,17 +9,23 @@ Derived audit-state projection: `patterns/pattern-audit.md`
 ## Inventory Basis
 
 This profile is based on the Lemn UI repository inventory as of
-2026-07-14.
+2026-07-15.
 
 Lemn UI is not a product backend or the full AgentOps control plane. It is
 the shared graphical UI system and release workspace for LEMN products,
 with:
 
 - a Node.js 22+, pnpm, and Turborepo workspace
-- the published `@lemn-ltd/ui` React package, including components, design
-  tokens, styles, catalog metadata, package docs, and public exports
+- the published `@lemn-ltd/ui` React package, including provider-backed
+  components, curated blocks, semantic tokens, styles, catalog metadata,
+  package docs, and public exports
+- published `@lemn-ltd/brand-contract` and `@lemn-ltd/brand-studio` packages
+  for deterministic multi-profile branding and controlled authoring
+- a Git-authoritative provider registry with exact pins, source provenance,
+  licenses, notices, SBOM, conformance, and update status
 - the internal `@lemn-ltd/showcase-kit` package for reusable showcase chrome
-- a React/Vite showcase deployed as a Cloudflare Worker SPA
+- a public React/Vite showcase and a separately deployed, Cloudflare
+  Access-protected Showcase Admin surface
 - an Astro/Starlight documentation site deployed through Cloudflare
 - Vitest, React Testing Library, Playwright, axe, and fidelity-capture coverage
 - brand-neutrality and package-boundary validation scripts
@@ -45,13 +51,16 @@ requirements merely because they exist in the organization-wide catalog.
   changesets, and published versions as public contracts. HTTP-specific Hono,
   OpenAPI, Problem Details, CORS, webhook, and MCP requirements are not
   applicable unless this repository introduces those product API surfaces.
-- Apply Cloudflare patterns to `apps/showcase` and `apps/docs`, their Wrangler
+- Apply Cloudflare patterns to `apps/showcase`, `apps/showcase-admin`, and
+  `apps/docs`, their Wrangler
   configuration, bundled assets, runtime dependencies, deploy commands, and
-  production verification. Durable Objects, Service Bindings, Sandbox,
-  Queues, and Workflows are not required by the current inventory.
-- Keep components presentational and brand-neutral. Consuming applications own
-  product data fetching, authorization, persistence, routing, telemetry, and
-  workflow policy.
+  production verification. Showcase Admin may use one typed least-privilege
+  server adapter to the external branding control plane. Durable Objects,
+  Sandbox, Queues, and Workflows are not required inside this repository.
+- Keep components and Brand Studio controlled, presentational,
+  provider-neutral, and persistence-free. Consuming applications own product
+  data fetching, authorization, persistence, routing, telemetry, and workflow
+  policy.
 - Do not import AgentOps assumptions about Neon, Kysely, product data,
   multi-tenant auth, billing, durable agent runs, or LLM infrastructure unless
   a concrete future change adds those responsibilities to this workspace.
@@ -70,6 +79,7 @@ pattern_profile:
       - "The workspace owns one shared UI kernel consumed by multiple products plus separate package, showcase, and documentation surfaces."
       - Public/private package boundaries, stable catalog vocabulary, and dependency direction must remain explicit across packages and apps.
       - Component, token, style, and catalog decisions must stay identical across the published package, showcase, docs, and consumers.
+      - Provider authority, BrandProject compilation, Blocks, public Showcase, and protected Admin remain separate explicit package/deploy boundaries.
       - Changesets, package publishing, docs deployment, and showcase deployment require a coherent compatibility-first release model.
 
   CODE:
@@ -82,20 +92,20 @@ pattern_profile:
   CLOUDFLARE:
     target_level: 4
     reason:
-      - The showcase and documentation applications are deployed through Wrangler to Cloudflare.
+      - The showcase, protected Showcase Admin, and documentation applications are deployed through Wrangler to Cloudflare.
       - Worker configuration, bundled static assets, runtime dependencies, generated types, dry runs, and production deploy commands must remain reviewable and reproducible.
-      - Durable Objects, Service Bindings, and Sandbox are not applicable to the current static showcase/docs runtime.
+      - Durable Objects and Sandbox are not applicable; any Admin Service Binding remains narrow, typed, and server-only.
 
   INFRA:
     target_level: 4
     reason:
-      - The repository owns GitHub Packages publishing, Cloudflare Worker deploys, custom documentation/showcase domains, CI release permissions, and package registry configuration.
+      - The repository owns three published packages, Cloudflare Worker deploys, public/protected custom domains, CI release permissions, and package registry configuration.
       - Resource names, ownership, bindings, lifecycle, failure behavior, and verification commands must be documented for every release surface.
 
   API:
     target_level: 4
     reason:
-      - "The `@lemn-ltd/ui` exports, component props, token exports, stylesheet path, catalog metadata, and agent-facing catalog endpoints are stable public contracts."
+      - "The UI, BrandProject, compiled artifact, Studio host adapter, blocks, token exports, provider read model, and catalog endpoints are stable public contracts."
       - Public changes must remain additive or carry a changeset, migration guidance, and versioned compatibility decision.
       - Hono, OpenAPI-generated clients, backend DTO mappers, webhooks, and MCP server tools are not part of the current repository inventory.
 
@@ -122,10 +132,11 @@ pattern_profile:
   UI:
     target_level: 5
     reason:
-      - Reusable graphical components, design tokens, CSS, accessibility behavior, composition patterns, and catalog documentation are the primary product of this repository.
+      - Reusable provider-backed components, BrandProject compilation, design tokens, blocks, CSS, accessibility behavior, and catalog documentation are the primary product of this repository.
       - "`@lemn-ltd/ui` is the project source of truth; consumers must use public exports and the single public stylesheet instead of copying CSS or deep-importing internals."
       - Every reusable component must be composable, responsive, accessible, brand-neutral, documented, catalogued, and demonstrated in the showcase.
-      - Dashboard, report, chart, agent, workflow, and evidence components must expose complete loading, empty, error, permission, pending, success, and interaction states when applicable.
+      - Dashboard, report, chart, agent, workflow, evidence components, and blocks must expose complete loading, empty, error, permission, pending, success, and interaction states when applicable.
+      - Production consumers receive verified scoped branding before first paint; browser effects never repair an unbranded render.
 
   OBS:
     target_level: 4
@@ -153,11 +164,13 @@ pattern_profile:
 The following are not required by this profile for the current project shape:
 
 - product backend services, Hono routes, or OpenAPI-generated clients
-- transactional databases, migrations, Kysely, Hyperdrive, KV authority, R2,
-  ClickHouse, or Cloudflare Artifacts
+- transactional product databases, migrations, Kysely, Hyperdrive, KV
+  authority, R2, ClickHouse, or Cloudflare Artifacts inside this repository;
+  the external AgentOps simulator owns branding persistence and publication
 - product authentication, authorization, billing, entitlements, or tenant data
-- Queues, Workflows, Durable Objects, Service Bindings, or long-running async
-  orchestration
+- Queues, Workflows, Durable Objects, or long-running async orchestration
+  inside this repository; a narrow server adapter for Showcase Admin does not
+  move control-plane ownership into UI
 - commercial LLM calls, AI Gateway, Brainstask, Flue, realtime voice, or agent
   execution runtimes
 - product-specific data fetching, routing, telemetry, or business-policy

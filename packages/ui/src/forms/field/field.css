@@ -1,22 +1,22 @@
 .ui-field {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--lemn-space-2);
 }
 
 .ui-field__label {
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  color: var(--text);
-  font-family: var(--font-sans);
-  font-size: var(--font-size-small);
-  font-weight: var(--font-weight-medium);
-  line-height: var(--line-height-small);
+  color: var(--lemn-color-text);
+  font-family: var(--lemn-font-body);
+  font-size: var(--lemn-font-size-small);
+  font-weight: var(--lemn-font-weight-medium);
+  line-height: var(--lemn-line-height-small);
 }
 
 .ui-field__required {
-  color: var(--danger);
+  color: var(--lemn-color-danger);
 }
 
 .ui-field__control {
@@ -26,17 +26,17 @@
 
 .ui-field__helper {
   margin: 0;
-  font-family: var(--font-sans);
-  font-size: var(--font-size-caption);
-  line-height: var(--line-height-caption);
+  font-family: var(--lemn-font-body);
+  font-size: var(--lemn-font-size-caption);
+  line-height: var(--lemn-line-height-caption);
 }
 
 .ui-field__helper[data-tone="hint"] {
-  color: var(--text-muted);
+  color: var(--lemn-color-text-muted);
 }
 
 .ui-field__helper[data-tone="error"] {
-  color: var(--danger);
+  color: var(--lemn-color-danger);
 }
 
 .ui-field[data-state="disabled"] .ui-field__label,

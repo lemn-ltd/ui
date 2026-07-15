@@ -1,5 +1,17 @@
 # @lemn-ltd/ui
 
+## 0.3.0
+
+### Minor Changes
+
+- Adopt the provider-first branding architecture and unified `--lemn-*` token
+  contract across components, Recharts, ECharts, and blocks.
+- Add provider-neutral visualization axes, domains, legends, tooltips,
+  selection, percent, pie, multi-series spark, marker, sorting, semantic
+  progress, tracker interaction, and ECharts heatmap capabilities.
+- Publish the curated blocks entrypoint and complete provider-backed component
+  catalog used by Brand Studio and clean external consumers.
+
 ## 0.2.5
 
 ### Patch Changes

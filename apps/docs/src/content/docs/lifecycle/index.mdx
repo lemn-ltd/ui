@@ -1,51 +1,73 @@
 ---
 title: Lifecycle
-description: SemVer, changelog, release commits, and publishing ownership.
+description: Coordinated SemVer, provider updates, and immutable package publication.
 sidebar:
   label: Lifecycle
-  order: 5
+  order: 9
 ---
 
-`@lemn-ltd/ui` follows SemVer for the published package.
+The public release set contains `@lemn-ltd/brand-contract`, `@lemn-ltd/ui`, and
+`@lemn-ltd/brand-studio`. Consumers pin exact compatible versions; release
+metadata and migration guidance must make that compatibility explicit.
 
-- `PATCH`: bug fixes, internal implementation fixes, docs corrections, and non-breaking visual polish.
-- `MINOR`: new components, new exports, new variants, additive props, and non-breaking behavior.
-- `MAJOR`: removed exports, renamed props, changed semantics, or visual/behavior changes that require consumer migration.
+## SemVer
 
-## Release ownership
+- **PATCH**: compatible fixes, internal conformance improvements, and
+  documentation corrections that do not change the public contract.
+- **MINOR**: additive components, blocks, props, schema fields with preserving
+  defaults, Studio steps, or provider-neutral capabilities.
+- **MAJOR**: removed/renamed exports, changed semantics, incompatible schema or
+  compiler behavior, or a migration-requiring provider replacement.
 
-Feature authors or agents add a changeset to describe the release intent. The
-release automation turns merged changesets into a release metadata commit that
-updates `packages/ui/package.json` and `packages/ui/CHANGELOG.md`.
+BrandProject schema and compiler majors are compatibility boundaries. A
+compiled artifact records its schema/compiler compatibility and is verified by
+the consumer before use.
 
-All Changesets operations use the catalogued `pnpm changeset ...` wrapper. The
-wrapper guards `version` before mutation. `pnpm exec changeset version` invokes
-the dependency binary outside package-script governance and is not a supported
-release path.
+## Provider update lifecycle
 
-The production workflow completes its non-mutating, scoped Cloudflare account
-API token preflight before Changesets can version, push, or publish anything.
-The token has only `Workers Scripts: Edit` on Account `Lemn DEV` and
-`Zone: Read` on Zone `le-mn.com`. It then captures the release commit SHA and deploys
-that exact SHA and package version. The same main-only guard protects direct CLI
-entrypoints, so credentials in a feature checkout cannot authorize a version,
-package publication, or deploy.
+1. Detect an upstream release without changing production.
+2. Propose exact immutable origin, integrity, license/notice delta, and update
+   status in the registry.
+3. Review API, behavior, accessibility, interaction, visual, SSR, and bundle
+   deltas for only the selected capabilities.
+4. Update the adapter or explicit tracked patch without rewriting provider
+   behavior.
+5. Run conformance, generate notices/SBOM, document migration impact, and add
+   the correct changeset.
+6. Merge and publish through the normal release workflow.
 
-CI publishes the package only when an authenticated GitHub Packages version
-list omits the exact generated version and package scope matches repository
-ownership. An unverifiable registry state fails closed before publication.
+Whole provider catalogs, floating versions, branch references, silent patches,
+and automatic production updates are forbidden.
+
+## Publication order
+
+The coordinated order is:
+
+1. `@lemn-ltd/brand-contract`
+2. `@lemn-ltd/ui`
+3. `@lemn-ltd/brand-studio`
+4. Docs, Showcase, and protected Showcase Admin for the exact release identity
+
+After publication, prove each package through a clean external install from
+GitHub Packages—never through `workspace:*` or a local link—and then update
+real consumers to exact versions.
 
 ## Commands
 
 ```bash
 pnpm changeset:add
+pnpm validate
+pnpm check
+pnpm test
+pnpm build
 pnpm version:packages
 pnpm release
 ```
 
-Run production mutation commands only from `main`. `pnpm publish:ui` builds the
-package, then `prepublishOnly` requires all export targets and completes the
-strict tarball install, TypeScript, and Vite consumer smoke before npm can
-publish immutable package metadata.
+Mutating release commands run only from protected `main`. An already-published
+version is immutable and must match the locally packed integrity; it is never
+overwritten.
 
-Use prerelease versions only for explicit staged rollouts.
+The production preflight accepts only `PRODUCTION_CLOUDFLARE_API_TOKEN`, scoped
+to Account `Lemn DEV` with `Workers Scripts: Edit` and Zone `le-mn.com` with
+`Zone: Read`. Broader credentials or authentication modes fail closed.

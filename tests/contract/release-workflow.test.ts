@@ -16,11 +16,15 @@ const rootPackage = JSON.parse(
 ) as UnknownRecord;
 const contributing = await readFile(resolve(root, "CONTRIBUTING.md"), "utf8");
 const prepareSource = await readFile(
-	resolve(root, "scripts/release/prepare-ui-release.ts"),
+	resolve(root, "scripts/release/prepare-package-release.ts"),
 	"utf8",
 );
 const publishSource = await readFile(
-	resolve(root, "scripts/release/publish-ui-release.ts"),
+	resolve(root, "scripts/release/publish-package-release.ts"),
+	"utf8",
+);
+const packageSetSource = await readFile(
+	resolve(root, "scripts/release/package-set.ts"),
 	"utf8",
 );
 const rolloutSource = await readFile(
@@ -135,15 +139,15 @@ test("preflight precedes the single stateful release preparation and package gat
 	);
 	assert.ok(
 		stepIndex("Prepare or resume release metadata") <
-			stepIndex("Publish or verify exact package"),
+			stepIndex("Publish or verify exact package set"),
 	);
 	assert.equal(
 		step("Prepare or resume release metadata").run,
-		"pnpm prepare:ui:release",
+		"pnpm prepare:packages:release",
 	);
 	assert.equal(
-		step("Publish or verify exact package").run,
-		"pnpm publish:ui:release",
+		step("Publish or verify exact package set").run,
+		"pnpm publish:packages:release",
 	);
 	assert.match(prepareSource, /Release-Origin:/u);
 	assert.match(prepareSource, /"fetch",[\s\S]{0,80}"--no-tags"/u);
@@ -164,7 +168,7 @@ test("package release receives explicit API and registry authentication", () => 
 		"release preparation env",
 	);
 	const publishEnv = record(
-		step("Publish or verify exact package").env,
+		step("Publish or verify exact package set").env,
 		"package publish env",
 	);
 	assert.equal(publishEnv.GITHUB_TOKEN, expression("secrets.GITHUB_TOKEN"));
@@ -179,6 +183,26 @@ test("package release receives explicit API and registry authentication", () => 
 	);
 });
 
+test("release package order is contract then UI then Studio with immutable verification", () => {
+	const contractIndex = packageSetSource.indexOf(
+		'name: "@lemn-ltd/brand-contract"',
+	);
+	const uiIndex = packageSetSource.indexOf('name: "@lemn-ltd/ui"');
+	const studioIndex = packageSetSource.indexOf(
+		'name: "@lemn-ltd/brand-studio"',
+	);
+	assert.ok(
+		contractIndex >= 0 && contractIndex < uiIndex && uiIndex < studioIndex,
+	);
+	assert.match(publishSource, /for \(const artifact of artifacts\)/u);
+	assert.match(publishSource, /timingSafeEqual/u);
+	assert.match(publishSource, /sha512/u);
+	assert.equal(
+		step("Build release packages in dependency order").run,
+		"pnpm build:packages:release",
+	);
+});
+
 test("package and release entrypoints share main-only guarded implementations", () => {
 	const scripts = record(rootPackage.scripts, "root scripts");
 	assert.equal(
@@ -187,18 +211,19 @@ test("package and release entrypoints share main-only guarded implementations", 
 	);
 	for (const name of [
 		"deploy:showcase:prod",
-		"prepare:ui:release",
-		"publish:ui",
-		"publish:ui:release",
+		"deploy:showcase-admin:prod",
+		"prepare:packages:release",
+		"publish:packages:release",
+		"publish:packages:verify",
 		"rollout:showcase:prod",
 	]) {
 		assert.match(String(scripts[name]), /^pnpm guard:release:mutation && /u);
 	}
 	assert.equal(
 		scripts.release,
-		"pnpm release:preflight && pnpm check && pnpm test && pnpm publish:ui:release",
+		"pnpm release:preflight && pnpm check && pnpm test && pnpm build:packages:release && pnpm publish:packages:release",
 	);
-	assert.equal(scripts["publish:ui:internal"], undefined);
+	assert.equal(scripts["publish:ui"], undefined);
 });
 
 test("docs and showcase consume one immutable release identity", () => {
@@ -245,6 +270,7 @@ test("docs and showcase consume one immutable release identity", () => {
 test("all production deploys receive only the scoped Environment API token", () => {
 	for (const name of [
 		"Deploy docs",
+		"Deploy Access-protected Showcase Admin",
 		"Roll out showcase with protected rollback",
 	]) {
 		const env = record(step(name).env, `${name} env`);
@@ -256,7 +282,7 @@ test("all production deploys receive only the scoped Environment API token", () 
 		assert.equal(env.CLOUDFLARE_EMAIL, undefined);
 		assert.match(
 			String(env.CLOUDFLARE_ACCOUNT_ID),
-			/steps\.cloudflare\.outputs\.(?:docs|showcase)_account_id/u,
+			/steps\.cloudflare\.outputs\.(?:docs|showcase|showcase_admin)_account_id/u,
 		);
 	}
 	const rolloutEnv = record(
@@ -280,12 +306,16 @@ test("all production deploys receive only the scoped Environment API token", () 
 test("workflow never invokes direct publisher, secret mutation, or Worker deploy commands", () => {
 	assert.equal(step("Deploy docs").run, "pnpm deploy:docs:prod");
 	assert.equal(
+		step("Deploy Access-protected Showcase Admin").run,
+		"pnpm deploy:showcase-admin:prod",
+	);
+	assert.equal(
 		step("Roll out showcase with protected rollback").run,
 		"pnpm rollout:showcase:prod",
 	);
 	assert.doesNotMatch(
 		workflowSource,
-		/run:\s*pnpm --dir apps\/(?:docs|showcase) exec wrangler (?:deploy|secret|rollback|versions)/u,
+		/run:\s*pnpm --dir apps\/(?:docs|showcase|showcase-admin) exec wrangler (?:deploy|secret|rollback|versions)/u,
 	);
 	assert.doesNotMatch(
 		rolloutSource,
@@ -307,7 +337,7 @@ test("CI and release smoke local showcase assets before package publication", ()
 	assert.equal(releaseSmoke.run, "pnpm smoke:showcase:local");
 	assert.ok(
 		stepIndex("Build and smoke showcase deployment locally") <
-			stepIndex("Publish or verify exact package"),
+			stepIndex("Publish or verify exact package set"),
 	);
 });
 

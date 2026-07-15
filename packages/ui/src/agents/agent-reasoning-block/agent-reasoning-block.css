@@ -1,8 +1,8 @@
 .ui-agent-reasoning-block {
   width: 100%;
-  color: var(--text-muted);
-  font-size: var(--font-size-caption);
-  line-height: var(--line-height-caption);
+  color: var(--lemn-color-text-muted);
+  font-size: var(--lemn-font-size-caption);
+  line-height: var(--lemn-line-height-caption);
 }
 
 .ui-agent-reasoning-block__accordion.ui-accordion {
@@ -15,7 +15,7 @@
 .ui-agent-reasoning-block__accordion .ui-accordion__trigger {
   justify-content: flex-start;
   gap: 5px;
-  padding: var(--space-3) var(--space-3) var(--space-3) 0;
+  padding: var(--lemn-space-3) var(--lemn-space-3) var(--lemn-space-3) 0;
   background: transparent;
 }
 
@@ -24,17 +24,17 @@
 }
 
 .ui-agent-reasoning-block__accordion .ui-accordion__label {
-  color: var(--text);
-  font-size: calc(var(--font-size-small) - 2px);
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-small);
-  transition: color var(--duration-fast) var(--easing-standard);
+  color: var(--lemn-color-text);
+  font-size: calc(var(--lemn-font-size-small) - 2px);
+  font-weight: var(--lemn-font-weight-semibold);
+  line-height: var(--lemn-line-height-small);
+  transition: color var(--lemn-duration-fast) var(--lemn-easing-standard);
 }
 
 .ui-agent-reasoning-block__accordion
   .ui-accordion__trigger:not(:disabled):hover
   .ui-accordion__label {
-  color: var(--accent);
+  color: var(--lemn-color-accent);
 }
 
 .ui-agent-reasoning-block__accordion .ui-accordion__chevron {
@@ -44,14 +44,14 @@
   transform-origin: center;
   transform: rotate(-90deg);
   transition:
-    color var(--duration-fast) var(--easing-standard),
-    transform 500ms var(--easing-standard);
+    color var(--lemn-duration-fast) var(--lemn-easing-standard),
+    transform 500ms var(--lemn-easing-standard);
 }
 
 .ui-agent-reasoning-block__accordion
   .ui-accordion__trigger:not(:disabled):hover
   .ui-accordion__chevron {
-  color: var(--accent);
+  color: var(--lemn-color-accent);
 }
 
 .ui-agent-reasoning-block__accordion
@@ -66,11 +66,11 @@
 
 .ui-agent-reasoning-block__body {
   display: grid;
-  gap: var(--space-2);
-  color: var(--text-muted);
-  font-size: calc(var(--font-size-small) - 2px);
+  gap: var(--lemn-space-2);
+  color: var(--lemn-color-text-muted);
+  font-size: calc(var(--lemn-font-size-small) - 2px);
   font-style: italic;
-  line-height: var(--line-height-small);
+  line-height: var(--lemn-line-height-small);
 }
 
 .ui-agent-reasoning-block__entry {

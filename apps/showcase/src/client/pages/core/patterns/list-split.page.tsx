@@ -9,16 +9,16 @@ const SPLIT: CSSProperties = {
   display: 'grid',
   gridTemplateColumns: 'minmax(220px, 320px) 1fr',
   height: 480,
-  border: '1px solid var(--border)',
-  borderRadius: 'var(--radius-lg)',
+  border: '1px solid var(--lemn-color-border)',
+  borderRadius: 'var(--lemn-radius-large)',
   overflow: 'hidden',
-  background: 'var(--surface)',
+  background: 'var(--lemn-color-surface)',
 };
 
 const LIST: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
-  borderRight: '1px solid var(--border)',
+  borderRight: '1px solid var(--lemn-color-border)',
   overflowY: 'auto',
 };
 
@@ -26,14 +26,14 @@ function rowStyle(active: boolean): CSSProperties {
   return {
     display: 'flex',
     alignItems: 'center',
-    gap: 'var(--space-3)',
+    gap: 'var(--lemn-space-3)',
     width: '100%',
-    padding: 'var(--space-3) var(--space-4)',
+    padding: 'var(--lemn-space-3) var(--lemn-space-4)',
     border: 'none',
-    borderLeft: `2px solid ${active ? 'var(--accent)' : 'transparent'}`,
-    borderBottom: '1px solid var(--border)',
-    background: active ? 'var(--accent-soft)' : 'transparent',
-    color: 'var(--text)',
+    borderLeft: `2px solid ${active ? 'var(--lemn-color-accent)' : 'transparent'}`,
+    borderBottom: '1px solid var(--lemn-color-border)',
+    background: active ? 'var(--lemn-color-accent-soft)' : 'transparent',
+    color: 'var(--lemn-color-text)',
     textAlign: 'left',
     cursor: 'pointer',
   };
@@ -47,7 +47,7 @@ const ROW_TEXT: CSSProperties = {
 };
 
 const ROW_NAME: CSSProperties = {
-  fontSize: 'var(--font-size-body)',
+  fontSize: 'var(--lemn-font-size-body)',
   fontWeight: 500,
   whiteSpace: 'nowrap',
   overflow: 'hidden',
@@ -55,8 +55,8 @@ const ROW_NAME: CSSProperties = {
 };
 
 const ROW_EMAIL: CSSProperties = {
-  fontSize: 'var(--font-size-small)',
-  color: 'var(--text-muted)',
+  fontSize: 'var(--lemn-font-size-small)',
+  color: 'var(--lemn-color-text-muted)',
   whiteSpace: 'nowrap',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
@@ -65,39 +65,39 @@ const ROW_EMAIL: CSSProperties = {
 const DETAIL: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
-  gap: 'var(--space-5)',
-  padding: 'var(--space-6)',
+  gap: 'var(--lemn-space-5)',
+  padding: 'var(--lemn-space-6)',
   overflowY: 'auto',
 };
 
 const DETAIL_HEAD: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
-  gap: 'var(--space-4)',
+  gap: 'var(--lemn-space-4)',
 };
 
 const DETAIL_TITLE: CSSProperties = {
   margin: 0,
-  fontSize: 'var(--font-size-title)',
+  fontSize: 'var(--lemn-font-size-title)',
   fontWeight: 600,
 };
 
 const FIELD_LIST: CSSProperties = {
   display: 'grid',
   gridTemplateColumns: 'max-content 1fr',
-  columnGap: 'var(--space-6)',
-  rowGap: 'var(--space-3)',
+  columnGap: 'var(--lemn-space-6)',
+  rowGap: 'var(--lemn-space-3)',
   alignItems: 'center',
 };
 
 const FIELD_LABEL: CSSProperties = {
-  fontSize: 'var(--font-size-small)',
-  color: 'var(--text-muted)',
+  fontSize: 'var(--lemn-font-size-small)',
+  color: 'var(--lemn-color-text-muted)',
 };
 
 const FIELD_VALUE: CSSProperties = {
-  fontSize: 'var(--font-size-body)',
-  color: 'var(--text)',
+  fontSize: 'var(--lemn-font-size-body)',
+  color: 'var(--lemn-color-text)',
 };
 
 function ListSplitPage(): ReactElement {

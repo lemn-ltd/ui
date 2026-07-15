@@ -1,16 +1,16 @@
 .ui-markdown-viewer__title {
-  font-size: var(--font-size-heading);
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-heading);
+  font-size: var(--lemn-font-size-heading);
+  font-weight: var(--lemn-font-weight-semibold);
+  line-height: var(--lemn-line-height-heading);
 }
 
 .ui-markdown-viewer__search {
   display: flex;
   flex: none;
-  gap: var(--space-2);
+  gap: var(--lemn-space-2);
   align-items: center;
-  padding: var(--space-2) var(--space-5);
-  border-bottom: 1px solid var(--border);
+  padding: var(--lemn-space-2) var(--lemn-space-5);
+  border-bottom: 1px solid var(--lemn-color-border);
 }
 
 .ui-markdown-viewer__search-input {
@@ -20,23 +20,23 @@
 
 .ui-markdown-viewer__search-count {
   flex: none;
-  font-size: var(--font-size-caption);
+  font-size: var(--lemn-font-size-caption);
   font-variant-numeric: tabular-nums;
-  color: var(--text-muted);
+  color: var(--lemn-color-text-muted);
   user-select: none;
 }
 
 .ui-markdown-viewer__body {
-  padding: var(--space-4) var(--space-5);
+  padding: var(--lemn-space-4) var(--lemn-space-5);
 }
 
 /* Find-in-document matches, painted via the CSS Custom Highlight API. */
 ::highlight(ui-markdown-viewer-search) {
-  color: var(--text);
-  background-color: var(--accent-soft);
+  color: var(--lemn-color-text);
+  background-color: var(--lemn-color-accent-soft);
 }
 
 ::highlight(ui-markdown-viewer-search-active) {
-  color: var(--accent-foreground);
-  background-color: var(--accent);
+  color: var(--lemn-color-accent-foreground);
+  background-color: var(--lemn-color-accent);
 }

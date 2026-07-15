@@ -1,210 +1,191 @@
 /**
- * Typed mirror of the design tokens declared in `foundations/tokens.css`.
- *
- * This module has no runtime side effects — the CSS file owns the cascade.
- * It exists so unit tests and type-safe consumers can read the canonical token
- * names and values without parsing CSS. Color tokens carry both Light and Dark
- * values because they differ per theme; scalar tokens are theme-independent.
+ * Complete semantic token vocabulary consumed by LEMN components.
+ * Values are supplied by a compiled BrandRevision scope; this module owns no
+ * project, profile, mode, persistence, or browser-global theme state.
  */
-
-export type { ColorTheme } from './foundations/theme.js';
-
-const surfaces = {
-  light: {
-    bg: '#ffffff',
-    surface: '#ffffff',
-    surface2: '#f3f5f8',
-    border: '#e3e8ef',
-    borderStrong: '#cbd3df',
-  },
-  dark: {
-    bg: 'oklch(0.13 0.028 261.692)',
-    surface: 'oklch(0.13 0.028 261.692)',
-    surface2: '#090e1a',
-    border: 'oklch(0.278 0.033 256.848)',
-    borderStrong: 'oklch(0.373 0.034 259.733)',
-  },
-} as const;
-
-const text = {
-  light: { text: '#0e141b', textMuted: '#5a6b82', textDim: '#8a98ad' },
-  dark: {
-    text: 'oklch(0.985 0.002 247.839)',
-    textMuted: 'oklch(0.707 0.022 261.325)',
-    textDim: 'oklch(0.551 0.027 264.364)',
-  },
-} as const;
-
-const accents = {
-  light: {
-    accent: '#0d9488',
-    accentForeground: '#ffffff',
-    accentStrong: '#0f766e',
-    accentSoft: '#e6fbf6',
-    accent2: '#7c3aed',
-    accent2Soft: '#f1ebfd',
-  },
-  dark: {
-    accent: '#5eead4',
-    accentForeground: '#0e141b',
-    accentStrong: '#2dd4bf',
-    accentSoft: '#0f2a2a',
-    accent2: '#a78bfa',
-    accent2Soft: '#1f1a33',
-  },
-} as const;
-
-const status = {
-  light: { success: '#16a34a', warn: '#d97706', danger: '#dc2626', info: '#2563eb' },
-  dark: { success: '#34d399', warn: '#fbbf24', danger: '#f87171', info: '#60a5fa' },
-} as const;
-
-const softStatus = {
-  light: {
-    successSoft: '#e6f6ec',
-    warnSoft: '#fdf2e3',
-    dangerSoft: '#fdeaea',
-    infoSoft: '#e8f0fd',
-  },
-  dark: {
-    successSoft: '#0e2a1a',
-    warnSoft: '#2a2310',
-    dangerSoft: '#2a1414',
-    infoSoft: '#112038',
-  },
-} as const;
-
-const chart = {
-  light: {
-    series1: '#2563eb',
-    series2: '#0f766e',
-    series3: '#d97706',
-    series4: '#7c3aed',
-    series5: '#e11d48',
-    series6: '#15803d',
-    series7: '#0369a1',
-    series8: '#a16207',
-    grid: '#e3e8ef',
-    axis: '#5a6b82',
-    cursor: 'rgba(37, 99, 235, 0.08)',
-    hover: 'rgba(13, 148, 136, 0.12)',
-    selection: 'rgba(37, 99, 235, 0.18)',
-    tooltipSurface: '#ffffff',
-    tooltipBorder: '#cbd3df',
-    positive: '#15803d',
-    negative: '#dc2626',
-  },
-  dark: {
-    series1: '#60a5fa',
-    series2: '#2dd4bf',
-    series3: '#fbbf24',
-    series4: '#a78bfa',
-    series5: '#fb7185',
-    series6: '#4ade80',
-    series7: '#38bdf8',
-    series8: '#f59e0b',
-    grid: 'oklch(0.278 0.033 256.848)',
-    axis: 'oklch(0.707 0.022 261.325)',
-    cursor: 'rgba(96, 165, 250, 0.12)',
-    hover: 'rgba(94, 234, 212, 0.14)',
-    selection: 'rgba(96, 165, 250, 0.2)',
-    tooltipSurface: '#090e1a',
-    tooltipBorder: 'oklch(0.373 0.034 259.733)',
-    positive: '#4ade80',
-    negative: '#f87171',
-  },
-} as const;
-
-const interaction = {
-  light: { focusRing: 'rgba(13, 148, 136, 0.45)', overlay: 'rgba(14, 20, 27, 0.45)' },
-  dark: { focusRing: 'rgba(94, 234, 212, 0.55)', overlay: 'rgba(0, 0, 0, 0.6)' },
-} as const;
-
-const decorative = {
-  light: { avatarPink: '#db2777' },
-  dark: { avatarPink: '#f472b6' },
-} as const;
-
-const space = {
-  0: '0',
-  1: '4px',
-  2: '8px',
-  3: '12px',
-  4: '16px',
-  5: '20px',
-  6: '24px',
-  8: '32px',
-  10: '40px',
-  12: '48px',
-  16: '64px',
-} as const;
-
-const radii = { sm: '6px', md: '10px', lg: '14px', pill: '999px' } as const;
-
-const typography = {
-  family: {
-    sans: '"Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-    mono: '"SFMono-Regular", ui-monospace, Consolas, "Liberation Mono", monospace',
-  },
-  size: {
-    display: '28px',
-    title: '20px',
-    heading: '16px',
-    body: '14px',
-    small: '13px',
-    caption: '12px',
-    mono: '13px',
-  },
-  /** Unitless ratios, never px. */
-  lineHeight: {
-    display: 1.29,
-    title: 1.4,
-    heading: 1.5,
-    body: 1.43,
-    small: 1.38,
-    caption: 1.33,
-    mono: 1.54,
-  },
-  weight: { regular: 400, medium: 500, semibold: 600 },
-} as const;
-
-const motion = {
-  duration: { instant: '80ms', fast: '160ms', normal: '240ms', slow: '360ms' },
-  easing: {
-    standard: 'cubic-bezier(0.2, 0, 0, 1)',
-    emphasized: 'cubic-bezier(0.05, 0.7, 0.1, 1)',
-    linear: 'linear',
-  },
-} as const;
-
-const elevation = {
-  light: {
-    0: 'none',
-    1: '0 1px 2px rgba(14, 20, 27, 0.06), 0 1px 3px rgba(14, 20, 27, 0.1)',
-    2: '0 2px 4px rgba(14, 20, 27, 0.08), 0 4px 12px rgba(14, 20, 27, 0.1)',
-    3: '0 12px 32px rgba(14, 20, 27, 0.14)',
-  },
-  dark: {
-    0: 'none',
-    1: '0 1px 2px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.5)',
-    2: '0 2px 4px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.5)',
-    3: '0 12px 32px rgba(0, 0, 0, 0.5)',
-  },
-} as const;
-
-const breakpoints = { sm: 640, md: 768, lg: 1024, xl: 1280 } as const;
-
-const contentMax = '1200px' as const;
-
 export const tokens = {
-  color: { surfaces, text, accents, status, softStatus, chart, interaction, decorative },
-  space,
-  radii,
-  typography,
-  motion,
-  elevation,
-  breakpoints,
-  contentMax,
+  color: {
+    canvas: '--lemn-color-canvas',
+    surface: '--lemn-color-surface',
+    surfaceMuted: '--lemn-color-surface-muted',
+    surfaceElevated: '--lemn-color-surface-elevated',
+    surfaceOverlay: '--lemn-color-surface-overlay',
+    text: '--lemn-color-text',
+    textMuted: '--lemn-color-text-muted',
+    textInverse: '--lemn-color-text-inverse',
+    disabledText: '--lemn-color-disabled-text',
+    disabledSurface: '--lemn-color-disabled-surface',
+    border: '--lemn-color-border',
+    borderStrong: '--lemn-color-border-strong',
+    accent: '--lemn-color-accent',
+    accentForeground: '--lemn-color-accent-foreground',
+    accentHover: '--lemn-color-accent-hover',
+    accentPressed: '--lemn-color-accent-pressed',
+    accentSoft: '--lemn-color-accent-soft',
+    focus: '--lemn-color-focus',
+    selection: '--lemn-color-selection',
+    overlayScrim: '--lemn-color-overlay-scrim',
+    success: '--lemn-color-success',
+    successSurface: '--lemn-color-success-surface',
+    successForeground: '--lemn-color-success-foreground',
+    warning: '--lemn-color-warning',
+    warningSurface: '--lemn-color-warning-surface',
+    warningForeground: '--lemn-color-warning-foreground',
+    danger: '--lemn-color-danger',
+    dangerSurface: '--lemn-color-danger-surface',
+    dangerForeground: '--lemn-color-danger-foreground',
+    info: '--lemn-color-info',
+    infoSurface: '--lemn-color-info-surface',
+    infoForeground: '--lemn-color-info-foreground',
+  },
+  chart: {
+    series: [
+      '--lemn-chart-series-1', '--lemn-chart-series-2', '--lemn-chart-series-3', '--lemn-chart-series-4',
+      '--lemn-chart-series-5', '--lemn-chart-series-6', '--lemn-chart-series-7', '--lemn-chart-series-8',
+    ],
+    grid: '--lemn-chart-grid',
+    axis: '--lemn-chart-axis',
+    label: '--lemn-chart-label',
+    cursor: '--lemn-chart-cursor',
+    crosshair: '--lemn-chart-crosshair',
+    hover: '--lemn-chart-hover',
+    selection: '--lemn-chart-selection',
+    tooltipSurface: '--lemn-chart-tooltip-surface',
+    tooltipBorder: '--lemn-chart-tooltip-border',
+    tooltipText: '--lemn-chart-tooltip-text',
+    positive: '--lemn-chart-positive',
+    negative: '--lemn-chart-negative',
+    neutral: '--lemn-chart-neutral',
+    mutedOpacity: '--lemn-chart-muted-opacity',
+    inactiveOpacity: '--lemn-chart-inactive-opacity',
+  },
+  spacing: {
+    0: '--lemn-space-0',
+    1: '--lemn-space-1',
+    2: '--lemn-space-2',
+    3: '--lemn-space-3',
+    4: '--lemn-space-4',
+    5: '--lemn-space-5',
+    6: '--lemn-space-6',
+    8: '--lemn-space-8',
+    10: '--lemn-space-10',
+    12: '--lemn-space-12',
+    16: '--lemn-space-16',
+  },
+  density: {
+    scale: '--lemn-density-scale',
+    controlHeight: '--lemn-control-height',
+    contentGutter: '--lemn-content-gutter',
+  },
+  shape: {
+    small: '--lemn-radius-small',
+    medium: '--lemn-radius-medium',
+    large: '--lemn-radius-large',
+    control: '--lemn-radius-control',
+    card: '--lemn-radius-card',
+    pill: '--lemn-radius-pill',
+    full: '--lemn-radius-full',
+    borderWidth: '--lemn-border-width',
+    borderStyle: '--lemn-border-style',
+    outlineTreatment: '--lemn-outline-treatment',
+  },
+  typography: {
+    family: {
+      body: '--lemn-font-body',
+      heading: '--lemn-font-heading',
+      label: '--lemn-font-label',
+      code: '--lemn-font-code',
+    },
+    display: '--lemn-font-display',
+    size: {
+      base: '--lemn-font-size-base',
+      display: '--lemn-font-size-display',
+      title: '--lemn-font-size-title',
+      heading: '--lemn-font-size-heading',
+      body: '--lemn-font-size-body',
+      small: '--lemn-font-size-small',
+      caption: '--lemn-font-size-caption',
+      mono: '--lemn-font-size-mono',
+    },
+    lineHeight: {
+      display: '--lemn-line-height-display',
+      title: '--lemn-line-height-title',
+      heading: '--lemn-line-height-heading',
+      body: '--lemn-line-height-body',
+      small: '--lemn-line-height-small',
+      caption: '--lemn-line-height-caption',
+      mono: '--lemn-line-height-mono',
+    },
+    letterSpacing: '--lemn-letter-spacing',
+    weight: {
+      regular: '--lemn-font-weight-regular',
+      medium: '--lemn-font-weight-medium',
+      semibold: '--lemn-font-weight-semibold',
+    },
+  },
+  motion: {
+    duration: {
+      instant: '--lemn-duration-instant',
+      fast: '--lemn-duration-fast',
+      normal: '--lemn-duration-normal',
+      slow: '--lemn-duration-slow',
+    },
+    easing: {
+      standard: '--lemn-easing-standard',
+      emphasized: '--lemn-easing-emphasized',
+      linear: '--lemn-easing-linear',
+    },
+  },
+  elevation: {
+    shadow: {
+      none: '--lemn-shadow-none',
+      raised: '--lemn-shadow-raised',
+      overlay: '--lemn-shadow-overlay',
+      modal: '--lemn-shadow-modal',
+    },
+    focusRingWidth: '--lemn-focus-ring-width',
+    focusRingOffset: '--lemn-focus-ring-offset',
+  },
+  layer: {
+    raised: '--lemn-z-raised',
+    chrome: '--lemn-z-chrome',
+    window: '--lemn-z-window',
+    scrim: '--lemn-z-scrim',
+    drawer: '--lemn-z-drawer',
+    dropdown: '--lemn-z-dropdown',
+    modal: '--lemn-z-modal',
+    popover: '--lemn-z-popover',
+    toast: '--lemn-z-toast',
+  },
+  layout: {
+    contentMax: '--lemn-content-max',
+    scrollbarTrack: '--lemn-scrollbar-track',
+    scrollbarThumb: '--lemn-scrollbar-thumb',
+    scrollbarThumbHover: '--lemn-scrollbar-thumb-hover',
+    scrollbarSize: '--lemn-scrollbar-size',
+  },
 } as const;
+
+type TokenLeaf<T> = T extends string
+  ? T
+  : T extends readonly (infer TItem)[]
+    ? TokenLeaf<TItem>
+    : T extends Readonly<Record<PropertyKey, unknown>>
+      ? TokenLeaf<T[keyof T]>
+      : never;
+
+function collectTokenNames(value: unknown, result: string[] = []): string[] {
+  if (typeof value === 'string') {
+    result.push(value);
+  } else if (Array.isArray(value)) {
+    for (const item of value) collectTokenNames(item, result);
+  } else if (value && typeof value === 'object') {
+    for (const item of Object.values(value)) collectTokenNames(item, result);
+  }
+  return result;
+}
+
+export const brandTokenNames = Object.freeze(collectTokenNames(tokens)) as readonly BrandTokenName[];
 
 export type Tokens = typeof tokens;
+export type BrandTokenName = TokenLeaf<Tokens>;

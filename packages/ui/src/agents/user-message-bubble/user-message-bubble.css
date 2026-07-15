@@ -8,20 +8,20 @@
   max-width: min(76%, 680px);
   align-self: flex-end;
   padding-bottom: 22px;
-  font-size: var(--font-size-small);
+  font-size: var(--lemn-font-size-small);
 }
 
 .ui-user-message-bubble__surface {
-  padding: var(--space-3) var(--space-4);
-  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
-  border-radius: var(--radius-md);
-  background: var(--accent-soft);
-  color: var(--text);
+  padding: var(--lemn-space-3) var(--lemn-space-4);
+  border: 1px solid color-mix(in srgb, var(--lemn-color-accent) 30%, transparent);
+  border-radius: var(--lemn-radius-medium);
+  background: var(--lemn-color-accent-soft);
+  color: var(--lemn-color-text);
 }
 
 .ui-user-message-bubble__content {
   margin: 0;
-  line-height: var(--line-height-body);
+  line-height: var(--lemn-line-height-body);
   overflow-wrap: anywhere;
   white-space: pre-wrap;
 }

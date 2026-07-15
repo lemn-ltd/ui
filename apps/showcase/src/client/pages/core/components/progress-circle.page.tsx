@@ -94,7 +94,7 @@ function ProgressCirclePage(): ReactElement {
 				<div
 					style={{
 						display: "flex",
-						gap: "var(--space-6)",
+						gap: "var(--lemn-space-6)",
 						alignItems: "center",
 					}}
 				>

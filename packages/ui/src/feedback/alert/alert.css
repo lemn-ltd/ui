@@ -1,12 +1,12 @@
 .ui-alert {
   display: flex;
   align-items: flex-start;
-  gap: var(--space-3);
-  padding: var(--space-4);
+  gap: var(--lemn-space-3);
+  padding: var(--lemn-space-4);
   border: 1px solid var(--alert-color);
-  border-radius: var(--radius-md);
+  border-radius: var(--lemn-radius-medium);
   background: var(--alert-soft);
-  font-family: var(--font-sans);
+  font-family: var(--lemn-font-body);
 }
 
 .ui-alert__icon {
@@ -21,45 +21,45 @@
 
 .ui-alert__title {
   display: block;
-  color: var(--text);
-  font-size: var(--font-size-small);
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-small);
+  color: var(--lemn-color-text);
+  font-size: var(--lemn-font-size-small);
+  font-weight: var(--lemn-font-weight-semibold);
+  line-height: var(--lemn-line-height-small);
 }
 
 .ui-alert__message {
-  margin: var(--space-1) 0 0;
-  color: var(--text-muted);
-  font-size: var(--font-size-small);
-  line-height: var(--line-height-small);
+  margin: var(--lemn-space-1) 0 0;
+  color: var(--lemn-color-text-muted);
+  font-size: var(--lemn-font-size-small);
+  line-height: var(--lemn-line-height-small);
 }
 
 .ui-alert__link {
   display: inline-flex;
-  margin-top: var(--space-3);
-  color: var(--text-muted);
-  font-size: var(--font-size-small);
-  font-weight: var(--font-weight-semibold);
+  margin-top: var(--lemn-space-3);
+  color: var(--lemn-color-text-muted);
+  font-size: var(--lemn-font-size-small);
+  font-weight: var(--lemn-font-weight-semibold);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
 .ui-alert[data-variant="success"] {
-  --alert-color: var(--success);
-  --alert-soft: var(--success-soft);
+  --alert-color: var(--lemn-color-success);
+  --alert-soft: var(--lemn-color-success-surface);
 }
 
 .ui-alert[data-variant="error"] {
-  --alert-color: var(--danger);
-  --alert-soft: var(--danger-soft);
+  --alert-color: var(--lemn-color-danger);
+  --alert-soft: var(--lemn-color-danger-surface);
 }
 
 .ui-alert[data-variant="warning"] {
-  --alert-color: var(--warn);
-  --alert-soft: var(--warn-soft);
+  --alert-color: var(--lemn-color-warning);
+  --alert-soft: var(--lemn-color-warning-surface);
 }
 
 .ui-alert[data-variant="info"] {
-  --alert-color: var(--info);
-  --alert-soft: var(--info-soft);
+  --alert-color: var(--lemn-color-info);
+  --alert-soft: var(--lemn-color-info-surface);
 }

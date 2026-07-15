@@ -11,29 +11,29 @@ const GROUPS: { title: string; swatches: Swatch[] }[] = [
   {
     title: 'Surfaces & lines',
     swatches: [
-      { label: 'bg', cssVar: '--bg' },
-      { label: 'surface', cssVar: '--surface' },
-      { label: 'surface2', cssVar: '--surface2' },
-      { label: 'border', cssVar: '--border' },
-      { label: 'borderStrong', cssVar: '--border-strong' },
+      { label: 'bg', cssVar: '--lemn-color-canvas' },
+      { label: 'surface', cssVar: '--lemn-color-surface' },
+      { label: 'surface2', cssVar: '--lemn-color-surface-muted' },
+      { label: 'border', cssVar: '--lemn-color-border' },
+      { label: 'borderStrong', cssVar: '--lemn-color-border-strong' },
     ],
   },
   {
     title: 'Text',
     swatches: [
-      { label: 'text', cssVar: '--text' },
-      { label: 'textMuted', cssVar: '--text-muted' },
-      { label: 'textDim', cssVar: '--text-dim' },
+      { label: 'text', cssVar: '--lemn-color-text' },
+      { label: 'textMuted', cssVar: '--lemn-color-text-muted' },
+      { label: 'textDim', cssVar: '--lemn-color-disabled-text' },
     ],
   },
   {
     title: 'Accents',
     swatches: [
-      { label: 'accent', cssVar: '--accent' },
-      { label: 'accentStrong', cssVar: '--accent-strong' },
-      { label: 'accentSoft', cssVar: '--accent-soft' },
-      { label: 'accent2', cssVar: '--accent2' },
-      { label: 'accent2Soft', cssVar: '--accent2-soft' },
+      { label: 'accent', cssVar: '--lemn-color-accent' },
+      { label: 'accentStrong', cssVar: '--lemn-color-accent-hover' },
+      { label: 'accentSoft', cssVar: '--lemn-color-accent-soft' },
+      { label: 'accent2', cssVar: '--lemn-chart-series-2' },
+      { label: 'accent2Soft', cssVar: '--lemn-chart-selection' },
     ],
   },
   {
@@ -57,7 +57,7 @@ const GROUPS: { title: string; swatches: Swatch[] }[] = [
   {
     title: 'Interaction',
     swatches: [
-      { label: 'focusRing', cssVar: '--focus-ring' },
+      { label: 'focusRing', cssVar: '--lemn-color-focus' },
       { label: 'overlay', cssVar: '--overlay' },
     ],
   },

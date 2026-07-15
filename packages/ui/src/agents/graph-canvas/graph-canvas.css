@@ -1,15 +1,15 @@
 .ui-graph-canvas {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--lemn-space-2);
 }
 
 .ui-graph-canvas__surface {
   position: relative;
   overflow: hidden;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: var(--surface);
+  border: 1px solid var(--lemn-color-border);
+  border-radius: var(--lemn-radius-large);
+  background: var(--lemn-color-surface);
 }
 
 .ui-graph-canvas__edges {
@@ -21,7 +21,7 @@
 }
 
 .ui-graph-canvas__edge {
-  stroke: var(--border-strong);
+  stroke: var(--lemn-color-border-strong);
   stroke-width: 2;
 }
 
@@ -34,6 +34,6 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-2) 0;
+  gap: var(--lemn-space-4);
+  padding: var(--lemn-space-2) 0;
 }

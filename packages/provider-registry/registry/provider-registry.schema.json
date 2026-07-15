@@ -1,0 +1,454 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.ui.le-mn.com/provider-registry/v1.json",
+  "title": "LEMN provider registry manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "schemaVersion",
+    "registryId",
+    "revision",
+    "sourceOfTruth",
+    "licensePolicy",
+    "sbom",
+    "capabilities"
+  ],
+  "properties": {
+    "$schema": {
+      "const": "https://schemas.ui.le-mn.com/provider-registry/v1.json"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "registryId": {
+      "$ref": "#/$defs/slug"
+    },
+    "revision": {
+      "$ref": "#/$defs/exactSemver"
+    },
+    "sourceOfTruth": {
+      "$ref": "#/$defs/gitManifestAuthority"
+    },
+    "licensePolicy": {
+      "$ref": "#/$defs/licensePolicy"
+    },
+    "sbom": {
+      "$ref": "#/$defs/sbom"
+    },
+    "capabilities": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/capability"
+      }
+    }
+  },
+  "$defs": {
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "capabilityId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)+$"
+    },
+    "implementationId": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._@/+:-]*$"
+    },
+    "identifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z_$][A-Za-z0-9_$]*$"
+    },
+    "exactSemver": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-([0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*))?(?:\\+([0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*))?$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "fullGitSha": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{40}$"
+    },
+    "safePath": {
+      "type": "string",
+      "minLength": 1,
+      "not": {
+        "anyOf": [
+          { "pattern": "^/" },
+          { "pattern": "^\\./" },
+          { "pattern": "(^|/)\\.\\.(/|$)" },
+          { "pattern": "\\\\" }
+        ]
+      }
+    },
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "stringList": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/nonEmptyString"
+      }
+    },
+    "pathList": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/safePath"
+      }
+    },
+    "gitManifestAuthority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "repository", "path"],
+      "properties": {
+        "kind": { "const": "git_manifest" },
+        "repository": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://"
+        },
+        "path": {
+          "$ref": "#/$defs/safePath"
+        }
+      }
+    },
+    "licensePolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["automaticAllowlist", "manualReview", "denied"],
+      "properties": {
+        "automaticAllowlist": { "$ref": "#/$defs/stringList" },
+        "manualReview": { "$ref": "#/$defs/stringList" },
+        "denied": { "$ref": "#/$defs/stringList" }
+      }
+    },
+    "sbom": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["format", "path", "sha256"],
+      "properties": {
+        "format": { "const": "SPDX-2.3" },
+        "path": {
+          "allOf": [
+            { "$ref": "#/$defs/safePath" },
+            { "pattern": "^third-party/" }
+          ]
+        },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "provider": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "repository"],
+      "properties": {
+        "id": { "$ref": "#/$defs/slug" },
+        "name": { "$ref": "#/$defs/nonEmptyString" },
+        "repository": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://"
+        }
+      }
+    },
+    "runtimeDependency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ingestionMode",
+        "packageName",
+        "packageVersion",
+        "packageIntegrity",
+        "dependencyMode",
+        "packagePaths"
+      ],
+      "properties": {
+        "ingestionMode": { "const": "runtime_dependency" },
+        "packageName": {
+          "type": "string",
+          "pattern": "^(?:@[a-z0-9][a-z0-9._-]*/[a-z0-9][a-z0-9._-]*|[a-z0-9][a-z0-9._-]*)$"
+        },
+        "packageVersion": { "$ref": "#/$defs/exactSemver" },
+        "packageIntegrity": {
+          "type": "string",
+          "pattern": "^sha512-[A-Za-z0-9+/]+={0,2}$"
+        },
+        "dependencyMode": {
+          "enum": ["bundled", "runtime_dependency", "peer_dependency"]
+        },
+        "packagePaths": {
+          "allOf": [
+            { "$ref": "#/$defs/pathList" },
+            { "minItems": 1 }
+          ]
+        }
+      }
+    },
+    "snapshotFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["upstreamPath", "localPath", "upstreamSha256", "localSha256"],
+      "properties": {
+        "upstreamPath": { "$ref": "#/$defs/safePath" },
+        "localPath": { "$ref": "#/$defs/safePath" },
+        "upstreamSha256": { "$ref": "#/$defs/sha256" },
+        "localSha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "transform": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version", "scriptPath", "scriptSha256"],
+      "properties": {
+        "id": { "$ref": "#/$defs/slug" },
+        "version": { "$ref": "#/$defs/exactSemver" },
+        "scriptPath": { "$ref": "#/$defs/safePath" },
+        "scriptSha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "patch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "reason"],
+      "properties": {
+        "path": { "$ref": "#/$defs/safePath" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "reason": {
+          "type": "string",
+          "minLength": 20
+        },
+        "upstreamIssue": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://"
+        }
+      }
+    },
+    "sourceSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ingestionMode",
+        "commitSha",
+        "selectedSourcePaths",
+        "closure",
+        "transforms",
+        "patches"
+      ],
+      "properties": {
+        "ingestionMode": { "const": "source_snapshot" },
+        "commitSha": { "$ref": "#/$defs/fullGitSha" },
+        "selectedSourcePaths": {
+          "allOf": [
+            { "$ref": "#/$defs/pathList" },
+            { "minItems": 1 }
+          ]
+        },
+        "closure": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/snapshotFile" }
+        },
+        "transforms": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/transform" }
+        },
+        "patches": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/patch" }
+        }
+      }
+    },
+    "nativeLemn": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ingestionMode", "rationale", "maintenanceOwner", "reviewedAt"],
+      "properties": {
+        "ingestionMode": { "const": "native_lemn" },
+        "rationale": {
+          "type": "string",
+          "minLength": 40
+        },
+        "maintenanceOwner": { "$ref": "#/$defs/nonEmptyString" },
+        "reviewedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "licenseArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "path", "sha256"],
+      "properties": {
+        "kind": { "enum": ["LICENSE", "NOTICE"] },
+        "path": {
+          "allOf": [
+            { "$ref": "#/$defs/safePath" },
+            { "pattern": "^third-party/licenses/" }
+          ]
+        },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "legalReview": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["decision", "reviewId", "reviewedAt", "reviewerRole"],
+      "properties": {
+        "decision": { "const": "approved" },
+        "reviewId": { "$ref": "#/$defs/nonEmptyString" },
+        "reviewedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "reviewerRole": { "$ref": "#/$defs/nonEmptyString" }
+      }
+    },
+    "license": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["spdx", "reviewClass", "copyright", "requirements", "files"],
+      "properties": {
+        "spdx": { "$ref": "#/$defs/nonEmptyString" },
+        "reviewClass": { "enum": ["automatic", "manual", "denied"] },
+        "copyright": { "$ref": "#/$defs/nonEmptyString" },
+        "requirements": {
+          "allOf": [
+            { "$ref": "#/$defs/stringList" },
+            { "minItems": 1 }
+          ]
+        },
+        "files": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/licenseArtifact" }
+        },
+        "legalReview": { "$ref": "#/$defs/legalReview" }
+      }
+    },
+    "adapters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["publicApi"],
+      "properties": {
+        "publicApi": { "$ref": "#/$defs/safePath" },
+        "theme": { "$ref": "#/$defs/safePath" }
+      }
+    },
+    "conformance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["behavior", "accessibility", "interaction", "visual", "ssr", "bundle"],
+      "properties": {
+        "behavior": {
+          "allOf": [
+            { "$ref": "#/$defs/pathList" },
+            { "minItems": 1 }
+          ]
+        },
+        "accessibility": { "$ref": "#/$defs/pathList" },
+        "interaction": { "$ref": "#/$defs/pathList" },
+        "visual": { "$ref": "#/$defs/pathList" },
+        "ssr": { "$ref": "#/$defs/pathList" },
+        "bundle": { "$ref": "#/$defs/pathList" }
+      }
+    },
+    "upstream": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lastSuccessfulSync", "updateStatus", "upstreamReference"],
+      "properties": {
+        "lastSuccessfulSync": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updateStatus": {
+          "enum": ["current", "update_available", "blocked", "unknown"]
+        },
+        "upstreamReference": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://"
+        }
+      }
+    },
+    "replacement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "supersedesImplementationId",
+        "adrPath",
+        "apiBehaviorVisualDeltaPath",
+        "migrationNotesPath",
+        "semverImpact"
+      ],
+      "properties": {
+        "supersedesImplementationId": { "$ref": "#/$defs/implementationId" },
+        "adrPath": { "$ref": "#/$defs/safePath" },
+        "apiBehaviorVisualDeltaPath": { "$ref": "#/$defs/safePath" },
+        "migrationNotesPath": { "$ref": "#/$defs/safePath" },
+        "semverImpact": { "enum": ["patch", "minor", "major"] }
+      }
+    },
+    "capability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "capabilityId",
+        "implementationId",
+        "publicExport",
+        "category",
+        "maturity",
+        "lifecycle",
+        "providerOfRecord",
+        "provider",
+        "source",
+        "license",
+        "adapters",
+        "brandTokenRoles",
+        "conformance",
+        "upstream"
+      ],
+      "properties": {
+        "capabilityId": { "$ref": "#/$defs/capabilityId" },
+        "implementationId": { "$ref": "#/$defs/implementationId" },
+        "publicExport": { "$ref": "#/$defs/identifier" },
+        "category": { "$ref": "#/$defs/slug" },
+        "maturity": {
+          "enum": ["experimental", "beta", "stable", "deprecated"]
+        },
+        "lifecycle": { "enum": ["active", "retired"] },
+        "providerOfRecord": { "type": "boolean" },
+        "provider": { "$ref": "#/$defs/provider" },
+        "source": {
+          "oneOf": [
+            { "$ref": "#/$defs/runtimeDependency" },
+            { "$ref": "#/$defs/sourceSnapshot" },
+            { "$ref": "#/$defs/nativeLemn" }
+          ]
+        },
+        "license": { "$ref": "#/$defs/license" },
+        "adapters": { "$ref": "#/$defs/adapters" },
+        "brandTokenRoles": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9]*(?:\\.[a-z][a-z0-9]*)+$"
+          }
+        },
+        "conformance": { "$ref": "#/$defs/conformance" },
+        "upstream": { "$ref": "#/$defs/upstream" },
+        "replacement": { "$ref": "#/$defs/replacement" }
+      }
+    }
+  }
+}

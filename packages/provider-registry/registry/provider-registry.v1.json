@@ -1,0 +1,718 @@
+{
+  "$schema": "https://schemas.ui.le-mn.com/provider-registry/v1.json",
+  "schemaVersion": 1,
+  "registryId": "lemn-ui",
+  "revision": "1.0.0",
+  "sourceOfTruth": {
+    "kind": "git_manifest",
+    "repository": "https://github.com/lemn-ltd/ui",
+    "path": "packages/provider-registry/registry/provider-registry.v1.json"
+  },
+  "licensePolicy": {
+    "automaticAllowlist": [
+      "MIT",
+      "Apache-2.0",
+      "BSD-2-Clause",
+      "BSD-3-Clause",
+      "ISC"
+    ],
+    "manualReview": [
+      "MPL-2.0",
+      "LGPL-2.1-only",
+      "LGPL-3.0-only"
+    ],
+    "denied": [
+      "GPL-2.0-only",
+      "GPL-3.0-only",
+      "AGPL-3.0-only",
+      "SSPL-1.0",
+      "BUSL-1.1",
+      "Commons-Clause",
+      "LicenseRef-Proprietary",
+      "LicenseRef-Source-Available"
+    ]
+  },
+  "sbom": {
+    "format": "SPDX-2.3",
+    "path": "third-party/sbom.spdx.json",
+    "sha256": "7d69b6057cbcddb220ce04e14f052f57f61f3860f03daac70e84a5cca9b448ec"
+  },
+  "capabilities": [
+    {
+      "capabilityId": "ui.primitive.checkbox",
+      "implementationId": "radix-ui.checkbox@1.4.3",
+      "publicExport": "Checkbox",
+      "category": "inputs",
+      "maturity": "stable",
+      "lifecycle": "active",
+      "providerOfRecord": true,
+      "provider": {
+        "id": "radix-ui",
+        "name": "Radix UI",
+        "repository": "https://github.com/radix-ui/primitives"
+      },
+      "source": {
+        "ingestionMode": "runtime_dependency",
+        "packageName": "radix-ui",
+        "packageVersion": "1.4.3",
+        "packageIntegrity": "sha512-aWizCQiyeAenIdUbqEpXgRA1ya65P13NKn/W8rWkcN0OPkRDxdBVLWnIEDsS2RpwCK2nobI7oMUSmexzTDyAmA==",
+        "dependencyMode": "runtime_dependency",
+        "packagePaths": [
+          "src/index.ts",
+          "dist/index.mjs"
+        ]
+      },
+      "license": {
+        "spdx": "MIT",
+        "reviewClass": "automatic",
+        "copyright": "Copyright (c) 2022 WorkOS",
+        "requirements": [
+          "Preserve the copyright and permission notice in copies or substantial portions."
+        ],
+        "files": [
+          {
+            "kind": "LICENSE",
+            "path": "third-party/licenses/radix-ui-1.4.3-LICENSE.txt",
+            "sha256": "0e80a2d229d2fd4fc7e8636142ec5d0ff0bc031f14c15b682e2ac01dfd5b5138"
+          }
+        ]
+      },
+      "adapters": {
+        "publicApi": "packages/ui/src/primitives/checkbox/checkbox.tsx",
+        "theme": "packages/ui/src/primitives/checkbox/checkbox.css"
+      },
+      "brandTokenRoles": [
+        "color.accent",
+        "color.accentcontrast",
+        "color.border",
+        "color.focus",
+        "radius.control"
+      ],
+      "conformance": {
+        "behavior": [
+          "packages/ui/src/primitives/checkbox/tests/checkbox.spec.tsx"
+        ],
+        "accessibility": [
+          "apps/showcase/tests/e2e/accessibility.e2e.ts"
+        ],
+        "interaction": [
+          "apps/showcase/tests/e2e/checkbox-reference.e2e.ts"
+        ],
+        "visual": [
+          "apps/showcase/tests/e2e/visual.e2e.ts"
+        ],
+        "ssr": [],
+        "bundle": []
+      },
+      "upstream": {
+        "lastSuccessfulSync": "2026-07-15T00:00:00Z",
+        "updateStatus": "update_available",
+        "upstreamReference": "https://www.npmjs.com/package/radix-ui/v/1.6.2"
+      }
+    },
+    {
+      "capabilityId": "ui.visualization.line-chart",
+      "implementationId": "recharts.line-chart@3.9.2",
+      "publicExport": "LineChart",
+      "category": "visualizations",
+      "maturity": "beta",
+      "lifecycle": "active",
+      "providerOfRecord": true,
+      "provider": {
+        "id": "recharts",
+        "name": "Recharts",
+        "repository": "https://github.com/recharts/recharts"
+      },
+      "source": {
+        "ingestionMode": "runtime_dependency",
+        "packageName": "recharts",
+        "packageVersion": "3.9.2",
+        "packageIntegrity": "sha512-G4fy+Pk46RaXgwWMh+Nzhyo/lbFAVqXo9gtetlyehe6Ehge9CsgDuOTwQDD+i1+llaLktNBiNq4bhnGlDRXFtw==",
+        "dependencyMode": "runtime_dependency",
+        "packagePaths": [
+          "es6/chart/LineChart.js",
+          "es6/index.js"
+        ]
+      },
+      "license": {
+        "spdx": "MIT",
+        "reviewClass": "automatic",
+        "copyright": "Copyright (c) 2015-present recharts",
+        "requirements": [
+          "Preserve the copyright and permission notice in copies or substantial portions."
+        ],
+        "files": [
+          {
+            "kind": "LICENSE",
+            "path": "third-party/licenses/recharts-3.9.2-LICENSE.txt",
+            "sha256": "2d3aa48a8d1d3b93093680e8e68d3a64cfb590c3ade377ffcaefc69dac7c2ce5"
+          }
+        ]
+      },
+      "adapters": {
+        "publicApi": "packages/ui/src/visualizations/line-chart/line-chart.tsx",
+        "theme": "packages/ui/src/visualizations/line-chart/line-chart.css"
+      },
+      "brandTokenRoles": [
+        "color.surface",
+        "color.text",
+        "visualization.axis",
+        "visualization.grid",
+        "visualization.series"
+      ],
+      "conformance": {
+        "behavior": [
+          "packages/ui/src/visualizations/line-chart/tests/line-chart.spec.tsx"
+        ],
+        "accessibility": [
+          "apps/showcase/tests/e2e/accessibility.e2e.ts"
+        ],
+        "interaction": [
+          "apps/showcase/tests/benchmark/visualization-performance.mjs"
+        ],
+        "visual": [
+          "apps/showcase/tests/e2e/visual.e2e.ts"
+        ],
+        "ssr": [],
+        "bundle": [
+          "scripts/check-ui-bundles.mjs"
+        ]
+      },
+      "upstream": {
+        "lastSuccessfulSync": "2026-07-15T00:00:00Z",
+        "updateStatus": "current",
+        "upstreamReference": "https://www.npmjs.com/package/recharts/v/3.9.2"
+      }
+    },
+    {
+      "capabilityId": "ui.visualization.heatmap-chart",
+      "implementationId": "echarts.heatmap-chart@6.1.0",
+      "publicExport": "HeatmapChart",
+      "category": "visualizations",
+      "maturity": "beta",
+      "lifecycle": "active",
+      "providerOfRecord": true,
+      "provider": {
+        "id": "apache-echarts",
+        "name": "Apache ECharts",
+        "repository": "https://github.com/apache/echarts"
+      },
+      "source": {
+        "ingestionMode": "runtime_dependency",
+        "packageName": "echarts",
+        "packageVersion": "6.1.0",
+        "packageIntegrity": "sha512-q0yaFPggC9FUdsWH4blavRWFmxdrIodbkoKNAjJudAI6CA9gNPxHtV2RcZNEepZVlk4yvBYkOkbk6HIVpIyHZA==",
+        "dependencyMode": "runtime_dependency",
+        "packagePaths": [
+          "index.js",
+          "types/dist/all.d.ts"
+        ]
+      },
+      "license": {
+        "spdx": "Apache-2.0",
+        "reviewClass": "automatic",
+        "copyright": "Copyright 2017-2026 The Apache Software Foundation",
+        "requirements": [
+          "Distribute the Apache-2.0 license and Apache ECharts NOTICE attribution.",
+          "Preserve the embedded d3 BSD-3-Clause copyright, conditions, and disclaimer."
+        ],
+        "files": [
+          {
+            "kind": "LICENSE",
+            "path": "third-party/licenses/echarts-6.1.0-LICENSE.txt",
+            "sha256": "634293835b43a6dd2094fa39182a3d9a6b9ca43b7fdb9ac354e8037af2a3093a"
+          },
+          {
+            "kind": "NOTICE",
+            "path": "third-party/licenses/echarts-6.1.0-NOTICE.txt",
+            "sha256": "d491d358344f842685c1b1585970999db65fe30ecf7ef3867af8814f4016c016"
+          },
+          {
+            "kind": "LICENSE",
+            "path": "third-party/licenses/echarts-6.1.0-d3-LICENSE.txt",
+            "sha256": "e1211892da0b0e0585b7aebe8f98c1274fba15bafe47fa1f4ee8a7a502c06304"
+          }
+        ]
+      },
+      "adapters": {
+        "publicApi": "packages/ui/src/visualizations/heatmap-chart/heatmap-chart.tsx",
+        "theme": "packages/ui/src/visualizations/heatmap-chart/heatmap-chart.css"
+      },
+      "brandTokenRoles": [
+        "color.border",
+        "color.canvas",
+        "color.surface",
+        "color.text",
+        "visualization.axis",
+        "visualization.series",
+        "visualization.tooltip"
+      ],
+      "conformance": {
+        "behavior": [
+          "packages/ui/src/visualizations/heatmap-chart/tests/heatmap-chart.spec.tsx"
+        ],
+        "accessibility": [
+          "packages/ui/src/visualizations/heatmap-chart/tests/heatmap-chart.spec.tsx",
+          "apps/showcase/tests/e2e/accessibility.e2e.ts"
+        ],
+        "interaction": [
+          "packages/ui/src/visualizations/heatmap-chart/tests/heatmap-chart.spec.tsx"
+        ],
+        "visual": [
+          "apps/showcase/tests/e2e/visual.e2e.ts"
+        ],
+        "ssr": [
+          "packages/ui/src/visualizations/heatmap-chart/tests/heatmap-chart.spec.tsx"
+        ],
+        "bundle": [
+          "scripts/check-ui-bundles.mjs"
+        ]
+      },
+      "upstream": {
+        "lastSuccessfulSync": "2026-07-15T00:00:00Z",
+        "updateStatus": "current",
+        "upstreamReference": "https://www.npmjs.com/package/echarts/v/6.1.0"
+      }
+    },
+    {
+      "capabilityId": "ui.form.json-code-editor",
+      "implementationId": "uiw-react-codemirror.json-code-editor@4.25.10",
+      "publicExport": "JsonCodeEditor",
+      "category": "forms",
+      "maturity": "beta",
+      "lifecycle": "active",
+      "providerOfRecord": true,
+      "provider": {
+        "id": "uiw-react-codemirror",
+        "name": "UIW React CodeMirror",
+        "repository": "https://github.com/uiwjs/react-codemirror"
+      },
+      "source": {
+        "ingestionMode": "runtime_dependency",
+        "packageName": "@uiw/react-codemirror",
+        "packageVersion": "4.25.10",
+        "packageIntegrity": "sha512-DzgSMwM5qzB7v1FIb4gEeriYt67iiay756/HIOM9mAbeOVK0MO7rqefHf0O5c0269pJKMW7AH9FjclExD23V9w==",
+        "dependencyMode": "runtime_dependency",
+        "packagePaths": [
+          "esm/index.js",
+          "esm/index.d.ts"
+        ]
+      },
+      "license": {
+        "spdx": "MIT",
+        "reviewClass": "automatic",
+        "copyright": "Copyright (c) 2021 uiw",
+        "requirements": [
+          "Preserve the copyright and permission notice in copies or substantial portions."
+        ],
+        "files": [
+          {
+            "kind": "LICENSE",
+            "path": "third-party/licenses/uiw-react-codemirror-4.25.10-LICENSE.txt",
+            "sha256": "fd1f049b3bb5cbaf5143516b72dbc6805cd30cca0cda94edb37160e37662fd17"
+          }
+        ]
+      },
+      "adapters": {
+        "publicApi": "packages/ui/src/forms/json-code-editor/json-code-editor.tsx",
+        "theme": "packages/ui/src/forms/json-code-editor/json-code-editor.css"
+      },
+      "brandTokenRoles": [
+        "color.border",
+        "color.focus",
+        "color.surface",
+        "color.text",
+        "radius.control",
+        "typography.code"
+      ],
+      "conformance": {
+        "behavior": [
+          "packages/ui/src/forms/json-code-editor/tests/json-code-editor.spec.tsx"
+        ],
+        "accessibility": [
+          "apps/showcase/tests/e2e/accessibility.e2e.ts"
+        ],
+        "interaction": [
+          "packages/ui/src/forms/json-code-editor/tests/json-code-editor.spec.tsx"
+        ],
+        "visual": [
+          "apps/showcase/tests/e2e/visual.e2e.ts"
+        ],
+        "ssr": [],
+        "bundle": []
+      },
+      "upstream": {
+        "lastSuccessfulSync": "2026-07-15T00:00:00Z",
+        "updateStatus": "update_available",
+        "upstreamReference": "https://www.npmjs.com/package/@uiw/react-codemirror/v/4.25.11"
+      }
+    },
+    {
+      "capabilityId": "ui.data-display.syntax-code-block",
+      "implementationId": "shiki.syntax-code-block@4.2.0",
+      "publicExport": "SyntaxCodeBlock",
+      "category": "data-display",
+      "maturity": "beta",
+      "lifecycle": "active",
+      "providerOfRecord": true,
+      "provider": {
+        "id": "shiki",
+        "name": "Shiki",
+        "repository": "https://github.com/shikijs/shiki"
+      },
+      "source": {
+        "ingestionMode": "runtime_dependency",
+        "packageName": "shiki",
+        "packageVersion": "4.2.0",
+        "packageIntegrity": "sha512-hjNax6o/ylDy9lefQEaSDtzaT3iVNtZ3WmpQnbuQNoG4xvnSKf2kSKbihZVO4JRG1TTMejs7CmNRYlWgAL66pQ==",
+        "dependencyMode": "runtime_dependency",
+        "packagePaths": [
+          "dist/core.mjs",
+          "dist/engine-javascript.mjs",
+          "dist/index.d.mts"
+        ]
+      },
+      "license": {
+        "spdx": "MIT",
+        "reviewClass": "automatic",
+        "copyright": "Copyright (c) 2021 Pine Wu; Copyright (c) 2023 Anthony Fu",
+        "requirements": [
+          "Preserve the copyright and permission notice in copies or substantial portions."
+        ],
+        "files": [
+          {
+            "kind": "LICENSE",
+            "path": "third-party/licenses/shiki-4.2.0-LICENSE.txt",
+            "sha256": "7a9d8d01038aeacf9e5bcdabbddf2a7815200dce9fc1118468cc553e00ae3eee"
+          }
+        ]
+      },
+      "adapters": {
+        "publicApi": "packages/ui/src/data-display/syntax-code-block/syntax-code-block.tsx",
+        "theme": "packages/ui/src/data-display/syntax-code-block/syntax-code-block.css"
+      },
+      "brandTokenRoles": [
+        "color.border",
+        "color.surface",
+        "color.text",
+        "radius.card",
+        "typography.code"
+      ],
+      "conformance": {
+        "behavior": [
+          "packages/ui/src/data-display/syntax-code-block/tests/syntax-code-block.spec.tsx"
+        ],
+        "accessibility": [
+          "apps/showcase/tests/e2e/accessibility.e2e.ts"
+        ],
+        "interaction": [
+          "packages/ui/src/data-display/syntax-code-block/tests/syntax-code-block.spec.tsx"
+        ],
+        "visual": [
+          "apps/showcase/tests/e2e/visual.e2e.ts"
+        ],
+        "ssr": [],
+        "bundle": []
+      },
+      "upstream": {
+        "lastSuccessfulSync": "2026-07-15T00:00:00Z",
+        "updateStatus": "update_available",
+        "upstreamReference": "https://www.npmjs.com/package/shiki/v/4.3.1"
+      }
+    },
+    {
+      "capabilityId": "ui.data-display.markdown",
+      "implementationId": "react-markdown.markdown@10.1.0",
+      "publicExport": "Markdown",
+      "category": "data-display",
+      "maturity": "beta",
+      "lifecycle": "active",
+      "providerOfRecord": true,
+      "provider": {
+        "id": "react-markdown",
+        "name": "react-markdown",
+        "repository": "https://github.com/remarkjs/react-markdown"
+      },
+      "source": {
+        "ingestionMode": "runtime_dependency",
+        "packageName": "react-markdown",
+        "packageVersion": "10.1.0",
+        "packageIntegrity": "sha512-qKxVopLT/TyA6BX3Ue5NwabOsAzm0Q7kAPwq6L+wWDwisYs7R8vZ0nRXqq6rkueboxpkjvLGU9fWifiX/ZZFxQ==",
+        "dependencyMode": "runtime_dependency",
+        "packagePaths": [
+          "index.js",
+          "lib/index.d.ts"
+        ]
+      },
+      "license": {
+        "spdx": "MIT",
+        "reviewClass": "automatic",
+        "copyright": "Copyright (c) Espen Hovlandsdal",
+        "requirements": [
+          "Preserve the copyright and permission notice in copies or substantial portions."
+        ],
+        "files": [
+          {
+            "kind": "LICENSE",
+            "path": "third-party/licenses/react-markdown-10.1.0-LICENSE.txt",
+            "sha256": "f6196c64e144f9a6fa9154c3a80bc8b89615a9567934b83a8951879f06ba2aef"
+          }
+        ]
+      },
+      "adapters": {
+        "publicApi": "packages/ui/src/data-display/markdown/markdown.tsx",
+        "theme": "packages/ui/src/data-display/markdown/markdown.css"
+      },
+      "brandTokenRoles": [
+        "color.border",
+        "color.link",
+        "color.surface",
+        "color.text",
+        "typography.body",
+        "typography.code"
+      ],
+      "conformance": {
+        "behavior": [
+          "packages/ui/src/data-display/markdown/tests/markdown.spec.tsx"
+        ],
+        "accessibility": [
+          "apps/showcase/tests/e2e/accessibility.e2e.ts"
+        ],
+        "interaction": [
+          "packages/ui/src/data-display/markdown/tests/markdown.spec.tsx"
+        ],
+        "visual": [
+          "apps/showcase/tests/e2e/visual.e2e.ts"
+        ],
+        "ssr": [],
+        "bundle": []
+      },
+      "upstream": {
+        "lastSuccessfulSync": "2026-07-15T00:00:00Z",
+        "updateStatus": "current",
+        "upstreamReference": "https://www.npmjs.com/package/react-markdown/v/10.1.0"
+      }
+    },
+    {
+      "capabilityId": "ui.overlay.command-palette",
+      "implementationId": "cmdk.command-palette@1.1.1",
+      "publicExport": "CommandPalette",
+      "category": "overlays",
+      "maturity": "stable",
+      "lifecycle": "active",
+      "providerOfRecord": true,
+      "provider": {
+        "id": "cmdk",
+        "name": "cmdk",
+        "repository": "https://github.com/pacocoursey/cmdk"
+      },
+      "source": {
+        "ingestionMode": "runtime_dependency",
+        "packageName": "cmdk",
+        "packageVersion": "1.1.1",
+        "packageIntegrity": "sha512-Vsv7kFaXm+ptHDMZ7izaRsP70GgrW9NBNGswt9OZaVBLlE0SNpDq8eu/VGXyF9r7M0azK3Wy7OlYXsuyYLFzHg==",
+        "dependencyMode": "runtime_dependency",
+        "packagePaths": [
+          "dist/index.mjs"
+        ]
+      },
+      "license": {
+        "spdx": "MIT",
+        "reviewClass": "automatic",
+        "copyright": "Copyright (c) 2022 Paco Coursey",
+        "requirements": [
+          "Preserve the copyright and permission notice in copies or substantial portions."
+        ],
+        "files": [
+          {
+            "kind": "LICENSE",
+            "path": "third-party/licenses/cmdk-1.1.1-LICENSE.txt",
+            "sha256": "b5acfd21b3b61508365224c40ec1b03ec71091248baaf989d4be916551e7d532"
+          }
+        ]
+      },
+      "adapters": {
+        "publicApi": "packages/ui/src/overlays/command-palette/command-palette.tsx",
+        "theme": "packages/ui/src/overlays/command-palette/command-palette.css"
+      },
+      "brandTokenRoles": [
+        "color.accent",
+        "color.border",
+        "color.surface",
+        "color.text",
+        "elevation.overlay",
+        "radius.overlay"
+      ],
+      "conformance": {
+        "behavior": [
+          "packages/ui/src/overlays/command-palette/tests/command-palette.spec.tsx"
+        ],
+        "accessibility": [
+          "apps/showcase/tests/e2e/accessibility.e2e.ts"
+        ],
+        "interaction": [
+          "apps/showcase/tests/e2e/command-palette.e2e.ts"
+        ],
+        "visual": [
+          "apps/showcase/tests/e2e/visual.e2e.ts"
+        ],
+        "ssr": [],
+        "bundle": []
+      },
+      "upstream": {
+        "lastSuccessfulSync": "2026-07-15T00:00:00Z",
+        "updateStatus": "current",
+        "upstreamReference": "https://www.npmjs.com/package/cmdk/v/1.1.1"
+      }
+    },
+    {
+      "capabilityId": "ui.feedback.toaster",
+      "implementationId": "sonner.toaster@2.0.7",
+      "publicExport": "Toaster",
+      "category": "feedback",
+      "maturity": "stable",
+      "lifecycle": "active",
+      "providerOfRecord": true,
+      "provider": {
+        "id": "sonner",
+        "name": "Sonner",
+        "repository": "https://github.com/emilkowalski/sonner"
+      },
+      "source": {
+        "ingestionMode": "runtime_dependency",
+        "packageName": "sonner",
+        "packageVersion": "2.0.7",
+        "packageIntegrity": "sha512-W6ZN4p58k8aDKA4XPcx2hpIQXBRAgyiWVkYhT7CvK6D3iAu7xjvVyhQHg2/iaKJZ1XVJ4r7XuwGL+WGEK37i9w==",
+        "dependencyMode": "runtime_dependency",
+        "packagePaths": [
+          "dist/index.mjs",
+          "dist/styles.css"
+        ]
+      },
+      "license": {
+        "spdx": "MIT",
+        "reviewClass": "automatic",
+        "copyright": "Copyright (c) 2023 Emil Kowalski",
+        "requirements": [
+          "Preserve the copyright and permission notice in copies or substantial portions."
+        ],
+        "files": [
+          {
+            "kind": "LICENSE",
+            "path": "third-party/licenses/sonner-2.0.7-LICENSE.txt",
+            "sha256": "da9201378c36ffd81f51ad0b305f3f0981e90bc558789210ad65d1161eec3b7d"
+          }
+        ]
+      },
+      "adapters": {
+        "publicApi": "packages/ui/src/feedback/toaster/toaster.tsx",
+        "theme": "packages/ui/src/feedback/toaster/toaster.css"
+      },
+      "brandTokenRoles": [
+        "color.border",
+        "color.error",
+        "color.info",
+        "color.success",
+        "color.surface",
+        "color.text",
+        "color.warning",
+        "elevation.overlay",
+        "radius.overlay"
+      ],
+      "conformance": {
+        "behavior": [
+          "packages/ui/src/feedback/toaster/tests/toaster.spec.tsx"
+        ],
+        "accessibility": [
+          "apps/showcase/tests/e2e/accessibility.e2e.ts"
+        ],
+        "interaction": [
+          "apps/showcase/tests/e2e/toaster.e2e.ts"
+        ],
+        "visual": [
+          "apps/showcase/tests/e2e/visual.e2e.ts"
+        ],
+        "ssr": [],
+        "bundle": []
+      },
+      "upstream": {
+        "lastSuccessfulSync": "2026-07-15T00:00:00Z",
+        "updateStatus": "current",
+        "upstreamReference": "https://www.npmjs.com/package/sonner/v/2.0.7"
+      }
+    },
+    {
+      "capabilityId": "ui.agent.execution-map",
+      "implementationId": "xyflow-react.execution-map@12.11.0",
+      "publicExport": "ExecutionMap",
+      "category": "runtime-evidence",
+      "maturity": "beta",
+      "lifecycle": "active",
+      "providerOfRecord": true,
+      "provider": {
+        "id": "xyflow-react",
+        "name": "XYFlow React",
+        "repository": "https://github.com/xyflow/xyflow"
+      },
+      "source": {
+        "ingestionMode": "runtime_dependency",
+        "packageName": "@xyflow/react",
+        "packageVersion": "12.11.0",
+        "packageIntegrity": "sha512-na4IO33FSs2OS72hASgZDmTYwFAkef7Z74uBUVrong3ARmQQHfnRUVaCFn1kTt5LbS6pK03TbYjCPGLjLFfziA==",
+        "dependencyMode": "runtime_dependency",
+        "packagePaths": [
+          "dist/esm/index.mjs",
+          "dist/style.css"
+        ]
+      },
+      "license": {
+        "spdx": "MIT",
+        "reviewClass": "automatic",
+        "copyright": "Copyright (c) 2019-2025 webkid GmbH",
+        "requirements": [
+          "Preserve the copyright and permission notice in copies or substantial portions."
+        ],
+        "files": [
+          {
+            "kind": "LICENSE",
+            "path": "third-party/licenses/xyflow-react-12.11.0-LICENSE.txt",
+            "sha256": "023119ac20fb1c8c9930abe0bcd196989a1960388529a96fc43cebf96f07c9ff"
+          }
+        ]
+      },
+      "adapters": {
+        "publicApi": "packages/ui/src/agents/execution-map/execution-map.tsx",
+        "theme": "packages/ui/src/agents/execution-map/execution-map.css"
+      },
+      "brandTokenRoles": [
+        "color.accent",
+        "color.border",
+        "color.canvas",
+        "color.error",
+        "color.success",
+        "color.surface",
+        "color.text",
+        "color.warning"
+      ],
+      "conformance": {
+        "behavior": [
+          "packages/ui/src/agents/execution-map/model/tests/execution-map-model.spec.ts"
+        ],
+        "accessibility": [
+          "apps/showcase/tests/e2e/accessibility.e2e.ts"
+        ],
+        "interaction": [],
+        "visual": [
+          "apps/showcase/tests/e2e/visual.e2e.ts"
+        ],
+        "ssr": [],
+        "bundle": []
+      },
+      "upstream": {
+        "lastSuccessfulSync": "2026-07-15T00:00:00Z",
+        "updateStatus": "update_available",
+        "upstreamReference": "https://www.npmjs.com/package/@xyflow/react/v/12.11.2"
+      }
+    }
+  ]
+}
