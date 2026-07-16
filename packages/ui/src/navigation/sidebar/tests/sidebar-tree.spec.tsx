@@ -24,7 +24,12 @@ function nested(): SidebarNavGroup[] {
             },
           ],
         },
-        { id: 'models', label: 'Models', icon: 'layout-grid', children: [{ id: 'gen', label: 'Genesis' }] },
+        {
+          id: 'models',
+          label: 'Models',
+          icon: 'layout-grid',
+          children: [{ id: 'gen', label: 'Genesis' }],
+        },
       ],
     },
   ];
@@ -36,6 +41,10 @@ const FLAT: readonly SidebarNavGroup[] = [
 
 function treeId(id: string): HTMLElement | null {
   return document.querySelector<HTMLElement>(`[data-tree-id="${id}"]`);
+}
+
+function treeChevron(id: string): HTMLElement | null {
+  return treeId(id)?.parentElement?.querySelector<HTMLElement>('.ui-sidebar__chevron') ?? null;
 }
 
 describe('Sidebar nesting (tree)', () => {
@@ -62,10 +71,10 @@ describe('Sidebar nesting (tree)', () => {
   it('lazily mounts a subtree only while expanded', () => {
     render(<Sidebar groups={nested()} mode="expanded" />);
     expect(treeId('gen')).toBeNull(); // models is collapsed
-    fireEvent.click(treeId('models')?.querySelector('.ui-sidebar__chevron') as HTMLElement);
+    fireEvent.click(treeChevron('models') as HTMLElement);
     expect(treeId('models')?.getAttribute('aria-expanded')).toBe('true');
     expect(treeId('gen')).not.toBeNull();
-    fireEvent.click(treeId('models')?.querySelector('.ui-sidebar__chevron') as HTMLElement);
+    fireEvent.click(treeChevron('models') as HTMLElement);
     expect(treeId('gen')).toBeNull();
   });
 
@@ -117,7 +126,7 @@ describe('Sidebar nesting (tree)', () => {
     expect(onSelect).toHaveBeenCalledTimes(1);
     expect(treeId('models')?.getAttribute('aria-expanded')).toBe('false');
     // Click the chevron -> expands, no extra navigation.
-    fireEvent.click(treeId('models')?.querySelector('.ui-sidebar__chevron') as HTMLElement);
+    fireEvent.click(treeChevron('models') as HTMLElement);
     expect(onSelect).toHaveBeenCalledTimes(1);
     expect(treeId('models')?.getAttribute('aria-expanded')).toBe('true');
   });
@@ -127,17 +136,45 @@ describe('Sidebar nesting (tree)', () => {
     const groups: SidebarNavGroup[] = [
       {
         items: [
-          { id: 'models', label: 'Models', icon: 'layout-grid', children: [{ id: 'gen', label: 'Genesis' }] },
+          {
+            id: 'models',
+            label: 'Models',
+            icon: 'layout-grid',
+            children: [{ id: 'gen', label: 'Genesis' }],
+          },
         ],
       },
     ];
-    render(
-      <Sidebar expandedIds={[]} groups={groups} mode="expanded" onExpandedChange={onExpandedChange} />,
-    );
+    render(<Sidebar expandedIds={[]} groups={groups} mode="expanded" onExpandedChange={onExpandedChange} />);
     expect(treeId('models')?.getAttribute('aria-expanded')).toBe('false');
-    fireEvent.click(treeId('models')?.querySelector('.ui-sidebar__chevron') as HTMLElement);
+    fireEvent.click(treeChevron('models') as HTMLElement);
     expect(onExpandedChange).toHaveBeenCalledWith(['models']);
     // Controlled: prop did not change, so it stays collapsed.
     expect(treeId('models')?.getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('renders nested destinations as treeitem links without consuming modified clicks', () => {
+    const groups: SidebarNavGroup[] = [
+      {
+        items: [
+          {
+            id: 'models',
+            label: 'Models',
+            href: '/models',
+            children: [{ id: 'gen', label: 'Genesis', href: '/models/genesis' }],
+            defaultExpanded: true,
+          },
+        ],
+      },
+    ];
+    render(<Sidebar groups={groups} mode="expanded" />);
+    const parent = treeId('models');
+    const child = treeId('gen');
+    expect(parent?.tagName).toBe('A');
+    expect(parent?.getAttribute('href')).toBe('/models');
+    expect(child?.tagName).toBe('A');
+    expect(child?.getAttribute('href')).toBe('/models/genesis');
+    fireEvent.click(child as HTMLAnchorElement, { ctrlKey: true });
+    expect(child?.getAttribute('href')).toBe('/models/genesis');
   });
 });

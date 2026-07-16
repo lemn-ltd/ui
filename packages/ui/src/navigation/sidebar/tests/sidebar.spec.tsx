@@ -1,4 +1,4 @@
-import { cleanup, render } from '@testing-library/react';
+import { cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ShellContextProvider } from '../../../layout/screen-shell/shell-context.js';
@@ -54,6 +54,44 @@ describe('Sidebar', () => {
     expect(active?.textContent).toContain('Sessions');
   });
 
+  it('renders destinations as native links and preserves their href in expanded and rail modes', () => {
+    const groups: readonly SidebarNavGroup[] = [
+      {
+        items: [
+          {
+            id: 'home',
+            label: 'Home',
+            icon: 'layout-grid',
+            href: '/home',
+            active: true,
+            badge: 'New',
+          },
+        ],
+      },
+    ];
+    const { container, rerender } = render(<Sidebar groups={groups} mode="expanded" />);
+    const expandedLink = container.querySelector<HTMLAnchorElement>('.ui-sidebar__item');
+    expect(expandedLink?.getAttribute('href')).toBe('/home');
+    expect(expandedLink?.getAttribute('aria-current')).toBe('page');
+    expect(expandedLink?.querySelector('.ui-sidebar__badge')?.textContent).toBe('New');
+
+    rerender(<Sidebar groups={groups} mode="rail" />);
+    const railLink = container.querySelector<HTMLAnchorElement>('.ui-sidebar__item');
+    expect(railLink?.getAttribute('href')).toBe('/home');
+    expect(railLink?.getAttribute('title')).toBe('Home');
+  });
+
+  it('does not replace native link behavior with an action handler', () => {
+    const onSelect = vi.fn();
+    const groups: readonly SidebarNavGroup[] = [{ items: [{ id: 'home', label: 'Home', href: '/home', onSelect }] }];
+    const { container } = render(<Sidebar groups={groups} mode="expanded" />);
+    const link = container.querySelector<HTMLAnchorElement>('a[href="/home"]');
+    expect(link).not.toBeNull();
+    fireEvent.click(link as HTMLAnchorElement, { metaKey: true });
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(link?.getAttribute('href')).toBe('/home');
+  });
+
   it('renders the orgSwitcher, userRow and versionTag slot nodes', () => {
     const { getByTestId } = render(
       <Sidebar
@@ -79,7 +117,12 @@ describe('Sidebar', () => {
       <ShellContextProvider
         value={{
           isMobile: false,
-          sidebar: { mode: 'hidden', collapse: 'expand-hide', setMode: () => {}, cycle: () => {} },
+          sidebar: {
+            mode: 'hidden',
+            collapse: 'expand-hide',
+            setMode: () => {},
+            cycle: () => {},
+          },
           dock: null,
         }}
       >
@@ -94,14 +137,7 @@ describe('Sidebar', () => {
   it('renders drill-in chrome with a back affordance and title', () => {
     const onBack = vi.fn();
     const { container, getByText } = render(
-      <Sidebar
-        back="Back"
-        groups={SINGLE_GROUP}
-        mode="expanded"
-        onBack={onBack}
-        title="Settings"
-        variant="drill-in"
-      />,
+      <Sidebar back="Back" groups={SINGLE_GROUP} mode="expanded" onBack={onBack} title="Settings" variant="drill-in" />,
     );
     expect(container.querySelector('.ui-sidebar__drill')).not.toBeNull();
     expect(getByText('Settings')).not.toBeNull();

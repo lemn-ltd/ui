@@ -1445,11 +1445,12 @@ A ⌘K search dialog over grouped commands, with live filtering and an empty sta
 
 `/core/components/sidebar` · stable
 
-The application rail in expanded, rail, and hidden collapse modes plus a drill-in variant, composing org, nav, user, and version slots. Nav items accept `children` for accessible multi-level nesting.
+The application rail in expanded, rail, and hidden collapse modes plus a drill-in variant, composing org, nav, user, and version slots. Nav destinations accept `href` for native link semantics, and items accept `children` for accessible multi-level nesting.
 
 **Use when**
 
 - You need the app's primary navigation rail composing org switcher, nav groups, user row, and version tag.
+- A nav item is a route destination: set `href` so open-in-new-tab, copy-link, modified-click, history, and accessibility behavior remain native. Use `onSelect` only for action items without an `href`.
 - Navigation must support a rail (64px icons-only), expanded (264px labeled), and hidden state from one component. The enclosing `ScreenShell` owns the collapse: its `collapseBehavior` (`expand-hide` | `expand-rail` | `cycle`) decides what the toggle and Cmd/Ctrl+B walk through, and the brand, search, org switcher, and user row inherit the rail form automatically.
 - Navigation has hierarchy: give an item a `children` array and it renders an expandable tree (WAI-ARIA tree view) with roving-tabindex keyboard support; the active item's ancestors auto-expand and, in rail mode, children open in a Popover flyout.
 - A settings/section drill-in needs the `drill-in` variant with a back affordance, title, and hint. It follows the same shell collapse (toggle and Cmd/Ctrl+B) as the primary rail.

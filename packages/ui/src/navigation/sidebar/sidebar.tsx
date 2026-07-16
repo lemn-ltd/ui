@@ -1,22 +1,8 @@
-import {
-  Fragment,
-  type ReactElement,
-  type ReactNode,
-  type RefObject,
-  useEffect,
-  useMemo,
-  useRef,
-} from 'react';
+import { Fragment, type ReactElement, type ReactNode, type RefObject, useEffect, useMemo, useRef } from 'react';
 import { type SidebarMode, useShell } from '../../layout/screen-shell/shell-context.js';
 import { Icon, type IconName } from '../../primitives/index.js';
 import { SidebarChromeProvider } from './sidebar-chrome-context.js';
-import {
-  hasNesting,
-  SidebarRailNav,
-  SidebarTree,
-  type SidebarTreeState,
-  useSidebarTree,
-} from './sidebar-tree.js';
+import { hasNesting, SidebarRailNav, SidebarTree, type SidebarTreeState, useSidebarTree } from './sidebar-tree.js';
 import './sidebar.css';
 
 export interface SidebarNavItem {
@@ -25,6 +11,9 @@ export interface SidebarNavItem {
   /** Optional: nested children are often label-only, so the icon is not required. */
   readonly icon?: IconName;
   readonly active?: boolean;
+  /** Native destination. Use this for navigation so browser link semantics remain available. */
+  readonly href?: string;
+  /** Action callback used when href is absent. */
   readonly onSelect?: () => void;
   /** Child items. Any item with children renders as an expandable tree node. */
   readonly children?: readonly SidebarNavItem[];
@@ -103,7 +92,12 @@ export function Sidebar({
 }: SidebarProps): ReactElement {
   const shell = useShell();
   // Shared expand-state for every nested group; flat groups never touch it.
-  const tree = useSidebarTree({ groups, expandedIds, defaultExpandedIds, onExpandedChange });
+  const tree = useSidebarTree({
+    groups,
+    expandedIds,
+    defaultExpandedIds,
+    onExpandedChange,
+  });
   // An explicit mode wins; otherwise the sidebar follows the enclosing shell's
   // collapse state, defaulting to expanded when used standalone. The drill-in
   // variant is content only — it collapses with the shell just like the primary
@@ -166,9 +160,7 @@ export function Sidebar({
               <Icon name="x" size={18} />
             </button>
           ) : null}
-          {drillIn ? (
-            <SidebarDrillHeader back={back} hint={hint} onBack={onBack} rail={rail} title={title} />
-          ) : null}
+          {drillIn ? <SidebarDrillHeader back={back} hint={hint} onBack={onBack} rail={rail} title={title} /> : null}
         </div>
 
         <nav className="ui-sidebar__nav">
@@ -252,17 +244,10 @@ function SidebarNavGroupView({
     <Fragment>
       {index > 0 && rail ? <div className="ui-sidebar__divider" /> : null}
       <div className="ui-sidebar__group">
-        {!rail && group.header != null ? (
-          <div className="ui-sidebar__group-header">{group.header}</div>
-        ) : null}
+        {!rail && group.header != null ? <div className="ui-sidebar__group-header">{group.header}</div> : null}
         {nested ? (
           rail ? (
-            <SidebarRailNav
-              activeRef={activeRef}
-              items={group.items}
-              railExpand={railExpand}
-              state={tree}
-            />
+            <SidebarRailNav activeRef={activeRef} items={group.items} railExpand={railExpand} state={tree} />
           ) : (
             <SidebarTree
               activeRef={activeRef}
@@ -273,9 +258,7 @@ function SidebarNavGroupView({
             />
           )
         ) : (
-          group.items.map((item) => (
-            <SidebarNavButton activeRef={activeRef} item={item} key={item.id} rail={rail} />
-          ))
+          group.items.map((item) => <SidebarNavButton activeRef={activeRef} item={item} key={item.id} rail={rail} />)
         )}
       </div>
     </Fragment>
@@ -291,6 +274,29 @@ function SidebarNavButton({
   readonly item: SidebarNavItem;
   readonly rail: boolean;
 }): ReactElement {
+  const content = (
+    <>
+      {item.icon ? <Icon name={item.icon} size={18} /> : null}
+      {rail ? null : <span className="ui-sidebar__item-label">{item.label}</span>}
+      {!rail && item.badge != null ? <span className="ui-sidebar__badge">{item.badge}</span> : null}
+    </>
+  );
+
+  if (item.href) {
+    return (
+      <a
+        aria-current={item.active ? 'page' : undefined}
+        className="ui-sidebar__item"
+        data-active={item.active ? 'true' : 'false'}
+        href={item.href}
+        ref={item.active ? (activeRef as RefObject<HTMLAnchorElement>) : undefined}
+        title={rail ? item.label : undefined}
+      >
+        {content}
+      </a>
+    );
+  }
+
   return (
     <button
       className="ui-sidebar__item"
@@ -300,8 +306,7 @@ function SidebarNavButton({
       title={rail ? item.label : undefined}
       type="button"
     >
-      {item.icon ? <Icon name={item.icon} size={18} /> : null}
-      {rail ? null : <span className="ui-sidebar__item-label">{item.label}</span>}
+      {content}
     </button>
   );
 }
