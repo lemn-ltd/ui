@@ -27,7 +27,7 @@ interface WranglerConfig extends WranglerEnvironment {
 }
 
 export interface CloudflareReleaseTarget {
-	id: "docs" | "showcase" | "showcase-admin";
+	id: "docs" | "schema" | "showcase" | "showcase-admin";
 	accountId: string;
 	workerName: string;
 	hostname: string;
@@ -104,6 +104,7 @@ function targetFromConfig(
 	const routes = selected?.routes ?? config.routes ?? [];
 	const expectedHostname = {
 		docs: "ui.le-mn.com",
+		schema: "schemas.ui.le-mn.com",
 		showcase: "showcase.ui.le-mn.com",
 		"showcase-admin": "admin.showcase.ui.le-mn.com",
 	}[id];
@@ -144,6 +145,7 @@ export async function loadCloudflareReleaseTargets(
 	return [
 		docsTarget,
 		targetFromConfig("showcase", showcase, "production"),
+		targetFromConfig("schema", showcase, "production"),
 		targetFromConfig(
 			"showcase-admin",
 			{

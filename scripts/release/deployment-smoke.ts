@@ -4,7 +4,10 @@ import { setTimeout as delay } from "node:timers/promises";
 
 const DOCS_ORIGIN = "https://ui.le-mn.com";
 const SHOWCASE_ORIGIN = "https://showcase.ui.le-mn.com";
+const SCHEMA_ORIGIN = "https://schemas.ui.le-mn.com";
+const SHOWCASE_ADMIN_ORIGIN = "https://admin.showcase.ui.le-mn.com";
 const UI_PACKAGE_NAME = "@lemn-ltd/ui";
+const BRAND_PROJECT_SCHEMA_URL = `${SCHEMA_ORIGIN}/brand-project/v1.json`;
 export const PROTECTED_STATUS_PATHS = [
 	"/_status",
 	"/_status.json",
@@ -388,6 +391,105 @@ export async function smokeProductionDeployment(input: {
 			assert(
 				Array.isArray(payload.components) && payload.components.length > 0,
 				"showcase catalog is empty",
+			);
+		},
+		retryOptions,
+		input.signal,
+	);
+	await retry(
+		"showcase-provider-registry",
+		async () => {
+			const response = await fetchResponse(
+				`${SHOWCASE_ORIGIN}/provider-registry.json`,
+				fetchImplementation,
+				{ headers: showcaseHeaders(input.showcaseVersionId) },
+				input.signal,
+			);
+			assert(
+				response.headers.get("content-type")?.includes("application/json"),
+				"showcase provider registry is not JSON",
+			);
+			const payload = (await response.json()) as Record<string, unknown>;
+			assert(
+				typeof payload.revision === "string" && payload.revision.length > 0,
+				"showcase provider registry has no revision",
+			);
+			assert(
+				Array.isArray(payload.capabilities) && payload.capabilities.length > 0,
+				"showcase provider registry has no active capabilities",
+			);
+		},
+		retryOptions,
+		input.signal,
+	);
+	await retry(
+		"showcase-blocks",
+		async () => {
+			const response = await fetchResponse(
+				`${SHOWCASE_ORIGIN}/blocks.json`,
+				fetchImplementation,
+				{ headers: showcaseHeaders(input.showcaseVersionId) },
+				input.signal,
+			);
+			assert(
+				response.headers.get("content-type")?.includes("application/json"),
+				"showcase blocks catalog is not JSON",
+			);
+			const payload = (await response.json()) as Record<string, unknown>;
+			assert(
+				Array.isArray(payload.blocks) && payload.blocks.length > 0,
+				"showcase blocks catalog is empty",
+			);
+		},
+		retryOptions,
+		input.signal,
+	);
+	await retry(
+		"brand-project-schema",
+		async () => {
+			const response = await fetchResponse(
+				BRAND_PROJECT_SCHEMA_URL,
+				fetchImplementation,
+				{ headers: showcaseHeaders(input.showcaseVersionId) },
+				input.signal,
+			);
+			assert(
+				response.headers
+					.get("content-type")
+					?.includes("application/schema+json"),
+				"BrandProject schema has the wrong content type",
+			);
+			const payload = (await response.json()) as Record<string, unknown>;
+			assert(
+				payload.$id === BRAND_PROJECT_SCHEMA_URL,
+				"BrandProject schema has the wrong canonical ID",
+			);
+		},
+		retryOptions,
+		input.signal,
+	);
+	await retry(
+		"showcase-admin-access-boundary",
+		async () => {
+			const response = await fetchImplementation(
+				`${SHOWCASE_ADMIN_ORIGIN}/health`,
+				{
+					headers: { Accept: "application/json" },
+					redirect: "manual",
+					signal: requestSignal(input.signal),
+				},
+			);
+			assert(
+				response.status === 302,
+				`Showcase Admin anonymous request returned HTTP ${response.status}`,
+			);
+			const location = response.headers.get("location");
+			assert(location, "Showcase Admin Access redirect has no location");
+			assert(
+				new URL(location, SHOWCASE_ADMIN_ORIGIN).hostname.endsWith(
+					".cloudflareaccess.com",
+				),
+				"Showcase Admin is not protected by the expected Access boundary",
 			);
 		},
 		retryOptions,

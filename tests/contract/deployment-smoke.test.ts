@@ -100,6 +100,32 @@ test("production smoke compares exact docs and showcase build identities", async
 				components: [{}],
 			});
 		}
+		if (url === "https://showcase.ui.le-mn.com/provider-registry.json") {
+			return Response.json({
+				revision: "registry-revision",
+				capabilities: [{}],
+			});
+		}
+		if (url === "https://showcase.ui.le-mn.com/blocks.json") {
+			return Response.json({ blocks: [{}] });
+		}
+		if (url === "https://schemas.ui.le-mn.com/brand-project/v1.json") {
+			return new Response(
+				JSON.stringify({
+					$id: "https://schemas.ui.le-mn.com/brand-project/v1.json",
+				}),
+				{ headers: { "content-type": "application/schema+json" } },
+			);
+		}
+		if (url === "https://admin.showcase.ui.le-mn.com/health") {
+			return new Response(null, {
+				status: 302,
+				headers: {
+					location:
+						"https://lemn-dev.cloudflareaccess.com/cdn-cgi/access/login",
+				},
+			});
+		}
 		if (url === "https://showcase.ui.le-mn.com/llms.txt")
 			return new Response("@lemn-ltd/ui");
 		if (url === "https://showcase.ui.le-mn.com/llms-full.txt") {
@@ -171,6 +197,28 @@ test("production smoke fails when the new protected status token is rejected", a
 				package: "@lemn-ltd/ui",
 				version: expected.version,
 				components: [{}],
+			});
+		if (url === "https://showcase.ui.le-mn.com/provider-registry.json")
+			return Response.json({
+				revision: "registry-revision",
+				capabilities: [{}],
+			});
+		if (url === "https://showcase.ui.le-mn.com/blocks.json")
+			return Response.json({ blocks: [{}] });
+		if (url === "https://schemas.ui.le-mn.com/brand-project/v1.json")
+			return new Response(
+				JSON.stringify({
+					$id: "https://schemas.ui.le-mn.com/brand-project/v1.json",
+				}),
+				{ headers: { "content-type": "application/schema+json" } },
+			);
+		if (url === "https://admin.showcase.ui.le-mn.com/health")
+			return new Response(null, {
+				status: 302,
+				headers: {
+					location:
+						"https://lemn-dev.cloudflareaccess.com/cdn-cgi/access/login",
+				},
 			});
 		if (url === "https://showcase.ui.le-mn.com/llms.txt")
 			return new Response("@lemn-ltd/ui");

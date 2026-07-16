@@ -13,6 +13,7 @@ import {
 	ConcurrentDeploymentError,
 	candidateTag,
 	cloudflareMappingSmokeCommand,
+	cloudflareTriggersDeployCommand,
 	createCommandRunner,
 	deploymentListCommand,
 	encodeCandidateState,
@@ -255,6 +256,7 @@ function fakePlatform(
 					return "";
 				}
 				if (spec === cloudflareMappingSmokeCommand) return "";
+				if (spec === cloudflareTriggersDeployCommand) return "";
 				throw new Error(`Unexpected command: ${commandLabel(spec)}`);
 			},
 			async smokeProtected(smokeInput: {
@@ -328,6 +330,22 @@ test("candidate upload receives only a secrets file path and activation is separ
 	);
 });
 
+test("showcase triggers deploy uses the canonical production Wrangler config", () => {
+	assert.deepEqual(cloudflareTriggersDeployCommand.args, [
+		"--dir",
+		"apps/showcase",
+		"exec",
+		"wrangler",
+		"triggers",
+		"deploy",
+		"--config",
+		"wrangler.jsonc",
+		"--env",
+		"production",
+	]);
+	assert.ok((cloudflareTriggersDeployCommand.timeoutMs ?? 0) > 0);
+});
+
 test("new rollout persists candidate, acquires zero-traffic lease, smokes, and activates", async () => {
 	const platform = fakePlatform();
 	await runProductionRollout(input, platform.dependencies);
@@ -361,6 +379,16 @@ test("new rollout persists candidate, acquires zero-traffic lease, smokes, and a
 	assert.doesNotMatch(upload.command, /new-production-status-token/u);
 	await assert.rejects(stat(upload.path), { code: "ENOENT" });
 	assert.deepEqual(platform.cleanupPaths, [upload.directoryPath]);
+	assert.ok(
+		platform.events.indexOf(commandLabel(cloudflareTriggersDeployCommand)) <
+			platform.events.indexOf(commandLabel(cloudflareMappingSmokeCommand)),
+	);
+	assert.ok(
+		platform.events.indexOf(commandLabel(cloudflareMappingSmokeCommand)) <
+			platform.events.indexOf(
+				`production:${input.productionStatusToken}:${candidateVersionId}`,
+			),
+	);
 	assert.ok(
 		platform.events.indexOf(
 			`production:${input.productionStatusToken}:${candidateVersionId}`,
@@ -550,6 +578,9 @@ test("an already active release resumes smoke without upload or republish-like m
 		stage: 0,
 		upload: 0,
 	});
+	assert.ok(
+		platform.events.includes(commandLabel(cloudflareTriggersDeployCommand)),
+	);
 	assert.equal(platform.events.at(-1), "summary");
 });
 

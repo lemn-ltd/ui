@@ -152,6 +152,12 @@ export const cloudflareMappingSmokeCommand: CommandSpec = {
 	timeoutMs: 2 * 60_000,
 };
 
+export const cloudflareTriggersDeployCommand: CommandSpec = {
+	command: "pnpm",
+	args: [...wranglerBaseArgs, "triggers", "deploy", ...wranglerConfigArgs],
+	timeoutMs: 2 * 60_000,
+};
+
 function assertVersionId(versionId: string): void {
 	if (!versionIdPattern.test(versionId)) {
 		throw new Error("Cloudflare returned an invalid Worker version ID");
@@ -906,6 +912,7 @@ async function executeCandidate(
 
 		if (stagedDeployment(current, state, version.id)) {
 			const leaseDeploymentId = current.id;
+			await dependencies.runCommand(cloudflareTriggersDeployCommand);
 			await dependencies.runCommand(cloudflareMappingSmokeCommand);
 			await dependencies.smokeProduction({
 				expected: input.expected,
@@ -933,6 +940,7 @@ async function executeCandidate(
 			}
 		}
 
+		await dependencies.runCommand(cloudflareTriggersDeployCommand);
 		await dependencies.runCommand(cloudflareMappingSmokeCommand);
 		await dependencies.smokeProduction({
 			expected: input.expected,

@@ -26,6 +26,12 @@ const targets: CloudflareReleaseTarget[] = [
 		hostname: "showcase.ui.le-mn.com",
 	},
 	{
+		id: "schema",
+		accountId,
+		workerName: "lemn-ui-showcase",
+		hostname: "schemas.ui.le-mn.com",
+	},
+	{
 		id: "showcase-admin",
 		accountId,
 		workerName: "lemn-ui-showcase-admin",
@@ -106,7 +112,10 @@ function cloudflareFixture(
 							: requestUrl.searchParams.get("hostname") ===
 									"showcase.ui.le-mn.com"
 								? "lemn-ui-showcase"
-								: "lemn-ui-showcase-admin",
+								: requestUrl.searchParams.get("hostname") ===
+										"schemas.ui.le-mn.com"
+									? "lemn-ui-showcase"
+									: "lemn-ui-showcase-admin",
 				},
 			]);
 		}
@@ -135,7 +144,7 @@ test("all Wrangler deploy targets use the confirmed Lemn DEV account", async () 
 test("preflight uses only bearer-token auth and performs no mutation", async () => {
 	const fixture = cloudflareFixture();
 	await verifyFixture(fixture);
-	assert.equal(fixture.requests.length, 8);
+	assert.equal(fixture.requests.length, 10);
 	assert.ok(
 		fixture.requests[0]?.url.endsWith(`/accounts/${accountId}/tokens/verify`),
 	);
