@@ -1,6 +1,6 @@
 {
   "name": "@lemn-ltd/brand-studio",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -35,7 +35,7 @@
     "prepublishOnly": "pnpm --dir ../.. publish:packages:verify"
   },
   "dependencies": {
-    "@lemn-ltd/brand-contract": "workspace:0.1.0"
+    "@lemn-ltd/brand-contract": "workspace:0.2.0"
   },
   "peerDependencies": {
     "@lemn-ltd/ui": "0.3.0",
