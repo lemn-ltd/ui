@@ -48,5 +48,7 @@ pnpm release
 ```
 
 El preflight de produccion acepta solo `PRODUCTION_CLOUDFLARE_API_TOKEN`, con
-scope Account `Lemn DEV` / `Workers Scripts: Edit` y Zone `le-mn.com` / `Zone:
-Read`. Credenciales o modos de autenticacion mas amplios fallan cerrado.
+scope Account `Lemn DEV` / `Workers Scripts: Edit` (`Workers Scripts Write` en
+la API) y Zone `le-mn.com` / `Zone: Read` mas `Workers Routes: Edit` (`Zone
+Workers Routes Write` en la API). Credenciales o modos de autenticacion mas
+amplios fallan cerrado.

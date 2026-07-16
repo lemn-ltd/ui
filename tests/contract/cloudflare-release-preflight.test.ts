@@ -141,6 +141,13 @@ test("all Wrangler deploy targets use the confirmed Lemn DEV account", async () 
 	assert.deepEqual(configuredTargets, targets);
 });
 
+test("production token guidance names the exact account and zone grants", () => {
+	assert.equal(
+		CLOUDFLARE_TOKEN_GRANTS,
+		'Account "Lemn DEV" -> Workers Scripts: Edit; Zone "le-mn.com" -> Zone: Read, Workers Routes: Edit',
+	);
+});
+
 test("preflight uses only bearer-token auth and performs no mutation", async () => {
 	const fixture = cloudflareFixture();
 	await verifyFixture(fixture);
@@ -244,6 +251,7 @@ test("preflight redacts the API token from provider errors", async () => {
 			assert.match(error.message, /PRODUCTION_CLOUDFLARE_API_TOKEN/u);
 			assert.match(error.message, /Workers Scripts: Edit/u);
 			assert.match(error.message, /Zone: Read/u);
+			assert.match(error.message, /Workers Routes: Edit/u);
 			return true;
 		},
 	);

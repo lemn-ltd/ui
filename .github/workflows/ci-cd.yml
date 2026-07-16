@@ -263,7 +263,7 @@ jobs:
         id: cloudflare
         run: |
           if [ -z "${CLOUDFLARE_API_TOKEN}" ]; then
-            echo '::error::Missing production Environment secret PRODUCTION_CLOUDFLARE_API_TOKEN. Required account-owned Cloudflare token grants: Account "Lemn DEV" -> Workers Scripts: Edit; Zone "le-mn.com" -> Zone: Read.' >&2
+            echo '::error::Missing production Environment secret PRODUCTION_CLOUDFLARE_API_TOKEN. Required account-owned Cloudflare token grants: Account "Lemn DEV" -> Workers Scripts: Edit; Zone "le-mn.com" -> Zone: Read, Workers Routes: Edit.' >&2
             exit 1
           fi
           for name in PRODUCTION_STATUS_TOKEN ROLLBACK_STATUS_TOKEN; do

@@ -112,7 +112,7 @@ test("production credentials remain exclusive to the protected environment job",
 	);
 	assert.match(
 		String(step("Preflight Cloudflare release access").run),
-		/PRODUCTION_CLOUDFLARE_API_TOKEN[\s\S]*Workers Scripts: Edit[\s\S]*Zone: Read/u,
+		/PRODUCTION_CLOUDFLARE_API_TOKEN[\s\S]*Workers Scripts: Edit[\s\S]*Zone: Read, Workers Routes: Edit/u,
 	);
 	assert.doesNotMatch(workflowSource, /CLOUDFLARE_API_KEY|CLOUDFLARE_EMAIL/u);
 	assert.equal(

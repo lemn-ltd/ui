@@ -55,9 +55,10 @@ The protected GitHub Environment supplies exactly
 `PRODUCTION_CLOUDFLARE_API_TOKEN` and `PRODUCTION_STATUS_TOKEN`. The Cloudflare
 token is an account-owned API token scoped to Account `Lemn DEV` with `Workers
 Scripts: Edit` (reported as `Workers Scripts Write` by the API), and Zone
-`le-mn.com` with `Zone: Read`. Do not grant Workers Routes, KV, R2, account
-settings, user, or wider zone access. The release guard rejects Global API Key,
-key/email, missing, expired, disabled, and wrong-account authentication.
+`le-mn.com` with `Zone: Read` plus `Workers Routes: Edit` (reported as `Zone
+Workers Routes Write` by the API). Do not grant KV, R2, account settings, user,
+or wider zone access. The release guard rejects Global API Key, key/email,
+missing, expired, disabled, and wrong-account authentication.
 
 Showcase is public/read-only. Showcase Admin requires a cryptographically
 verified Cloudflare Access application assertion and uses only narrow server

@@ -69,5 +69,7 @@ version is immutable and must match the locally packed integrity; it is never
 overwritten.
 
 The production preflight accepts only `PRODUCTION_CLOUDFLARE_API_TOKEN`, scoped
-to Account `Lemn DEV` with `Workers Scripts: Edit` and Zone `le-mn.com` with
-`Zone: Read`. Broader credentials or authentication modes fail closed.
+to Account `Lemn DEV` with `Workers Scripts: Edit` (`Workers Scripts Write` in
+the API) and Zone `le-mn.com` with `Zone: Read` plus `Workers Routes: Edit`
+(`Zone Workers Routes Write` in the API). Broader credentials or authentication
+modes fail closed.

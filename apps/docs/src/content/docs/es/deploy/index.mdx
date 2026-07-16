@@ -36,9 +36,10 @@ El GitHub Environment protegido aporta exactamente
 `PRODUCTION_CLOUDFLARE_API_TOKEN` y `PRODUCTION_STATUS_TOKEN`. El API token de
 Cloudflare pertenece a Account `Lemn DEV` y tiene solo `Workers Scripts: Edit`
 (la API lo reporta como `Workers Scripts Write`); sobre Zone `le-mn.com` tiene
-solo `Zone: Read`. No se otorga Workers Routes, KV, R2, account settings,
-permisos de usuario ni zonas mas amplias. El guard rechaza Global API Key,
-modo key/email, tokens ausentes/expirados/deshabilitados y cuentas incorrectas.
+`Zone: Read` mas `Workers Routes: Edit` (la API lo reporta como `Zone Workers
+Routes Write`). No se otorga KV, R2, account settings, permisos de usuario ni
+zonas mas amplias. El guard rechaza Global API Key, modo key/email, tokens
+ausentes/expirados/deshabilitados y cuentas incorrectas.
 
 ## Secuencia
 

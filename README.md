@@ -176,8 +176,9 @@ consumer installs from GitHub Packages and deployed smoke evidence.
 
 Production Cloudflare mutation is main-only and uses the protected Environment
 secret `PRODUCTION_CLOUDFLARE_API_TOKEN`. It is scoped to Account `Lemn DEV`
-with `Workers Scripts: Edit` and Zone `le-mn.com` with `Zone: Read`; broader
-credentials fail closed.
+with `Workers Scripts: Edit` (`Workers Scripts Write` in the API) and Zone
+`le-mn.com` with `Zone: Read` plus `Workers Routes: Edit` (`Zone Workers Routes
+Write` in the API); broader credentials fail closed.
 
 ## Documentation
 

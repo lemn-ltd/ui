@@ -9,7 +9,7 @@ const EXPECTED_ZONE_NAME = "le-mn.com";
 
 export const CLOUDFLARE_PRODUCTION_SECRET = "PRODUCTION_CLOUDFLARE_API_TOKEN";
 export const CLOUDFLARE_TOKEN_GRANTS =
-	'Account "Lemn DEV" -> Workers Scripts: Edit; Zone "le-mn.com" -> Zone: Read';
+	'Account "Lemn DEV" -> Workers Scripts: Edit; Zone "le-mn.com" -> Zone: Read, Workers Routes: Edit';
 
 interface WranglerRoute {
 	pattern?: string;

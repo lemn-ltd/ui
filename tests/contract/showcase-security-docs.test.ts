@@ -53,7 +53,9 @@ test("English and Spanish runbooks require scoped token auth and preserve rollba
 		assert.match(docs, /Workers\s+Scripts:\s+Edit/u);
 		assert.match(docs, /Workers\s+Scripts\s+Write/u);
 		assert.match(docs, /Zone:\s+Read/u);
-		assert.match(docs, /Workers Routes/u);
+		assert.match(docs, /Workers\s+Routes:\s+Edit/u);
+		assert.match(docs, /Zone\s+Workers\s+Routes\s+Write/u);
+		assert.doesNotMatch(docs, /(?:Do not grant|No se otorga) Workers Routes/u);
 		assert.match(docs, /(?:key\/email|key\/email)/u);
 		assert.match(docs, /wrangler\s+deployments\s+list\s+--json/u);
 		assert.match(docs, /wrangler\s+rollback/u);
@@ -65,7 +67,10 @@ test("English and Spanish runbooks require scoped token auth and preserve rollba
 test("release overview docs describe only the scoped production token", () => {
 	for (const docs of releaseOverviewDocs) {
 		assert.match(docs, /Workers\s+Scripts:\s+Edit/u);
+		assert.match(docs, /Workers\s+Scripts\s+Write/u);
 		assert.match(docs, /Zone:\s+Read/u);
+		assert.match(docs, /Workers\s+Routes:\s+Edit/u);
+		assert.match(docs, /Zone\s+Workers\s+Routes\s+Write/u);
 		assert.match(docs, /Lemn DEV/u);
 		assert.match(docs, /le-mn\.com/u);
 		assert.doesNotMatch(docs, /Global API Key/u);
