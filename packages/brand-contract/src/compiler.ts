@@ -6,8 +6,18 @@ import {
   type BrandMode,
   type BrandProfileSource,
   type BrandProject,
+  type BrandTypography,
+  type DirectFontSelection,
   safeParseBrandProject
 } from "./contract.js";
+import {
+  FONT_CATALOG_VERSION,
+  getFontCatalogRecord,
+  type FontCatalogResource,
+  type FontCatalogRef,
+  type FontStyle,
+  type ManagedFontCatalogRecord
+} from "./font-catalog.js";
 
 export type DiagnosticSeverity = "error" | "warning";
 
@@ -26,6 +36,7 @@ export type ResolvedBrandProfile = {
   readonly name: string;
   readonly description?: string;
   readonly defaultMode: string;
+  readonly typography: BrandTypography;
   readonly modes: Readonly<Record<string, BrandMode>>;
   readonly assets: Readonly<Record<string, string>>;
   readonly runtimeSelection: {
@@ -60,6 +71,44 @@ export type EChartsBrandTheme = {
   readonly tooltip: Readonly<Record<string, unknown>>;
 };
 
+export type CompiledFontResource = {
+  readonly id: string;
+  readonly profileId: string;
+  readonly catalogRef: FontCatalogRef;
+  readonly family: string;
+  readonly url: string;
+  readonly format: "woff2";
+  readonly style: FontStyle;
+  readonly weightRange: readonly [number, number];
+  readonly subset: "latin";
+  readonly unicodeRange: string;
+  readonly estimatedBytes: number;
+  readonly sha256: string;
+  readonly integrity: string;
+  readonly immutable: true;
+  readonly provisional: boolean;
+  readonly fidelity: "preferred" | "required";
+  readonly preload: boolean;
+  readonly fontDisplay: "optional" | "block";
+};
+
+export type FontNetworkPolicy = {
+  readonly mode: "none" | "managed-immutable-cdn";
+  readonly requiresNetwork: boolean;
+  readonly allowedOrigins: readonly string[];
+  readonly emergencyFallbackRequired: true;
+};
+
+export type CompiledFontPreload = {
+  readonly resourceId: string;
+  readonly rel: "preload";
+  readonly href: string;
+  readonly as: "font";
+  readonly type: "font/woff2";
+  readonly crossOrigin: "anonymous";
+  readonly integrity: string;
+};
+
 export type CompiledBrandScope = {
   readonly id: string;
   readonly profileId: string;
@@ -72,6 +121,7 @@ export type CompiledBrandScope = {
     readonly "data-lemn-profile": string;
     readonly "data-lemn-mode": string;
   };
+  readonly fontResourceIds: readonly string[];
   readonly tokens: Readonly<Record<string, string>>;
   readonly recharts: RechartsBrandTheme;
   readonly echarts: EChartsBrandTheme;
@@ -86,11 +136,15 @@ export type CompiledBrandArtifact = {
   readonly sourceHash: string;
   readonly compiledHash: string;
   readonly compatibility: {
-    readonly schema: "1.x";
-    readonly compiler: "1.x";
+    readonly schema: "2.x";
+    readonly compiler: "2.x";
   };
   readonly profiles: Readonly<Record<string, ResolvedBrandProfile>>;
   readonly scopes: Readonly<Record<string, CompiledBrandScope>>;
+  readonly fontCatalogVersion: typeof FONT_CATALOG_VERSION;
+  readonly fontResources: readonly CompiledFontResource[];
+  readonly estimatedFontBytes: number;
+  readonly fontNetworkPolicy: FontNetworkPolicy;
   readonly criticalCss: string;
   readonly assetManifest: Readonly<Record<string, {
     readonly storageKey: string;
@@ -138,16 +192,26 @@ export async function compileBrandProject(input: unknown): Promise<BrandCompileR
     compilerVersion: BRAND_COMPILER_VERSION,
     sourceHash
   }));
+  const compiledTypography = Object.fromEntries(
+    Object.values(resolution.profiles).map((profile) => [profile.id, compileTypography(profile.id, profile.typography)] as const)
+  );
   const scopes = Object.fromEntries(
     Object.values(resolution.profiles).flatMap((profile) =>
       Object.entries(profile.modes).map(([modeId, mode]) => {
         const key = scopeKey(profile.id, modeId);
-        return [key, compileScope(scopeNamespace, profile.id, modeId, mode)] as const;
+        const typography = compiledTypography[profile.id];
+        if (!typography) throw new Error(`Typography did not compile for profile '${profile.id}'`);
+        return [key, compileScope(scopeNamespace, profile.id, modeId, mode, profile.typography, typography)] as const;
       })
     )
   );
+  const fontResources = mergeFontResources(
+    Object.values(compiledTypography).flatMap((typography) => typography.resources)
+  );
+  const fontNetworkPolicy = compileFontNetworkPolicy(fontResources);
   const criticalCss = [
     `/* @lemn-ltd/brand-contract ${BRAND_COMPILER_VERSION}; source ${sourceHash} */`,
+    ...fontResources.map(fontFaceCss),
     ...Object.values(scopes).map(scopeCss)
   ].join("\n\n");
   const assetManifest = Object.fromEntries(
@@ -169,13 +233,17 @@ export async function compileBrandProject(input: unknown): Promise<BrandCompileR
   const artifactPayload = {
     schemaVersion: BRAND_SCHEMA_VERSION,
     compilerVersion: BRAND_COMPILER_VERSION,
-    compatibility: { schema: "1.x", compiler: "1.x" } as const,
+    compatibility: { schema: "2.x", compiler: "2.x" } as const,
     brandId: project.brandId,
     brandName: project.name,
     defaultProfileId: project.defaultProfileId,
     sourceHash,
     profiles: Object.freeze(resolution.profiles),
     scopes: Object.freeze(scopes),
+    fontCatalogVersion: FONT_CATALOG_VERSION,
+    fontResources: Object.freeze(fontResources),
+    estimatedFontBytes: sumUniqueFontBytes(fontResources),
+    fontNetworkPolicy,
     criticalCss,
     assetManifest: Object.freeze(assetManifest)
   };
@@ -206,6 +274,7 @@ export function getCompiledScope(artifact: CompiledBrandArtifact, profileId: str
 
 export function serializeBrandBootstrap(artifact: CompiledBrandArtifact, profileId: string, modeId?: string): string {
   const scope = getCompiledScope(artifact, profileId, modeId);
+  const fontResources = getCompiledScopeFontResources(artifact, profileId, modeId);
   return serializeBootstrapJson({
     schemaVersion: artifact.schemaVersion,
     compilerVersion: artifact.compilerVersion,
@@ -216,9 +285,48 @@ export function serializeBrandBootstrap(artifact: CompiledBrandArtifact, profile
     modeId: scope.modeId,
     scopeId: scope.id,
     attributes: scope.attributes,
+    fontCatalogVersion: artifact.fontCatalogVersion,
+    fontResources,
+    estimatedFontBytes: sumUniqueFontBytes(fontResources),
+    fontNetworkPolicy: compileFontNetworkPolicy(fontResources),
     recharts: scope.recharts,
     echarts: scope.echarts
   });
+}
+
+export function getCompiledScopeFontResources(
+  artifact: CompiledBrandArtifact,
+  profileId: string,
+  modeId?: string
+): readonly CompiledFontResource[] {
+  const scope = getCompiledScope(artifact, profileId, modeId);
+  const selected = new Set(scope.fontResourceIds);
+  const resources = artifact.fontResources.filter((resource) => selected.has(resource.id));
+  if (resources.length !== selected.size) {
+    throw new Error(`Compiled font resources are incomplete for profile '${scope.profileId}'`);
+  }
+  return Object.freeze(resources);
+}
+
+export function getCompiledScopeFontPreloads(
+  artifact: CompiledBrandArtifact,
+  profileId: string,
+  modeId?: string
+): readonly CompiledFontPreload[] {
+  const byUrl = new Map<string, CompiledFontPreload>();
+  for (const resource of getCompiledScopeFontResources(artifact, profileId, modeId)) {
+    if (!resource.preload || byUrl.has(resource.url)) continue;
+    byUrl.set(resource.url, Object.freeze({
+      resourceId: resource.id,
+      rel: "preload",
+      href: resource.url,
+      as: "font",
+      type: "font/woff2",
+      crossOrigin: "anonymous",
+      integrity: resource.integrity
+    }));
+  }
+  return Object.freeze([...byUrl.values()]);
 }
 
 export function assertCompatibleBrandArtifact(artifact: CompiledBrandArtifact): void {
@@ -227,6 +335,9 @@ export function assertCompatibleBrandArtifact(artifact: CompiledBrandArtifact): 
   }
   if (artifact.compilerVersion.split(".")[0] !== BRAND_COMPILER_VERSION.split(".")[0]) {
     throw new Error(`Incompatible brand compiler version: ${artifact.compilerVersion}`);
+  }
+  if (artifact.fontCatalogVersion !== FONT_CATALOG_VERSION) {
+    throw new Error(`Unsupported font catalog version: ${String(artifact.fontCatalogVersion)}`);
   }
   if (!/^[a-f0-9]{64}$/.test(artifact.sourceHash) || !/^[a-f0-9]{64}$/.test(artifact.compiledHash)) {
     throw new Error("Brand artifact hashes are invalid");
@@ -268,6 +379,17 @@ function resolveProfiles(project: BrandProject): ProfileResolution {
     visiting.add(profileId);
     const parent = source.extends ? resolve(source.extends) : undefined;
     const modes = { ...(parent?.modes ?? {}), ...source.modes };
+    const typography = source.typography ?? parent?.typography;
+    if (!typography) {
+      diagnostics.push({
+        code: "BRAND_TYPOGRAPHY_UNRESOLVED",
+        severity: "error",
+        path: `profiles.${profileId}.typography`,
+        message: "Typography must be declared on a root profile or inherited from a parent"
+      });
+      visiting.delete(profileId);
+      return undefined;
+    }
     const defaultMode = source.defaultMode ?? parent?.defaultMode ?? Object.keys(modes)[0];
     if (!defaultMode || !(defaultMode in modes)) {
       diagnostics.push({
@@ -284,6 +406,7 @@ function resolveProfiles(project: BrandProject): ProfileResolution {
       name: source.name,
       ...(source.description ? { description: source.description } : {}),
       defaultMode,
+      typography,
       modes: Object.freeze(modes),
       assets: Object.freeze({ ...(parent?.assets ?? {}), ...compactAssets(source) }),
       runtimeSelection: Object.freeze({
@@ -304,6 +427,186 @@ function resolveProfiles(project: BrandProject): ProfileResolution {
 
 function compactAssets(profile: BrandProfileSource): Record<string, string> {
   return Object.fromEntries(Object.entries(profile.assets ?? {}).filter((entry): entry is [string, string] => typeof entry[1] === "string"));
+}
+
+type CompiledFontRole = {
+  readonly ref: FontCatalogRef;
+  readonly source: "system" | "managed";
+  readonly stack: string;
+  readonly weights: readonly number[];
+  readonly styles: readonly FontStyle[];
+  readonly fidelity: "preferred" | "required";
+  readonly emergencyFallbackRef: FontCatalogRef;
+  readonly fontDisplay: "optional" | "block";
+};
+
+type CompiledTypography = {
+  readonly roles: {
+    readonly body: CompiledFontRole;
+    readonly heading: CompiledFontRole;
+    readonly code: CompiledFontRole;
+    readonly label: CompiledFontRole;
+  };
+  readonly resources: readonly CompiledFontResource[];
+};
+
+function compileTypography(profileId: string, typography: BrandTypography): CompiledTypography {
+  const body = compileDirectFontSelection(profileId, typography.body, "body");
+  const heading = typography.heading.source === "inherit"
+    ? body
+    : compileDirectFontSelection(profileId, typography.heading, "heading");
+  const code = compileDirectFontSelection(profileId, typography.code, "code");
+  const label = typography.label.source === "inherit"
+    ? typography.label.role === "heading" ? heading : body
+    : compileDirectFontSelection(profileId, typography.label, "label");
+  return Object.freeze({
+    roles: Object.freeze({ body: body.role, heading: heading.role, code: code.role, label: label.role }),
+    resources: Object.freeze(mergeFontResources([
+      ...body.resources,
+      ...heading.resources,
+      ...code.resources,
+      ...label.resources
+    ]))
+  });
+}
+
+function compileDirectFontSelection(
+  profileId: string,
+  selection: DirectFontSelection,
+  role: "body" | "heading" | "code" | "label"
+): { readonly role: CompiledFontRole; readonly resources: readonly CompiledFontResource[] } {
+  const record = getFontCatalogRecord(selection.ref);
+  const emergency = getFontCatalogRecord(selection.emergencyFallbackRef);
+  if (emergency.source !== "system") {
+    throw new Error(`Emergency fallback '${selection.emergencyFallbackRef}' is not a system font`);
+  }
+  const managedFamily = record.source === "managed"
+    ? compiledManagedFamily(record.family, profileId, selection.fidelity)
+    : undefined;
+  const primaryStack = record.source === "system"
+    ? record.cssStack.map(formatSystemFamily)
+    : [`"${managedFamily}"`];
+  const stack = [...new Set([...primaryStack, ...emergency.cssStack.map(formatSystemFamily)])].join(", ");
+  const fontDisplay = selection.source === "managed" && selection.fidelity === "required" ? "block" : "optional";
+  const compiledRole: CompiledFontRole = Object.freeze({
+    ref: selection.ref,
+    source: selection.source,
+    stack,
+    weights: Object.freeze([...selection.weights].sort((left, right) => left - right)),
+    styles: Object.freeze([...selection.styles].sort()),
+    fidelity: selection.fidelity,
+    emergencyFallbackRef: selection.emergencyFallbackRef,
+    fontDisplay
+  });
+  if (record.source === "system") return { role: compiledRole, resources: [] };
+  const resources = record.resources
+    .filter((resource) => selection.styles.includes(resource.style) && selection.weights.some((weight) => inWeightRange(weight, resource)))
+    .map((resource) => compileManagedResource(profileId, managedFamily ?? record.family, record, resource, selection, role, fontDisplay));
+  return { role: compiledRole, resources: Object.freeze(resources) };
+}
+
+function compileManagedResource(
+  profileId: string,
+  family: string,
+  record: ManagedFontCatalogRecord,
+  resource: FontCatalogResource,
+  selection: DirectFontSelection,
+  role: "body" | "heading" | "code" | "label",
+  fontDisplay: "optional" | "block"
+): CompiledFontResource {
+  return Object.freeze({
+    id: `${profileId}.${selection.fidelity}.${resource.id}`,
+    profileId,
+    catalogRef: record.ref,
+    family,
+    url: resource.url,
+    format: resource.format,
+    style: resource.style,
+    weightRange: resource.weightRange,
+    subset: resource.subset,
+    unicodeRange: resource.unicodeRange,
+    estimatedBytes: resource.estimatedBytes,
+    sha256: resource.sha256,
+    integrity: resource.integrity,
+    immutable: resource.immutable,
+    provisional: resource.provisional,
+    fidelity: selection.fidelity,
+    preload: selection.fidelity === "required" && (role === "body" || role === "heading"),
+    fontDisplay
+  });
+}
+
+function inWeightRange(weight: number, resource: FontCatalogResource): boolean {
+  return weight >= resource.weightRange[0] && weight <= resource.weightRange[1];
+}
+
+function mergeFontResources(resources: readonly CompiledFontResource[]): CompiledFontResource[] {
+  const byId = new Map<string, CompiledFontResource>();
+  for (const resource of resources) {
+    const existing = byId.get(resource.id);
+    if (!existing) {
+      byId.set(resource.id, resource);
+      continue;
+    }
+    const required = existing.fidelity === "required" || resource.fidelity === "required";
+    byId.set(resource.id, Object.freeze({
+      ...existing,
+      fidelity: required ? "required" : "preferred",
+      preload: existing.preload || resource.preload,
+      fontDisplay: required ? "block" : "optional"
+    }));
+  }
+  return [...byId.values()].sort((left, right) => left.id.localeCompare(right.id));
+}
+
+function sumUniqueFontBytes(resources: readonly CompiledFontResource[]): number {
+  const byUrl = new Map<string, number>();
+  for (const resource of resources) byUrl.set(resource.url, resource.estimatedBytes);
+  return [...byUrl.values()].reduce((total, bytes) => total + bytes, 0);
+}
+
+function compileFontNetworkPolicy(resources: readonly CompiledFontResource[]): FontNetworkPolicy {
+  const origins = [...new Set(resources.map((resource) => new URL(resource.url).origin))].sort();
+  return Object.freeze({
+    mode: resources.length === 0 ? "none" : "managed-immutable-cdn",
+    requiresNetwork: resources.length > 0,
+    allowedOrigins: Object.freeze(origins),
+    emergencyFallbackRequired: true
+  });
+}
+
+function fontFaceCss(resource: CompiledFontResource): string {
+  return [
+    "@font-face {",
+    `  font-family: "${resource.family}";`,
+    `  src: url("${resource.url}") format("${resource.format}");`,
+    `  font-style: ${resource.style};`,
+    `  font-weight: ${resource.weightRange[0]} ${resource.weightRange[1]};`,
+    `  font-display: ${resource.fontDisplay};`,
+    `  unicode-range: ${resource.unicodeRange};`,
+    "}"
+  ].join("\n");
+}
+
+function formatSystemFamily(family: string): string {
+  const genericFamilies = new Set([
+    "system-ui",
+    "ui-serif",
+    "ui-sans-serif",
+    "ui-monospace",
+    "sans-serif",
+    "serif",
+    "monospace"
+  ]);
+  return genericFamilies.has(family) || /^[a-zA-Z-]+$/.test(family) ? family : `"${family}"`;
+}
+
+function compiledManagedFamily(
+  family: string,
+  profileId: string,
+  fidelity: "preferred" | "required"
+): string {
+  return `${family}--lemn-${profileId}-${fidelity}`;
 }
 
 function validateMode(profileId: string, modeId: string, mode: BrandMode): BrandDiagnostic[] {
@@ -351,8 +654,15 @@ function validateMode(profileId: string, modeId: string, mode: BrandMode): Brand
   return result;
 }
 
-function compileScope(scopeNamespace: string, profileId: string, modeId: string, mode: BrandMode): CompiledBrandScope {
-  const tokens = compileTokens(mode);
+function compileScope(
+  scopeNamespace: string,
+  profileId: string,
+  modeId: string,
+  mode: BrandMode,
+  typography: BrandTypography,
+  compiledTypography: CompiledTypography
+): CompiledBrandScope {
+  const tokens = compileTokens(mode, typography, compiledTypography);
   const scopeId = `${scopeNamespace}-${profileId}-${modeId}`;
   const selector = `[data-lemn-brand-scope="${scopeId}"]`;
   const fontBody = tokens["--lemn-font-body"] ?? "system-ui, sans-serif";
@@ -375,6 +685,7 @@ function compileScope(scopeNamespace: string, profileId: string, modeId: string,
       "data-lemn-profile": profileId,
       "data-lemn-mode": modeId
     }),
+    fontResourceIds: Object.freeze(compiledTypography.resources.map((resource) => resource.id)),
     tokens: Object.freeze(tokens),
     recharts: Object.freeze({
       series: Object.freeze([...mode.visualization.categorical]),
@@ -409,11 +720,14 @@ function compileScope(scopeNamespace: string, profileId: string, modeId: string,
   });
 }
 
-function compileTokens(mode: BrandMode): Record<string, string> {
+function compileTokens(
+  mode: BrandMode,
+  typography: BrandTypography,
+  compiledTypography: CompiledTypography
+): Record<string, string> {
   const colors = mode.colors;
   const visualization = mode.visualization;
   const accentMix = mode.colorScheme === "dark" ? "#ffffff" : "#000000";
-  const fontStack = (role: BrandMode["typography"]["body"]): string => [role.family, ...role.fallbacks].join(", ");
   const seriesTokens = Object.fromEntries(
     Array.from({ length: 8 }, (_, index) => [
       `--lemn-chart-series-${index + 1}`,
@@ -421,8 +735,8 @@ function compileTokens(mode: BrandMode): Record<string, string> {
     ])
   );
   const spacing = (pixels: number): string => `${formatTokenNumber(pixels * mode.spacingAndDensity.scale)}px`;
-  const bodyWeights = [...mode.typography.body.weights].sort((left, right) => left - right);
-  const headingWeights = [...mode.typography.heading.weights].sort((left, right) => left - right);
+  const bodyWeights = [...compiledTypography.roles.body.weights].sort((left, right) => left - right);
+  const headingWeights = [...compiledTypography.roles.heading.weights].sort((left, right) => left - right);
   const closestWeight = (weights: readonly number[], target: number): number =>
     weights.reduce((closest, value) => Math.abs(value - target) < Math.abs(closest - target) ? value : closest, weights[0] ?? target);
   return {
@@ -458,27 +772,27 @@ function compileTokens(mode: BrandMode): Record<string, string> {
     "--lemn-color-info": colors.info.border,
     "--lemn-color-info-surface": colors.info.surface,
     "--lemn-color-info-foreground": colors.info.foreground,
-    "--lemn-font-body": fontStack(mode.typography.body),
-    "--lemn-font-heading": fontStack(mode.typography.heading),
-    "--lemn-font-code": fontStack(mode.typography.code),
-    "--lemn-font-label": fontStack(mode.typography.label ?? mode.typography.body),
-    "--lemn-font-display": mode.typography.fontDisplay,
-    "--lemn-font-size-base": `${mode.typography.baseSize}px`,
-    "--lemn-font-size-display": `${mode.typography.displaySize}px`,
-    "--lemn-font-size-title": `${mode.typography.titleSize}px`,
-    "--lemn-font-size-heading": `${Math.round(mode.typography.baseSize * 1.125)}px`,
-    "--lemn-font-size-body": `${mode.typography.baseSize}px`,
-    "--lemn-font-size-small": `${Math.max(10, mode.typography.baseSize - 1)}px`,
-    "--lemn-font-size-caption": `${Math.max(10, mode.typography.baseSize - 2)}px`,
-    "--lemn-font-size-mono": `${Math.max(10, mode.typography.baseSize - 1)}px`,
-    "--lemn-line-height-body": String(mode.typography.bodyLineHeight),
-    "--lemn-line-height-heading": String(mode.typography.headingLineHeight),
-    "--lemn-line-height-display": String(mode.typography.headingLineHeight),
-    "--lemn-line-height-title": String(mode.typography.headingLineHeight),
-    "--lemn-line-height-small": String(mode.typography.bodyLineHeight),
-    "--lemn-line-height-caption": String(mode.typography.bodyLineHeight),
-    "--lemn-line-height-mono": String(mode.typography.bodyLineHeight),
-    "--lemn-letter-spacing": `${mode.typography.tracking}em`,
+    "--lemn-font-body": compiledTypography.roles.body.stack,
+    "--lemn-font-heading": compiledTypography.roles.heading.stack,
+    "--lemn-font-code": compiledTypography.roles.code.stack,
+    "--lemn-font-label": compiledTypography.roles.label.stack,
+    "--lemn-font-display": compiledTypography.roles.body.fontDisplay,
+    "--lemn-font-size-base": `${typography.baseSize}px`,
+    "--lemn-font-size-display": `${typography.displaySize}px`,
+    "--lemn-font-size-title": `${typography.titleSize}px`,
+    "--lemn-font-size-heading": `${Math.round(typography.baseSize * 1.125)}px`,
+    "--lemn-font-size-body": `${typography.baseSize}px`,
+    "--lemn-font-size-small": `${Math.max(10, typography.baseSize - 1)}px`,
+    "--lemn-font-size-caption": `${Math.max(10, typography.baseSize - 2)}px`,
+    "--lemn-font-size-mono": `${Math.max(10, typography.baseSize - 1)}px`,
+    "--lemn-line-height-body": String(typography.bodyLineHeight),
+    "--lemn-line-height-heading": String(typography.headingLineHeight),
+    "--lemn-line-height-display": String(typography.headingLineHeight),
+    "--lemn-line-height-title": String(typography.headingLineHeight),
+    "--lemn-line-height-small": String(typography.bodyLineHeight),
+    "--lemn-line-height-caption": String(typography.bodyLineHeight),
+    "--lemn-line-height-mono": String(typography.bodyLineHeight),
+    "--lemn-letter-spacing": `${typography.tracking}em`,
     "--lemn-font-weight-regular": String(closestWeight(bodyWeights, 400)),
     "--lemn-font-weight-medium": String(closestWeight(bodyWeights, 500)),
     "--lemn-font-weight-semibold": String(closestWeight(headingWeights, 600)),

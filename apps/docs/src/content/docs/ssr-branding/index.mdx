@@ -36,20 +36,23 @@ currently allowed Profiles/modes on every resolution.
 3. Check schema/compiler compatibility and verify `compiledHash` over the
    canonical artifact payload.
 4. Select the compiled Profile/mode scope.
-5. Put verified `artifact.criticalCss` in a `<style>` element in `<head>` before
+5. Resolve `getCompiledScopeFontPreloads` and emit every returned descriptor as
+   a deduplicated `<link rel="preload">` in `<head>` for the selected Profile.
+6. Put verified `artifact.criticalCss` in a `<style>` element in `<head>` before
    any branded markup.
-6. Put every `scope.attributes` entry on the branded container and set the
+7. Put every `scope.attributes` entry on the branded container and set the
    resolved color scheme.
-7. Serialize the minimal bootstrap with `serializeBrandBootstrap`, escape it for
+8. Serialize the minimal bootstrap with `serializeBrandBootstrap`, escape it for
    the HTML context, and include it as non-executable JSON.
-8. Render components inside that scope.
-9. Hydrate only when the bootstrap `compiledHash` matches the server artifact.
+9. Render components inside that scope.
+10. Hydrate only when the bootstrap `compiledHash` matches the server artifact.
 
 Core package operations:
 
 ```ts
 import {
   getCompiledScope,
+  getCompiledScopeFontPreloads,
   serializeBrandBootstrap,
   verifyBrandArtifact,
   type CompiledBrandArtifact,
@@ -62,14 +65,20 @@ export async function prepareBrand(
 ) {
   await verifyBrandArtifact(artifact);
   const scope = getCompiledScope(artifact, profileId, modeId);
+  const fontPreloads = getCompiledScopeFontPreloads(artifact, profileId, modeId);
 
   return {
+    fontPreloads,
     criticalCss: artifact.criticalCss,
     scope,
     bootstrap: serializeBrandBootstrap(artifact, profileId, modeId),
   };
 }
 ```
+
+Render each `fontPreloads` entry with its exact `rel`, `href`, `as`, `type`,
+`crossOrigin`, and `integrity` attributes before the critical style. Do not
+preload resources from another Profile or resources marked as preferred.
 
 `criticalCss` is safe only after verification and because it came from the
 version-compatible compiler. Escape the bootstrap for its exact HTML context;

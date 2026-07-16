@@ -130,7 +130,7 @@ describe("ui showcase worker", () => {
 		const worker = createWorker();
 		const schema = await worker.fetch(
 			new Request(
-				"https://schemas.ui.le-mn.com/brand-project/v1.json",
+				"https://schemas.ui.le-mn.com/brand-project/v2.json",
 			),
 		);
 		expect(schema.status).toBe(200);
@@ -139,7 +139,7 @@ describe("ui showcase worker", () => {
 		);
 		expect(schema.headers.get("cache-control")).toContain("immutable");
 		expect(await schema.json()).toMatchObject({
-			$id: "https://schemas.ui.le-mn.com/brand-project/v1.json",
+			$id: "https://schemas.ui.le-mn.com/brand-project/v2.json",
 		});
 
 		const missing = await worker.fetch(

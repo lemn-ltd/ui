@@ -1,10 +1,12 @@
 import {
   BRAND_PROJECT_SCHEMA_URL,
   BRAND_SCHEMA_VERSION,
+  FONT_CATALOG_VERSION,
   bestContrastingColor,
   parseBrandProject,
   type BrandMode,
-  type BrandProject
+  type BrandProject,
+  type BrandTypography
 } from "@lemn-ltd/brand-contract";
 
 export type BrandPreset = {
@@ -15,25 +17,25 @@ export type BrandPreset = {
   readonly dark: { readonly canvas: string; readonly surface: string; readonly accent: string };
   readonly radius: number;
   readonly density: "compact" | "comfortable" | "spacious";
-  readonly heading: "Inter" | "Georgia";
+  readonly heading: "inherit-body" | "system-serif";
 };
 
 export const brandPresets: readonly BrandPreset[] = [
   preset("aster-vault", "Aster Vault", "Quiet indigo structure with emerald data signals.", "#f5f6ff", "#eceefe", "#4f46c8", "#090a14", "#121426", "#9b95ff", 12),
   preset("verdant-ledger", "Verdant Ledger", "Measured botanical greens for operational products.", "#f3f8f5", "#e7f1eb", "#087a55", "#07110d", "#0f1b15", "#55d6a2", 14),
-  preset("ember-studio", "Ember Studio", "Warm editorial surfaces with analytical restraint.", "#fff7f2", "#fcebe0", "#b94812", "#150b07", "#21120c", "#ff8a4c", 10, "comfortable", "Georgia"),
+  preset("ember-studio", "Ember Studio", "Warm editorial surfaces with analytical restraint.", "#fff7f2", "#fcebe0", "#b94812", "#150b07", "#21120c", "#ff8a4c", 10, "comfortable", "system-serif"),
   preset("tideglass", "Tideglass", "Airy cyan surfaces with ocean-blue focus.", "#f2fafc", "#e3f4f7", "#006f8e", "#061216", "#0d1d22", "#4dd4f2", 16, "spacious"),
-  preset("orchid-signal", "Orchid Signal", "Expressive orchid identity with calm neutral surfaces.", "#fdf7ff", "#f6e8fb", "#7e22ce", "#120717", "#201027", "#d8b4fe", 14, "comfortable", "Georgia"),
+  preset("orchid-signal", "Orchid Signal", "Expressive orchid identity with calm neutral surfaces.", "#fdf7ff", "#f6e8fb", "#7e22ce", "#120717", "#201027", "#d8b4fe", 14, "comfortable", "system-serif"),
   preset("cobalt-transit", "Cobalt Transit", "Direct blue hierarchy for fast operational workflows.", "#f5f8ff", "#e7efff", "#1d4ed8", "#070d1d", "#101a31", "#93c5fd", 8, "compact"),
-  preset("saffron-field", "Saffron Field", "Earthy gold and ink for human-centered tools.", "#fffbeb", "#fef3c7", "#92400e", "#171006", "#251a09", "#fbbf24", 12, "comfortable", "Georgia"),
-  preset("rosewood-notes", "Rosewood Notes", "A composed rose palette for editorial products.", "#fff7f8", "#ffe4e9", "#9f1239", "#18080d", "#281018", "#fda4af", 10, "comfortable", "Georgia"),
+  preset("saffron-field", "Saffron Field", "Earthy gold and ink for human-centered tools.", "#fffbeb", "#fef3c7", "#92400e", "#171006", "#251a09", "#fbbf24", 12, "comfortable", "system-serif"),
+  preset("rosewood-notes", "Rosewood Notes", "A composed rose palette for editorial products.", "#fff7f8", "#ffe4e9", "#9f1239", "#18080d", "#281018", "#fda4af", 10, "comfortable", "system-serif"),
   preset("alpine-console", "Alpine Console", "Crisp forest tones for dependable system surfaces.", "#f4faf6", "#e5f5ea", "#166534", "#07120b", "#101f15", "#86efac", 8, "compact"),
   preset("slate-bureau", "Slate Bureau", "Neutral slate for dense administrative products.", "#f8fafc", "#e2e8f0", "#334155", "#070b12", "#111827", "#cbd5e1", 6, "compact"),
   preset("copper-pulse", "Copper Pulse", "Confident copper accents on quiet warm surfaces.", "#fff8f3", "#ffeadc", "#9a3412", "#160b06", "#26130c", "#fdba74", 12),
   preset("iris-grid", "Iris Grid", "Structured violet for data-rich creative systems.", "#faf7ff", "#efe7ff", "#6d28d9", "#0e0718", "#1b102c", "#c4b5fd", 14),
   preset("lagoon-index", "Lagoon Index", "Balanced teal for reporting and service products.", "#f2fbfa", "#dff6f2", "#0f766e", "#061413", "#0d2421", "#5eead4", 12),
-  preset("night-bloom", "Night Bloom", "Magenta energy contained by editorial neutrals.", "#fff7fe", "#f9e6f7", "#86198f", "#150817", "#241027", "#f0abfc", 16, "spacious", "Georgia"),
-  preset("solar-ink", "Solar Ink", "A bright ochre signal paired with precise ink surfaces.", "#fffceb", "#fef5bd", "#854d0e", "#151104", "#24200c", "#fde047", 10, "comfortable", "Georgia")
+  preset("night-bloom", "Night Bloom", "Magenta energy contained by editorial neutrals.", "#fff7fe", "#f9e6f7", "#86198f", "#150817", "#241027", "#f0abfc", 16, "spacious", "system-serif"),
+  preset("solar-ink", "Solar Ink", "A bright ochre signal paired with precise ink surfaces.", "#fffceb", "#fef5bd", "#854d0e", "#151104", "#24200c", "#fde047", 10, "comfortable", "system-serif")
 ];
 
 export function createBrandFromPreset(presetId: string, options: { brandId?: string; name?: string } = {}): BrandProject {
@@ -57,6 +59,7 @@ export function createBrandFromPreset(presetId: string, options: { brandId?: str
       core: {
         name: "Core",
         defaultMode: "light",
+        typography: createTypography(source),
         modes: {
           light: createMode(source, "light"),
           dark: createMode(source, "dark")
@@ -79,7 +82,7 @@ function preset(
   darkAccent: string,
   radius: number,
   density: BrandPreset["density"] = "comfortable",
-  heading: BrandPreset["heading"] = "Inter"
+  heading: BrandPreset["heading"] = "inherit-body"
 ): BrandPreset {
   return {
     id,
@@ -131,19 +134,6 @@ function createMode(presetSource: BrandPreset, colorScheme: "light" | "dark"): B
       info: dark
         ? { surface: "#172554", foreground: "#dbeafe", border: "#3b82f6" }
         : { surface: "#dbeafe", foreground: "#1e3a8a", border: "#1d4ed8" }
-    },
-    typography: {
-      body: { family: "Inter", fallbacks: ["system-ui", "sans-serif"], weights: [400, 500, 600] },
-      heading: { family: presetSource.heading, fallbacks: presetSource.heading === "Georgia" ? ["serif"] : ["system-ui", "sans-serif"], weights: [600, 700] },
-      label: { family: "Inter", fallbacks: ["system-ui", "sans-serif"], weights: [500, 600] },
-      code: { family: "ui-monospace", fallbacks: ["monospace"], weights: [400, 600] },
-      fontDisplay: "swap",
-      baseSize: 16,
-      displaySize: 52,
-      titleSize: 30,
-      bodyLineHeight: 1.5,
-      headingLineHeight: 1.1,
-      tracking: 0
     },
     shape: {
       borderWidth: "1px",
@@ -209,6 +199,45 @@ function createMode(presetSource: BrandPreset, colorScheme: "light" | "dark"): B
       automaticCorrections: "derived-only"
     },
     componentAppearance: { controls: "solid", cards: "bordered", inputs: "outlined" }
+  };
+}
+
+function createTypography(presetSource: BrandPreset): BrandTypography {
+  return {
+    catalogVersion: FONT_CATALOG_VERSION,
+    body: {
+      source: "system",
+      ref: "system.ui",
+      fidelity: "preferred",
+      emergencyFallbackRef: "system.sans",
+      weights: [400, 500, 600],
+      styles: ["normal"]
+    },
+    heading: presetSource.heading === "system-serif"
+      ? {
+          source: "system",
+          ref: "system.serif",
+          fidelity: "preferred",
+          emergencyFallbackRef: "system.ui",
+          weights: [400, 600, 700],
+          styles: ["normal"]
+        }
+      : { source: "inherit", role: "body" },
+    code: {
+      source: "system",
+      ref: "system.mono",
+      fidelity: "preferred",
+      emergencyFallbackRef: "system.ui",
+      weights: [400, 600],
+      styles: ["normal"]
+    },
+    label: { source: "inherit", role: "body" },
+    baseSize: 16,
+    displaySize: 52,
+    titleSize: 30,
+    bodyLineHeight: 1.5,
+    headingLineHeight: 1.1,
+    tracking: 0
   };
 }
 

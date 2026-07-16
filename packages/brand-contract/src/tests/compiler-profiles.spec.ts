@@ -24,11 +24,12 @@ describe("profile and mode resolution", () => {
 		expect(result.ok).toBe(true);
 		if (!result.ok) return;
 		const child = result.artifact.profiles.pediatrics;
-		expect(child).toMatchObject({
-			id: "pediatrics",
-			defaultMode: "dark",
-			assets: { primaryLogo: "logo-main" },
-		});
+			expect(child).toMatchObject({
+				id: "pediatrics",
+				defaultMode: "dark",
+				assets: { primaryLogo: "logo-main" },
+				typography: result.artifact.profiles.core?.typography,
+			});
 		expect(Object.keys(child?.modes ?? {})).toEqual(["light", "dark"]);
 		expect(child?.modes.light).toEqual(
 			result.artifact.profiles.core?.modes.light,
@@ -71,9 +72,13 @@ describe("profile and mode resolution", () => {
 		fixtureProfile(selfCycle, "pediatrics").extends = "pediatrics";
 		expect(safeParseBrandProject(selfCycle).success).toBe(false);
 
-		const emptyRoot = makeBrandProject();
-		fixtureProfile(emptyRoot, "core").modes = {};
-		expect(safeParseBrandProject(emptyRoot).success).toBe(false);
+			const emptyRoot = makeBrandProject();
+			fixtureProfile(emptyRoot, "core").modes = {};
+			expect(safeParseBrandProject(emptyRoot).success).toBe(false);
+
+			const rootWithoutTypography = makeBrandProject();
+			fixtureProfile(rootWithoutTypography, "core").typography = undefined;
+			expect(safeParseBrandProject(rootWithoutTypography).success).toBe(false);
 
 		const danglingAsset = makeBrandProject();
 		const core = fixtureProfile(danglingAsset, "core");

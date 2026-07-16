@@ -31,23 +31,30 @@ y se revalida contra Profiles/modes permitidos por el Assignment.
 2. Resuelve assignment sequence y artefacto inmutable con deadline.
 3. Verifica compatibilidad e integridad de `compiledHash`.
 4. Selecciona el scope Profile/mode.
-5. Inyecta `artifact.criticalCss` en `<head>` antes del markup.
-6. Aplica todos los `scope.attributes` al contenedor y el color scheme.
-7. Serializa/escapa el bootstrap minimo para el contexto HTML.
-8. Renderiza componentes dentro del scope.
-9. Hidrata solo si el browser recibe el mismo `compiledHash`.
+5. Resuelve `getCompiledScopeFontPreloads` y emite cada descriptor como un
+   `<link rel="preload">` deduplicado del Profile seleccionado.
+6. Inyecta `artifact.criticalCss` en `<head>` antes del markup.
+7. Aplica todos los `scope.attributes` al contenedor y el color scheme.
+8. Serializa/escapa el bootstrap minimo para el contexto HTML.
+9. Renderiza componentes dentro del scope.
+10. Hidrata solo si el browser recibe el mismo `compiledHash`.
 
 ```ts
 import {
   getCompiledScope,
+  getCompiledScopeFontPreloads,
   serializeBrandBootstrap,
   verifyBrandArtifact,
 } from "@lemn-ltd/brand-contract";
 
 await verifyBrandArtifact(artifact);
 const scope = getCompiledScope(artifact, profileId, modeId);
+const fontPreloads = getCompiledScopeFontPreloads(artifact, profileId, modeId);
 const bootstrap = serializeBrandBootstrap(artifact, profileId, modeId);
 ```
+
+Renderiza cada entrada de `fontPreloads` con sus atributos exactos antes del
+style critico. Nunca precargues recursos de otro Profile ni fonts `preferred`.
 
 Solo usa CSS critico despues de verificar el artefacto. Escapa el bootstrap para
 su contexto; nunca interpoles source JSON, assets o strings no confiables.

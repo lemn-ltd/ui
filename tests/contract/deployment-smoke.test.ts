@@ -119,10 +119,10 @@ test("production smoke compares exact docs and showcase build identities", async
 		if (url === "https://showcase.ui.le-mn.com/blocks.json") {
 			return Response.json({ blocks: [{}] });
 		}
-		if (url === "https://schemas.ui.le-mn.com/brand-project/v1.json") {
+		if (url === "https://schemas.ui.le-mn.com/brand-project/v2.json") {
 			return new Response(
 				JSON.stringify({
-					$id: "https://schemas.ui.le-mn.com/brand-project/v1.json",
+					$id: "https://schemas.ui.le-mn.com/brand-project/v2.json",
 				}),
 				{ headers: { "content-type": "application/schema+json" } },
 			);
@@ -241,10 +241,10 @@ test("production smoke fails when the new protected status token is rejected", a
 			});
 		if (url === "https://showcase.ui.le-mn.com/blocks.json")
 			return Response.json({ blocks: [{}] });
-		if (url === "https://schemas.ui.le-mn.com/brand-project/v1.json")
+		if (url === "https://schemas.ui.le-mn.com/brand-project/v2.json")
 			return new Response(
 				JSON.stringify({
-					$id: "https://schemas.ui.le-mn.com/brand-project/v1.json",
+					$id: "https://schemas.ui.le-mn.com/brand-project/v2.json",
 				}),
 				{ headers: { "content-type": "application/schema+json" } },
 			);

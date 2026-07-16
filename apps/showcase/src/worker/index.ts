@@ -50,7 +50,7 @@ function brandProjectSchemaResponse(
 	request: Request,
 	pathname: string,
 ): Response {
-	if (pathname !== "/brand-project/v1.json") {
+	if (pathname !== "/brand-project/v2.json") {
 		return Response.json(
 			{ error: "schema_not_found" },
 			{ status: 404, headers: { "cache-control": "no-store" } },

@@ -211,8 +211,8 @@ Canonical schema URI:
 
 ```json
 {
-  "$schema": "https://schemas.ui.le-mn.com/brand-project/v1.json",
-  "schemaVersion": 1,
+  "$schema": "https://schemas.ui.le-mn.com/brand-project/v2.json",
+  "schemaVersion": 2,
   "brandId": "brand_lunaria",
   "profiles": {
     "lunaria_core": { "modes": ["light", "dark"] },
@@ -819,7 +819,7 @@ Material existing authorities include `PAT-ARCH-CLOUDFLARE-FIRST-001`, `PAT-ARCH
 - `https://branding-mcp.agentops.le-mn.com` — Zero Trust MCP endpoint when an HTTP route is required.
 - private Brand Runtime Worker — no public route; Service Binding first.
 - `https://lunaria-care.le-mn.com` — deployed consumer application.
-- `https://schemas.ui.le-mn.com/brand-project/v1.json` — immutable public schema artifact.
+- `https://schemas.ui.le-mn.com/brand-project/v2.json` — immutable public schema artifact.
 
 All exact Worker, Queue, R2, Hyperdrive, Access, database, and domain names must follow deterministic environment-qualified naming and be verified against the Lemn DEV account before creation.
 

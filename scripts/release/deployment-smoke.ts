@@ -8,7 +8,7 @@ const SCHEMA_ORIGIN = "https://schemas.ui.le-mn.com";
 const SHOWCASE_ADMIN_ORIGIN = "https://admin.showcase.ui.le-mn.com";
 const SHOWCASE_ADMIN_ACCESS_TENANT = "lemn-dev.cloudflareaccess.com";
 const UI_PACKAGE_NAME = "@lemn-ltd/ui";
-const BRAND_PROJECT_SCHEMA_URL = `${SCHEMA_ORIGIN}/brand-project/v1.json`;
+const BRAND_PROJECT_SCHEMA_URL = `${SCHEMA_ORIGIN}/brand-project/v2.json`;
 export const PROTECTED_STATUS_PATHS = [
 	"/_status",
 	"/_status.json",

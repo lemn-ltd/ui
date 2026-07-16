@@ -1,9 +1,16 @@
 import { z } from "zod";
+import {
+  FONT_CATALOG_VERSION,
+  MANAGED_FONT_REFS,
+  SYSTEM_FONT_REFS,
+  getFontCatalogRecord,
+  type FontCatalogRef
+} from "./font-catalog.js";
 
 export const BRAND_PROJECT_SCHEMA_URL =
-  "https://schemas.ui.le-mn.com/brand-project/v1.json" as const;
-export const BRAND_SCHEMA_VERSION = 1 as const;
-export const BRAND_COMPILER_VERSION = "1.0.0" as const;
+  "https://schemas.ui.le-mn.com/brand-project/v2.json" as const;
+export const BRAND_SCHEMA_VERSION = 2 as const;
+export const BRAND_COMPILER_VERSION = "2.0.0" as const;
 
 const identifierSchema = z
   .string()
@@ -32,13 +39,6 @@ const cssShadowSchema = z
   .string()
   .max(200)
   .refine((value) => value === "none" || !/[{};]/.test(value), "Shadow values cannot contain CSS declarations");
-const cssFontNameSchema = z
-  .string()
-  .trim()
-  .min(1)
-  .max(100)
-  .regex(/^[a-zA-Z0-9 _.-]+$/, "Use a safe font family name");
-
 export const brandAssetSchema = z
   .object({
     id: identifierSchema,
@@ -87,22 +87,56 @@ export const brandColorsSchema = z
   })
   .strict();
 
-const fontRoleSchema = z
+const fontWeightSchema = z.number().int().min(100).max(900).refine((weight) => weight % 100 === 0, {
+  message: "Use a CSS font weight in 100 increments"
+});
+const fontStylesSchema = z.array(z.enum(["normal", "italic"])).min(1).max(2);
+const fontSelectionFields = {
+  fidelity: z.enum(["preferred", "required"]),
+  emergencyFallbackRef: z.enum(SYSTEM_FONT_REFS),
+  weights: z.array(fontWeightSchema).min(1).max(9),
+  styles: fontStylesSchema
+} as const;
+
+export const systemFontSelectionSchema = z
   .object({
-    family: cssFontNameSchema,
-    fallbacks: z.array(cssFontNameSchema).min(1).max(8),
-    weights: z.array(z.number().int().min(100).max(900)).min(1).max(9),
-    assetId: identifierSchema.optional()
+    source: z.literal("system"),
+    ref: z.enum(SYSTEM_FONT_REFS),
+    ...fontSelectionFields
   })
   .strict();
 
+export const managedFontSelectionSchema = z
+  .object({
+    source: z.literal("managed"),
+    ref: z.enum(MANAGED_FONT_REFS),
+    ...fontSelectionFields
+  })
+  .strict();
+
+export const directFontSelectionSchema = z.discriminatedUnion("source", [
+  systemFontSelectionSchema,
+  managedFontSelectionSchema
+]);
+
+const bodyFontSelectionSchema = directFontSelectionSchema;
+const headingFontSelectionSchema = z.union([
+  directFontSelectionSchema,
+  z.object({ source: z.literal("inherit"), role: z.literal("body") }).strict()
+]);
+const codeFontSelectionSchema = directFontSelectionSchema;
+const labelFontSelectionSchema = z.union([
+  directFontSelectionSchema,
+  z.object({ source: z.literal("inherit"), role: z.enum(["body", "heading"]) }).strict()
+]);
+
 export const brandTypographySchema = z
   .object({
-    body: fontRoleSchema,
-    heading: fontRoleSchema,
-    code: fontRoleSchema,
-    label: fontRoleSchema.optional(),
-    fontDisplay: z.enum(["auto", "block", "swap", "fallback", "optional"]).default("swap"),
+    catalogVersion: z.literal(FONT_CATALOG_VERSION),
+    body: bodyFontSelectionSchema,
+    heading: headingFontSelectionSchema,
+    code: codeFontSelectionSchema,
+    label: labelFontSelectionSchema.default({ source: "inherit", role: "body" }),
     baseSize: z.number().min(12).max(22),
     displaySize: z.number().min(24).max(80),
     titleSize: z.number().min(18).max(48),
@@ -110,7 +144,31 @@ export const brandTypographySchema = z
     headingLineHeight: z.number().min(0.9).max(1.8),
     tracking: z.number().min(-0.08).max(0.2)
   })
-  .strict();
+  .strict()
+  .superRefine((typography, context) => {
+    const roles = ["body", "heading", "code", "label"] as const;
+    for (const role of roles) {
+      const selection = typography[role];
+      if (selection.source === "inherit") continue;
+      const record = getFontCatalogRecord(selection.ref as FontCatalogRef);
+      if (new Set(selection.weights).size !== selection.weights.length) {
+        context.addIssue({ code: "custom", path: [role, "weights"], message: "Font weights must be unique" });
+      }
+      if (new Set(selection.styles).size !== selection.styles.length) {
+        context.addIssue({ code: "custom", path: [role, "styles"], message: "Font styles must be unique" });
+      }
+      for (const weight of selection.weights) {
+        if (!record.supportedWeights.includes(weight)) {
+          context.addIssue({ code: "custom", path: [role, "weights"], message: `${record.label} does not support weight ${weight}` });
+        }
+      }
+      for (const style of selection.styles) {
+        if (!record.supportedStyles.includes(style)) {
+          context.addIssue({ code: "custom", path: [role, "styles"], message: `${record.label} does not support style ${style}` });
+        }
+      }
+    }
+  });
 
 export const brandShapeSchema = z
   .object({
@@ -214,7 +272,6 @@ export const brandModeSchema = z
   .object({
     colorScheme: z.enum(["light", "dark"]),
     colors: brandColorsSchema,
-    typography: brandTypographySchema,
     shape: brandShapeSchema,
     elevation: brandElevationSchema,
     spacingAndDensity: brandSpacingSchema,
@@ -233,6 +290,7 @@ export const brandProfileSchema = z
     description: z.string().trim().max(240).optional(),
     extends: identifierSchema.optional(),
     defaultMode: identifierSchema.optional(),
+    typography: brandTypographySchema.optional(),
     modes: z.record(identifierSchema, brandModeSchema),
     assets: z
       .object({
@@ -295,6 +353,9 @@ export const brandProjectSchema = z
       if (!profile.extends && Object.keys(profile.modes).length === 0) {
         context.addIssue({ code: "custom", path: ["profiles", profileId, "modes"], message: "A root profile requires at least one mode" });
       }
+      if (!profile.extends && !profile.typography) {
+        context.addIssue({ code: "custom", path: ["profiles", profileId, "typography"], message: "A root profile requires typography" });
+      }
     }
     const assetIds = new Set(Object.keys(project.assets));
     for (const [assetKey, asset] of Object.entries(project.assets)) {
@@ -313,15 +374,6 @@ export const brandProjectSchema = z
           context.addIssue({ code: "custom", path: ["profiles", profileId, "assets", role], message: "Referenced asset must exist" });
         }
       }
-      for (const [modeId, mode] of Object.entries(profile.modes)) {
-        for (const [fontRole, font] of Object.entries(mode.typography)) {
-          if (typeof font !== "object" || font === null || !("assetId" in font)) continue;
-          const assetId = font.assetId;
-          if (typeof assetId === "string" && !assetIds.has(assetId)) {
-            context.addIssue({ code: "custom", path: ["profiles", profileId, "modes", modeId, "typography", fontRole, "assetId"], message: "Referenced font asset must exist" });
-          }
-        }
-      }
       for (const modeId of profile.runtimeSelection.allowedModes ?? []) {
         if (!(modeId in profile.modes) && !profile.extends) {
           context.addIssue({ code: "custom", path: ["profiles", profileId, "runtimeSelection", "allowedModes"], message: "Allowed mode must exist on the profile or its inherited modes" });
@@ -331,6 +383,10 @@ export const brandProjectSchema = z
   });
 
 export type BrandAsset = z.infer<typeof brandAssetSchema>;
+export type SystemFontSelection = z.infer<typeof systemFontSelectionSchema>;
+export type ManagedFontSelection = z.infer<typeof managedFontSelectionSchema>;
+export type DirectFontSelection = z.infer<typeof directFontSelectionSchema>;
+export type BrandTypography = z.infer<typeof brandTypographySchema>;
 export type BrandMode = z.infer<typeof brandModeSchema>;
 export type BrandProfileSource = z.infer<typeof brandProfileSchema>;
 export type BrandProject = z.infer<typeof brandProjectSchema>;

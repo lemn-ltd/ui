@@ -4,6 +4,7 @@ import {
 	type BrandMode,
 	type BrandProfileSource,
 	type BrandProject,
+	type BrandTypography,
 } from "../index.js";
 
 const LIGHT_COLORS: BrandMode["colors"] = {
@@ -57,32 +58,6 @@ export function makeMode(colorScheme: "light" | "dark"): BrandMode {
 	return {
 		colorScheme,
 		colors: structuredClone(dark ? DARK_COLORS : LIGHT_COLORS),
-		typography: {
-			body: {
-				family: "Inter",
-				fallbacks: ["system-ui", "sans-serif"],
-				weights: [400, 500, 600],
-				assetId: "font-main",
-			},
-			heading: {
-				family: "Inter",
-				fallbacks: ["system-ui", "sans-serif"],
-				weights: [600, 700],
-				assetId: "font-main",
-			},
-			code: {
-				family: "JetBrains Mono",
-				fallbacks: ["ui-monospace", "monospace"],
-				weights: [400, 600],
-			},
-			fontDisplay: "swap",
-			baseSize: 16,
-			displaySize: 48,
-			titleSize: 28,
-			bodyLineHeight: 1.5,
-			headingLineHeight: 1.15,
-			tracking: 0,
-		},
 		shape: {
 			borderWidth: "1px",
 			borderStyle: "solid",
@@ -163,6 +138,36 @@ export function makeMode(colorScheme: "light" | "dark"): BrandMode {
 	};
 }
 
+export function makeTypography(): BrandTypography {
+	return {
+		catalogVersion: 1,
+		body: {
+			source: "system",
+			ref: "system.ui",
+			fidelity: "preferred",
+			emergencyFallbackRef: "system.sans",
+			weights: [400, 500, 600],
+			styles: ["normal"],
+		},
+		heading: { source: "inherit", role: "body" },
+		code: {
+			source: "system",
+			ref: "system.mono",
+			fidelity: "preferred",
+			emergencyFallbackRef: "system.ui",
+			weights: [400, 600],
+			styles: ["normal"],
+		},
+		label: { source: "inherit", role: "body" },
+		baseSize: 16,
+		displaySize: 48,
+		titleSize: 28,
+		bodyLineHeight: 1.5,
+		headingLineHeight: 1.15,
+		tracking: 0,
+	};
+}
+
 export function makeBrandProject(): BrandProject {
 	return {
 		$schema: BRAND_PROJECT_SCHEMA_URL,
@@ -176,14 +181,6 @@ export function makeBrandProject(): BrandProject {
 			externalReferences: {},
 		},
 		assets: {
-			"font-main": {
-				id: "font-main",
-				kind: "font",
-				storageKey: "brands/lunaria/font-main.woff2",
-				sha256: "0".repeat(64),
-				mediaType: "font/woff2",
-				licenseId: "OFL-1.1",
-			},
 			"logo-main": {
 				id: "logo-main",
 				kind: "logo",
@@ -200,6 +197,7 @@ export function makeBrandProject(): BrandProject {
 			core: {
 				name: "Core",
 				defaultMode: "light",
+				typography: makeTypography(),
 				modes: {
 					light: makeMode("light"),
 					dark: makeMode("dark"),

@@ -12,8 +12,8 @@ sidebar:
 
 ```json
 {
-  "$schema": "https://schemas.ui.le-mn.com/brand-project/v1.json",
-  "schemaVersion": 1,
+  "$schema": "https://schemas.ui.le-mn.com/brand-project/v2.json",
+  "schemaVersion": 2,
   "brandId": "example_brand",
   "name": "Example Brand",
   "defaultProfileId": "core",
@@ -21,6 +21,32 @@ sidebar:
     "core": {
       "name": "Core",
       "defaultMode": "light",
+      "typography": {
+        "catalogVersion": 1,
+        "body": {
+          "source": "system",
+          "ref": "system.ui",
+          "fidelity": "preferred",
+          "emergencyFallbackRef": "system.sans",
+          "weights": [400, 500, 600],
+          "styles": ["normal"]
+        },
+        "heading": { "source": "inherit", "role": "body" },
+        "code": {
+          "source": "system",
+          "ref": "system.mono",
+          "fidelity": "preferred",
+          "emergencyFallbackRef": "system.ui",
+          "weights": [400, 600],
+          "styles": ["normal"]
+        },
+        "baseSize": 16,
+        "displaySize": 52,
+        "titleSize": 30,
+        "bodyLineHeight": 1.5,
+        "headingLineHeight": 1.1,
+        "tracking": 0
+      },
       "modes": {
         "light": {},
         "dark": {}
@@ -31,7 +57,7 @@ sidebar:
 ```
 
 The abbreviated mode bodies above are illustrative. A valid source provides
-the schema's complete color, typography, shape, elevation,
+the schema's complete Profile typography and each mode's color, shape, elevation,
 spacing/density, motion, visualization, iconography, accessibility, and
 component-appearance sections.
 
@@ -49,6 +75,7 @@ values, and emits an immutable artifact with:
 - source and compiled SHA-256 hashes;
 - inheritance-free Profiles and modes;
 - critical scoped CSS using stable `--lemn-*` roles;
+- selected immutable WOFF2 resources, preload policy, and `@font-face` rules;
 - DOM scope attributes and color scheme;
 - chart-provider adapters behind artifact fields;
 - managed asset references; and
@@ -63,7 +90,7 @@ names.
 Install Studio with an exact compatible release:
 
 ```bash
-pnpm add @lemn-ltd/brand-studio@0.1.1
+pnpm add @lemn-ltd/brand-studio@0.2.0
 ```
 
 ```tsx
@@ -85,9 +112,18 @@ import { createBrandFromPreset } from "@lemn-ltd/brand-studio/presets";
 ```
 
 The wizard exposes identity, starting presets, managed assets, Profiles/modes,
-semantic colors, typography, shape/elevation, density/motion, visualization,
+semantic colors, governed Profile typography, shape/elevation, density/motion, visualization,
 accessibility, constrained component appearance, and source/resolved/compiled
 review.
+
+Typography uses a curated catalog rather than arbitrary family strings. System
+choices request 0 KB. Managed choices are self-hosted at
+`fonts.ui.le-mn.com`, expose `preferred` or `required` fidelity plus a system
+emergency fallback, and only compile the selected family/styles. `preferred`
+uses optional loading; `required` isolates its internal family per Profile,
+preloads it during SSR, and uses the browser font block period so the first
+text paint does not use the fallback. A permanent download failure can still
+activate the declared emergency fallback rather than hiding content forever.
 
 Studio is controlled and persistence-free. The host must authenticate and
 authorize the project, validate expected revision/idempotency, persist drafts,
@@ -104,7 +140,7 @@ primary brand color. Blocking diagnostics prevent publication.
 
 ## Evolution
 
-Additive fields may remain in schema major 1 only when defaults preserve
+Additive fields may remain in schema major 2 only when defaults preserve
 behavior. Incompatible meaning/removal requires a new schema major and explicit
 migration. Future settings belong under validated standard fields or namespaced
 `extensions`; arbitrary CSS and behavior flags are not branding.

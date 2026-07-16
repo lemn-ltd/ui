@@ -7,11 +7,11 @@ sidebar:
 ---
 
 `@lemn-ltd/brand-contract` define
-`https://schemas.ui.le-mn.com/brand-project/v1.json`. Un BrandProject tiene una
+`https://schemas.ui.le-mn.com/brand-project/v2.json`. Un BrandProject tiene una
 identidad, assets gestionados, Profiles y un Profile por defecto. Cada Profile
 puede heredar de un solo padre aciclico y contener multiples modes.
 
-El contrato cubre colores semanticos, tipografia, shape, elevation,
+El contrato cubre colores semanticos, tipografia gobernada por Profile, shape, elevation,
 spacing/density, motion, visualizaciones, iconografia, accesibilidad y
 apariencia restringida. Arbitrary CSS y behavior flags no son branding.
 
@@ -26,7 +26,7 @@ de variables.
 ## Brand Studio
 
 ```bash
-pnpm add @lemn-ltd/brand-studio@0.1.1
+pnpm add @lemn-ltd/brand-studio@0.2.0
 ```
 
 ```tsx
@@ -46,6 +46,15 @@ import { createBrandFromPreset } from "@lemn-ltd/brand-studio/presets";
 El wizard cubre identity, presets, assets, Profiles/modes, colors, typography,
 shape/elevation, density/motion, visualizations, accessibility, apariencia y
 review JSON/compiled.
+
+Typography usa un catalogo curado en vez de nombres libres. Las opciones de
+sistema descargan 0 KB; las administradas se sirven desde
+`fonts.ui.le-mn.com`, permiten fidelidad `preferred|required`, conservan un
+fallback de emergencia y compilan solo la familia/estilos seleccionados.
+`preferred` prioriza carga opcional. `required` aisla el alias interno por
+Profile, genera preload SSR y usa el periodo de bloqueo del navegador para que
+el primer pintado de texto no use el fallback. Un fallo permanente todavia
+activa el fallback declarado en vez de ocultar contenido indefinidamente.
 
 Studio es controlado y sin persistencia. El host autentica/autoriza, guarda
 drafts, valida expected revision/idempotency, planifica/aplica publicacion,

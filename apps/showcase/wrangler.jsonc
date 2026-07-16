@@ -19,7 +19,7 @@
       "/catalog.json",
       "/provider-registry.json",
       "/blocks.json",
-      "/brand-project/v1.json",
+      "/brand-project/v2.json",
       "/llms.txt",
       "/llms-full.txt",
     ],

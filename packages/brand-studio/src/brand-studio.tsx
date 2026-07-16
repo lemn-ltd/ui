@@ -1,9 +1,15 @@
 import {
   compileBrandProject,
+  fontCatalog,
+  getFontCatalogRecord,
   getCompiledScope,
   safeParseBrandProject,
   type BrandMode,
   type BrandProject,
+  type BrandTypography,
+  type DirectFontSelection,
+  type FontCatalogRecord,
+  type FontCatalogRef,
   type CompiledBrandArtifact
 } from "@lemn-ltd/brand-contract";
 import {
@@ -84,12 +90,15 @@ export function BrandStudio({
   }, [profileId, value.defaultProfileId, value.profiles]);
 
   const profile = value.profiles[profileId] ?? value.profiles[value.defaultProfileId];
-  const resolvedModeId = profile?.modes[modeId] ? modeId : (profile?.defaultMode ?? Object.keys(profile?.modes ?? {})[0] ?? "light");
-  const mode = profile?.modes[resolvedModeId];
+  const resolvedProfile = artifact?.profiles[profileId];
+  const availableModes = resolvedProfile?.modes ?? profile?.modes ?? {};
+  const resolvedModeId = availableModes[modeId] ? modeId : (profile?.defaultMode ?? resolvedProfile?.defaultMode ?? Object.keys(availableModes)[0] ?? "light");
+  const mode = profile?.modes[resolvedModeId] ?? resolvedProfile?.modes[resolvedModeId];
+  const typography = profile?.typography ?? resolvedProfile?.typography;
   const scope = artifact ? safeScope(artifact, profileId, resolvedModeId) : undefined;
   const currentStep = brandStudioSteps.find((entry) => entry.id === step) ?? brandStudioSteps[0];
   const profileOptions = Object.entries(value.profiles).map(([id, entry]) => ({ value: id, label: entry.name }));
-  const modeOptions = Object.keys(profile?.modes ?? {}).map((id) => ({ value: id, label: id }));
+  const modeOptions = Object.keys(availableModes).map((id) => ({ value: id, label: id }));
   const errorCount = diagnostics.filter((entry) => entry.severity === "error").length;
   const warningCount = diagnostics.length - errorCount;
   const css = artifact?.criticalCss ?? "";
@@ -108,6 +117,17 @@ export function BrandStudio({
     if (readOnly) return;
     const next = structuredClone(value);
     mutate(next);
+    const parsed = safeParseBrandProject(next);
+    if (parsed.success) onChange(parsed.data);
+  };
+
+  const replaceTypography = (mutate: (next: BrandTypography) => void): void => {
+    if (readOnly || !profile || !typography) return;
+    const next = structuredClone(value);
+    const nextProfile = next.profiles[profileId];
+    if (!nextProfile) return;
+    nextProfile.typography = structuredClone(typography);
+    mutate(nextProfile.typography);
     const parsed = safeParseBrandProject(next);
     if (parsed.success) onChange(parsed.data);
   };
@@ -174,7 +194,7 @@ export function BrandStudio({
             </div>
           </div>
 
-          {mode ? renderEditor({ step, value, mode, profileId, modeId: resolvedModeId, readOnly, replaceMode, replaceProject, onChange, setProfileId, setModeId }) : (
+          {mode ? renderEditor({ step, value, mode, typography, profileId, modeId: resolvedModeId, readOnly, replaceMode, replaceTypography, replaceProject, onChange, setProfileId, setModeId }) : (
             <Alert variant="error" title="No mode available" message="This profile must resolve at least one complete mode." />
           )}
 
@@ -219,6 +239,12 @@ export function BrandStudio({
             {scope ? (
               <div className="lemn-brand-studio__preview-scope" {...scope.attributes}>
                 <Card elevated title={<><span>Appointment overview</span> <Badge tone="success">Live</Badge></>}>
+                  <div aria-label="Typography specimen" className="lemn-brand-studio__type-specimen">
+                    <span>Heading specimen</span>
+                    <h2>Care that feels unmistakably yours.</h2>
+                    <p>Body text stays readable across product surfaces, profiles, and color modes.</p>
+                    <code>appointment.status = &quot;confirmed&quot;</code>
+                  </div>
                   <p>Every control below consumes the same compiled semantic scope.</p>
                   <div className="lemn-brand-studio__preview-actions"><Button>Book appointment</Button><Button variant="secondary">View schedule</Button></div>
                   <label className="lemn-brand-studio__check"><Checkbox aria-label="Send reminder" defaultChecked /><span>Send appointment reminder</span></label>
@@ -240,10 +266,12 @@ type EditorContext = {
   readonly step: BrandStudioStepId;
   readonly value: BrandProject;
   readonly mode: BrandMode;
+  readonly typography: BrandTypography | undefined;
   readonly profileId: string;
   readonly modeId: string;
   readonly readOnly: boolean;
   readonly replaceMode: (mutate: (mode: BrandMode) => void) => void;
+  readonly replaceTypography: (mutate: (typography: BrandTypography) => void) => void;
   readonly replaceProject: (mutate: (project: BrandProject) => void) => void;
   readonly onChange: (next: BrandProject) => void;
   readonly setProfileId: (id: string) => void;
@@ -251,7 +279,7 @@ type EditorContext = {
 };
 
 function renderEditor(context: EditorContext): ReactElement | null {
-  const { step, value, mode, profileId, modeId, readOnly, replaceMode, replaceProject, onChange, setProfileId, setModeId } = context;
+  const { step, value, mode, typography, profileId, modeId, readOnly, replaceMode, replaceTypography, replaceProject, onChange, setProfileId, setModeId } = context;
   if (step === "identity") return (
     <FieldGrid>
       <Labeled label="Brand name"><Input defaultValue={value.name} disabled={readOnly} key={value.name} onBlur={(event) => replaceProject((next) => { next.name = event.currentTarget.value.trim() || next.name; })} /></Labeled>
@@ -288,16 +316,9 @@ function renderEditor(context: EditorContext): ReactElement | null {
     </div>
   );
   if (step === "colors") return <ColorEditor mode={mode} readOnly={readOnly} replaceMode={replaceMode} />;
-  if (step === "typography") return (
-    <FieldGrid>
-      <Labeled label="Body family"><Input defaultValue={mode.typography.body.family} disabled={readOnly} key={mode.typography.body.family} onBlur={(event) => replaceMode((next) => { next.typography.body.family = event.currentTarget.value; })} /></Labeled>
-      <Labeled label="Heading family"><Input defaultValue={mode.typography.heading.family} disabled={readOnly} key={mode.typography.heading.family} onBlur={(event) => replaceMode((next) => { next.typography.heading.family = event.currentTarget.value; })} /></Labeled>
-      <NumberField label="Base size" value={mode.typography.baseSize} onCommit={(value) => replaceMode((next) => { next.typography.baseSize = value; })} readOnly={readOnly} />
-      <NumberField label="Display size" value={mode.typography.displaySize} onCommit={(value) => replaceMode((next) => { next.typography.displaySize = value; })} readOnly={readOnly} />
-      <NumberField label="Body line height" value={mode.typography.bodyLineHeight} onCommit={(value) => replaceMode((next) => { next.typography.bodyLineHeight = value; })} readOnly={readOnly} step={0.05} />
-      <NumberField label="Tracking" value={mode.typography.tracking} onCommit={(value) => replaceMode((next) => { next.typography.tracking = value; })} readOnly={readOnly} step={0.01} />
-    </FieldGrid>
-  );
+  if (step === "typography") return typography
+    ? <TypographyEditor readOnly={readOnly} replaceTypography={replaceTypography} typography={typography} />
+    : <Alert variant="error" title="Typography unavailable" message="A root profile must define typography before it can be edited." />;
   if (step === "shape") return (
     <FieldGrid>
       {(["radiusSmall", "radiusMedium", "radiusLarge", "radiusControl", "radiusCard", "radiusPill"] as const).map((key) => <Labeled key={key} label={humanize(key)}><Input defaultValue={mode.shape[key]} disabled={readOnly} key={`${key}-${mode.shape[key]}`} onBlur={(event) => replaceMode((next) => { next.shape[key] = event.currentTarget.value; })} /></Labeled>)}
@@ -334,6 +355,212 @@ function renderEditor(context: EditorContext): ReactElement | null {
     </FieldGrid>
   );
   return null;
+}
+
+type EditableFontRole = "body" | "heading" | "code";
+type EditableFontSelection = BrandTypography[EditableFontRole];
+
+const INHERIT_BODY_FONT = "inherit.body" as const;
+
+function TypographyEditor({
+  typography,
+  replaceTypography,
+  readOnly
+}: {
+  readonly typography: BrandTypography;
+  readonly replaceTypography: (mutate: (typography: BrandTypography) => void) => void;
+  readonly readOnly: boolean;
+}): ReactElement {
+  return (
+    <div className="lemn-brand-studio__typography-editor">
+      <Alert
+        variant="info"
+        title="Profile-level typography"
+        message="These font roles apply to every light and dark mode in this profile. System fonts download 0 KB; managed fonts load only when selected."
+      />
+      <div className="lemn-brand-studio__font-role-grid">
+        <FontRoleEditor readOnly={readOnly} replaceTypography={replaceTypography} role="body" selection={typography.body} typography={typography} />
+        <FontRoleEditor readOnly={readOnly} replaceTypography={replaceTypography} role="heading" selection={typography.heading} typography={typography} />
+        <FontRoleEditor readOnly={readOnly} replaceTypography={replaceTypography} role="code" selection={typography.code} typography={typography} />
+      </div>
+      <FieldGrid>
+        <NumberField label="Base size" value={typography.baseSize} onCommit={(value) => replaceTypography((next) => { next.baseSize = value; })} readOnly={readOnly} />
+        <NumberField label="Display size" value={typography.displaySize} onCommit={(value) => replaceTypography((next) => { next.displaySize = value; })} readOnly={readOnly} />
+        <NumberField label="Body line height" value={typography.bodyLineHeight} onCommit={(value) => replaceTypography((next) => { next.bodyLineHeight = value; })} readOnly={readOnly} step={0.05} />
+        <NumberField label="Tracking" value={typography.tracking} onCommit={(value) => replaceTypography((next) => { next.tracking = value; })} readOnly={readOnly} step={0.01} />
+      </FieldGrid>
+    </div>
+  );
+}
+
+function FontRoleEditor({
+  role,
+  selection,
+  typography,
+  replaceTypography,
+  readOnly
+}: {
+  readonly role: EditableFontRole;
+  readonly selection: EditableFontSelection;
+  readonly typography: BrandTypography;
+  readonly replaceTypography: (mutate: (typography: BrandTypography) => void) => void;
+  readonly readOnly: boolean;
+}): ReactElement {
+  const inherited = selection.source === "inherit";
+  const directSelection = inherited ? typography.body : selection;
+  const record = getFontCatalogRecord(directSelection.ref);
+  const selectedBytes = selectedFontBytes(record, directSelection);
+  const roleLabel = humanize(role);
+
+  return (
+    <section className="lemn-brand-studio__font-role" aria-label={`${roleLabel} font settings`}>
+      <Labeled label={`${roleLabel} font`}>
+        <SelectNative
+          aria-label={`${roleLabel} font`}
+          disabled={readOnly}
+          onValueChange={(value) => replaceTypography((next) => {
+            if (role === "heading" && value === INHERIT_BODY_FONT) {
+              next.heading = { source: "inherit", role: "body" };
+              return;
+            }
+            const previous = getDirectSelection(next, role);
+            setFontSelection(next, role, createFontSelection(value as FontCatalogRef, role, previous));
+          })}
+          options={fontOptions(role)}
+          value={inherited ? INHERIT_BODY_FONT : selection.ref}
+        />
+      </Labeled>
+
+      <div className="lemn-brand-studio__font-summary">
+        <div className="lemn-brand-studio__font-summary-title">
+          <Badge tone={record.source === "managed" ? "info" : "success"}>{record.source === "managed" ? "Managed" : "System"}</Badge>
+          <strong>{inherited ? `Same as Body · ${record.label}` : record.label}</strong>
+          <span>{selectedBytes === 0 ? "0 KB" : `≈ ${formatBytes(selectedBytes)}`}</span>
+        </div>
+        <p>{inherited ? `Heading inherits the complete Body selection. ${record.description}` : record.description}</p>
+        <dl>
+          <div><dt>Type</dt><dd>{record.category}</dd></div>
+          <div><dt>Weights</dt><dd>{directSelection.weights.join(", ")}</dd></div>
+          <div><dt>Styles</dt><dd>{directSelection.styles.join(", ")}</dd></div>
+          <div>
+            <dt>License</dt>
+            <dd>{record.source === "managed" ? <a href={record.licenseArtifactUrl} rel="noreferrer" target="_blank">{record.licenseId}</a> : "OS-provided"}</dd>
+          </div>
+          {record.source === "managed" ? <>
+            <div><dt>Source</dt><dd><a href={record.sourceUrl} rel="noreferrer" target="_blank">Pinned Google Fonts source</a></dd></div>
+            <div><dt>Attribution</dt><dd>{record.copyrightNotice}</dd></div>
+          </> : null}
+        </dl>
+      </div>
+
+      {!inherited && selection.source === "managed" ? (
+        <div className="lemn-brand-studio__font-policy">
+          <Labeled label="Fidelity">
+            <SelectNative
+              aria-label={`${roleLabel} fidelity`}
+              disabled={readOnly}
+              onValueChange={(value) => replaceTypography((next) => {
+                const current = getDirectSelection(next, role);
+                if (current?.source === "managed") current.fidelity = value as "preferred" | "required";
+              })}
+              options={[
+                { value: "preferred", label: "Preferred · fallback accepted" },
+                { value: "required", label: "Required · preload and block initial fallback paint" }
+              ]}
+              value={selection.fidelity}
+            />
+          </Labeled>
+          <Labeled label="Emergency fallback">
+            <SelectNative
+              aria-label={`${roleLabel} emergency fallback`}
+              disabled={readOnly}
+              onValueChange={(value) => replaceTypography((next) => {
+                const current = getDirectSelection(next, role);
+                if (current) current.emergencyFallbackRef = value as DirectFontSelection["emergencyFallbackRef"];
+              })}
+              options={systemFallbackOptions()}
+              value={selection.emergencyFallbackRef}
+            />
+          </Labeled>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+function fontOptions(role: EditableFontRole) {
+  const records = fontCatalog.filter((record) => role === "code" ? record.category === "mono" : record.category !== "mono");
+  const options = [
+    ...(role === "heading" ? [{ label: "Inheritance", options: [{ value: INHERIT_BODY_FONT, label: "Same as Body · recommended" }] }] : []),
+    {
+      label: "System · 0 KB",
+      options: records.filter((record) => record.source === "system").map((record) => ({ value: record.ref, label: record.label }))
+    },
+    {
+      label: "Managed · Cloudflare CDN",
+      options: records.filter((record) => record.source === "managed").map((record) => ({ value: record.ref, label: `${record.label} · ${formatBytes(record.estimatedBytes)}` }))
+    }
+  ];
+  return options.filter((group) => group.options.length > 0);
+}
+
+function systemFallbackOptions() {
+  return fontCatalog
+    .filter((record) => record.source === "system")
+    .map((record) => ({ value: record.ref, label: `${record.label} · 0 KB` }));
+}
+
+function createFontSelection(
+  ref: FontCatalogRef,
+  role: EditableFontRole,
+  previous?: DirectFontSelection
+): DirectFontSelection {
+  const record = getFontCatalogRecord(ref);
+  const roleWeights = role === "heading" ? [600, 700] : role === "code" ? [400, 600] : [400, 500, 600];
+  const weights = roleWeights.filter((weight) => record.supportedWeights.includes(weight));
+  const validWeights = weights.length > 0 ? weights : [record.supportedWeights[0] ?? 400];
+  const defaultStyle: DirectFontSelection["styles"][number] = record.supportedStyles.includes("normal")
+    ? "normal"
+    : (record.supportedStyles[0] ?? "normal");
+  const styles: DirectFontSelection["styles"] = [defaultStyle];
+  const common = {
+    fidelity: record.source === "managed" && previous?.source === "managed" ? previous.fidelity : "preferred" as const,
+    emergencyFallbackRef: defaultSystemFallback(record.category),
+    weights: validWeights,
+    styles
+  };
+  return record.source === "managed"
+    ? { source: "managed", ref: record.ref, ...common }
+    : { source: "system", ref: record.ref, ...common, fidelity: "preferred" };
+}
+
+function defaultSystemFallback(category: FontCatalogRecord["category"]): DirectFontSelection["emergencyFallbackRef"] {
+  if (category === "mono") return "system.mono";
+  if (category === "serif") return "system.serif";
+  return "system.ui";
+}
+
+function getDirectSelection(typography: BrandTypography, role: EditableFontRole): DirectFontSelection | undefined {
+  const selection = typography[role];
+  return selection.source === "inherit" ? undefined : selection;
+}
+
+function setFontSelection(typography: BrandTypography, role: EditableFontRole, selection: DirectFontSelection): void {
+  if (role === "body") typography.body = selection;
+  else if (role === "heading") typography.heading = selection;
+  else typography.code = selection;
+}
+
+function selectedFontBytes(record: FontCatalogRecord, selection: DirectFontSelection): number {
+  if (record.source === "system") return 0;
+  return record.resources
+    .filter((resource) => selection.styles.includes(resource.style) && selection.weights.some((weight) => weight >= resource.weightRange[0] && weight <= resource.weightRange[1]))
+    .reduce((total, resource) => total + resource.estimatedBytes, 0);
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  return `${Math.round(bytes / 1024)} KB`;
 }
 
 function ColorEditor({ mode, readOnly, replaceMode }: { readonly mode: BrandMode; readonly readOnly: boolean; readonly replaceMode: (mutate: (mode: BrandMode) => void) => void }): ReactElement {

@@ -72,6 +72,18 @@
 .lemn-brand-studio__color { align-items: center; display: grid; gap: 8px; grid-template-columns: 42px minmax(0, 1fr); }
 .lemn-brand-studio__color > input[type="color"] { block-size: 38px; border: 1px solid var(--studio-border); border-radius: var(--lemn-radius-control, 8px); inline-size: 42px; padding: 2px; }
 .lemn-brand-studio__boolean { align-items: center; display: flex; gap: 10px; min-block-size: 40px; }
+.lemn-brand-studio__typography-editor { display: grid; gap: 20px; }
+.lemn-brand-studio__font-role-grid { display: grid; gap: 14px; }
+.lemn-brand-studio__font-role { background: var(--lemn-color-surface, #fff); border: 1px solid var(--studio-border); border-radius: var(--lemn-radius-card, 12px); display: grid; gap: 14px; padding: 16px; }
+.lemn-brand-studio__font-summary { background: var(--lemn-color-surface-muted, #f6f8fa); border-radius: var(--lemn-radius-control, 8px); display: grid; gap: 9px; padding: 12px; }
+.lemn-brand-studio__font-summary-title { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; }
+.lemn-brand-studio__font-summary-title > span:last-child { color: var(--studio-muted); font-family: var(--lemn-font-code, ui-monospace, monospace); font-size: 12px; margin-inline-start: auto; }
+.lemn-brand-studio__font-summary p { color: var(--studio-muted); font-size: 13px; line-height: 1.45; margin: 0; }
+.lemn-brand-studio__font-summary dl { display: grid; gap: 8px; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; }
+.lemn-brand-studio__font-summary dl > div { min-inline-size: 0; }
+.lemn-brand-studio__font-summary dt { color: var(--studio-muted); font-size: 10px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
+.lemn-brand-studio__font-summary dd { font-size: 12px; margin: 3px 0 0; overflow-wrap: anywhere; }
+.lemn-brand-studio__font-policy { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
 .lemn-brand-studio__preset-grid { display: grid; gap: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .lemn-brand-studio__preset-grid button { background: var(--lemn-color-surface, #fff); border: 1px solid var(--studio-border); border-radius: var(--lemn-radius-card, 12px); color: inherit; cursor: pointer; display: flex; flex-direction: column; gap: 8px; min-block-size: 150px; padding: 12px; text-align: start; }
@@ -93,6 +105,11 @@
 .lemn-brand-studio__preview-scope { background: var(--lemn-color-canvas); color: var(--lemn-color-text); font-family: var(--lemn-font-body); padding: 12px; }
 .lemn-brand-studio__preview-scope .ui-card { background: var(--lemn-color-surface); border-color: var(--lemn-color-border); border-radius: var(--lemn-radius-card); box-shadow: var(--lemn-shadow-raised); }
 .lemn-brand-studio__preview-scope .ui-button[data-variant="primary"] { background: var(--lemn-color-accent); color: var(--lemn-color-accent-foreground); }
+.lemn-brand-studio__type-specimen { border-block-end: 1px solid var(--lemn-color-border); display: grid; gap: 8px; margin-block-end: 16px; padding-block-end: 16px; }
+.lemn-brand-studio__type-specimen > span { color: var(--lemn-color-text-muted); font-family: var(--lemn-font-label); font-size: 11px; font-weight: var(--lemn-font-weight-medium); letter-spacing: .08em; text-transform: uppercase; }
+.lemn-brand-studio__type-specimen h2 { font-family: var(--lemn-font-heading); font-size: var(--lemn-font-size-title); font-weight: var(--lemn-font-weight-semibold); letter-spacing: var(--lemn-letter-spacing); line-height: var(--lemn-line-height-title); margin: 0; }
+.lemn-brand-studio__type-specimen p { font-family: var(--lemn-font-body); line-height: var(--lemn-line-height-body); margin: 0; }
+.lemn-brand-studio__type-specimen code { background: var(--lemn-color-surface-muted); border-radius: var(--lemn-radius-small); color: var(--lemn-color-text); font-family: var(--lemn-font-code); font-size: var(--lemn-font-size-mono); overflow-wrap: anywhere; padding: 8px 10px; }
 .lemn-brand-studio__preview-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-block: 16px; }
 .lemn-brand-studio__check { align-items: center; display: flex; gap: 8px; margin-block: 14px; }
 .lemn-brand-studio__preview-scope .ui-chart-frame { block-size: 220px; contain: layout paint; min-block-size: 220px; }
@@ -110,7 +127,8 @@
   .lemn-brand-studio__steps { border-block-end: 1px solid var(--studio-border); border-inline-end: 0; flex-direction: row; overflow-x: auto; }
   .lemn-brand-studio__steps button { flex: 0 0 180px; }
   .lemn-brand-studio__editor { padding: 18px; }
-  .lemn-brand-studio__field-grid, .lemn-brand-studio__preset-grid { grid-template-columns: 1fr; }
+  .lemn-brand-studio__field-grid, .lemn-brand-studio__preset-grid, .lemn-brand-studio__font-policy { grid-template-columns: 1fr; }
+  .lemn-brand-studio__font-summary dl { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (prefers-reduced-motion: reduce) {

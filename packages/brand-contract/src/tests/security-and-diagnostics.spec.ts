@@ -5,7 +5,7 @@ import {
 	serializeBootstrapJson,
 	serializeBrandBootstrap,
 } from "../index.js";
-import { fixtureMode, makeBrandProject } from "./fixtures.js";
+import { fixtureMode, fixtureProfile, makeBrandProject } from "./fixtures.js";
 
 describe("diagnostics and safe server bootstrap", () => {
 	it("blocks required contrast failures with measurable diagnostics and a safe suggestion", async () => {
@@ -69,29 +69,31 @@ describe("diagnostics and safe server bootstrap", () => {
 		expect(JSON.parse(bootstrap)).toMatchObject({
 			profileId: "core",
 			modeId: "light",
-			echarts: {
-				textStyle: {
-					fontFamily: "Inter, system-ui, sans-serif",
+				echarts: {
+					textStyle: {
+						fontFamily:
+							'system-ui, sans-serif, Arial, Helvetica, "Liberation Sans"',
+					},
 				},
-			},
+			});
 		});
-	});
 
-	it("rejects CSS declaration injection in font families and fallbacks", () => {
-		const hostileFamily = makeBrandProject();
-		fixtureMode(hostileFamily, "core", "light").typography.body.family =
-			'Inter";}body{display:none}/*';
-		expect(safeParseBrandProject(hostileFamily).success).toBe(false);
+	it("rejects font references and weights outside the versioned catalog", () => {
+		const unknownReference = makeBrandProject();
+		const unknownTypography = fixtureProfile(unknownReference, "core").typography;
+		if (!unknownTypography || unknownTypography.body.source === "inherit") {
+			throw new Error("Fixture must declare direct body typography");
+		}
+		(unknownTypography.body as unknown as { ref: string }).ref =
+			'managed.inter";}body{display:none}/*';
+		expect(safeParseBrandProject(unknownReference).success).toBe(false);
 
-		const hostileFallback = makeBrandProject();
-		fixtureMode(hostileFallback, "core", "light").typography.body.fallbacks = [
-			"system-ui;--stolen-token:red",
-		];
-		expect(safeParseBrandProject(hostileFallback).success).toBe(false);
-
-		const styleTermination = makeBrandProject();
-		fixtureMode(styleTermination, "core", "light").typography.body.family =
-			"</style><script>alert-font</script>";
-		expect(safeParseBrandProject(styleTermination).success).toBe(false);
+		const invalidWeight = makeBrandProject();
+		const invalidTypography = fixtureProfile(invalidWeight, "core").typography;
+		if (!invalidTypography || invalidTypography.body.source === "inherit") {
+			throw new Error("Fixture must declare direct body typography");
+		}
+		(invalidTypography.body as unknown as { weights: number[] }).weights = [450];
+		expect(safeParseBrandProject(invalidWeight).success).toBe(false);
 	});
 });
