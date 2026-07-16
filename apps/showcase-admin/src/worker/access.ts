@@ -1,13 +1,22 @@
-import { createRemoteJWKSet, jwtVerify, type JWTPayload } from "jose";
+import { createRemoteJWKSet, type JWTPayload, jwtVerify } from "jose";
 import type { ShowcaseAdminEnv } from "./env";
 
 const ACCESS_EMAIL = "cf-access-authenticated-user-email";
 const ACCESS_ASSERTION = "cf-access-jwt-assertion";
 
-export interface AccessIdentity {
+export interface HumanAccessIdentity {
+	readonly kind: "human";
 	readonly email: string;
 	readonly assertion: string;
 }
+
+export interface ServiceAccessIdentity {
+	readonly kind: "service";
+	readonly serviceTokenId: string;
+	readonly assertion: string;
+}
+
+export type AccessIdentity = HumanAccessIdentity | ServiceAccessIdentity;
 
 export type AccessVerifier = (
 	assertion: string,
@@ -35,12 +44,15 @@ async function verifyRemote(
 		audience: configuration.audience,
 		algorithms: ["RS256"],
 		clockTolerance: 10,
-		requiredClaims: ["iss", "aud", "sub", "iat", "exp", "email"],
+		requiredClaims: ["iss", "aud", "sub", "iat", "exp"],
 	});
 	return verified.payload;
 }
 
-function accessConfiguration(env: ShowcaseAdminEnv): { readonly issuer: string; readonly audience: string } {
+function accessConfiguration(env: ShowcaseAdminEnv): {
+	readonly issuer: string;
+	readonly audience: string;
+} {
 	const issuer = env.ACCESS_ISSUER?.trim().replace(/\/$/u, "");
 	const audience = env.ACCESS_AUDIENCE?.trim();
 	if (!issuer || !audience || !issuer.endsWith(".cloudflareaccess.com")) {
@@ -56,16 +68,48 @@ export async function accessIdentity(
 ): Promise<AccessIdentity | undefined> {
 	const headerEmail = request.headers.get(ACCESS_EMAIL)?.trim().toLowerCase();
 	const assertion = request.headers.get(ACCESS_ASSERTION)?.trim();
-	if (!headerEmail || !assertion) return undefined;
+	if (!assertion) return undefined;
 	const payload = await verify(assertion, accessConfiguration(env));
-	const tokenEmail = typeof payload.email === "string" ? payload.email.trim().toLowerCase() : undefined;
-	if (!tokenEmail || tokenEmail !== headerEmail) throw new Error("Cloudflare Access identity is invalid.");
-	return { email: tokenEmail, assertion };
+	const tokenEmail =
+		typeof payload.email === "string"
+			? payload.email.trim().toLowerCase()
+			: undefined;
+	const subject =
+		typeof payload.sub === "string" ? payload.sub.trim() : undefined;
+	const serviceTokenId =
+		typeof payload.common_name === "string"
+			? payload.common_name.trim().toLowerCase()
+			: undefined;
+	if (tokenEmail) {
+		if (
+			!headerEmail ||
+			tokenEmail !== headerEmail ||
+			!subject ||
+			serviceTokenId
+		) {
+			throw new Error("Cloudflare Access identity is invalid.");
+		}
+		return { kind: "human", email: tokenEmail, assertion };
+	}
+	if (
+		headerEmail ||
+		subject !== "" ||
+		!serviceTokenId ||
+		!serviceTokenId.endsWith(".access")
+	) {
+		throw new Error("Cloudflare Access identity is invalid.");
+	}
+	return { kind: "service", serviceTokenId, assertion };
 }
 
 export function accessHeaders(identity: AccessIdentity | undefined): Headers {
 	const headers = new Headers({ "content-type": "application/json" });
-	if (identity) {
+	if (identity?.kind === "service") {
+		throw new Error(
+			"Service-token identities cannot call business capabilities.",
+		);
+	}
+	if (identity?.kind === "human") {
 		headers.set(ACCESS_EMAIL, identity.email);
 		headers.set(ACCESS_ASSERTION, identity.assertion);
 	}

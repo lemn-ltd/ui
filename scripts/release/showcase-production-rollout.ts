@@ -1,8 +1,18 @@
 #!/usr/bin/env node
 import { type ChildProcess, spawn } from "node:child_process";
-import { appendFile, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import {
+	appendFile,
+	chmod,
+	mkdtemp,
+	readFile,
+	rm,
+	stat,
+	writeFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { resolve } from "node:path";
+import { resolve, sep } from "node:path";
+import { type ParseError, parse, printParseErrorCode } from "jsonc-parser";
 import {
 	type BuildIdentity,
 	smokeProductionDeployment,
@@ -13,8 +23,12 @@ const root = resolve(import.meta.dirname, "../..");
 const versionIdPattern =
 	/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 const releaseShaPattern = /^[0-9a-f]{40}$/u;
-const candidateMessagePrefix = "lemn-ui-candidate/v1:";
+const candidateMessagePrefix = "lemn-ui-candidate/v3:";
+const candidateMessageMaxBytes = 1_000;
 const rollbackMessage = "Lemn UI automated rollback";
+const cloudflareApi = "https://api.cloudflare.com/client/v4";
+const showcaseConfigRelativePath = "apps/showcase/wrangler.jsonc";
+const showcaseConfigPath = resolve(root, showcaseConfigRelativePath);
 
 type BaselineTokenRole = "production" | "rollback";
 
@@ -36,12 +50,65 @@ export interface ProductionRolloutInput {
 }
 
 export interface CandidateRecoveryState {
-	readonly schema: 1;
+	readonly schema: 3;
 	readonly releaseId: string;
 	readonly expected: BuildIdentity;
 	readonly baselineVersionId: string;
 	readonly baselineIdentity: BuildIdentity;
 	readonly baselineTokenRole: BaselineTokenRole;
+	readonly baselineTriggersHash: string;
+	readonly desiredTriggersHash: string;
+}
+
+export interface CloudflareCustomDomain {
+	readonly hostname: string;
+	readonly service: string;
+}
+
+export interface CloudflareWorkerSubdomain {
+	readonly enabled: boolean;
+	readonly previewsEnabled: boolean;
+}
+
+interface WranglerRoute {
+	readonly pattern?: string;
+	readonly custom_domain?: boolean;
+}
+
+interface WranglerTriggers {
+	readonly crons?: readonly string[];
+}
+
+interface WranglerEnvironment {
+	readonly account_id?: string;
+	readonly compatibility_date?: string;
+	readonly main?: string;
+	readonly name?: string;
+	readonly routes?: readonly WranglerRoute[];
+	readonly triggers?: WranglerTriggers;
+	readonly preview_urls?: boolean;
+	readonly workers_dev?: boolean;
+}
+
+interface WranglerConfig extends WranglerEnvironment {
+	readonly env?: Readonly<Record<string, WranglerEnvironment>>;
+}
+
+interface TriggerPlan {
+	readonly accountId: string;
+	readonly compatibilityDate: string;
+	readonly configSource: string;
+	readonly hash: string;
+	readonly hostnames: readonly string[];
+	readonly mainPath: string;
+	readonly previewsEnabled: boolean;
+	readonly workerName: string;
+	readonly workersDev: boolean;
+}
+
+interface TriggerRecovery {
+	readonly baseline: TriggerPlan;
+	readonly desired: TriggerPlan;
 }
 
 interface VersionSummary {
@@ -68,6 +135,18 @@ interface RolloutDependencies {
 	readonly removeCandidateTemporaryRoot?: (
 		temporaryRoot: string,
 	) => Promise<void>;
+	readonly removeTriggerTemporaryRoot?: (
+		temporaryRoot: string,
+	) => Promise<void>;
+	readonly readDesiredShowcaseConfig?: () => Promise<string>;
+	readonly listCustomDomains?: (
+		accountId: string,
+	) => Promise<readonly CloudflareCustomDomain[]>;
+	readonly getWorkerSubdomain?: (
+		accountId: string,
+		workerName: string,
+	) => Promise<CloudflareWorkerSubdomain>;
+	readonly waitForDomainPropagation?: (delayMs: number) => Promise<void>;
 	readonly signal?: AbortSignal;
 }
 
@@ -156,7 +235,34 @@ export const cloudflareTriggersDeployCommand: CommandSpec = {
 	command: "pnpm",
 	args: [...wranglerBaseArgs, "triggers", "deploy", ...wranglerConfigArgs],
 	timeoutMs: 2 * 60_000,
+	recovery: true,
 };
+
+export function baselineShowcaseConfigCommand(gitSha: string): CommandSpec {
+	if (!releaseShaPattern.test(gitSha)) {
+		throw new Error("Baseline Git SHA must be a full 40-character SHA");
+	}
+	return {
+		command: "git",
+		args: ["show", `${gitSha}:${showcaseConfigRelativePath}`],
+		captureOutput: true,
+		timeoutMs: 60_000,
+	};
+}
+
+export function restoreCloudflareTriggersCommand(
+	configPath: string,
+): CommandSpec {
+	if (!resolve(configPath).startsWith(`${resolve(tmpdir())}${sep}`)) {
+		throw new Error("Recovery Wrangler config must live in the temporary root");
+	}
+	return {
+		command: "pnpm",
+		args: [...wranglerBaseArgs, "triggers", "deploy", "--config", configPath],
+		timeoutMs: 2 * 60_000,
+		recovery: true,
+	};
+}
 
 function assertVersionId(versionId: string): void {
 	if (!versionIdPattern.test(versionId)) {
@@ -191,6 +297,234 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 	return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
+function requireConfigValue(
+	value: string | undefined,
+	description: string,
+): string {
+	if (!value?.trim()) throw new Error(`Missing ${description}`);
+	return value.trim();
+}
+
+function parseWranglerConfig(
+	source: string,
+	description: string,
+): WranglerConfig {
+	const errors: ParseError[] = [];
+	const config = parse(source, errors, { allowTrailingComma: true }) as
+		| WranglerConfig
+		| undefined;
+	if (!config || errors.length > 0) {
+		const details = errors
+			.map((error) => printParseErrorCode(error.error))
+			.join(", ");
+		throw new Error(
+			`${description} is invalid Wrangler JSONC: ${details || "empty config"}`,
+		);
+	}
+	return config;
+}
+
+function normalizedHostname(pattern: string, description: string): string {
+	const hostname = pattern.trim().toLowerCase();
+	if (
+		!hostname ||
+		hostname.includes("*") ||
+		hostname.includes("://") ||
+		hostname.includes("/") ||
+		/\s/u.test(hostname)
+	) {
+		throw new Error(`${description} must be one exact custom-domain hostname`);
+	}
+	return hostname;
+}
+
+function triggerHash(
+	accountId: string,
+	workerName: string,
+	domains: readonly CloudflareCustomDomain[],
+	subdomain: CloudflareWorkerSubdomain,
+): string {
+	const entries = [...domains]
+		.map((domain) => ({
+			hostname: domain.hostname.trim().toLowerCase(),
+			service: domain.service.trim(),
+		}))
+		.sort((left, right) =>
+			`${left.hostname}\u0000${left.service}`.localeCompare(
+				`${right.hostname}\u0000${right.service}`,
+			),
+		);
+	return createHash("sha256")
+		.update(
+			JSON.stringify({
+				accountId,
+				workerName,
+				domains: entries,
+				workersDev: subdomain.enabled,
+				previewsEnabled: subdomain.previewsEnabled,
+			}),
+		)
+		.digest("hex");
+}
+
+function triggerPlanFromSource(
+	source: string,
+	description: string,
+): TriggerPlan {
+	const config = parseWranglerConfig(source, description);
+	const selected = config.env?.production;
+	if (!selected) {
+		throw new Error(`${description} has no production Wrangler environment`);
+	}
+	if (!Array.isArray(selected.routes)) {
+		throw new Error(
+			`${description} must explicitly declare production routes, including [] when empty`,
+		);
+	}
+	const routes = selected.routes;
+	if (
+		routes.some((route) => !isRecord(route) || route.custom_domain !== true)
+	) {
+		throw new Error(
+			`${description} contains a non-custom route; transactional route recovery is unsupported`,
+		);
+	}
+	const cronValues = [selected.triggers?.crons, config.triggers?.crons].filter(
+		(value) => value !== undefined,
+	);
+	if (cronValues.some((value) => !Array.isArray(value) || value.length > 0)) {
+		throw new Error(
+			`${description} contains cron triggers; transactional cron recovery is unsupported`,
+		);
+	}
+
+	const accountId = requireConfigValue(
+		selected.account_id ?? config.account_id,
+		`${description} account_id`,
+	);
+	const workerName = requireConfigValue(
+		selected.name ?? config.name,
+		`${description} Worker name`,
+	);
+	const compatibilityDate = requireConfigValue(
+		selected.compatibility_date ?? config.compatibility_date,
+		`${description} compatibility_date`,
+	);
+	const workersDev = selected.workers_dev ?? config.workers_dev;
+	if (typeof workersDev !== "boolean") {
+		throw new Error(
+			`${description} must resolve workers_dev to a boolean for production trigger recovery`,
+		);
+	}
+	const previewsEnabled =
+		selected.preview_urls ?? config.preview_urls ?? workersDev;
+	if (typeof previewsEnabled !== "boolean") {
+		throw new Error(
+			`${description} must resolve preview_urls to a boolean for production trigger recovery`,
+		);
+	}
+	const configuredMain = requireConfigValue(
+		selected.main ?? config.main,
+		`${description} main`,
+	);
+	const hostnames = routes
+		.map((route, index) =>
+			normalizedHostname(
+				requireConfigValue(
+					route.pattern,
+					`${description} route ${String(index)} pattern`,
+				),
+				`${description} route ${String(index)}`,
+			),
+		)
+		.sort();
+	if (new Set(hostnames).size !== hostnames.length) {
+		throw new Error(`${description} contains duplicate custom domains`);
+	}
+	const showcaseRoot = resolve(root, "apps/showcase");
+	const mainPath = resolve(showcaseRoot, configuredMain);
+	if (
+		mainPath !== showcaseRoot &&
+		!mainPath.startsWith(`${showcaseRoot}${sep}`)
+	) {
+		throw new Error(`${description} main must stay inside apps/showcase`);
+	}
+	const domains = hostnames.map((hostname) => ({
+		hostname,
+		service: workerName,
+	}));
+	return {
+		accountId,
+		compatibilityDate,
+		configSource: `${JSON.stringify(
+			{
+				name: workerName,
+				account_id: accountId,
+				main: mainPath,
+				compatibility_date: compatibilityDate,
+				workers_dev: workersDev,
+				preview_urls: previewsEnabled,
+				routes: hostnames.map((pattern) => ({
+					pattern,
+					custom_domain: true,
+				})),
+			},
+			null,
+			2,
+		)}\n`,
+		hash: triggerHash(accountId, workerName, domains, {
+			enabled: workersDev,
+			previewsEnabled,
+		}),
+		hostnames,
+		mainPath,
+		previewsEnabled,
+		workerName,
+		workersDev,
+	};
+}
+
+export function triggerRecoveryHashes(
+	baselineSource: string,
+	desiredSource: string,
+): {
+	readonly baselineTriggersHash: string;
+	readonly desiredTriggersHash: string;
+} {
+	const baseline = triggerPlanFromSource(
+		baselineSource,
+		"Baseline showcase config",
+	);
+	const desired = triggerPlanFromSource(
+		desiredSource,
+		"Desired showcase config",
+	);
+	assertSameCustomDomainTarget(baseline, desired);
+	if (desired.workersDev || desired.previewsEnabled) {
+		throw new Error(
+			"Desired showcase config must disable workers_dev and preview_urls in production",
+		);
+	}
+	return {
+		baselineTriggersHash: baseline.hash,
+		desiredTriggersHash: desired.hash,
+	};
+}
+
+function assertSameCustomDomainTarget(
+	baseline: TriggerPlan,
+	desired: TriggerPlan,
+): void {
+	if (
+		baseline.accountId !== desired.accountId ||
+		baseline.workerName !== desired.workerName
+	) {
+		throw new Error(
+			"Changing the showcase Cloudflare account or Worker name is outside transactional custom-domain recovery",
+		);
+	}
+}
+
 function buildIdentityFromRecord(
 	value: unknown,
 	description: string,
@@ -220,7 +554,13 @@ export function candidateTag(expected: BuildIdentity): string {
 
 export function encodeCandidateState(state: CandidateRecoveryState): string {
 	assertCandidateState(state);
-	return `${candidateMessagePrefix}${Buffer.from(JSON.stringify(state)).toString("base64url")}`;
+	const message = `${candidateMessagePrefix}${Buffer.from(JSON.stringify(state)).toString("base64url")}`;
+	if (Buffer.byteLength(message, "utf8") > candidateMessageMaxBytes) {
+		throw new Error(
+			`Worker candidate recovery metadata exceeds the ${String(candidateMessageMaxBytes)}-byte message limit`,
+		);
+	}
+	return message;
 }
 
 export function decodeCandidateState(message: string): CandidateRecoveryState {
@@ -242,16 +582,18 @@ export function decodeCandidateState(message: string): CandidateRecoveryState {
 		throw new Error("Worker candidate recovery metadata is malformed");
 	}
 	if (
-		parsed.schema !== 1 ||
+		parsed.schema !== 3 ||
 		typeof parsed.releaseId !== "string" ||
 		typeof parsed.baselineVersionId !== "string" ||
+		typeof parsed.baselineTriggersHash !== "string" ||
+		typeof parsed.desiredTriggersHash !== "string" ||
 		(parsed.baselineTokenRole !== "production" &&
 			parsed.baselineTokenRole !== "rollback")
 	) {
 		throw new Error("Worker candidate recovery metadata has an invalid schema");
 	}
 	const state: CandidateRecoveryState = {
-		schema: 1,
+		schema: 3,
 		releaseId: parsed.releaseId,
 		expected: buildIdentityFromRecord(parsed.expected, "Candidate"),
 		baselineVersionId: parsed.baselineVersionId,
@@ -260,13 +602,15 @@ export function decodeCandidateState(message: string): CandidateRecoveryState {
 			"Baseline",
 		),
 		baselineTokenRole: parsed.baselineTokenRole,
+		baselineTriggersHash: parsed.baselineTriggersHash,
+		desiredTriggersHash: parsed.desiredTriggersHash,
 	};
 	assertCandidateState(state);
 	return state;
 }
 
 function assertCandidateState(state: CandidateRecoveryState): void {
-	if (state.schema !== 1 || !state.releaseId) {
+	if (state.schema !== 3 || !state.releaseId) {
 		throw new Error("Worker candidate recovery metadata has an invalid schema");
 	}
 	assertVersionId(state.baselineVersionId);
@@ -279,6 +623,16 @@ function assertCandidateState(state: CandidateRecoveryState): void {
 		throw new Error(
 			"Worker candidate recovery metadata has an invalid token role",
 		);
+	}
+	for (const [description, hash] of [
+		["baseline triggers", state.baselineTriggersHash],
+		["desired triggers", state.desiredTriggersHash],
+	] as const) {
+		if (!/^[0-9a-f]{64}$/u.test(hash)) {
+			throw new Error(
+				`Worker candidate recovery metadata has an invalid ${description} hash`,
+			);
+		}
 	}
 }
 
@@ -330,6 +684,406 @@ export async function removeCandidateTemporaryRoot(
 	temporaryRoot: string,
 ): Promise<void> {
 	await rm(temporaryRoot, { recursive: true, force: true });
+}
+
+export async function removeTriggerTemporaryRoot(
+	temporaryRoot: string,
+): Promise<void> {
+	await rm(temporaryRoot, { recursive: true, force: true });
+}
+
+interface CloudflareEnvelope<T> {
+	readonly success?: boolean;
+	readonly result?: T;
+	readonly result_info?: {
+		readonly page?: number;
+		readonly total_pages?: number;
+	};
+}
+
+export async function listCloudflareCustomDomains(
+	accountId: string,
+	apiToken = process.env.CLOUDFLARE_API_TOKEN?.trim(),
+	fetchImplementation: typeof fetch = fetch,
+): Promise<readonly CloudflareCustomDomain[]> {
+	if (!apiToken) {
+		throw new Error(
+			"Missing CLOUDFLARE_API_TOKEN for custom-domain recovery verification",
+		);
+	}
+	const domains: CloudflareCustomDomain[] = [];
+	for (let page = 1; ; page += 1) {
+		const query = new URLSearchParams({ page: String(page), per_page: "100" });
+		const response = await fetchImplementation(
+			`${cloudflareApi}/accounts/${encodeURIComponent(accountId)}/workers/domains?${query}`,
+			{
+				headers: { Authorization: `Bearer ${apiToken}` },
+				signal: AbortSignal.timeout(30_000),
+			},
+		);
+		let envelope: CloudflareEnvelope<unknown>;
+		try {
+			envelope = (await response.json()) as CloudflareEnvelope<unknown>;
+		} catch {
+			throw new Error(
+				`Cloudflare custom-domain API returned non-JSON HTTP ${String(response.status)}`,
+			);
+		}
+		if (
+			!response.ok ||
+			envelope.success !== true ||
+			!Array.isArray(envelope.result)
+		) {
+			throw new Error(
+				`Cloudflare custom-domain API request failed with HTTP ${String(response.status)}`,
+			);
+		}
+		for (const [index, value] of envelope.result.entries()) {
+			if (
+				!isRecord(value) ||
+				typeof value.hostname !== "string" ||
+				!value.hostname.trim() ||
+				typeof value.service !== "string" ||
+				!value.service.trim()
+			) {
+				throw new Error(
+					`Cloudflare returned malformed custom domain ${String(index)} on page ${String(page)}`,
+				);
+			}
+			domains.push({ hostname: value.hostname, service: value.service });
+		}
+		const totalPages = envelope.result_info?.total_pages;
+		if (typeof totalPages === "number" && Number.isInteger(totalPages)) {
+			if (page >= totalPages) break;
+			continue;
+		}
+		if (envelope.result.length < 100) break;
+	}
+	return domains;
+}
+
+export async function getCloudflareWorkerSubdomain(
+	accountId: string,
+	workerName: string,
+	apiToken = process.env.CLOUDFLARE_API_TOKEN?.trim(),
+	fetchImplementation: typeof fetch = fetch,
+): Promise<CloudflareWorkerSubdomain> {
+	if (!apiToken) {
+		throw new Error(
+			"Missing CLOUDFLARE_API_TOKEN for Worker subdomain recovery verification",
+		);
+	}
+	const response = await fetchImplementation(
+		`${cloudflareApi}/accounts/${encodeURIComponent(accountId)}/workers/scripts/${encodeURIComponent(workerName)}/subdomain`,
+		{
+			headers: { Authorization: `Bearer ${apiToken}` },
+			signal: AbortSignal.timeout(30_000),
+		},
+	);
+	let envelope: CloudflareEnvelope<unknown>;
+	try {
+		envelope = (await response.json()) as CloudflareEnvelope<unknown>;
+	} catch {
+		throw new Error(
+			`Cloudflare Worker subdomain API returned non-JSON HTTP ${String(response.status)}`,
+		);
+	}
+	if (
+		!response.ok ||
+		envelope.success !== true ||
+		!isRecord(envelope.result) ||
+		typeof envelope.result.enabled !== "boolean" ||
+		typeof envelope.result.previews_enabled !== "boolean"
+	) {
+		throw new Error(
+			`Cloudflare Worker subdomain API request failed or returned malformed state with HTTP ${String(response.status)}`,
+		);
+	}
+	return {
+		enabled: envelope.result.enabled,
+		previewsEnabled: envelope.result.previews_enabled,
+	};
+}
+
+async function loadTriggerRecovery(
+	baselineGitSha: string,
+	dependencies: RolloutDependencies,
+): Promise<TriggerRecovery> {
+	const [baselineSource, desiredSource] = await Promise.all([
+		dependencies.runCommand(baselineShowcaseConfigCommand(baselineGitSha)),
+		(
+			dependencies.readDesiredShowcaseConfig ??
+			(() => readFile(showcaseConfigPath, "utf8"))
+		)(),
+	]);
+	const baseline = triggerPlanFromSource(
+		baselineSource,
+		"Baseline showcase config",
+	);
+	const desired = triggerPlanFromSource(
+		desiredSource,
+		"Desired showcase config",
+	);
+	assertSameCustomDomainTarget(baseline, desired);
+	if (desired.workersDev || desired.previewsEnabled) {
+		throw new Error(
+			"Desired showcase config must disable workers_dev and preview_urls in production",
+		);
+	}
+	return { baseline, desired };
+}
+
+function assertRecoveryHashes(
+	state: CandidateRecoveryState,
+	recovery: TriggerRecovery,
+): void {
+	if (
+		state.baselineTriggersHash !== recovery.baseline.hash ||
+		state.desiredTriggersHash !== recovery.desired.hash
+	) {
+		throw new Error(
+			"Worker candidate trigger recovery metadata no longer matches Git-authoritative Wrangler configs",
+		);
+	}
+}
+
+function liveTriggersHash(
+	recovery: TriggerRecovery,
+	domains: readonly CloudflareCustomDomain[],
+	subdomain: CloudflareWorkerSubdomain,
+): string {
+	const relevantHostnames = new Set([
+		...recovery.baseline.hostnames,
+		...recovery.desired.hostnames,
+	]);
+	const relevant = domains.filter(
+		(domain) =>
+			domain.service.trim() === recovery.desired.workerName ||
+			relevantHostnames.has(domain.hostname.trim().toLowerCase()),
+	);
+	return triggerHash(
+		recovery.desired.accountId,
+		recovery.desired.workerName,
+		relevant,
+		subdomain,
+	);
+}
+
+async function currentTriggersHash(
+	recovery: TriggerRecovery,
+	dependencies: RolloutDependencies,
+): Promise<string> {
+	const [domains, subdomain] = await Promise.all([
+		(dependencies.listCustomDomains ?? listCloudflareCustomDomains)(
+			recovery.desired.accountId,
+		),
+		(dependencies.getWorkerSubdomain ?? getCloudflareWorkerSubdomain)(
+			recovery.desired.accountId,
+			recovery.desired.workerName,
+		),
+	]);
+	return liveTriggersHash(recovery, domains, subdomain);
+}
+
+type TriggerState = "baseline" | "desired" | "drift" | "transitional";
+
+async function inspectTriggerState(
+	recovery: TriggerRecovery,
+	dependencies: RolloutDependencies,
+): Promise<TriggerState> {
+	const [domains, subdomain] = await Promise.all([
+		(dependencies.listCustomDomains ?? listCloudflareCustomDomains)(
+			recovery.desired.accountId,
+		),
+		(dependencies.getWorkerSubdomain ?? getCloudflareWorkerSubdomain)(
+			recovery.desired.accountId,
+			recovery.desired.workerName,
+		),
+	]);
+	const hash = liveTriggersHash(recovery, domains, subdomain);
+	if (hash === recovery.baseline.hash) return "baseline";
+	if (hash === recovery.desired.hash) return "desired";
+
+	const relevantHostnames = new Set([
+		...recovery.baseline.hostnames,
+		...recovery.desired.hostnames,
+	]);
+	const relevant = domains.filter(
+		(domain) =>
+			domain.service.trim() === recovery.desired.workerName ||
+			relevantHostnames.has(domain.hostname.trim().toLowerCase()),
+	);
+	const keys = relevant.map(
+		(domain) =>
+			`${domain.hostname.trim().toLowerCase()}\u0000${domain.service.trim()}`,
+	);
+	const isSafeTransition =
+		new Set(keys).size === keys.length &&
+		[subdomain.enabled, subdomain.previewsEnabled].every((value, index) => {
+			const baselineValue =
+				index === 0
+					? recovery.baseline.workersDev
+					: recovery.baseline.previewsEnabled;
+			const desiredValue =
+				index === 0
+					? recovery.desired.workersDev
+					: recovery.desired.previewsEnabled;
+			return value === baselineValue || value === desiredValue;
+		}) &&
+		relevant.every(
+			(domain) =>
+				relevantHostnames.has(domain.hostname.trim().toLowerCase()) &&
+				domain.service.trim() === recovery.desired.workerName,
+		);
+	return isSafeTransition ? "transitional" : "drift";
+}
+
+async function assertKnownTriggerState(
+	recovery: TriggerRecovery,
+	dependencies: RolloutDependencies,
+): Promise<"baseline" | "desired"> {
+	const state = await inspectTriggerState(recovery, dependencies);
+	if (state === "baseline" || state === "desired") return state;
+	throw new ConcurrentDeploymentError(
+		"Live showcase triggers match neither the captured baseline nor this release; refusing to overwrite concurrent trigger drift",
+	);
+}
+
+async function recoverOwnedTransitionalTriggers(
+	recovery: TriggerRecovery,
+	deploymentState: DeploymentSnapshot,
+	state: CandidateRecoveryState,
+	candidateVersionId: string,
+	dependencies: RolloutDependencies,
+): Promise<void> {
+	const triggerState = await inspectTriggerState(recovery, dependencies);
+	if (triggerState === "baseline" || triggerState === "desired") {
+		return;
+	}
+	if (
+		triggerState === "transitional" &&
+		(baselineDeployment(deploymentState, state) ||
+			stagedDeployment(deploymentState, state, candidateVersionId) ||
+			activeCandidateDeployment(deploymentState, state, candidateVersionId))
+	) {
+		const liveDeployment = await deployment(dependencies, true);
+		if (
+			!baselineDeployment(liveDeployment, state) &&
+			!stagedDeployment(liveDeployment, state, candidateVersionId) &&
+			!activeCandidateDeployment(liveDeployment, state, candidateVersionId)
+		) {
+			throw new ConcurrentDeploymentError(
+				"A concurrent Worker deployment replaced the release lease before trigger recovery; refusing to mutate triggers",
+			);
+		}
+		await restoreBaselineTriggers(recovery, dependencies);
+		return;
+	}
+	throw new ConcurrentDeploymentError(
+		"Live showcase triggers contain unowned concurrent drift; recovery refused",
+	);
+}
+
+async function pollForTriggerHash(
+	recovery: TriggerRecovery,
+	expectedHash: string,
+	description: string,
+	dependencies: RolloutDependencies,
+): Promise<void> {
+	let actualHash = "";
+	for (let attempt = 1; attempt <= 5; attempt += 1) {
+		actualHash = await currentTriggersHash(recovery, dependencies);
+		if (actualHash === expectedHash) return;
+		if (attempt < 5) {
+			await (
+				dependencies.waitForDomainPropagation ??
+				((delayMs) =>
+					new Promise<void>((resolveDelay) =>
+						setTimeout(resolveDelay, delayMs),
+					))
+			)(1_000);
+		}
+	}
+	throw new Error(
+		`${description} did not reach its exact Git-authoritative custom-domain fingerprint`,
+	);
+}
+
+async function reconcileDesiredTriggers(
+	recovery: TriggerRecovery,
+	dependencies: RolloutDependencies,
+): Promise<void> {
+	const current = await assertKnownTriggerState(recovery, dependencies);
+	if (
+		current === "baseline" &&
+		recovery.baseline.hash !== recovery.desired.hash
+	) {
+		await dependencies.runCommand(cloudflareTriggersDeployCommand);
+	}
+	await pollForTriggerHash(
+		recovery,
+		recovery.desired.hash,
+		"Desired trigger reconciliation",
+		dependencies,
+	);
+}
+
+async function restoreBaselineTriggers(
+	recovery: TriggerRecovery,
+	dependencies: RolloutDependencies,
+): Promise<void> {
+	const current = await inspectTriggerState(recovery, dependencies);
+	if (current === "baseline") return;
+	if (current === "drift") {
+		throw new ConcurrentDeploymentError(
+			"Live showcase triggers changed concurrently before rollback; refusing to overwrite trigger drift",
+		);
+	}
+	const main = await stat(recovery.baseline.mainPath);
+	if (!main.isFile()) {
+		throw new Error(
+			"Baseline trigger-only Wrangler main is not a regular file",
+		);
+	}
+	const temporaryRoot = await mkdtemp(
+		resolve(tmpdir(), "lemn-ui-showcase-triggers-"),
+	);
+	let operationError: unknown;
+	let cleanupError: unknown;
+	try {
+		await chmod(temporaryRoot, 0o700);
+		const configPath = resolve(temporaryRoot, "wrangler.jsonc");
+		await writeFile(configPath, recovery.baseline.configSource, {
+			encoding: "utf8",
+			flag: "wx",
+			mode: 0o600,
+		});
+		await dependencies.runCommand(restoreCloudflareTriggersCommand(configPath));
+		await pollForTriggerHash(
+			recovery,
+			recovery.baseline.hash,
+			"Baseline trigger restoration",
+			dependencies,
+		);
+	} catch (error) {
+		operationError = error;
+	} finally {
+		try {
+			await (
+				dependencies.removeTriggerTemporaryRoot ?? removeTriggerTemporaryRoot
+			)(temporaryRoot);
+		} catch (error) {
+			cleanupError = error;
+		}
+	}
+	if (operationError !== undefined && cleanupError !== undefined) {
+		throw new AggregateError(
+			[operationError, cleanupError],
+			"Custom-domain restoration and temporary config cleanup both failed",
+		);
+	}
+	if (operationError !== undefined) throw operationError;
+	if (cleanupError !== undefined) throw cleanupError;
 }
 
 async function uploadCandidate(
@@ -722,6 +1476,10 @@ function defaultDependencies(signal?: AbortSignal): RolloutDependencies {
 		smokeProtected: smokeProtectedStatusRoutes,
 		writeSummary: writeGitHubSummary,
 		removeCandidateTemporaryRoot,
+		removeTriggerTemporaryRoot,
+		readDesiredShowcaseConfig: () => readFile(showcaseConfigPath, "utf8"),
+		listCustomDomains: listCloudflareCustomDomains,
+		getWorkerSubdomain: getCloudflareWorkerSubdomain,
 		signal,
 	};
 }
@@ -821,6 +1579,7 @@ function interrupted(error: unknown): boolean {
 async function rollbackAndVerify(
 	rolloutError: unknown,
 	state: CandidateRecoveryState,
+	triggers: TriggerRecovery,
 	candidateVersionId: string,
 	input: ProductionRolloutInput,
 	dependencies: RolloutDependencies,
@@ -850,13 +1609,33 @@ async function rollbackAndVerify(
 			await dependencies.runCommand(rollbackCommand(state.baselineVersionId));
 			const rolledBack = await deployment(dependencies, true);
 			if (!baselineDeployment(rolledBack, state)) {
-				throw new Error(
-					"Rollback did not restore the captured baseline version",
+				throw new ConcurrentDeploymentError(
+					"Rollback did not restore the captured baseline version or a concurrent deployment replaced it",
 				);
 			}
 		} catch (error) {
 			failures.push(error);
 		}
+	}
+	if (failures.length > 0) {
+		throw new RolloutRollbackFailure(
+			rolloutError,
+			new AggregateError(
+				failures,
+				"Worker rollback could not be verified; trigger restoration was refused",
+			),
+		);
+	}
+	try {
+		const beforeTriggerRestore = await deployment(dependencies, true);
+		if (!baselineDeployment(beforeTriggerRestore, state)) {
+			throw new ConcurrentDeploymentError(
+				"A concurrent Worker deployment replaced the restored baseline before trigger recovery; refusing to mutate triggers",
+			);
+		}
+		await restoreBaselineTriggers(triggers, dependencies);
+	} catch (error) {
+		failures.push(error);
 	}
 	try {
 		await dependencies.smokeProtected({
@@ -882,6 +1661,11 @@ async function executeCandidate(
 	state: CandidateRecoveryState,
 	dependencies: RolloutDependencies,
 ): Promise<void> {
+	const triggers = await loadTriggerRecovery(
+		state.baselineIdentity.gitSha,
+		dependencies,
+	);
+	assertRecoveryHashes(state, triggers);
 	try {
 		let current = await deployment(dependencies);
 		if (
@@ -893,6 +1677,13 @@ async function executeCandidate(
 				"The active Worker deployment is neither the captured baseline nor this release lease",
 			);
 		}
+		await recoverOwnedTransitionalTriggers(
+			triggers,
+			current,
+			state,
+			version.id,
+			dependencies,
+		);
 
 		if (baselineDeployment(current, state)) {
 			await dependencies.smokeProtected({
@@ -912,7 +1703,7 @@ async function executeCandidate(
 
 		if (stagedDeployment(current, state, version.id)) {
 			const leaseDeploymentId = current.id;
-			await dependencies.runCommand(cloudflareTriggersDeployCommand);
+			await reconcileDesiredTriggers(triggers, dependencies);
 			await dependencies.runCommand(cloudflareMappingSmokeCommand);
 			await dependencies.smokeProduction({
 				expected: input.expected,
@@ -940,7 +1731,7 @@ async function executeCandidate(
 			}
 		}
 
-		await dependencies.runCommand(cloudflareTriggersDeployCommand);
+		await reconcileDesiredTriggers(triggers, dependencies);
 		await dependencies.runCommand(cloudflareMappingSmokeCommand);
 		await dependencies.smokeProduction({
 			expected: input.expected,
@@ -952,7 +1743,14 @@ async function executeCandidate(
 		if (interrupted(error) || error instanceof ConcurrentDeploymentError) {
 			throw error;
 		}
-		await rollbackAndVerify(error, state, version.id, input, dependencies);
+		await rollbackAndVerify(
+			error,
+			state,
+			triggers,
+			version.id,
+			input,
+			dependencies,
+		);
 	}
 }
 
@@ -993,13 +1791,25 @@ export async function runProductionRollout(
 	}
 	const baselineVersionId = current.versions[0].versionId;
 	const baseline = await captureBaseline(input, dependencies);
+	const triggers = await loadTriggerRecovery(
+		baseline.identity.gitSha,
+		dependencies,
+	);
+	const initialTriggers = await assertKnownTriggerState(triggers, dependencies);
+	if (initialTriggers !== "baseline") {
+		throw new ConcurrentDeploymentError(
+			"A new release requires live showcase triggers to match the Git-authoritative baseline",
+		);
+	}
 	const state: CandidateRecoveryState = {
-		schema: 1,
+		schema: 3,
 		releaseId: input.releaseId,
 		expected: input.expected,
 		baselineVersionId,
 		baselineIdentity: baseline.identity,
 		baselineTokenRole: baseline.tokenRole,
+		baselineTriggersHash: triggers.baseline.hash,
+		desiredTriggersHash: triggers.desired.hash,
 	};
 
 	await dependencies.runCommand(buildShowcaseCommand);
@@ -1014,6 +1824,8 @@ export async function runProductionRollout(
 	if (
 		persistedState.baselineVersionId !== state.baselineVersionId ||
 		persistedState.baselineTokenRole !== state.baselineTokenRole ||
+		persistedState.baselineTriggersHash !== state.baselineTriggersHash ||
+		persistedState.desiredTriggersHash !== state.desiredTriggersHash ||
 		!sameIdentity(persistedState.baselineIdentity, state.baselineIdentity)
 	) {
 		throw new Error("Persisted Worker candidate baseline metadata changed");
@@ -1051,6 +1863,10 @@ function requiredEnvironment(name: string): string {
 async function main(): Promise<void> {
 	const productionStatusToken = requiredEnvironment("PRODUCTION_STATUS_TOKEN");
 	const rollbackStatusToken = requiredEnvironment("ROLLBACK_STATUS_TOKEN");
+	requiredEnvironment("SHOWCASE_ADMIN_ACCESS_CLIENT_ID");
+	const adminAccessClientSecret = requiredEnvironment(
+		"SHOWCASE_ADMIN_ACCESS_CLIENT_SECRET",
+	);
 	const abortController = new AbortController();
 	const interrupt = (signal: NodeJS.Signals) => {
 		abortController.abort(new CommandAbortedError(`Received ${signal}`, true));
@@ -1075,7 +1891,7 @@ async function main(): Promise<void> {
 		);
 	} catch (error) {
 		console.error(
-			`Showcase production rollout failed: ${safeErrorMessage(error, [productionStatusToken, rollbackStatusToken])}`,
+			`Showcase production rollout failed: ${safeErrorMessage(error, [productionStatusToken, rollbackStatusToken, adminAccessClientSecret])}`,
 		);
 		process.exitCode = 1;
 	} finally {

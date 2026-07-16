@@ -272,11 +272,21 @@ jobs:
               exit 1
             fi
           done
+          if [ -z "${SHOWCASE_ADMIN_ACCESS_CLIENT_ID}" ]; then
+            echo '::error::Missing required production Environment secret: PRODUCTION_SHOWCASE_ADMIN_ACCESS_CLIENT_ID' >&2
+            exit 1
+          fi
+          if [ -z "${SHOWCASE_ADMIN_ACCESS_CLIENT_SECRET}" ]; then
+            echo '::error::Missing required production Environment secret: PRODUCTION_SHOWCASE_ADMIN_ACCESS_CLIENT_SECRET' >&2
+            exit 1
+          fi
           pnpm release:preflight
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.PRODUCTION_CLOUDFLARE_API_TOKEN }}
           PRODUCTION_STATUS_TOKEN: ${{ secrets.PRODUCTION_STATUS_TOKEN }}
           ROLLBACK_STATUS_TOKEN: ${{ secrets.STATUS_TOKEN || secrets.PRODUCTION_STATUS_TOKEN }}
+          SHOWCASE_ADMIN_ACCESS_CLIENT_ID: ${{ secrets.PRODUCTION_SHOWCASE_ADMIN_ACCESS_CLIENT_ID }}
+          SHOWCASE_ADMIN_ACCESS_CLIENT_SECRET: ${{ secrets.PRODUCTION_SHOWCASE_ADMIN_ACCESS_CLIENT_SECRET }}
 
       - name: Prepare or resume release metadata
         id: release
@@ -331,3 +341,5 @@ jobs:
           EXPECTED_RELEASE_TIME: ${{ steps.release.outputs.time }}
           PRODUCTION_STATUS_TOKEN: ${{ secrets.PRODUCTION_STATUS_TOKEN }}
           ROLLBACK_STATUS_TOKEN: ${{ secrets.STATUS_TOKEN || secrets.PRODUCTION_STATUS_TOKEN }}
+          SHOWCASE_ADMIN_ACCESS_CLIENT_ID: ${{ secrets.PRODUCTION_SHOWCASE_ADMIN_ACCESS_CLIENT_ID }}
+          SHOWCASE_ADMIN_ACCESS_CLIENT_SECRET: ${{ secrets.PRODUCTION_SHOWCASE_ADMIN_ACCESS_CLIENT_SECRET }}

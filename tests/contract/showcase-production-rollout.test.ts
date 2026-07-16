@@ -6,6 +6,7 @@ import test from "node:test";
 import {
 	activateCandidateCommand,
 	activeDeploymentFromJson,
+	baselineShowcaseConfigCommand,
 	buildShowcaseCommand,
 	type CandidateRecoveryState,
 	CommandAbortedError,
@@ -15,14 +16,19 @@ import {
 	cloudflareMappingSmokeCommand,
 	cloudflareTriggersDeployCommand,
 	createCommandRunner,
+	decodeCandidateState,
 	deploymentListCommand,
 	encodeCandidateState,
+	getCloudflareWorkerSubdomain,
+	listCloudflareCustomDomains,
 	RolloutRollbackFailure,
 	removeCandidateTemporaryRoot,
+	removeTriggerTemporaryRoot,
 	rollbackCommand,
 	runProductionRollout,
 	safeErrorMessage,
 	stageCandidateCommand,
+	triggerRecoveryHashes,
 	uploadCandidateCommand,
 	versionListCommand,
 } from "../../scripts/release/showcase-production-rollout.ts";
@@ -52,16 +58,56 @@ const input = {
 	productionStatusToken: "new-production-status-token",
 	rollbackStatusToken: "previous-production-status-token",
 };
+
+function wranglerSource(
+	hostnames: readonly string[],
+	workersDev = false,
+	previewUrls = workersDev,
+): string {
+	return JSON.stringify({
+		name: "dev-lemn-ui-showcase",
+		account_id: "account-id",
+		main: "src/worker/index.ts",
+		compatibility_date: "2026-05-14",
+		env: {
+			production: {
+				name: "lemn-ui-showcase",
+				workers_dev: workersDev,
+				preview_urls: previewUrls,
+				routes: hostnames.map((pattern) => ({
+					pattern,
+					custom_domain: true,
+				})),
+			},
+		},
+	});
+}
+
+const baselineWranglerSource = wranglerSource(
+	["showcase.ui.le-mn.com"],
+	true,
+	true,
+);
+const desiredWranglerSource = wranglerSource([
+	"showcase.ui.le-mn.com",
+	"schemas.ui.le-mn.com",
+]);
+const triggerHashes = triggerRecoveryHashes(
+	baselineWranglerSource,
+	desiredWranglerSource,
+);
 const state: CandidateRecoveryState = {
-	schema: 1,
+	schema: 3,
 	releaseId: input.releaseId,
 	expected,
 	baselineVersionId,
 	baselineIdentity: previousIdentity,
 	baselineTokenRole: "rollback",
+	...triggerHashes,
 };
 
 type PlatformPhase = "active" | "baseline" | "concurrent" | "staged";
+type CustomDomainsPhase = "baseline" | "concurrent" | "desired" | "partial";
 type InterruptBoundary =
 	| "activate"
 	| "active-smoke"
@@ -154,25 +200,45 @@ function candidateVersionsJson(
 function fakePlatform(
 	options: {
 		phase?: PlatformPhase;
+		customDomainsPhase?: CustomDomainsPhase;
+		baselineConfigSource?: string;
+		desiredConfigSource?: string;
+		baselineDomains?: readonly { hostname: string; service: string }[];
+		desiredDomains?: readonly { hostname: string; service: string }[];
+		partialDomains?: readonly { hostname: string; service: string }[];
+		candidateMessage?: string;
 		candidatePresent?: boolean;
 		interruptAfter?: InterruptBoundary;
 		timeoutAfter?: InterruptBoundary;
 		concurrentAfterCandidateSmoke?: boolean;
+		concurrentAfterRollback?: boolean;
 		rollbackFailure?: Error;
 		rollbackSmokeFailure?: Error;
 		activeSmokeFailure?: Error;
+		desiredTriggerFailure?: Error;
+		desiredTriggerPartial?: boolean;
+		restoreFailure?: Error;
+		restorePartial?: boolean;
+		restoreCleanupFailure?: Error;
+		concurrentDomainsBeforeRollback?: boolean;
 		uploadFailure?: Error;
 		cleanupFailure?: Error;
 	} = {},
 ) {
 	let phase = options.phase ?? "baseline";
+	let customDomainsPhase = options.customDomainsPhase ?? "baseline";
 	let candidatePresent = options.candidatePresent ?? phase !== "baseline";
+	let candidateMessage =
+		options.candidateMessage ?? encodeCandidateState(state);
+	let desiredTriggerFailure = options.desiredTriggerFailure;
 	let interruptAfter = options.interruptAfter;
 	let timeoutAfter = options.timeoutAfter;
 	const events: string[] = [];
 	const counts = { activate: 0, build: 0, rollback: 0, stage: 0, upload: 0 };
 	const cleanupPaths: string[] = [];
+	const triggerCleanupPaths: string[] = [];
 	const uploads: UploadEvidence[] = [];
+	const restoredTriggerConfigs: UploadEvidence[] = [];
 
 	const boundary = (name: InterruptBoundary) => {
 		if (interruptAfter === name) {
@@ -189,23 +255,86 @@ function fakePlatform(
 		events,
 		counts,
 		cleanupPaths,
+		triggerCleanupPaths,
 		uploads,
+		restoredTriggerConfigs,
 		get phase() {
 			return phase;
 		},
+		get customDomainsPhase() {
+			return customDomainsPhase;
+		},
 		dependencies: {
+			async readDesiredShowcaseConfig() {
+				return options.desiredConfigSource ?? desiredWranglerSource;
+			},
+			async listCustomDomains(accountId: string) {
+				assert.equal(accountId, "account-id");
+				events.push(`domains:${customDomainsPhase}`);
+				if (customDomainsPhase === "baseline") {
+					return (
+						options.baselineDomains ?? [
+							{
+								hostname: "showcase.ui.le-mn.com",
+								service: "lemn-ui-showcase",
+							},
+						]
+					);
+				}
+				if (customDomainsPhase === "desired") {
+					return (
+						options.desiredDomains ?? [
+							{
+								hostname: "showcase.ui.le-mn.com",
+								service: "lemn-ui-showcase",
+							},
+							{ hostname: "schemas.ui.le-mn.com", service: "lemn-ui-showcase" },
+						]
+					);
+				}
+				if (customDomainsPhase === "partial") {
+					return (
+						options.partialDomains ?? [
+							{ hostname: "schemas.ui.le-mn.com", service: "lemn-ui-showcase" },
+						]
+					);
+				}
+				return [{ hostname: "showcase.ui.le-mn.com", service: "other-worker" }];
+			},
+			async getWorkerSubdomain(accountId: string, workerName: string) {
+				assert.equal(accountId, "account-id");
+				assert.equal(workerName, "lemn-ui-showcase");
+				events.push(`subdomain:${customDomainsPhase}`);
+				return customDomainsPhase === "baseline"
+					? { enabled: true, previewsEnabled: true }
+					: { enabled: false, previewsEnabled: false };
+			},
+			async waitForDomainPropagation() {},
 			async removeCandidateTemporaryRoot(temporaryRoot: string) {
 				cleanupPaths.push(temporaryRoot);
 				await removeCandidateTemporaryRoot(temporaryRoot);
 				if (options.cleanupFailure) throw options.cleanupFailure;
 			},
+			async removeTriggerTemporaryRoot(temporaryRoot: string) {
+				triggerCleanupPaths.push(temporaryRoot);
+				await removeTriggerTemporaryRoot(temporaryRoot);
+				if (options.restoreCleanupFailure) {
+					throw options.restoreCleanupFailure;
+				}
+			},
 			async runCommand(spec: CommandSpec) {
 				events.push(commandLabel(spec));
+				if (
+					spec.args.join(" ") ===
+					baselineShowcaseConfigCommand(previousIdentity.gitSha).args.join(" ")
+				) {
+					return options.baselineConfigSource ?? baselineWranglerSource;
+				}
 				if (spec.args.join(" ") === deploymentListCommand.args.join(" ")) {
 					return deploymentJson(phase);
 				}
 				if (spec.args.join(" ") === versionListCommand.args.join(" ")) {
-					return candidateVersionsJson(candidatePresent);
+					return candidateVersionsJson(candidatePresent, candidateMessage);
 				}
 				if (spec === buildShowcaseCommand) {
 					counts.build += 1;
@@ -233,6 +362,9 @@ function fakePlatform(
 						stdin: spec.stdin,
 					});
 					candidatePresent = true;
+					const messageIndex = spec.args.indexOf("--message");
+					assert.notEqual(messageIndex, -1);
+					candidateMessage = spec.args[messageIndex + 1] ?? "";
 					if (options.uploadFailure) throw options.uploadFailure;
 					boundary("upload");
 					return "";
@@ -252,11 +384,49 @@ function fakePlatform(
 				if (spec.args.includes("rollback")) {
 					counts.rollback += 1;
 					if (options.rollbackFailure) throw options.rollbackFailure;
-					phase = "baseline";
+					phase = options.concurrentAfterRollback ? "concurrent" : "baseline";
 					return "";
 				}
 				if (spec === cloudflareMappingSmokeCommand) return "";
-				if (spec === cloudflareTriggersDeployCommand) return "";
+				if (spec === cloudflareTriggersDeployCommand) {
+					customDomainsPhase =
+						desiredTriggerFailure && options.desiredTriggerPartial
+							? "partial"
+							: "desired";
+					if (desiredTriggerFailure) {
+						const failure = desiredTriggerFailure;
+						desiredTriggerFailure = undefined;
+						throw failure;
+					}
+					return "";
+				}
+				if (
+					spec.recovery === true &&
+					spec.args.includes("triggers") &&
+					spec.args.includes("deploy")
+				) {
+					const configIndex = spec.args.indexOf("--config");
+					assert.notEqual(configIndex, -1);
+					const configPath = spec.args[configIndex + 1];
+					assert.ok(configPath);
+					const configDirectoryPath = dirname(configPath);
+					const directoryStat = await stat(configDirectoryPath);
+					const configStat = await stat(configPath);
+					restoredTriggerConfigs.push({
+						command: commandLabel(spec),
+						content: await readFile(configPath, "utf8"),
+						directoryIsDirectory: directoryStat.isDirectory(),
+						directoryMode: directoryStat.mode & 0o777,
+						directoryPath: configDirectoryPath,
+						isRegularFile: configStat.isFile(),
+						mode: configStat.mode & 0o777,
+						path: configPath,
+						stdin: spec.stdin,
+					});
+					customDomainsPhase = options.restorePartial ? "partial" : "baseline";
+					if (options.restoreFailure) throw options.restoreFailure;
+					return "";
+				}
 				throw new Error(`Unexpected command: ${commandLabel(spec)}`);
 			},
 			async smokeProtected(smokeInput: {
@@ -288,7 +458,12 @@ function fakePlatform(
 					boundary("candidate-smoke");
 					return;
 				}
-				if (options.activeSmokeFailure) throw options.activeSmokeFailure;
+				if (options.activeSmokeFailure) {
+					if (options.concurrentDomainsBeforeRollback) {
+						customDomainsPhase = "concurrent";
+					}
+					throw options.activeSmokeFailure;
+				}
 				boundary("active-smoke");
 			},
 			async writeSummary() {
@@ -344,6 +519,284 @@ test("showcase triggers deploy uses the canonical production Wrangler config", (
 		"production",
 	]);
 	assert.ok((cloudflareTriggersDeployCommand.timeoutMs ?? 0) > 0);
+	assert.equal(cloudflareTriggersDeployCommand.recovery, true);
+});
+
+test("trigger recovery fingerprints domains, workers.dev, and preview URLs", () => {
+	const emptyToOne = triggerRecoveryHashes(
+		wranglerSource([], true, true),
+		wranglerSource(["showcase.ui.le-mn.com"]),
+	);
+	const twoToOne = triggerRecoveryHashes(
+		wranglerSource(
+			["showcase.ui.le-mn.com", "legacy.ui.le-mn.com"],
+			true,
+			true,
+		),
+		wranglerSource(["showcase.ui.le-mn.com"]),
+	);
+	assert.notEqual(
+		emptyToOne.baselineTriggersHash,
+		emptyToOne.desiredTriggersHash,
+	);
+	assert.notEqual(twoToOne.baselineTriggersHash, twoToOne.desiredTriggersHash);
+	assert.equal(
+		triggerRecoveryHashes(
+			wranglerSource(["showcase.ui.le-mn.com"]),
+			wranglerSource(["showcase.ui.le-mn.com"]),
+		).baselineTriggersHash,
+		triggerRecoveryHashes(
+			wranglerSource(["showcase.ui.le-mn.com"]),
+			wranglerSource(["showcase.ui.le-mn.com"]),
+		).desiredTriggersHash,
+	);
+});
+
+test("custom-domain recovery fails closed for unsupported routes, crons, and workers.dev", () => {
+	const routeConfig = JSON.parse(wranglerSource([]));
+	routeConfig.env.production.routes = [{ pattern: "showcase.ui.le-mn.com/*" }];
+	assert.throws(
+		() =>
+			triggerRecoveryHashes(JSON.stringify(routeConfig), desiredWranglerSource),
+		/non-custom route/u,
+	);
+
+	const cronConfig = JSON.parse(wranglerSource([]));
+	cronConfig.env.production.triggers = { crons: ["0 * * * *"] };
+	assert.throws(
+		() =>
+			triggerRecoveryHashes(JSON.stringify(cronConfig), desiredWranglerSource),
+		/cron triggers/u,
+	);
+
+	const workersDevConfig = JSON.parse(wranglerSource([]));
+	delete workersDevConfig.env.production.workers_dev;
+	delete workersDevConfig.workers_dev;
+	assert.throws(
+		() =>
+			triggerRecoveryHashes(
+				JSON.stringify(workersDevConfig),
+				desiredWranglerSource,
+			),
+		/resolve workers_dev/u,
+	);
+	assert.throws(
+		() =>
+			triggerRecoveryHashes(
+				baselineWranglerSource,
+				wranglerSource(["showcase.ui.le-mn.com"], true, true),
+			),
+		/disable workers_dev and preview_urls/u,
+	);
+});
+
+test("Cloudflare trigger inspection reads exact workers.dev and preview URL state", async () => {
+	const requests: string[] = [];
+	const fetchImplementation = (async (input: URL | RequestInfo) => {
+		requests.push(String(input));
+		return new Response(
+			JSON.stringify({
+				success: true,
+				result: { enabled: true, previews_enabled: false },
+			}),
+			{ status: 200, headers: { "content-type": "application/json" } },
+		);
+	}) as typeof fetch;
+	assert.deepEqual(
+		await getCloudflareWorkerSubdomain(
+			"account-id",
+			"lemn-ui-showcase",
+			"test-token",
+			fetchImplementation,
+		),
+		{ enabled: true, previewsEnabled: false },
+	);
+	assert.deepEqual(requests, [
+		"https://api.cloudflare.com/client/v4/accounts/account-id/workers/scripts/lemn-ui-showcase/subdomain",
+	]);
+
+	await assert.rejects(
+		getCloudflareWorkerSubdomain(
+			"account-id",
+			"lemn-ui-showcase",
+			"test-token",
+			(async () =>
+				new Response(
+					JSON.stringify({ success: true, result: { enabled: true } }),
+					{ status: 200 },
+				)) as typeof fetch,
+		),
+		/malformed state/u,
+	);
+});
+
+test("Cloudflare custom-domain inspection follows pagination without truncation", async () => {
+	const pages: number[] = [];
+	const fetchImplementation = (async (input: URL | RequestInfo) => {
+		const page = Number(new URL(String(input)).searchParams.get("page"));
+		pages.push(page);
+		const result =
+			page === 1
+				? Array.from({ length: 100 }, (_, index) => ({
+						hostname: `domain-${String(index)}.example.com`,
+						service: "lemn-ui-showcase",
+					}))
+				: [{ hostname: "last.example.com", service: "lemn-ui-showcase" }];
+		return new Response(
+			JSON.stringify({
+				success: true,
+				result,
+				result_info: { page, total_pages: 2 },
+			}),
+			{ status: 200 },
+		);
+	}) as typeof fetch;
+	const domains = await listCloudflareCustomDomains(
+		"account-id",
+		"test-token",
+		fetchImplementation,
+	);
+	assert.equal(domains.length, 101);
+	assert.deepEqual(pages, [1, 2]);
+});
+
+test("candidate recovery metadata is hash-bound and stays within Cloudflare's message limit", async () => {
+	const encoded = encodeCandidateState(state);
+	assert.ok(Buffer.byteLength(encoded, "utf8") <= 1_000);
+	assert.deepEqual(decodeCandidateState(encoded), state);
+	assert.throws(
+		() => encodeCandidateState({ ...state, releaseId: "x".repeat(2_000) }),
+		/1000-byte message limit/u,
+	);
+
+	const platform = fakePlatform({
+		candidatePresent: true,
+		candidateMessage: encodeCandidateState({
+			...state,
+			baselineTriggersHash: "f".repeat(64),
+		}),
+	});
+	await assert.rejects(
+		runProductionRollout(input, platform.dependencies),
+		/trigger recovery metadata no longer matches/u,
+	);
+	assert.equal(platform.counts.stage, 0);
+});
+
+test("a partial desired-trigger failure restores and verifies the baseline before surfacing the rollout error", async () => {
+	const triggerFailure = new Error(
+		"desired triggers failed after partial apply",
+	);
+	const platform = fakePlatform({
+		desiredTriggerFailure: triggerFailure,
+		desiredTriggerPartial: true,
+	});
+	await assert.rejects(
+		runProductionRollout(input, platform.dependencies),
+		(error) => error === triggerFailure,
+	);
+	assert.equal(platform.phase, "baseline");
+	assert.equal(platform.customDomainsPhase, "baseline");
+	assert.equal(platform.restoredTriggerConfigs.length, 1);
+	const restored = platform.restoredTriggerConfigs[0];
+	assert.ok(restored);
+	assert.match(restored.content, /"workers_dev": true/u);
+	assert.match(restored.content, /"preview_urls": true/u);
+	assert.deepEqual(platform.triggerCleanupPaths, [restored.directoryPath]);
+	await assert.rejects(stat(restored.path), { code: "ENOENT" });
+	if (process.platform !== "win32") {
+		assert.equal(restored.directoryMode, 0o700);
+		assert.equal(restored.mode, 0o600);
+	}
+});
+
+test("an incomplete trigger restore is a RolloutRollbackFailure and never a successful rollback", async () => {
+	const platform = fakePlatform({
+		activeSmokeFailure: new Error("active smoke failed"),
+		restorePartial: true,
+	});
+	await assert.rejects(
+		runProductionRollout(input, platform.dependencies),
+		(error) => {
+			assert(error instanceof RolloutRollbackFailure);
+			assert.match(
+				safeErrorMessage(error, []),
+				/Baseline trigger restoration did not reach/u,
+			);
+			return true;
+		},
+	);
+	assert.equal(platform.phase, "baseline");
+	assert.equal(platform.customDomainsPhase, "partial");
+});
+
+test("trigger restore and cleanup failures remain visible together", async () => {
+	const platform = fakePlatform({
+		activeSmokeFailure: new Error("active smoke failed"),
+		restoreFailure: new Error("trigger restore failed"),
+		restoreCleanupFailure: new Error("trigger cleanup failed"),
+	});
+	await assert.rejects(
+		runProductionRollout(input, platform.dependencies),
+		(error) => {
+			assert(error instanceof RolloutRollbackFailure);
+			const message = safeErrorMessage(error, []);
+			assert.match(message, /trigger restore failed/u);
+			assert.match(message, /trigger cleanup failed/u);
+			return true;
+		},
+	);
+});
+
+test("concurrent custom-domain drift immediately before restore is not overwritten", async () => {
+	const platform = fakePlatform({
+		activeSmokeFailure: new Error("active smoke failed"),
+		concurrentDomainsBeforeRollback: true,
+	});
+	await assert.rejects(
+		runProductionRollout(input, platform.dependencies),
+		(error) => {
+			assert(error instanceof RolloutRollbackFailure);
+			assert.match(safeErrorMessage(error, []), /trigger drift/u);
+			return true;
+		},
+	);
+	assert.equal(platform.restoredTriggerConfigs.length, 0);
+	assert.equal(platform.customDomainsPhase, "concurrent");
+});
+
+test("a timed-out partial trigger apply restores baseline and a retry resumes the same candidate", async () => {
+	const platform = fakePlatform({
+		desiredTriggerFailure: new CommandAbortedError(
+			"desired trigger apply timed out",
+			false,
+		),
+		desiredTriggerPartial: true,
+	});
+	await assert.rejects(
+		runProductionRollout(input, platform.dependencies),
+		/desired trigger apply timed out/u,
+	);
+	assert.equal(platform.phase, "baseline");
+	assert.equal(platform.customDomainsPhase, "baseline");
+	await runProductionRollout(input, platform.dependencies);
+	assert.equal(platform.phase, "active");
+	assert.equal(platform.customDomainsPhase, "desired");
+	assert.equal(platform.counts.upload, 1);
+});
+
+test("staged and baseline retries repair an owned partial trigger state before resuming", async () => {
+	for (const phase of ["staged", "baseline"] as const) {
+		const platform = fakePlatform({
+			phase,
+			candidatePresent: true,
+			customDomainsPhase: "partial",
+		});
+		await runProductionRollout(input, platform.dependencies);
+		assert.equal(platform.phase, "active");
+		assert.equal(platform.customDomainsPhase, "desired");
+		assert.ok(platform.restoredTriggerConfigs.length >= 1);
+	}
 });
 
 test("new rollout persists candidate, acquires zero-traffic lease, smokes, and activates", async () => {
@@ -604,11 +1057,10 @@ test("mismatched candidate metadata fails closed before deployment mutation", as
 	);
 });
 
-test("rollback command and smoke failures remain visible beside the rollout error", async () => {
+test("a failed Worker rollback refuses trigger restoration and preserves both errors", async () => {
 	const platform = fakePlatform({
 		activeSmokeFailure: new Error("new token smoke failed"),
 		rollbackFailure: new Error("rollback command failed"),
-		rollbackSmokeFailure: new Error("rollback smoke failed"),
 	});
 	await assert.rejects(
 		runProductionRollout(input, platform.dependencies),
@@ -617,23 +1069,48 @@ test("rollback command and smoke failures remain visible beside the rollout erro
 			const message = safeErrorMessage(error, []);
 			assert.match(message, /new token smoke failed/u);
 			assert.match(message, /rollback command failed/u);
-			assert.match(message, /rollback smoke failed/u);
 			return true;
 		},
 	);
+	assert.equal(platform.restoredTriggerConfigs.length, 0);
+	assert.equal(
+		platform.events.filter((event) =>
+			event.endsWith(`:${previousIdentity.gitSha}`),
+		).length,
+		1,
+	);
+});
+
+test("a concurrent deployment after rollback command is never overwritten by trigger recovery", async () => {
+	const platform = fakePlatform({
+		activeSmokeFailure: new Error("new token smoke failed"),
+		concurrentAfterRollback: true,
+	});
+	await assert.rejects(
+		runProductionRollout(input, platform.dependencies),
+		(error) => {
+			assert(error instanceof RolloutRollbackFailure);
+			assert.match(safeErrorMessage(error, []), /concurrent deployment/u);
+			return true;
+		},
+	);
+	assert.equal(platform.phase, "concurrent");
+	assert.equal(platform.restoredTriggerConfigs.length, 0);
 });
 
 test("error formatting redacts both status tokens", () => {
+	const adminAccessSecret = "showcase-admin-access-secret";
 	const message = safeErrorMessage(
 		new RolloutRollbackFailure(
-			new Error(`failed ${input.productionStatusToken}`),
+			new Error(`failed ${input.productionStatusToken} ${adminAccessSecret}`),
 			new Error(`failed ${input.rollbackStatusToken}`),
 		),
-		[input.productionStatusToken, input.rollbackStatusToken],
+		[input.productionStatusToken, input.rollbackStatusToken, adminAccessSecret],
 	);
 	assert.doesNotMatch(message, /new-production-status-token/u);
 	assert.doesNotMatch(message, /previous-production-status-token/u);
-	assert.equal(message.match(/\[REDACTED\]/gu)?.length, 2);
+	assert.doesNotMatch(message, /showcase-admin-access-secret/u);
+	assert.equal(message.match(/\[REDACTED\]/gu)?.length, 3);
 });
 
 test("rollback command is exact and recovery commands carry bounded timeouts", () => {

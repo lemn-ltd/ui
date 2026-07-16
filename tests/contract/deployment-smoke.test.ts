@@ -4,6 +4,7 @@ import {
 	assertBuildIdentity,
 	assertPackageBuildIdentity,
 	smokeProductionDeployment,
+	smokeShowcaseAdminAccess,
 } from "../../scripts/release/deployment-smoke.ts";
 
 const expected = {
@@ -12,6 +13,10 @@ const expected = {
 	buildTime: "2026-07-14T00:00:00Z",
 };
 const statusToken = "deployment-smoke-status-token";
+const showcaseAdminAccess = {
+	clientId: "deployment-smoke.access",
+	clientSecret: "deployment-smoke-access-secret",
+};
 const legacyUiPackageName = `@${["app", "ranks"].join("")}/ui`;
 
 test("build identity contract rejects stale versions and stale commits", () => {
@@ -66,6 +71,11 @@ test("production smoke compares exact docs and showcase build identities", async
 		authorization: string | null;
 		url: string;
 	}> = [];
+	const adminRequests: Array<{
+		clientId: string | null;
+		clientSecret: string | null;
+		redirect: RequestRedirect | undefined;
+	}> = [];
 	const fetchImplementation: typeof fetch = async (input, init) => {
 		const url = String(input);
 		const headers = new Headers(init?.headers);
@@ -118,6 +128,23 @@ test("production smoke compares exact docs and showcase build identities", async
 			);
 		}
 		if (url === "https://admin.showcase.ui.le-mn.com/health") {
+			adminRequests.push({
+				clientId: headers.get("cf-access-client-id"),
+				clientSecret: headers.get("cf-access-client-secret"),
+				redirect: init?.redirect,
+			});
+			if (
+				headers.get("cf-access-client-id") === showcaseAdminAccess.clientId &&
+				headers.get("cf-access-client-secret") ===
+					showcaseAdminAccess.clientSecret
+			) {
+				return Response.json({
+					ok: true,
+					service: "ui-showcase-admin",
+					environment: "production",
+					simulatorConfigured: true,
+				});
+			}
 			return new Response(null, {
 				status: 302,
 				headers: {
@@ -157,9 +184,18 @@ test("production smoke compares exact docs and showcase build identities", async
 	await smokeProductionDeployment({
 		expected,
 		statusToken,
+		showcaseAdminAccess,
 		fetchImplementation,
 		showcaseVersionId: candidateVersionId,
 	});
+	assert.deepEqual(adminRequests, [
+		{ clientId: null, clientSecret: null, redirect: "manual" },
+		{
+			clientId: showcaseAdminAccess.clientId,
+			clientSecret: showcaseAdminAccess.clientSecret,
+			redirect: "manual",
+		},
+	]);
 	assert.ok(showcaseOverrides.length > 0);
 	assert.deepEqual(
 		new Set(showcaseOverrides),
@@ -212,7 +248,20 @@ test("production smoke fails when the new protected status token is rejected", a
 				}),
 				{ headers: { "content-type": "application/schema+json" } },
 			);
-		if (url === "https://admin.showcase.ui.le-mn.com/health")
+		if (url === "https://admin.showcase.ui.le-mn.com/health") {
+			const headers = new Headers(init?.headers);
+			if (
+				headers.get("cf-access-client-id") === showcaseAdminAccess.clientId &&
+				headers.get("cf-access-client-secret") ===
+					showcaseAdminAccess.clientSecret
+			) {
+				return Response.json({
+					ok: true,
+					service: "ui-showcase-admin",
+					environment: "production",
+					simulatorConfigured: true,
+				});
+			}
 			return new Response(null, {
 				status: 302,
 				headers: {
@@ -220,6 +269,7 @@ test("production smoke fails when the new protected status token is rejected", a
 						"https://lemn-dev.cloudflareaccess.com/cdn-cgi/access/login",
 				},
 			});
+		}
 		if (url === "https://showcase.ui.le-mn.com/llms.txt")
 			return new Response("@lemn-ltd/ui");
 		if (url === "https://showcase.ui.le-mn.com/llms-full.txt")
@@ -234,9 +284,71 @@ test("production smoke fails when the new protected status token is rejected", a
 			smokeProductionDeployment({
 				expected,
 				statusToken,
+				showcaseAdminAccess,
 				fetchImplementation,
 				retryOptions: { attempts: 1, delayMs: 0 },
 			}),
 		/with a bearer token returned HTTP 401/u,
+	);
+});
+
+test("Showcase Admin smoke requires the exact Access tenant", async () => {
+	const fetchImplementation: typeof fetch = async (_input, init) => {
+		const headers = new Headers(init?.headers);
+		if (headers.has("cf-access-client-id")) {
+			return Response.json({
+				ok: true,
+				service: "ui-showcase-admin",
+				environment: "production",
+				simulatorConfigured: true,
+			});
+		}
+		return new Response(null, {
+			status: 302,
+			headers: {
+				location:
+					"https://another-team.cloudflareaccess.com/cdn-cgi/access/login",
+			},
+		});
+	};
+
+	await assert.rejects(
+		() =>
+			smokeShowcaseAdminAccess({
+				credentials: showcaseAdminAccess,
+				fetchImplementation,
+				retryOptions: { attempts: 1, delayMs: 0 },
+			}),
+		/exact lemn-dev\.cloudflareaccess\.com tenant login/u,
+	);
+});
+
+test("Showcase Admin authenticated smoke proves production and simulator configuration", async () => {
+	const fetchImplementation: typeof fetch = async (_input, init) => {
+		const headers = new Headers(init?.headers);
+		if (headers.has("cf-access-client-id")) {
+			return Response.json({
+				ok: true,
+				service: "ui-showcase-admin",
+				environment: "staging",
+				simulatorConfigured: false,
+			});
+		}
+		return new Response(null, {
+			status: 302,
+			headers: {
+				location: "https://lemn-dev.cloudflareaccess.com/cdn-cgi/access/login",
+			},
+		});
+	};
+
+	await assert.rejects(
+		() =>
+			smokeShowcaseAdminAccess({
+				credentials: showcaseAdminAccess,
+				fetchImplementation,
+				retryOptions: { attempts: 1, delayMs: 0 },
+			}),
+		/not running the production environment/u,
 	);
 });

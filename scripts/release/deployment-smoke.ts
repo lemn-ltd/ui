@@ -6,6 +6,7 @@ const DOCS_ORIGIN = "https://ui.le-mn.com";
 const SHOWCASE_ORIGIN = "https://showcase.ui.le-mn.com";
 const SCHEMA_ORIGIN = "https://schemas.ui.le-mn.com";
 const SHOWCASE_ADMIN_ORIGIN = "https://admin.showcase.ui.le-mn.com";
+const SHOWCASE_ADMIN_ACCESS_TENANT = "lemn-dev.cloudflareaccess.com";
 const UI_PACKAGE_NAME = "@lemn-ltd/ui";
 const BRAND_PROJECT_SCHEMA_URL = `${SCHEMA_ORIGIN}/brand-project/v1.json`;
 export const PROTECTED_STATUS_PATHS = [
@@ -18,6 +19,11 @@ export interface BuildIdentity {
 	version: string;
 	gitSha: string;
 	buildTime: string;
+}
+
+export interface ShowcaseAdminAccessCredentials {
+	clientId: string;
+	clientSecret: string;
 }
 
 type FetchImplementation = typeof fetch;
@@ -198,6 +204,93 @@ function assertResponseDoesNotExposeToken(
 	);
 }
 
+function requiredCredential(value: string | undefined, name: string): string {
+	assert(value?.trim(), `${name} is required`);
+	return value.trim();
+}
+
+export async function smokeShowcaseAdminAccess(input: {
+	credentials: ShowcaseAdminAccessCredentials;
+	fetchImplementation?: FetchImplementation;
+	retryOptions?: RetryOptions;
+	signal?: AbortSignal;
+}): Promise<void> {
+	const fetchImplementation = input.fetchImplementation ?? fetch;
+	const retryOptions = input.retryOptions ?? defaultRetryOptions;
+	const clientId = requiredCredential(
+		input.credentials.clientId,
+		"Showcase Admin Access client ID",
+	);
+	const clientSecret = requiredCredential(
+		input.credentials.clientSecret,
+		"Showcase Admin Access client secret",
+	);
+	const healthUrl = `${SHOWCASE_ADMIN_ORIGIN}/health`;
+
+	await retry(
+		"showcase-admin-access-boundary",
+		async () => {
+			const response = await fetchImplementation(healthUrl, {
+				headers: { Accept: "application/json" },
+				redirect: "manual",
+				signal: requestSignal(input.signal),
+			});
+			assert(
+				response.status === 302,
+				`Showcase Admin anonymous request returned HTTP ${response.status}`,
+			);
+			const location = response.headers.get("location");
+			assert(location, "Showcase Admin Access redirect has no location");
+			const accessLogin = new URL(location, SHOWCASE_ADMIN_ORIGIN);
+			assert(
+				accessLogin.protocol === "https:" &&
+					accessLogin.hostname === SHOWCASE_ADMIN_ACCESS_TENANT &&
+					accessLogin.pathname.startsWith("/cdn-cgi/access/login"),
+				`Showcase Admin Access redirect does not target the exact ${SHOWCASE_ADMIN_ACCESS_TENANT} tenant login`,
+			);
+		},
+		retryOptions,
+		input.signal,
+	);
+
+	await retry(
+		"showcase-admin-authenticated-health",
+		async () => {
+			const response = await fetchImplementation(healthUrl, {
+				headers: {
+					Accept: "application/json",
+					"CF-Access-Client-Id": clientId,
+					"CF-Access-Client-Secret": clientSecret,
+				},
+				redirect: "manual",
+				signal: requestSignal(input.signal),
+			});
+			const body = await response.text();
+			assertResponseDoesNotExposeToken(response, body, clientSecret, healthUrl);
+			assert(
+				response.status === 200,
+				`Showcase Admin authenticated health returned HTTP ${response.status}`,
+			);
+			const payload = JSON.parse(body) as Record<string, unknown>;
+			assert(payload.ok === true, "Showcase Admin health is not OK");
+			assert(
+				payload.service === "ui-showcase-admin",
+				"Showcase Admin health has the wrong service identity",
+			);
+			assert(
+				payload.environment === "production",
+				"Showcase Admin health is not running the production environment",
+			);
+			assert(
+				payload.simulatorConfigured === true,
+				"Showcase Admin production simulator binding is not configured",
+			);
+		},
+		retryOptions,
+		input.signal,
+	);
+}
+
 export async function smokeProtectedStatusRoutes(input: {
 	token: string;
 	expected?: BuildIdentity;
@@ -265,6 +358,7 @@ export async function smokeProtectedStatusRoutes(input: {
 export async function smokeProductionDeployment(input: {
 	expected: BuildIdentity;
 	statusToken: string;
+	showcaseAdminAccess?: ShowcaseAdminAccessCredentials;
 	fetchImplementation?: FetchImplementation;
 	retryOptions?: RetryOptions;
 	showcaseVersionId?: string;
@@ -273,6 +367,10 @@ export async function smokeProductionDeployment(input: {
 	const fetchImplementation = input.fetchImplementation ?? fetch;
 	const expected = input.expected;
 	const retryOptions = input.retryOptions ?? defaultRetryOptions;
+	const showcaseAdminAccess = input.showcaseAdminAccess ?? {
+		clientId: process.env.SHOWCASE_ADMIN_ACCESS_CLIENT_ID ?? "",
+		clientSecret: process.env.SHOWCASE_ADMIN_ACCESS_CLIENT_SECRET ?? "",
+	};
 
 	await retry(
 		"docs-home",
@@ -468,33 +566,12 @@ export async function smokeProductionDeployment(input: {
 		retryOptions,
 		input.signal,
 	);
-	await retry(
-		"showcase-admin-access-boundary",
-		async () => {
-			const response = await fetchImplementation(
-				`${SHOWCASE_ADMIN_ORIGIN}/health`,
-				{
-					headers: { Accept: "application/json" },
-					redirect: "manual",
-					signal: requestSignal(input.signal),
-				},
-			);
-			assert(
-				response.status === 302,
-				`Showcase Admin anonymous request returned HTTP ${response.status}`,
-			);
-			const location = response.headers.get("location");
-			assert(location, "Showcase Admin Access redirect has no location");
-			assert(
-				new URL(location, SHOWCASE_ADMIN_ORIGIN).hostname.endsWith(
-					".cloudflareaccess.com",
-				),
-				"Showcase Admin is not protected by the expected Access boundary",
-			);
-		},
+	await smokeShowcaseAdminAccess({
+		credentials: showcaseAdminAccess,
+		fetchImplementation,
 		retryOptions,
-		input.signal,
-	);
+		signal: input.signal,
+	});
 	await retry(
 		"showcase-llms",
 		async () => {
@@ -548,14 +625,29 @@ async function main(): Promise<void> {
 	const gitSha = process.env.EXPECTED_RELEASE_GIT_SHA;
 	const buildTime = process.env.EXPECTED_RELEASE_TIME;
 	const statusToken = process.env.PRODUCTION_STATUS_TOKEN;
-	if (!version || !gitSha || !buildTime || !statusToken) {
+	const showcaseAdminAccessClientId =
+		process.env.SHOWCASE_ADMIN_ACCESS_CLIENT_ID;
+	const showcaseAdminAccessClientSecret =
+		process.env.SHOWCASE_ADMIN_ACCESS_CLIENT_SECRET;
+	if (
+		!version ||
+		!gitSha ||
+		!buildTime ||
+		!statusToken ||
+		!showcaseAdminAccessClientId ||
+		!showcaseAdminAccessClientSecret
+	) {
 		throw new Error(
-			"EXPECTED_RELEASE_VERSION, EXPECTED_RELEASE_GIT_SHA, EXPECTED_RELEASE_TIME, and PRODUCTION_STATUS_TOKEN are required",
+			"EXPECTED_RELEASE_VERSION, EXPECTED_RELEASE_GIT_SHA, EXPECTED_RELEASE_TIME, PRODUCTION_STATUS_TOKEN, SHOWCASE_ADMIN_ACCESS_CLIENT_ID, and SHOWCASE_ADMIN_ACCESS_CLIENT_SECRET are required",
 		);
 	}
 	await smokeProductionDeployment({
 		expected: { version, gitSha, buildTime },
 		statusToken,
+		showcaseAdminAccess: {
+			clientId: showcaseAdminAccessClientId,
+			clientSecret: showcaseAdminAccessClientSecret,
+		},
 	});
 }
 

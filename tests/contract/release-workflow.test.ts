@@ -83,7 +83,7 @@ test("manual production release is main-only and workflow concurrency never canc
 test("production credentials remain exclusive to the protected environment job", () => {
 	assert.equal(releaseJob.environment, "production");
 	const productionSecretPattern =
-		/secrets\.PRODUCTION_(?:CLOUDFLARE_API_TOKEN|STATUS_TOKEN)/u;
+		/secrets\.PRODUCTION_(?:CLOUDFLARE_API_TOKEN|STATUS_TOKEN|SHOWCASE_ADMIN_ACCESS_CLIENT_(?:ID|SECRET))/u;
 	for (const [jobName, job] of Object.entries(jobs)) {
 		if (jobName === "release-and-deploy") continue;
 		assert.doesNotMatch(JSON.stringify(job), productionSecretPattern);
@@ -122,6 +122,18 @@ test("production credentials remain exclusive to the protected environment job",
 	assert.equal(
 		preflightEnv.ROLLBACK_STATUS_TOKEN,
 		expression("secrets.STATUS_TOKEN || secrets.PRODUCTION_STATUS_TOKEN"),
+	);
+	assert.equal(
+		preflightEnv.SHOWCASE_ADMIN_ACCESS_CLIENT_ID,
+		productionSecret("SHOWCASE_ADMIN_ACCESS_CLIENT_ID"),
+	);
+	assert.equal(
+		preflightEnv.SHOWCASE_ADMIN_ACCESS_CLIENT_SECRET,
+		productionSecret("SHOWCASE_ADMIN_ACCESS_CLIENT_SECRET"),
+	);
+	assert.match(
+		String(step("Preflight Cloudflare release access").run),
+		/SHOWCASE_ADMIN_ACCESS_CLIENT_ID[\s\S]*SHOWCASE_ADMIN_ACCESS_CLIENT_SECRET/u,
 	);
 });
 
@@ -302,6 +314,22 @@ test("all production deploys receive only the scoped Environment API token", () 
 		rolloutEnv.ROLLBACK_STATUS_TOKEN,
 		expression("secrets.STATUS_TOKEN || secrets.PRODUCTION_STATUS_TOKEN"),
 	);
+	assert.equal(
+		rolloutEnv.SHOWCASE_ADMIN_ACCESS_CLIENT_ID,
+		productionSecret("SHOWCASE_ADMIN_ACCESS_CLIENT_ID"),
+	);
+	assert.equal(
+		rolloutEnv.SHOWCASE_ADMIN_ACCESS_CLIENT_SECRET,
+		productionSecret("SHOWCASE_ADMIN_ACCESS_CLIENT_SECRET"),
+	);
+	for (const name of [
+		"Deploy docs",
+		"Deploy Access-protected Showcase Admin",
+	]) {
+		const env = record(step(name).env, `${name} env`);
+		assert.equal(env.SHOWCASE_ADMIN_ACCESS_CLIENT_ID, undefined);
+		assert.equal(env.SHOWCASE_ADMIN_ACCESS_CLIENT_SECRET, undefined);
+	}
 	assert.equal(
 		stepIndex("Roll out showcase with protected rollback"),
 		steps.length - 1,
