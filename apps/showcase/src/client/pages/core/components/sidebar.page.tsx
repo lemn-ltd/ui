@@ -82,13 +82,13 @@ function SidebarPage(): ReactElement {
 	return (
 		<ComponentPage
 			status="stable"
-			summary="The application rail. Collapse modes — rail (64px), expanded (264px), and hidden — plus a drill-in variant (264px), each composing the org switcher, nav groups, user row, and version tag slots. Nav items accept children, rendering an accessible multi-level tree with keyboard navigation and a rail flyout."
+			summary="The application rail. Collapse modes — rail (64px), expanded (264px), and hidden — plus a drill-in variant (264px), each composing the org switcher, nav groups, user row, and version tag slots. Nav destinations use native links; items can also accept children for an accessible multi-level tree with keyboard navigation and a rail flyout."
 			title="Sidebar"
 		>
 			<ExampleBlock
 				code={`<Sidebar
   mode="expanded"
-  groups={navGroups}
+  groups={[{ items: [{ id: "overview", label: "Overview", href: "/overview" }] }]}
   orgSwitcher={<OrgSwitcher orgs={orgs} currentOrgId={currentOrgId} />}
   userRow={<SidebarUserRow initials="AV" name="Avery Quinn" email="avery@example.com">…</SidebarUserRow>}
   versionTag={<VersionTag version="v1.4.0" env="local" />}
@@ -142,7 +142,11 @@ function SidebarPage(): ReactElement {
 <Sidebar variant="drill-in" groups={drillNavGroups} title="Settings" />`}
 				render={() => (
 					<div
-						style={{ display: "flex", flexWrap: "wrap", gap: "var(--lemn-space-4)" }}
+						style={{
+							display: "flex",
+							flexWrap: "wrap",
+							gap: "var(--lemn-space-4)",
+						}}
 					>
 						<Frame width={64}>
 							<Sidebar
@@ -191,7 +195,7 @@ function SidebarPage(): ReactElement {
 						name: "groups",
 						type: "readonly SidebarNavGroup[]",
 						description:
-							"Nav groups, each with an optional header and a list of items. An item with a children array becomes an expandable tree node; nest up to ~2 levels and use the drill-in variant for deeper sections.",
+							"Nav groups, each with an optional header and a list of items. Give destinations an href for native link semantics. An item with a children array becomes an expandable tree node; nest up to ~2 levels and use the drill-in variant for deeper sections.",
 					},
 					{
 						name: "expandedIds / defaultExpandedIds",

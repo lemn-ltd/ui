@@ -5,7 +5,13 @@ export const navGroups: readonly SidebarNavGroup[] = [
   {
     header: 'Workspace',
     items: [
-      { id: 'nav-overview', label: 'Overview', icon: 'layout-grid', active: true },
+      {
+        id: 'nav-overview',
+        label: 'Overview',
+        icon: 'layout-grid',
+        active: true,
+        href: '/core/components/sidebar',
+      },
       { id: 'nav-list', label: 'List', icon: 'list' },
       { id: 'nav-files', label: 'Files', icon: 'file' },
       { id: 'nav-activity', label: 'Activity', icon: 'clock' },
@@ -53,7 +59,12 @@ export const nestedNavGroups: readonly SidebarNavGroup[] = [
             label: 'Starred',
             children: [
               { id: 'nest-recent', label: 'Recent' },
-              { id: 'nest-pinned', label: 'Pinned', active: true },
+              {
+                id: 'nest-pinned',
+                label: 'Pinned',
+                active: true,
+                href: '/core/components/sidebar',
+              },
             ],
           },
           { id: 'nest-pg-settings', label: 'Settings' },

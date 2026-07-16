@@ -122,6 +122,7 @@
   color: var(--lemn-color-text-muted);
   font-family: var(--lemn-font-body);
   font-size: var(--lemn-font-size-small);
+  text-decoration: none;
   text-align: left;
   cursor: pointer;
 }
@@ -158,20 +159,32 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
   margin: 0;
+  border: 0;
   padding: 0;
   list-style: none;
 }
 
-.ui-sidebar__treeitem {
+.ui-sidebar__tree-node {
   display: block;
+}
+
+.ui-sidebar__tree-row {
+  position: relative;
+}
+
+.ui-sidebar__treeitem {
   outline: none;
 }
 
-/* Focus the row, not the bare <li>, so the ring hugs the rounded surface. */
-.ui-sidebar__treeitem:focus-visible > .ui-sidebar__item {
+.ui-sidebar__treeitem:focus-visible {
   outline: 2px solid var(--lemn-color-focus);
   outline-offset: -2px;
+}
+
+.ui-sidebar__treeitem[data-has-children="true"] {
+  padding-right: 40px;
 }
 
 /* Guide rail under a parent, aligned just inside its label start. */
@@ -203,6 +216,12 @@
   background: none;
   color: var(--lemn-color-disabled-text);
   cursor: pointer;
+}
+
+.ui-sidebar__tree-row > .ui-sidebar__chevron {
+  position: absolute;
+  top: 10px;
+  right: 10px;
 }
 
 .ui-sidebar__chevron:hover {

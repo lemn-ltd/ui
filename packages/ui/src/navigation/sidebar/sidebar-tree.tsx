@@ -174,16 +174,10 @@ export function SidebarTree({
   activeRef,
   maxInlineDepth = 3,
 }: SidebarTreeProps): ReactElement {
-  const treeRef = useRef<HTMLUListElement>(null);
+  const treeRef = useRef<HTMLDivElement>(null);
   // Set when keyboard navigation should move DOM focus after the next paint.
   const pendingFocus = useRef(false);
   const [focusedId, setFocusedId] = useState<string | undefined>(undefined);
-
-  const byId = useMemo(() => {
-    const map = new Map<string, SidebarNavItem>();
-    eachNode(items, (item) => map.set(item.id, item));
-    return map;
-  }, [items]);
 
   const activeId = useMemo(() => firstActiveId([{ items }]), [items]);
 
@@ -214,9 +208,7 @@ export function SidebarTree({
   useLayoutEffect(() => {
     if (!pendingFocus.current || !focusedId) return;
     pendingFocus.current = false;
-    treeRef.current
-      ?.querySelector<HTMLElement>(`[data-tree-id="${cssEscape(focusedId)}"]`)
-      ?.focus();
+    treeRef.current?.querySelector<HTMLElement>(`[data-tree-id="${cssEscape(focusedId)}"]`)?.focus();
   }, [focusedId]);
 
   const moveFocus = useCallback((id: string) => {
@@ -224,18 +216,12 @@ export function SidebarTree({
     setFocusedId(id);
   }, []);
 
-  const activate = useCallback(
-    (id: string) => {
-      const item = byId.get(id);
-      if (!item) return;
-      if (item.onSelect) item.onSelect();
-      else if ((item.children?.length ?? 0) > 0) state.toggle(id);
-    },
-    [byId, state],
-  );
+  const activate = useCallback((id: string) => {
+    treeRef.current?.querySelector<HTMLElement>(`[data-tree-id="${cssEscape(id)}"]`)?.click();
+  }, []);
 
   const onKeyDown = useCallback(
-    (event: KeyboardEvent<HTMLUListElement>) => {
+    (event: KeyboardEvent<HTMLDivElement>) => {
       if (!focusedId) return;
       const index = visible.findIndex((node) => node.id === focusedId);
       const node = index >= 0 ? visible[index] : undefined;
@@ -279,43 +265,63 @@ export function SidebarTree({
     [focusedId, visible, moveFocus, state, activate],
   );
 
-  const renderNode = (
-    item: SidebarNavItem,
-    depth: number,
-    posinset: number,
-    setsize: number,
-  ): ReactElement => {
+  const renderNode = (item: SidebarNavItem, depth: number, posinset: number, setsize: number): ReactElement => {
     const hasChildren = (item.children?.length ?? 0) > 0;
     const expanded = hasChildren && state.isExpanded(item.id);
     const indent = Math.min(depth - 1, maxInlineDepth - 1);
     // --sidebar-depth lives on the treeitem so both the row padding and the
     // subtree guide rail inherit it.
     const itemStyle = { '--sidebar-depth': indent } as CSSProperties;
-    return (
-      <li
-        aria-current={item.active ? 'page' : undefined}
-        aria-expanded={hasChildren ? expanded : undefined}
-        aria-level={depth}
-        aria-posinset={posinset}
-        aria-setsize={setsize}
-        className="ui-sidebar__treeitem"
-        data-active={item.active || undefined}
-        data-tree-id={item.id}
-        key={item.id}
-        onClick={(event) => {
-          event.stopPropagation();
-          setFocusedId(item.id);
-          activate(item.id);
-        }}
-        ref={item.active && activeRef ? (activeRef as RefObject<HTMLLIElement>) : undefined}
-        role="treeitem"
-        style={itemStyle}
-        tabIndex={focusedId === item.id ? 0 : -1}
+    const rowContent = (
+      <>
+        {item.icon ? <Icon name={item.icon} size={18} /> : null}
+        <span className="ui-sidebar__item-label">{item.label}</span>
+        {item.badge != null ? <span className="ui-sidebar__badge">{item.badge}</span> : null}
+      </>
+    );
+    const rowProps = {
+      'aria-current': item.active ? ('page' as const) : undefined,
+      'aria-expanded': hasChildren ? expanded : undefined,
+      'aria-level': depth,
+      'aria-posinset': posinset,
+      'aria-setsize': setsize,
+      className: 'ui-sidebar__treeitem ui-sidebar__item',
+      'data-active': item.active || undefined,
+      'data-has-children': hasChildren || undefined,
+      'data-tree-id': item.id,
+      role: 'treeitem',
+      tabIndex: focusedId === item.id ? 0 : -1,
+    } as const;
+    const onRowClick = (event: { stopPropagation(): void }): void => {
+      event.stopPropagation();
+      setFocusedId(item.id);
+      if (!item.href && item.onSelect) item.onSelect();
+      else if (!item.href && hasChildren) state.toggle(item.id);
+    };
+    const row = item.href ? (
+      <a
+        {...rowProps}
+        href={item.href}
+        onClick={onRowClick}
+        ref={item.active && activeRef ? (activeRef as RefObject<HTMLAnchorElement>) : undefined}
       >
-        <span className="ui-sidebar__item" data-active={item.active || undefined}>
-          {item.icon ? <Icon name={item.icon} size={18} /> : null}
-          <span className="ui-sidebar__item-label">{item.label}</span>
-          {item.badge != null ? <span className="ui-sidebar__badge">{item.badge}</span> : null}
+        {rowContent}
+      </a>
+    ) : (
+      <button
+        {...rowProps}
+        onClick={onRowClick}
+        ref={item.active && activeRef ? (activeRef as RefObject<HTMLButtonElement>) : undefined}
+        type="button"
+      >
+        {rowContent}
+      </button>
+    );
+
+    return (
+      <div className="ui-sidebar__tree-node" key={item.id} role="none" style={itemStyle}>
+        <div className="ui-sidebar__tree-row">
+          {row}
           {hasChildren ? (
             <button
               aria-hidden="true"
@@ -332,28 +338,22 @@ export function SidebarTree({
               <Icon name="chevron-right" size={16} />
             </button>
           ) : null}
-        </span>
+        </div>
         {hasChildren && expanded && item.children ? (
-          <ul className="ui-sidebar__subtree" role="group">
+          <fieldset className="ui-sidebar__subtree">
             {item.children.map((child, childIndex) =>
               renderNode(child, depth + 1, childIndex + 1, item.children?.length ?? 0),
             )}
-          </ul>
+          </fieldset>
         ) : null}
-      </li>
+      </div>
     );
   };
 
   return (
-    <ul
-      aria-label={ariaLabel}
-      className="ui-sidebar__tree"
-      onKeyDown={onKeyDown}
-      ref={treeRef}
-      role="tree"
-    >
+    <div aria-label={ariaLabel} className="ui-sidebar__tree" onKeyDown={onKeyDown} ref={treeRef} role="tree">
       {items.map((item, index) => renderNode(item, 1, index + 1, items.length))}
-    </ul>
+    </div>
   );
 }
 
@@ -376,17 +376,27 @@ function railGlyph(item: SidebarNavItem): ReactElement {
   );
 }
 
-export function SidebarRailNav({
-  items,
-  state,
-  railExpand,
-  activeRef,
-}: SidebarRailNavProps): ReactElement {
+export function SidebarRailNav({ items, state, railExpand, activeRef }: SidebarRailNavProps): ReactElement {
   return (
     <div className="ui-sidebar__rail-nav">
       {items.map((item) => {
         const hasChildren = (item.children?.length ?? 0) > 0;
         if (!hasChildren || railExpand === 'hidden') {
+          if (item.href) {
+            return (
+              <a
+                aria-current={item.active ? 'page' : undefined}
+                className="ui-sidebar__item"
+                data-active={item.active || undefined}
+                href={item.href}
+                key={item.id}
+                ref={item.active && activeRef ? (activeRef as RefObject<HTMLAnchorElement>) : undefined}
+                title={item.label}
+              >
+                {railGlyph(item)}
+              </a>
+            );
+          }
           return (
             <button
               className="ui-sidebar__item"
