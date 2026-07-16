@@ -1,0 +1,67 @@
+name: Refresh Linux Visual Baselines
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  generate:
+    name: Generate governed Linux baselines
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://npm.pkg.github.com
+          scope: "@lemn-ltd"
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare "$(node -p "require('./package.json').packageManager")" --activate
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Free runner disk for pinned Playwright image
+        run: |
+          sudo rm -rf \
+            /opt/ghc \
+            /opt/hostedtoolcache/CodeQL \
+            /usr/local/lib/android \
+            /usr/share/dotnet
+          docker system prune --all --force
+
+      - name: Pull pinned Playwright image
+        run: docker pull mcr.microsoft.com/playwright:v1.60.0-noble
+
+      - name: Generate Linux snapshots from the immutable Git tree
+        run: pnpm visual:update:linux
+
+      - name: Verify only Linux PNG baselines changed
+        run: |
+          node --input-type=module -e '
+            import { execFileSync } from "node:child_process";
+            const files = execFileSync("git", ["diff", "--name-only"], { encoding: "utf8" })
+              .trim().split("\n").filter(Boolean);
+            if (files.length === 0) throw new Error("Snapshot refresh produced no changes");
+            const invalid = files.filter((file) =>
+              !/^apps\/showcase\/tests\/e2e\/visual\.e2e\.ts-snapshots\/.+-linux\.png$/u.test(file));
+            if (invalid.length > 0) throw new Error(`Unexpected generated paths: ${invalid.join(", ")}`);
+          '
+
+      - name: Upload generated Linux baselines
+        uses: actions/upload-artifact@v4
+        with:
+          name: showcase-linux-visual-baselines-${{ github.sha }}
+          path: apps/showcase/tests/e2e/visual.e2e.ts-snapshots/*-linux.png
+          if-no-files-found: error
+          retention-days: 1
