@@ -290,7 +290,7 @@ importers:
   packages/brand-studio:
     dependencies:
       '@lemn-ltd/brand-contract':
-        specifier: workspace:0.1.0
+        specifier: workspace:0.2.0
         version: link:../brand-contract
     devDependencies:
       '@lemn-ltd/ui':

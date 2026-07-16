@@ -13,6 +13,7 @@ const releaseMetadataPaths = [
 	"packages/ui/CHANGELOG.md",
 	"packages/brand-studio/package.json",
 	"packages/brand-studio/CHANGELOG.md",
+	"pnpm-lock.yaml",
 	"apps/docs/src/content/docs/changelog/index.mdx",
 	"apps/docs/src/content/docs/es/changelog/index.mdx",
 ] as const;
@@ -149,6 +150,15 @@ const defaultDependencies: PrepareReleaseDependencies = {
 			stdio: "inherit",
 			env: process.env,
 		});
+		execFileSync(
+			"pnpm",
+			["install", "--lockfile-only", "--no-frozen-lockfile"],
+			{
+				cwd: root,
+				stdio: "inherit",
+				env: process.env,
+			},
+		);
 	},
 	readPackageManifest: defaultReadPackageManifest,
 	hasStagedChanges: () => {
