@@ -326,6 +326,34 @@ test("Linux baselines use the pinned official Playwright runtime", async () => {
 	assert.match(linuxConfig, /webServer: undefined/u);
 });
 
+test("Linux snapshots grant secure-context APIs only to their canonical HTTP origin", async () => {
+	const previousBaseUrl = process.env.SHOWCASE_LINUX_SNAPSHOT_BASE_URL;
+	process.env.SHOWCASE_LINUX_SNAPSHOT_BASE_URL =
+		"http://host.docker.internal:45678";
+	try {
+		const imported = await import(
+			`../../apps/showcase/playwright.linux-snapshots.config.ts?secure-origin-contract=${Date.now()}`
+		);
+		const config = record(imported.default, "Linux snapshot Playwright config");
+		const use = record(config.use, "Linux snapshot Playwright use");
+		const launchOptions = record(
+			use.launchOptions,
+			"Linux snapshot Playwright launch options",
+		);
+		assert.equal(use.baseURL, "http://host.docker.internal:45678");
+		assert.deepEqual(launchOptions.args, [
+			"--unsafely-treat-insecure-origin-as-secure=http://host.docker.internal:45678",
+		]);
+		assert.equal(config.webServer, undefined);
+	} finally {
+		if (previousBaseUrl === undefined) {
+			delete process.env.SHOWCASE_LINUX_SNAPSHOT_BASE_URL;
+		} else {
+			process.env.SHOWCASE_LINUX_SNAPSHOT_BASE_URL = previousBaseUrl;
+		}
+	}
+});
+
 test("Linux snapshot CLI preserves aggregate baselines when Git archive fails", async () => {
 	const temporaryRoot = await mkdtemp(
 		resolve(tmpdir(), "lemn-linux-snapshot-failure-"),
