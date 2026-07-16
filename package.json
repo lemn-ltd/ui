@@ -35,7 +35,7 @@
     "deploy:showcase-admin": "pnpm deploy:showcase-admin:prod",
     "deploy:docs:prod": "pnpm guard:release:mutation && test -n \"$PUBLIC_BUILD_VERSION\" && test -n \"$PUBLIC_BUILD_GIT_SHA\" && test -n \"$PUBLIC_BUILD_TIME\" && pnpm --filter @lemn-ltd/ui-docs run build && pnpm --dir apps/docs exec wrangler deploy --config wrangler.jsonc",
     "deploy:showcase:prod": "pnpm guard:release:mutation && node scripts/release/showcase-production-rollout.ts",
-    "deploy:showcase-admin:prod": "pnpm guard:release:mutation && pnpm --filter @lemn-ltd/ui-showcase-admin run build && pnpm --dir apps/showcase-admin exec wrangler deploy --env production",
+    "deploy:showcase-admin:prod": "pnpm guard:release:mutation && pnpm --filter @lemn-ltd/ui-showcase-admin run build:cloudflare:production && pnpm --dir apps/showcase-admin exec wrangler deploy",
     "rollout:showcase:prod": "pnpm guard:release:mutation && node scripts/release/showcase-production-rollout.ts",
     "build:packages:release": "pnpm --filter @lemn-ltd/brand-contract run build && pnpm --filter @lemn-ltd/ui run build && pnpm --filter @lemn-ltd/brand-studio run build",
     "pack:packages": "pnpm validate:package-identity && node scripts/smoke-package-set-tarballs.mjs",
