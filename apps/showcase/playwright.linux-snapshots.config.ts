@@ -7,33 +7,28 @@ if (!rawBaseUrl) {
 }
 
 const baseUrl = new URL(rawBaseUrl);
-if (baseUrl.protocol !== "http:") {
-	throw new Error("SHOWCASE_LINUX_SNAPSHOT_BASE_URL must use http");
-}
 if (
+	baseUrl.protocol !== "http:" ||
+	baseUrl.hostname !== "127.0.0.1" ||
+	!baseUrl.port ||
+	rawBaseUrl !== baseUrl.origin ||
 	baseUrl.username ||
 	baseUrl.password ||
 	baseUrl.pathname !== "/" ||
 	baseUrl.search ||
 	baseUrl.hash
 ) {
-	throw new Error("SHOWCASE_LINUX_SNAPSHOT_BASE_URL must be an HTTP origin");
+	throw new Error(
+		"SHOWCASE_LINUX_SNAPSHOT_BASE_URL must be an exact HTTP loopback origin like http://127.0.0.1:45678",
+	);
 }
-
-const secureContextArgument = `--unsafely-treat-insecure-origin-as-secure=${baseUrl.origin}`;
 
 export default defineConfig({
 	...canonicalConfig,
+	retries: 0,
 	webServer: undefined,
 	use: {
 		...canonicalConfig.use,
-		baseURL: baseUrl.href.replace(/\/$/u, ""),
-		launchOptions: {
-			...canonicalConfig.use?.launchOptions,
-			args: [
-				...(canonicalConfig.use?.launchOptions?.args ?? []),
-				secureContextArgument,
-			],
-		},
+		baseURL: baseUrl.origin,
 	},
 });

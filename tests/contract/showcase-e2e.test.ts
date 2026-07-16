@@ -11,6 +11,7 @@ import {
 	rm,
 	writeFile,
 } from "node:fs/promises";
+import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import { relative, resolve } from "node:path";
 import test from "node:test";
@@ -26,6 +27,7 @@ import {
 	assertE2eRunnerCapacity,
 	MINIMUM_E2E_FREE_BYTES,
 } from "../../scripts/test/check-e2e-runner-capacity.mjs";
+import { createLinuxSnapshotLoopbackProxy } from "../../scripts/test/linux-snapshot-loopback-proxy.ts";
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -319,38 +321,96 @@ test("Linux baselines use the pinned official Playwright runtime", async () => {
 	assert.match(generator, /"archive"[\s\S]*--output/u);
 	assert.match(generator, /set -euo pipefail/u);
 	assert.match(generator, /replaceLinuxSnapshots/u);
+	assert.match(
+		generator,
+		/node scripts\/test\/linux-snapshot-loopback-proxy\.ts/u,
+	);
+	assert.match(
+		generator,
+		/SHOWCASE_LINUX_SNAPSHOT_BASE_URL=http:\/\/127\.0\.0\.1:\$\{port\}/u,
+	);
+	assert.match(generator, /SHOWCASE_LINUX_SNAPSHOT_TARGET_PORT=\$\{port\}/u);
 	assert.doesNotMatch(generator, /SHOWCASE_E2E_STATIC_PREVIEW|WEB_UI_LOCAL/u);
+	assert.doesNotMatch(
+		generator,
+		/SHOWCASE_LINUX_SNAPSHOT_BASE_URL=http:\/\/host\.docker\.internal/u,
+	);
 	assert.doesNotMatch(generator, /tar[^\n]*\|[^\n]*tar/u);
 	assert.match(generator, /--grep 'visual: ' --update-snapshots/u);
 	assert.match(linuxConfig, /SHOWCASE_LINUX_SNAPSHOT_BASE_URL/u);
 	assert.match(linuxConfig, /webServer: undefined/u);
+	assert.match(linuxConfig, /retries: 0/u);
+	assert.doesNotMatch(linuxConfig, /unsafely-treat-insecure-origin-as-secure/u);
 });
 
-test("Linux snapshots grant secure-context APIs only to their canonical HTTP origin", async () => {
+test("Linux snapshots use an exact loopback origin without browser security exceptions", async () => {
 	const previousBaseUrl = process.env.SHOWCASE_LINUX_SNAPSHOT_BASE_URL;
-	process.env.SHOWCASE_LINUX_SNAPSHOT_BASE_URL =
-		"http://host.docker.internal:45678";
+	process.env.SHOWCASE_LINUX_SNAPSHOT_BASE_URL = "http://127.0.0.1:45678";
 	try {
 		const imported = await import(
 			`../../apps/showcase/playwright.linux-snapshots.config.ts?secure-origin-contract=${Date.now()}`
 		);
 		const config = record(imported.default, "Linux snapshot Playwright config");
 		const use = record(config.use, "Linux snapshot Playwright use");
-		const launchOptions = record(
-			use.launchOptions,
-			"Linux snapshot Playwright launch options",
-		);
-		assert.equal(use.baseURL, "http://host.docker.internal:45678");
-		assert.deepEqual(launchOptions.args, [
-			"--unsafely-treat-insecure-origin-as-secure=http://host.docker.internal:45678",
-		]);
+		assert.equal(use.baseURL, "http://127.0.0.1:45678");
+		assert.equal(use.launchOptions, undefined);
+		assert.equal(config.retries, 0);
 		assert.equal(config.webServer, undefined);
+
+		for (const invalidOrigin of [
+			"http://host.docker.internal:45678",
+			"http://localhost:45678",
+			"https://127.0.0.1:45678",
+			"http://127.0.0.1:45678/",
+		]) {
+			process.env.SHOWCASE_LINUX_SNAPSHOT_BASE_URL = invalidOrigin;
+			await assert.rejects(
+				import(
+					`../../apps/showcase/playwright.linux-snapshots.config.ts?invalid-loopback-contract=${Date.now()}-${encodeURIComponent(invalidOrigin)}`
+				),
+				/exact HTTP loopback origin/u,
+			);
+		}
 	} finally {
 		if (previousBaseUrl === undefined) {
 			delete process.env.SHOWCASE_LINUX_SNAPSHOT_BASE_URL;
 		} else {
 			process.env.SHOWCASE_LINUX_SNAPSHOT_BASE_URL = previousBaseUrl;
 		}
+	}
+});
+
+test("Linux snapshot loopback proxy forwards browser traffic to the host server", async () => {
+	const upstream = createServer((request, response) => {
+		response.writeHead(200, { "content-type": "application/json" });
+		response.end(JSON.stringify({ path: request.url }));
+	});
+	await new Promise<void>((resolvePromise) => {
+		upstream.listen(0, "127.0.0.1", resolvePromise);
+	});
+	const upstreamAddress = upstream.address();
+	assert.ok(upstreamAddress && typeof upstreamAddress !== "string");
+
+	let proxy: Awaited<
+		ReturnType<typeof createLinuxSnapshotLoopbackProxy>
+	> | null = null;
+	try {
+		proxy = await createLinuxSnapshotLoopbackProxy({
+			listenPort: 0,
+			targetHost: "127.0.0.1",
+			targetPort: upstreamAddress.port,
+		});
+		const response = await fetch(`http://127.0.0.1:${proxy.port}/health`);
+		assert.equal(response.status, 200);
+		assert.deepEqual(await response.json(), { path: "/health" });
+	} finally {
+		if (proxy) await proxy.close();
+		await new Promise<void>((resolvePromise, rejectPromise) => {
+			upstream.close((error) => {
+				if (error) rejectPromise(error);
+				else resolvePromise();
+			});
+		});
 	}
 });
 
