@@ -59,10 +59,6 @@ pattern_audit:
         scope: packages/ui/src/**/tests
         reason: "Component unit tests remain colocated with their owning source modules, following the established package convention during this capability expansion."
         follow_up: "Evaluate any repository-wide test-layout migration as a separate scoped change; e2e, fixtures, helpers, and snapshots remain under apps/showcase/tests."
-      - pattern: PAT-TEST-EVIDENCE-001
-        scope: commit 4655aab and later delivery commits
-        reason: "The user explicitly deferred the full Playwright behavior, Axe, responsive, and visual-snapshot suite because of its duration. No Playwright result from an earlier SHA is counted as current evidence."
-        follow_up: "Run the complete Playwright matrix against the delivered SHA; review and refresh the known-stale InfoBanner dark-desktop baseline before treating browser and visual coverage as current."
   UI:
     current_level: unassessed
     gaps: []
@@ -91,8 +87,77 @@ No full pattern audit has been completed for this workspace yet.
 
 | Audit ID | Date | Scope | Evidence | Result |
 |---|---|---|---|---|
+| PROVIDER-BRANDING-ECOSYSTEM-2026-07-16 | 2026-07-16 | Four-repository provider-first UI, branding control plane, typed MCP, private SSR runtime, and realistic appointment consumer | `docs/evidence/provider-branding-ecosystem-implementation-2026-07-16.md`; repository audits, hosted runs, PostgreSQL receipts, deployed UI/MCP/SSR/business receipts, full browser/accessibility matrix, and exact production smokes | PASS (focused audit) |
 | TRACKER-SOURCE-SNAPSHOT-2026-07-16 | 2026-07-16 | Tremor Tracker source snapshot, deterministic codegen, script governance, package evidence, and focused conformance | Full SHA/raw hash checks, registry tests, TypeScript checks, bundle/tarball gates, targeted behavior/Axe, and Darwin/Linux visual evidence described below | PASS (focused audit) |
 | UI-CAPABILITY-2026-07-14 | 2026-07-14 | Component catalog expansion, report visualizations, advanced inputs, showcase, docs, release candidate | Commits `c56fc6f` through `4655aab`; commands and artifacts below | PASS (focused audit; Playwright exception recorded) |
+
+## PROVIDER-BRANDING-ECOSYSTEM-2026-07-16
+
+This focused audit records the implemented cross-repository architecture and
+its exact evidence. It does not change any domain `current_level` from
+`unassessed` and does not replace a full profile-driven audit. The final UI
+deployment, protected Admin health, and browser matrix are now exact evidence.
+
+Detailed evidence, limitations, repository ownership, deployed versions,
+commands, run IDs, and the final marker replacement rule live in
+`docs/evidence/provider-branding-ecosystem-implementation-2026-07-16.md`.
+
+### Repository snapshot
+
+| Repository | Evidence state | Result |
+|---|---|---|
+| `lemn-ltd/ui` | Deployed source `075aef9d3310f4d5f982c4ecda5705bcfab46c47`; hosted run `29473617013` passed Validate, 131 E2E tests, 266 accessibility tests, immutable package verification, Docs/Admin deploys and transactional Showcase rollout; Workers `9a7487fe...`, `949c6f68...`, and `3868bd2e...`; public/schema and authenticated Admin smokes passed | COMPLETE (focused implementation evidence) |
+| `lemn-ltd/agentops-branding-simulator` | Clean pushed HEAD `20da773`; source-bearing hosted CI run `29471479619` passed; five migrations and 4/4 PostgreSQL 17 receipt; private runtime and control Workers deployed | COMPLETE (focused implementation evidence) |
+| `lemn-ltd/agentops-branding-mcp` | Clean pushed HEAD `dbb9b7f`; hosted CI run `29471467450` passed; deployed Worker exercised all 11 tools and 32 protocol/security/publication/materialization scenarios | COMPLETE (focused implementation evidence) |
+| `lemn-ltd/lunaria-care` | Clean pushed HEAD `62907b6`; source-bearing CI/deploy runs `29472832444`/`29472832477` passed; 23 files/121 tests; nine-scenario sanitized business receipt and authoritative SSR revalidation evidence retained | COMPLETE (focused implementation evidence) |
+
+### Pattern evidence
+
+| Pattern | Evidence | Result |
+|---|---|---|
+| `PAT-ARCH-REPO-BOUNDARIES-001`, `PAT-ARCH-PORTS-ADAPTERS-001` | UI owns reusable packages; Simulator owns branding state/publication/runtime; MCP owns only typed transport; Lunaria owns appointment state and consumes the private runtime | COMPLETE |
+| `PAT-ARCH-ADAPTER-REGISTRY-001`, `PAT-UI-PROVIDER-FIRST-001` | Git manifest records one provider of record for ten fully governed provider capabilities; the migration matrix classifies all 131 catalog capabilities; exact pins/full SHA, license/NOTICE, SPDX, transforms, patches and conformance are checked | COMPLETE (focused registry scope) |
+| `PAT-UI-FRONTEND-PLATFORM-BOUNDARY-001`, `PAT-UI-BRAND-CONTRACT-001` | Brand Contract and Studio remain controlled/persistence-free; components consume compiled scoped semantic tokens/adapters rather than project JSON; platform and product state remain in hosts | COMPLETE |
+| `PAT-UI-SSR-BRANDING-001` | Lunaria resolves and verifies the assigned artifact through a private binding before HTML and uses only a signed compatible embedded branded fallback on actual runtime failure | COMPLETE |
+| `PAT-UI-BLOCKS-001`, `PAT-UI-LEMN-001` | Three public controlled blocks exist; Lunaria uses exact published LEMN packages and proves dashboard/schedule blocks under real host workflows without provider imports | COMPLETE |
+| `PAT-CLOUDFLARE-SERVICE-BINDINGS-001`, `PAT-SEC-AUTHORIZATION-001`, `PAT-SEC-TENANT-ISOLATION-001` | Private runtime, MCP bridge, workload grants, exact project/environment/slot/profile intersection, and independent human/service origin verification fail closed | COMPLETE (focused implementation scope) |
+| `PAT-API-MCP-001`, `PAT-SEC-AUDIT-EVENTS-001` | Eleven typed scoped tools and six resources enforce plan/apply, expected revision, idempotency, revocation and agent production-approval denial with sanitized durable evidence | COMPLETE |
+| `PAT-SEC-SECRETS-001` | Credentials remain in approved stores/Worker secrets; strict ephemeral fixture files are destroyed; retained receipts contain no credential values | COMPLETE |
+| `PAT-OPS-LEAST-PRIVILEGE-001` | Runtime/MCP/service identities are narrow and environment-scoped; Lunaria still uses an account-wide Cloudflare Global API key | GAP: replace with a resource-scoped API token |
+| `PAT-TEST-EVIDENCE-001` | Current local, hosted, PostgreSQL, 131-test E2E, 266-test accessibility, deployed UI/MCP/SSR and business evidence is exact and tied to delivered SHAs | COMPLETE |
+| `PAT-DOCS-PATTERN-AUDIT-001` | This projection and its detailed receipt preserve evidence, ownership, gaps and non-claims in-repository | COMPLETE (focused audit only) |
+
+### Final UI delivery evidence
+
+- GitHub Actions run `29473617013` completed `success` on exact SHA
+  `075aef9d3310f4d5f982c4ecda5705bcfab46c47`.
+- Validate passed, all three E2E shards passed 131 tests, and all four
+  accessibility shards passed 266 tests.
+- Exact immutable package identities were verified for Brand Contract `0.1.0`,
+  UI `0.3.0`, and Brand Studio `0.1.1` without republishing.
+- Docs Worker `9a7487fe-3873-4b6f-a2dc-0203e3fb4a5f`, protected Admin Worker
+  `949c6f68-976f-49a3-902b-9c8403dffcf8`, and Showcase Worker
+  `3868bd2e-7c90-4d19-a003-ca7147cd00c1` were deployed.
+- Showcase was staged at 0%, resource/identity/Admin smokes passed, and the
+  same candidate was activated at 100% with exact release identity
+  `@lemn-ltd/ui@0.3.0#075aef9d3310f4d5f982c4ecda5705bcfab46c47`.
+- Public checks independently confirmed Docs/Showcase `200`, exact version/SHA,
+  ten provider records, three blocks, schema JSON, and the exact Access tenant
+  redirect. Protected CI confirmed Admin health HTTP `200`, production
+  environment, and configured simulator before and after activation.
+
+### Honest residual limitations
+
+- No full UI pattern audit has been completed; all global levels remain
+  `unassessed`.
+- Simulator and MCP cannot register their local project profile/audit with the
+  current read/sync-only workspace grant.
+- Lunaria's scoped Cloudflare token migration, complete stable-JSON OpenAPI,
+  patient notifications, and production-grade MFA/dual-human Access remain
+  explicit follow-up rather than fabricated completion.
+- The UI AgentOps workspace still carries its pre-migration external
+  identifier/name; no rename capability exists in the available MCP. The
+  legacy value remains confined to the managed manifest allowlist.
 
 ## TRACKER-SOURCE-SNAPSHOT-2026-07-16
 
