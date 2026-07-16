@@ -5,6 +5,7 @@ import { handleShowcaseAdminRequest } from "./index";
 
 const ENV: ShowcaseAdminEnv = {
 	ACCESS_AUDIENCE: "access-audience",
+	ACCESS_HEALTH_AUDIENCE: "access-health-audience",
 	ACCESS_ISSUER: "https://lemn-dev.cloudflareaccess.com",
 	DEPLOYMENT_ENVIRONMENT: "production",
 	SIMULATOR: { fetch: vi.fn() } as unknown as Fetcher,
@@ -19,7 +20,7 @@ function serviceRequest(path: string): Request {
 function serviceVerifier(): AccessVerifier {
 	return vi.fn<AccessVerifier>().mockResolvedValue({
 		iss: ENV.ACCESS_ISSUER,
-		aud: ENV.ACCESS_AUDIENCE,
+		aud: ENV.ACCESS_HEALTH_AUDIENCE,
 		sub: "",
 		common_name: "88bf3b6d86161464f6509f7219099e57.access",
 		iat: 1,

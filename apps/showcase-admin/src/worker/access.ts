@@ -49,12 +49,24 @@ async function verifyRemote(
 	return verified.payload;
 }
 
-function accessConfiguration(env: ShowcaseAdminEnv): {
+function accessConfiguration(
+	request: Request,
+	env: ShowcaseAdminEnv,
+): {
 	readonly issuer: string;
 	readonly audience: string;
 } {
 	const issuer = env.ACCESS_ISSUER?.trim().replace(/\/$/u, "");
-	const audience = env.ACCESS_AUDIENCE?.trim();
+	const url = new URL(request.url);
+	const usesProductionHealthApplication =
+		env.DEPLOYMENT_ENVIRONMENT === "production" &&
+		request.method === "GET" &&
+		url.pathname === "/health";
+	const audience = (
+		usesProductionHealthApplication
+			? env.ACCESS_HEALTH_AUDIENCE
+			: env.ACCESS_AUDIENCE
+	)?.trim();
 	if (!issuer || !audience || !issuer.endsWith(".cloudflareaccess.com")) {
 		throw new Error("Cloudflare Access verification is not configured.");
 	}
@@ -69,7 +81,7 @@ export async function accessIdentity(
 	const headerEmail = request.headers.get(ACCESS_EMAIL)?.trim().toLowerCase();
 	const assertion = request.headers.get(ACCESS_ASSERTION)?.trim();
 	if (!assertion) return undefined;
-	const payload = await verify(assertion, accessConfiguration(env));
+	const payload = await verify(assertion, accessConfiguration(request, env));
 	const tokenEmail =
 		typeof payload.email === "string"
 			? payload.email.trim().toLowerCase()

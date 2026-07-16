@@ -61,6 +61,7 @@
       ],
       "vars": {
         "ACCESS_AUDIENCE": "19ef47dd0e179e0ae6922daa94dbd76ae7afc8ecbd6dadbac41d39a7cbe52987",
+        "ACCESS_HEALTH_AUDIENCE": "01bc1b8fac6e1cd0c1f6a47ae4bb66794e4285f2ccb149cec2c947a30f55d5a6",
         "ACCESS_ISSUER": "https://lemn-dev.cloudflareaccess.com",
         "DEPLOYMENT_ENVIRONMENT": "production"
       },
