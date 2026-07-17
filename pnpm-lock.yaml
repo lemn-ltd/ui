@@ -152,7 +152,7 @@ importers:
   apps/showcase:
     dependencies:
       '@lemn-ltd/brand-contract':
-        specifier: workspace:0.2.0
+        specifier: workspace:1.0.0
         version: link:../../packages/brand-contract
       '@lemn-ltd/brand-studio':
         specifier: workspace:*
@@ -222,7 +222,7 @@ importers:
   apps/showcase-admin:
     dependencies:
       '@lemn-ltd/brand-contract':
-        specifier: workspace:0.2.0
+        specifier: workspace:1.0.0
         version: link:../../packages/brand-contract
       '@lemn-ltd/brand-studio':
         specifier: workspace:*
@@ -290,7 +290,7 @@ importers:
   packages/brand-runtime:
     dependencies:
       '@lemn-ltd/brand-contract':
-        specifier: workspace:0.2.0
+        specifier: workspace:1.0.0
         version: link:../brand-contract
       zod:
         specifier: 4.4.3
@@ -306,11 +306,11 @@ importers:
   packages/brand-studio:
     dependencies:
       '@lemn-ltd/brand-contract':
-        specifier: workspace:0.2.0
+        specifier: workspace:1.0.0
         version: link:../brand-contract
     devDependencies:
       '@lemn-ltd/ui':
-        specifier: workspace:0.3.0
+        specifier: workspace:0.3.1
         version: link:../ui
       '@testing-library/react':
         specifier: 16.3.2
