@@ -25,6 +25,7 @@ const jsonValueSchema: z.ZodType<JsonValue> = z.lazy(() =>
 );
 
 const identifierSchema = z.string().trim().min(1).max(200);
+const draftTitleSchema = z.string().trim().min(1).max(160);
 const sha256Schema = z.string().regex(/^[a-f0-9]{64}$/);
 const timestampSchema = z.string().datetime({ offset: true });
 
@@ -80,6 +81,7 @@ const runtimeEnvelopeSchema = z.discriminatedUnion("source", [
 			source: z.literal("preview"),
 			version: z.null(),
 			previewSessionId: identifierSchema,
+			draftTitle: draftTitleSchema,
 			expiresAt: timestampSchema,
 		})
 		.strict(),

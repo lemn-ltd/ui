@@ -11,6 +11,8 @@ export type BrandingPreviewSelection = {
 	readonly sessionId: string;
 	/** Server-only bearer recovered from the consumer's protected host session. */
 	readonly sessionBearer: string;
+	/** Human-readable draft title asserted by the preview authority. */
+	readonly draftTitle: string;
 	readonly definitionHash: string;
 	readonly expiresAt: string;
 	readonly initialModeId?: string;
@@ -52,6 +54,7 @@ export type RuntimeBrandingEnvelope =
 			readonly source: "preview";
 			readonly version: null;
 			readonly previewSessionId: string;
+			readonly draftTitle: string;
 			readonly expiresAt: string;
 	  })
 	| (RuntimeBrandingEnvelopeBase & {
@@ -114,6 +117,7 @@ export type ResolvedBranding = {
 	readonly signatureKeyId: string;
 	readonly etag?: string;
 	readonly previewSessionId?: string;
+	readonly draftTitle?: string;
 	readonly expiresAt?: string;
 };
 

@@ -232,6 +232,7 @@ async function verifyAndProject(
 		...(envelope.source === "preview"
 			? {
 					previewSessionId: envelope.previewSessionId,
+					draftTitle: envelope.draftTitle,
 					expiresAt: envelope.expiresAt,
 				}
 			: {}),
@@ -262,6 +263,7 @@ function verifyPreviewMetadata(
 	if (
 		envelope.source !== "preview" ||
 		envelope.previewSessionId !== preview.sessionId ||
+		envelope.draftTitle !== preview.draftTitle ||
 		envelope.definitionHash !== preview.definitionHash ||
 		envelope.expiresAt !== preview.expiresAt ||
 		new Date(envelope.expiresAt).getTime() <= now.getTime()
@@ -280,6 +282,8 @@ function validatePreviewRequest(
 	const expiresAt = new Date(preview.expiresAt).getTime();
 	if (
 		preview.workspaceId !== workspaceId ||
+		preview.draftTitle.trim().length === 0 ||
+		preview.draftTitle.length > 160 ||
 		!/^[a-f0-9]{64}$/.test(preview.definitionHash) ||
 		preview.sessionId.length < 16 ||
 		!/^[A-Za-z0-9_-]{32,512}$/.test(preview.sessionBearer) ||

@@ -14,6 +14,7 @@ export const FALLBACK_VERSION_ID = "branding-version-fallback";
 export const PREVIEW_SESSION_ID = "preview-session-0123456789abcdef";
 export const PREVIEW_SESSION_BEARER =
 	"preview_session_bearer_test_only_0123456789abcdef";
+export const PREVIEW_DRAFT_TITLE = "Calm operations";
 const SIGNING_SECRET = "test-only-signing-secret";
 
 export const verifier: CompiledBrandingVerifier = async (payload, signature) =>
@@ -80,6 +81,7 @@ export async function envelope(
 		...(source === "preview"
 			? {
 					previewSessionId: PREVIEW_SESSION_ID,
+					draftTitle: PREVIEW_DRAFT_TITLE,
 					expiresAt: "2035-01-01T00:00:00.000Z",
 				}
 			: {}),

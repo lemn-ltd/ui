@@ -6,6 +6,7 @@ import {
 } from "../src/index.js";
 import {
 	envelope,
+	PREVIEW_DRAFT_TITLE,
 	PREVIEW_SESSION_BEARER,
 	PREVIEW_SESSION_ID,
 	WORKSPACE_ID,
@@ -29,6 +30,7 @@ describe("untrusted runtime boundaries", () => {
 			workspaceId: WORKSPACE_ID,
 			sessionId: PREVIEW_SESSION_ID,
 			sessionBearer: PREVIEW_SESSION_BEARER,
+			draftTitle: PREVIEW_DRAFT_TITLE,
 			definitionHash: "a".repeat(64),
 			expiresAt: "2035-01-01T00:00:00.000Z",
 		};

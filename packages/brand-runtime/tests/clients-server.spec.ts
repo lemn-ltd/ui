@@ -10,6 +10,7 @@ import {
 } from "../src/server.js";
 import {
 	envelope,
+	PREVIEW_DRAFT_TITLE,
 	PREVIEW_SESSION_BEARER,
 	PREVIEW_SESSION_ID,
 	verifier,
@@ -86,6 +87,7 @@ describe("server transports and SSR helpers", () => {
 					workspaceId: WORKSPACE_ID,
 					sessionId: PREVIEW_SESSION_ID,
 					sessionBearer: PREVIEW_SESSION_BEARER,
+					draftTitle: PREVIEW_DRAFT_TITLE,
 					definitionHash: preview.definitionHash,
 					expiresAt: preview.expiresAt,
 				},
@@ -119,6 +121,7 @@ describe("server transports and SSR helpers", () => {
 						workspaceId: WORKSPACE_ID,
 						sessionId: PREVIEW_SESSION_ID,
 						sessionBearer: PREVIEW_SESSION_BEARER,
+						draftTitle: PREVIEW_DRAFT_TITLE,
 						definitionHash: "a".repeat(64),
 						expiresAt,
 					}),
@@ -162,6 +165,7 @@ describe("server transports and SSR helpers", () => {
 			workspaceId: WORKSPACE_ID,
 			sessionId: PREVIEW_SESSION_ID,
 			sessionBearer: PREVIEW_SESSION_BEARER,
+			draftTitle: PREVIEW_DRAFT_TITLE,
 			definitionHash: preview.definitionHash,
 			expiresAt: preview.expiresAt,
 		}));
@@ -192,6 +196,7 @@ describe("server transports and SSR helpers", () => {
 					workspaceId: WORKSPACE_ID,
 					sessionId: PREVIEW_SESSION_ID,
 					sessionBearer: PREVIEW_SESSION_BEARER,
+					draftTitle: PREVIEW_DRAFT_TITLE,
 					definitionHash: preview.definitionHash,
 					expiresAt: preview.expiresAt,
 				},
@@ -258,6 +263,7 @@ describe("server transports and SSR helpers", () => {
 								workspaceId: WORKSPACE_ID,
 								sessionId: PREVIEW_SESSION_ID,
 								sessionBearer: PREVIEW_SESSION_BEARER,
+								draftTitle: PREVIEW_DRAFT_TITLE,
 								definitionHash: preview.definitionHash,
 								expiresAt: preview.expiresAt,
 							},

@@ -7,6 +7,7 @@ const previewSelectionSchema = z
 		workspaceId: z.string().trim().min(1).max(200),
 		sessionId: z.string().trim().min(16).max(300),
 		sessionBearer: z.string().regex(/^[A-Za-z0-9_-]{32,512}$/),
+		draftTitle: z.string().trim().min(1).max(160),
 		definitionHash: z.string().regex(/^[a-f0-9]{64}$/),
 		expiresAt: z.string().datetime({ offset: true }),
 		initialModeId: z.string().trim().min(1).max(200).optional(),

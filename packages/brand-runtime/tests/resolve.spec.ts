@@ -12,6 +12,7 @@ import {
 	FALLBACK_VERSION_ID,
 	PREVIEW_SESSION_BEARER,
 	PREVIEW_SESSION_ID,
+	PREVIEW_DRAFT_TITLE,
 	verifier,
 	WORKSPACE_ID,
 } from "./fixtures.js";
@@ -127,6 +128,7 @@ describe("resolveBranding", () => {
 					workspaceId: WORKSPACE_ID,
 					sessionId: PREVIEW_SESSION_ID,
 					sessionBearer: PREVIEW_SESSION_BEARER,
+					draftTitle: PREVIEW_DRAFT_TITLE,
 					definitionHash: preview.definitionHash,
 					expiresAt: "2035-01-01T00:00:00.000Z",
 				},
@@ -147,6 +149,7 @@ describe("resolveBranding", () => {
 					workspaceId: WORKSPACE_ID,
 					sessionId: PREVIEW_SESSION_ID,
 					sessionBearer: PREVIEW_SESSION_BEARER,
+					draftTitle: PREVIEW_DRAFT_TITLE,
 					definitionHash: preview.definitionHash,
 					expiresAt: "2035-01-01T00:00:00.000Z",
 				},
@@ -167,6 +170,7 @@ describe("resolveBranding", () => {
 				workspaceId: WORKSPACE_ID,
 				sessionId: PREVIEW_SESSION_ID,
 				sessionBearer: PREVIEW_SESSION_BEARER,
+				draftTitle: PREVIEW_DRAFT_TITLE,
 				definitionHash: preview.definitionHash,
 				expiresAt: preview.expiresAt,
 			},
@@ -176,6 +180,7 @@ describe("resolveBranding", () => {
 		expect(resolved.source).toBe("preview");
 		expect(resolved.version).toBeNull();
 		expect(resolved.previewSessionId).toBe(PREVIEW_SESSION_ID);
+		expect(resolved.draftTitle).toBe(PREVIEW_DRAFT_TITLE);
 		expect(JSON.stringify(resolved)).not.toContain(PREVIEW_SESSION_BEARER);
 	});
 
