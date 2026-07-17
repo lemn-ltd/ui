@@ -129,9 +129,7 @@ describe("ui showcase worker", () => {
 	it("serves the immutable v1 brand schema only on the schema host", async () => {
 		const worker = createWorker();
 		const schema = await worker.fetch(
-			new Request(
-				"https://schemas.ui.le-mn.com/brand-project/v2.json",
-			),
+			new Request("https://schemas.ui.le-mn.com/branding/v1.json"),
 		);
 		expect(schema.status).toBe(200);
 		expect(schema.headers.get("content-type")).toContain(
@@ -139,7 +137,7 @@ describe("ui showcase worker", () => {
 		);
 		expect(schema.headers.get("cache-control")).toContain("immutable");
 		expect(await schema.json()).toMatchObject({
-			$id: "https://schemas.ui.le-mn.com/brand-project/v2.json",
+			$id: "https://schemas.ui.le-mn.com/branding/v1.json",
 		});
 
 		const missing = await worker.fetch(

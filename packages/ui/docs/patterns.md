@@ -11,7 +11,7 @@
 - Treat components and blocks as controlled visual contracts. Fetching,
   routing, authentication, global state, internationalization, analytics,
   persistence, authorization, and product workflow policy stay in the host.
-- Render production UI inside a verified compiled BrandProject scope. The host
+- Render production UI inside a verified compiled branding mode. The host
   injects critical `--lemn-*` CSS and scope attributes before the first HTML
   byte; components never repair branding in a browser effect.
 - Preserve provider-owned behavior. Compose public APIs and semantic tokens;

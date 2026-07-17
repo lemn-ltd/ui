@@ -195,16 +195,22 @@ test("package release receives explicit API and registry authentication", () => 
 	);
 });
 
-test("release package order is contract then UI then Studio with immutable verification", () => {
+test("release package order is contract then UI then Runtime then Studio with immutable verification", () => {
 	const contractIndex = packageSetSource.indexOf(
 		'name: "@lemn-ltd/brand-contract"',
 	);
 	const uiIndex = packageSetSource.indexOf('name: "@lemn-ltd/ui"');
+	const runtimeIndex = packageSetSource.indexOf(
+		'name: "@lemn-ltd/brand-runtime"',
+	);
 	const studioIndex = packageSetSource.indexOf(
 		'name: "@lemn-ltd/brand-studio"',
 	);
 	assert.ok(
-		contractIndex >= 0 && contractIndex < uiIndex && uiIndex < studioIndex,
+		contractIndex >= 0 &&
+			contractIndex < uiIndex &&
+			uiIndex < runtimeIndex &&
+			runtimeIndex < studioIndex,
 	);
 	assert.match(publishSource, /for \(const artifact of artifacts\)/u);
 	assert.match(publishSource, /timingSafeEqual/u);

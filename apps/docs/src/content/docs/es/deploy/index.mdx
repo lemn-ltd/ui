@@ -8,7 +8,8 @@ sidebar:
 
 ## Superficies
 
-- Tres paquetes publicos se publican en GitHub Packages en orden de dependencia.
+- Cuatro paquetes publicos se publican en GitHub Packages en orden de dependencia:
+  Brand Contract, UI, Brand Runtime y Brand Studio.
 - `ui.le-mn.com` sirve Docs.
 - `showcase.ui.le-mn.com` sirve Showcase publico read-only.
 - `admin.showcase.ui.le-mn.com` sirve Admin separado con Cloudflare Access.
@@ -44,13 +45,13 @@ ausentes/expirados/deshabilitados y cuentas incorrectas.
 ## Secuencia
 
 1. Valida y empaqueta la revision exacta.
-2. Publica Brand Contract, UI y Brand Studio; una version existente debe tener
-   integridad inmutable identica.
+2. Publica Brand Contract, UI, Brand Runtime y Brand Studio; una version
+   existente debe tener integridad inmutable identica.
 3. Instala paquetes exactos en consumidores externos limpios.
 4. Despliega Docs y Showcase.
 5. Despliega Admin y verifica denial sin auth mas comportamiento autenticado.
-6. Hace smoke de catalogos, branding, Profiles/modes, blocks, registry e
-   identidad.
+6. Hace smoke de catalogos, System brandings/modes, schema v1, blocks, registry
+   e identidad.
 7. Registra el receipt solo cuando pasan todos los gates.
 
 Secrets, tokens, account keys, headers y credenciales nunca entran en archivos,

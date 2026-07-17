@@ -2,25 +2,27 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
 export interface ReleasePackageDefinition {
-	readonly id: "brand-contract" | "ui" | "brand-studio";
+	readonly id: "brand-contract" | "ui" | "brand-runtime" | "brand-studio";
 	readonly name:
 		| "@lemn-ltd/brand-contract"
 		| "@lemn-ltd/ui"
+		| "@lemn-ltd/brand-runtime"
 		| "@lemn-ltd/brand-studio";
 	readonly directory: string;
 	readonly requiredExports: readonly string[];
 }
 
 /**
- * This order is the release dependency graph: contract first, the provider UI
- * second, and Studio last after both of its exact public dependencies exist.
+ * This order is the release dependency graph: contract first, provider UI
+ * second, the server runtime third, and Studio last after its exact public
+ * dependencies exist.
  */
 export const releasePackages = [
 	{
 		id: "brand-contract",
 		name: "@lemn-ltd/brand-contract",
 		directory: "packages/brand-contract",
-		requiredExports: ["."],
+		requiredExports: [".", "./system-brandings"],
 	},
 	{
 		id: "ui",
@@ -29,10 +31,16 @@ export const releasePackages = [
 		requiredExports: [".", "./tokens", "./catalog", "./blocks", "./styles.css"],
 	},
 	{
+		id: "brand-runtime",
+		name: "@lemn-ltd/brand-runtime",
+		directory: "packages/brand-runtime",
+		requiredExports: [".", "./server"],
+	},
+	{
 		id: "brand-studio",
 		name: "@lemn-ltd/brand-studio",
 		directory: "packages/brand-studio",
-		requiredExports: [".", "./presets", "./styles.css"],
+		requiredExports: [".", "./styles.css"],
 	},
 ] as const satisfies readonly ReleasePackageDefinition[];
 

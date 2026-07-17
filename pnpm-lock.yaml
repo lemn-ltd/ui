@@ -152,7 +152,7 @@ importers:
   apps/showcase:
     dependencies:
       '@lemn-ltd/brand-contract':
-        specifier: workspace:0.1.0
+        specifier: workspace:0.2.0
         version: link:../../packages/brand-contract
       '@lemn-ltd/brand-studio':
         specifier: workspace:*
@@ -222,7 +222,7 @@ importers:
   apps/showcase-admin:
     dependencies:
       '@lemn-ltd/brand-contract':
-        specifier: workspace:0.1.0
+        specifier: workspace:0.2.0
         version: link:../../packages/brand-contract
       '@lemn-ltd/brand-studio':
         specifier: workspace:*
@@ -276,6 +276,22 @@ importers:
 
   packages/brand-contract:
     dependencies:
+      zod:
+        specifier: 4.4.3
+        version: 4.4.3
+    devDependencies:
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+      vitest:
+        specifier: 'catalog:'
+        version: 3.2.6(@types/debug@4.1.13)(@types/node@26.0.0)(esbuild@0.28.1)(happy-dom@20.9.0)(yaml@2.9.0)
+
+  packages/brand-runtime:
+    dependencies:
+      '@lemn-ltd/brand-contract':
+        specifier: workspace:0.2.0
+        version: link:../brand-contract
       zod:
         specifier: 4.4.3
         version: 4.4.3

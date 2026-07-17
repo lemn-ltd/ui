@@ -237,10 +237,11 @@ test("an already-published mismatched tarball fails closed", async () => {
 	);
 });
 
-test("the immutable package set is verified strictly in contract then UI then Studio order", async () => {
+test("the immutable package set is verified strictly in contract then UI then Runtime then Studio order", async () => {
 	const artifacts: PackageArtifact[] = [
 		{ ...artifact, packageName: "@lemn-ltd/brand-contract", version: "0.1.0" },
 		{ ...artifact, packageName: "@lemn-ltd/ui", version: "0.3.0" },
+		{ ...artifact, packageName: "@lemn-ltd/brand-runtime", version: "0.1.0" },
 		{ ...artifact, packageName: "@lemn-ltd/brand-studio", version: "0.1.0" },
 	];
 	const observed: string[] = [];
@@ -260,10 +261,11 @@ test("the immutable package set is verified strictly in contract then UI then St
 	assert.deepEqual(observed, [
 		"@lemn-ltd/brand-contract",
 		"@lemn-ltd/ui",
+		"@lemn-ltd/brand-runtime",
 		"@lemn-ltd/brand-studio",
 	]);
 	assert.deepEqual(
 		results.map(({ outcome }) => outcome),
-		["verified", "verified", "verified"],
+		["verified", "verified", "verified", "verified"],
 	);
 });

@@ -119,10 +119,10 @@ test("production smoke compares exact docs and showcase build identities", async
 		if (url === "https://showcase.ui.le-mn.com/blocks.json") {
 			return Response.json({ blocks: [{}] });
 		}
-		if (url === "https://schemas.ui.le-mn.com/brand-project/v2.json") {
+		if (url === "https://schemas.ui.le-mn.com/branding/v1.json") {
 			return new Response(
 				JSON.stringify({
-					$id: "https://schemas.ui.le-mn.com/brand-project/v2.json",
+					$id: "https://schemas.ui.le-mn.com/branding/v1.json",
 				}),
 				{ headers: { "content-type": "application/schema+json" } },
 			);
@@ -142,7 +142,7 @@ test("production smoke compares exact docs and showcase build identities", async
 					ok: true,
 					service: "ui-showcase-admin",
 					environment: "production",
-					simulatorConfigured: true,
+					studioPersistence: "none",
 				});
 			}
 			return new Response(null, {
@@ -241,10 +241,10 @@ test("production smoke fails when the new protected status token is rejected", a
 			});
 		if (url === "https://showcase.ui.le-mn.com/blocks.json")
 			return Response.json({ blocks: [{}] });
-		if (url === "https://schemas.ui.le-mn.com/brand-project/v2.json")
+		if (url === "https://schemas.ui.le-mn.com/branding/v1.json")
 			return new Response(
 				JSON.stringify({
-					$id: "https://schemas.ui.le-mn.com/brand-project/v2.json",
+					$id: "https://schemas.ui.le-mn.com/branding/v1.json",
 				}),
 				{ headers: { "content-type": "application/schema+json" } },
 			);
@@ -259,7 +259,7 @@ test("production smoke fails when the new protected status token is rejected", a
 					ok: true,
 					service: "ui-showcase-admin",
 					environment: "production",
-					simulatorConfigured: true,
+					studioPersistence: "none",
 				});
 			}
 			return new Response(null, {
@@ -300,7 +300,7 @@ test("Showcase Admin smoke requires the exact Access tenant", async () => {
 				ok: true,
 				service: "ui-showcase-admin",
 				environment: "production",
-				simulatorConfigured: true,
+				studioPersistence: "none",
 			});
 		}
 		return new Response(null, {
@@ -323,7 +323,7 @@ test("Showcase Admin smoke requires the exact Access tenant", async () => {
 	);
 });
 
-test("Showcase Admin authenticated smoke proves production and simulator configuration", async () => {
+test("Showcase Admin authenticated smoke proves production and a persistence-free Studio", async () => {
 	const fetchImplementation: typeof fetch = async (_input, init) => {
 		const headers = new Headers(init?.headers);
 		if (headers.has("cf-access-client-id")) {
@@ -331,7 +331,7 @@ test("Showcase Admin authenticated smoke proves production and simulator configu
 				ok: true,
 				service: "ui-showcase-admin",
 				environment: "staging",
-				simulatorConfigured: false,
+				studioPersistence: "none",
 			});
 		}
 		return new Response(null, {

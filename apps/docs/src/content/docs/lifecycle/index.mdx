@@ -6,9 +6,10 @@ sidebar:
   order: 9
 ---
 
-The public release set contains `@lemn-ltd/brand-contract`, `@lemn-ltd/ui`, and
-`@lemn-ltd/brand-studio`. Consumers pin exact compatible versions; release
-metadata and migration guidance must make that compatibility explicit.
+The public release set contains `@lemn-ltd/brand-contract`,
+`@lemn-ltd/brand-runtime`, `@lemn-ltd/ui`, and `@lemn-ltd/brand-studio`.
+Consumers pin exact compatible versions; release metadata and migration
+guidance make that compatibility explicit.
 
 ## SemVer
 
@@ -19,7 +20,7 @@ metadata and migration guidance must make that compatibility explicit.
 - **MAJOR**: removed/renamed exports, changed semantics, incompatible schema or
   compiler behavior, or a migration-requiring provider replacement.
 
-BrandProject schema and compiler majors are compatibility boundaries. A
+`BrandingDefinition` schema and compiler majors are compatibility boundaries. A
 compiled artifact records its schema/compiler compatibility and is verified by
 the consumer before use.
 
@@ -45,8 +46,9 @@ The coordinated order is:
 
 1. `@lemn-ltd/brand-contract`
 2. `@lemn-ltd/ui`
-3. `@lemn-ltd/brand-studio`
-4. Docs, Showcase, and protected Showcase Admin for the exact release identity
+3. `@lemn-ltd/brand-runtime`
+4. `@lemn-ltd/brand-studio`
+5. Docs, Showcase, and protected Showcase Admin for the exact release identity
 
 After publication, prove each package through a clean external install from
 GitHub Packages—never through `workspace:*` or a local link—and then update

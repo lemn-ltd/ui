@@ -108,9 +108,15 @@ export async function verifyPackageDists(root: string): Promise<{
 
 	const contract = await readReleasePackageManifest(root, releasePackages[0]);
 	const ui = await readReleasePackageManifest(root, releasePackages[1]);
-	const studio = await readReleasePackageManifest(root, releasePackages[2]);
+	const runtime = await readReleasePackageManifest(root, releasePackages[2]);
+	const studio = await readReleasePackageManifest(root, releasePackages[3]);
 	const contractVersion = contract.version ?? "missing";
 	const uiVersion = ui.version ?? "missing";
+	assert(
+		runtime.dependencies?.["@lemn-ltd/brand-contract"] ===
+			`workspace:${contractVersion}`,
+		`Brand Runtime must source the exact brand-contract ${contractVersion} workspace release`,
+	);
 	assert(
 		studio.dependencies?.["@lemn-ltd/brand-contract"] ===
 			`workspace:${contractVersion}`,

@@ -40,10 +40,6 @@
 	width: min(190px, 24vw);
 }
 
-.showcase-profile-select {
-	width: min(130px, 18vw);
-}
-
 .showcase-embedded-preview {
 	min-height: 100vh;
 	background: var(--lemn-color-surface-muted);
@@ -192,8 +188,7 @@
 }
 
 @media (max-width: 900px) {
-	.showcase-brand-select,
-	.showcase-profile-select {
+	.showcase-brand-select {
 		display: none;
 	}
 }

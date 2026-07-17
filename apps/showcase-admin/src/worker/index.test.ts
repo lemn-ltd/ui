@@ -8,7 +8,6 @@ const ENV: ShowcaseAdminEnv = {
 	ACCESS_HEALTH_AUDIENCE: "access-health-audience",
 	ACCESS_ISSUER: "https://lemn-dev.cloudflareaccess.com",
 	DEPLOYMENT_ENVIRONMENT: "production",
-	SIMULATOR: { fetch: vi.fn() } as unknown as Fetcher,
 };
 
 function serviceRequest(path: string): Request {
@@ -29,7 +28,7 @@ function serviceVerifier(): AccessVerifier {
 }
 
 describe("Showcase Admin deployment service token", () => {
-	it("can prove the production health and simulator binding boundary", async () => {
+	it("can prove the production health and persistence-free Studio boundary", async () => {
 		const response = await handleShowcaseAdminRequest(
 			serviceRequest("/health"),
 			ENV,
@@ -40,7 +39,7 @@ describe("Showcase Admin deployment service token", () => {
 			ok: true,
 			service: "ui-showcase-admin",
 			environment: "production",
-			simulatorConfigured: true,
+			studioPersistence: "none",
 		});
 	});
 

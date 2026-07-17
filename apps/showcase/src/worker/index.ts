@@ -1,15 +1,15 @@
 import { WorkerEntrypoint } from "cloudflare:workers";
 import {
-	BRAND_PROJECT_SCHEMA_URL,
-	brandProjectJsonSchema,
+	BRANDING_DEFINITION_SCHEMA_URL,
+	brandingDefinitionJsonSchema,
 } from "@lemn-ltd/brand-contract";
+import { blockCatalog } from "@lemn-ltd/ui";
 import {
 	componentCatalog,
 	componentExportsFromSlug,
 } from "@lemn-ltd/ui/catalog";
-import type { UiShowcaseEnv } from "./env";
-import { blockCatalog } from "@lemn-ltd/ui";
 import { PROVIDER_READ_MODEL } from "../provider-read-model";
+import type { UiShowcaseEnv } from "./env";
 import { buildStatusReport, validateUiShowcaseEnv } from "./service-descriptor";
 
 export default class UiShowcaseWorker extends WorkerEntrypoint<UiShowcaseEnv> {
@@ -19,7 +19,7 @@ export default class UiShowcaseWorker extends WorkerEntrypoint<UiShowcaseEnv> {
 		const pathname = url.pathname;
 
 		if (url.hostname === "schemas.ui.le-mn.com") {
-			return brandProjectSchemaResponse(request, pathname);
+			return brandingSchemaResponse(request, pathname);
 		}
 
 		if (pathname === "/health") return healthResponse(env);
@@ -28,7 +28,8 @@ export default class UiShowcaseWorker extends WorkerEntrypoint<UiShowcaseEnv> {
 		if (pathname === "/provider-registry.json") {
 			return Response.json(PROVIDER_READ_MODEL);
 		}
-		if (pathname === "/blocks.json") return Response.json({ blocks: blockCatalog });
+		if (pathname === "/blocks.json")
+			return Response.json({ blocks: blockCatalog });
 		if (pathname === "/llms.txt") return llmsResponse();
 		if (pathname === "/llms-full.txt") return llmsFullResponse();
 
@@ -46,11 +47,8 @@ export default class UiShowcaseWorker extends WorkerEntrypoint<UiShowcaseEnv> {
 	}
 }
 
-function brandProjectSchemaResponse(
-	request: Request,
-	pathname: string,
-): Response {
-	if (pathname !== "/brand-project/v2.json") {
+function brandingSchemaResponse(request: Request, pathname: string): Response {
+	if (pathname !== "/branding/v1.json") {
 		return Response.json(
 			{ error: "schema_not_found" },
 			{ status: 404, headers: { "cache-control": "no-store" } },
@@ -72,7 +70,10 @@ function brandProjectSchemaResponse(
 	if (request.method === "HEAD") return new Response(null, { headers });
 
 	return new Response(
-		JSON.stringify({ ...brandProjectJsonSchema, $id: BRAND_PROJECT_SCHEMA_URL }),
+		JSON.stringify({
+			...brandingDefinitionJsonSchema,
+			$id: BRANDING_DEFINITION_SCHEMA_URL,
+		}),
 		{ headers },
 	);
 }

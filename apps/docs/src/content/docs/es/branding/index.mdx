@@ -1,65 +1,84 @@
 ---
 title: Branding
-description: Profiles, modes, tokens compilados, Studio y limites de publicacion.
+description: BrandingDefinition v1, modes completos, System brandings, Studio, fonts y limites de publicacion.
 sidebar:
   label: Branding
   order: 4
 ---
 
-`@lemn-ltd/brand-contract` define
-`https://schemas.ui.le-mn.com/brand-project/v2.json`. Un BrandProject tiene una
-identidad, assets gestionados, Profiles y un Profile por defecto. Cada Profile
-puede heredar de un solo padre aciclico y contener multiples modes.
+## Contrato fuente
 
-El contrato cubre colores semanticos, tipografia gobernada por Profile, shape, elevation,
-spacing/density, motion, visualizaciones, iconografia, accesibilidad y
-apariencia restringida. Arbitrary CSS y behavior flags no son branding.
+`@lemn-ltd/brand-contract@1.0.0` define un solo contrato canonico:
 
-## Output compilado
+```json
+{
+  "$schema": "https://schemas.ui.le-mn.com/branding/v1.json",
+  "schemaVersion": 1,
+  "name": "Example identity",
+  "metadata": { "tags": [], "externalReferences": {} },
+  "assets": {},
+  "typography": {},
+  "defaultModeId": "light",
+  "modes": { "light": {}, "dark": {} },
+  "runtimeSelection": {
+    "selectable": true,
+    "allowedModeIds": ["light", "dark"]
+  }
+}
+```
 
-`compileBrandProject` produce un artefacto inmutable con compatibilidad de
-schema/compiler, hashes SHA-256, Profiles resueltos, CSS critico con scope,
-atributos DOM, adaptadores de charts, assets y diagnosticos. Todos los proyectos
-usan el mismo vocabulario `--lemn-*`; identidad vive en el scope, no en el nombre
-de variables.
+Typography y los modes abreviados son ilustrativos. Una definicion valida
+incluye typography gobernada en la raiz y secciones completas de colors,
+shape, elevation, density, motion, visualization, iconography, accessibility y
+component appearance por mode. No contiene identidad de lifecycle de la app.
+
+## Compilacion determinista
+
+```ts
+import { compileBrandingDefinition } from "@lemn-ltd/brand-contract";
+
+const result = await compileBrandingDefinition(definition);
+if (!result.ok) throw new Error("Branding invalid");
+```
+
+El artefacto inmutable contiene compatibilidad, hashes, proyecciones completas,
+CSS con scope, fonts/preloads, assets, apariencia y temas para Recharts/ECharts.
+El orden del JSON de entrada no cambia el output semantico canonico.
+
+## System brandings
+
+```ts
+import {
+  getSystemBrandingTemplate,
+  systemBrandingTemplates,
+} from "@lemn-ltd/brand-contract/system-brandings";
+
+const template = getSystemBrandingTemplate("verdant-ledger", 1);
+const editableCopy = structuredClone(template.definition);
+```
+
+Seleccionar un template copia la definicion exacta. Un release futuro del
+catalogo nunca muta drafts ni Workspaces existentes.
 
 ## Brand Studio
 
 ```bash
-pnpm add @lemn-ltd/brand-studio@0.2.0
+pnpm add @lemn-ltd/brand-contract@1.0.0 @lemn-ltd/brand-studio@1.0.0
 ```
 
-```tsx
-import { BrandStudio } from "@lemn-ltd/brand-studio";
-import "@lemn-ltd/brand-studio/styles.css";
+Studio edita una definicion controlada, recibe catalogo/targets desde el host y
+emite intents de validate, save, compare, preview, archive/restore, publish y
+seleccion exacta de template. No hace fetching, persistence, routing, auth,
+publicacion ni activacion.
 
-<BrandStudio value={draft} onChange={setDraft} onIntent={authorizedIntent} />
-```
+## Fonts
 
-Seeds, herramientas SSR y CLIs importan presets desde el subpath seguro para
-Node, sin evaluar React ni CSS:
+Typography usa un catalogo curado. System fonts descargan 0 KB. Managed fonts
+son WOFF2 self-hosted, inmutables, con integrity y fallback de sistema.
+`preferred` usa carga opcional; `required` usa preload y block period. SSR no
+convierte la font en pixeles: el browser todavia descarga los bytes, por lo que
+CSP, CORS, cache y fallback siguen siendo obligatorios.
 
-```ts
-import { createBrandFromPreset } from "@lemn-ltd/brand-studio/presets";
-```
-
-El wizard cubre identity, presets, assets, Profiles/modes, colors, typography,
-shape/elevation, density/motion, visualizations, accessibility, apariencia y
-review JSON/compiled.
-
-Typography usa un catalogo curado en vez de nombres libres. Las opciones de
-sistema descargan 0 KB; las administradas se sirven desde
-`fonts.ui.le-mn.com`, permiten fidelidad `preferred|required`, conservan un
-fallback de emergencia y compilan solo la familia/estilos seleccionados.
-`preferred` prioriza carga opcional. `required` aisla el alias interno por
-Profile, genera preload SSR y usa el periodo de bloqueo del navegador para que
-el primer pintado de texto no use el fallback. Un fallo permanente todavia
-activa el fallback declarado en vez de ocultar contenido indefinidamente.
-
-Studio es controlado y sin persistencia. El host autentica/autoriza, guarda
-drafts, valida expected revision/idempotency, planifica/aplica publicacion,
-separa aprobacion de produccion y registra audit.
-
-Publication verifica WCAG 2.2 AA para relaciones declaradas. Correcciones
-automaticas solo modifican roles derivados dentro de politica; nunca cambian
-silenciosamente el color primario. Errores bloquean publicacion.
+Extensions namespaced y JSON-only permiten evolucion aditiva sin CSS arbitrario
+ni flags funcionales. AgentOps posee drafts, publicacion, activacion, preview y
+audit; este repo posee contrato, compilador, consumo runtime y controles.

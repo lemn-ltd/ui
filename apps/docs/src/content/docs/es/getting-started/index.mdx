@@ -1,6 +1,6 @@
 ---
 title: Instalar y usar
-description: Instala paquetes LEMN exactos y renderiza dentro de un scope compilado y verificado.
+description: Instala paquetes LEMN exactos y renderiza dentro de un mode compilado y verificado.
 sidebar:
   label: Instalar y usar
   order: 2
@@ -8,73 +8,55 @@ sidebar:
 
 ## 1. Configura GitHub Packages
 
-Commitea solamente el mapping del scope en el repo consumidor:
+Commitea solo el mapping del scope:
 
 ```ini
 @lemn-ltd:registry=https://npm.pkg.github.com
 ```
 
-Mantiene la autenticacion en `~/.npmrc`, nunca en el repo:
+Mantiene auth en `~/.npmrc`, nunca en el repo:
 
 ```ini
 //npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}
 ```
 
-## 2. Instala un release set compatible y exacto
+## 2. Instala releases exactos compatibles
+
+Para una aplicacion SSR:
 
 ```bash
-pnpm add @lemn-ltd/brand-contract@0.1.0 @lemn-ltd/ui@0.3.0
+pnpm add @lemn-ltd/brand-contract@1.0.0 @lemn-ltd/brand-runtime@0.1.0 @lemn-ltd/ui@0.3.1
 ```
 
-Para un host autorizado de authoring:
+Para un host de authoring autorizado:
 
 ```bash
-pnpm add @lemn-ltd/brand-studio@0.1.1
+pnpm add @lemn-ltd/brand-studio@1.0.0
 ```
 
 No uses `latest`, rangos, branches, URLs, `workspace:*`, `link:` ni rutas
-relativas entre repositorios.
+relativas cross-repo en un consumidor publicado.
 
-## 3. Importa solo entrypoints publicos LEMN
+## 3. Importa entrypoints publicos
 
 ```tsx
 import { Button, Card, componentCatalog } from "@lemn-ltd/ui";
 import "@lemn-ltd/ui/styles.css";
 ```
 
-Carga el stylesheet una sola vez en la raiz. No hagas deep import de `src`,
-`dist`, internals ni de un proveedor UI.
+Carga estilos una vez. No hagas deep import de `src`, `dist`, internals ni de un
+provider upstream.
 
 ## 4. Aplica branding antes de renderizar
 
-Los componentes nunca parsean BrandProject JSON. Un host confiable resuelve un
-artefacto publicado para proyecto, environment, slot, Profile y mode; verifica
-compatibilidad e integridad; e inyecta CSS critico y atributos antes de emitir
-markup.
-
-```ts
-import {
-  getCompiledScope,
-  serializeBrandBootstrap,
-  verifyBrandArtifact,
-} from "@lemn-ltd/brand-contract";
-
-await verifyBrandArtifact(artifact);
-const scope = getCompiledScope(artifact, selectedProfile, selectedMode);
-const bootstrap = serializeBrandBootstrap(
-  artifact,
-  selectedProfile,
-  selectedMode,
-);
-```
-
-La respuesta debe incluir `artifact.criticalCss` en `<head>`, los
-`scope.attributes` sobre el contenedor y un bootstrap escapado para hydration.
-El browser debe recibir el mismo `compiledHash`. Sigue el
+Los componentes nunca parsean JSON fuente. Un server confiable resuelve una
+version publicada del Workspace, verifica el objeto compilado firmado e inyecta
+CSS, preloads, atributos y bootstrap del mode antes del primer markup. Usa
+`@lemn-ltd/brand-runtime`; no recrees verification en producto. Sigue el
 [runbook SSR](/es/ssr-branding/).
 
 ## 5. Mantiene plataforma fuera de UI
 
-El host posee clientes API, fetching, routing, auth, estado global, i18n,
-analytics, persistencia, cookies de Profile/mode y politica. Pasa valores y
-acciones controladas a los componentes y blocks.
+El host posee API clients, fetching, routing, auth, estado global, i18n,
+analytics, persistence, Workspace routing, cookies y politica. Pasa valores y
+acciones controladas a componentes y blocks.

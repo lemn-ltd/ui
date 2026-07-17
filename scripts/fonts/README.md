@@ -8,7 +8,7 @@ Patterns: `PAT-ARCH-CHANGE-SCOPE-001`, `PAT-CODE-SCRIPT-GOVERNANCE-001`,
 `PAT-SEC-SECRETS-001`, `PAT-SEC-RISK-001`, `PAT-TEST-EVIDENCE-001`
 
 This directory is the reproducible, deployment-independent source plan for the
-managed font CDN used by BrandProject v2. Brand Contract publishes its governed
+managed font CDN used by `BrandingDefinition` v1. Brand Contract publishes its governed
 font and legal metadata, while Brand Studio only presents that catalog. This
 directory does not create Cloudflare resources by itself.
 
@@ -51,7 +51,7 @@ https://fonts.ui.le-mn.com/v2/licenses/<family>/<ofl-sha256>/OFL.txt
 
 An existing object at that key must contain exactly the expected bytes. The
 sync script refuses to overwrite a mismatched object. A font update therefore
-creates a new URL and a later BrandProject revision; it never mutates an asset
+creates a new URL and a later published branding definition; it never mutates an asset
 referenced by an existing revision.
 
 ## Commands
@@ -188,7 +188,7 @@ assets whose license permits the intended self-hosted webfont distribution may
 enter the catalog. License evidence is pinned in the manifest and projected
 into `fontCatalog`. Any future provider with product or domain restrictions
 must add an explicit control-plane policy before its assets can enter a
-published BrandProject.
+published branding definition.
 
 ## Failure behavior
 

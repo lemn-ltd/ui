@@ -1,16 +1,17 @@
 import {
+	type BrandingDefinition,
+	type BrandingDiagnostic,
 	bestContrastingColor,
-	compileBrandProject,
-	getCompiledScope,
-	type BrandDiagnostic,
-	type BrandProject,
-	type CompiledBrandArtifact,
-	type CompiledBrandScope,
+	type CompiledBrandingArtifact,
+	type CompiledBrandingMode,
+	compileBrandingDefinition,
+	getCompiledMode,
+	getCompiledModeCriticalCss,
 } from "@lemn-ltd/brand-contract";
 import {
-	brandPresets,
-	createBrandFromPreset,
-} from "@lemn-ltd/brand-studio";
+	getSystemBrandingTemplate,
+	systemBrandingTemplates,
+} from "@lemn-ltd/brand-contract/system-brandings";
 import {
 	createContext,
 	type ReactElement,
@@ -26,20 +27,18 @@ import {
 const THEME_STORAGE_KEY = "color-theme";
 
 export interface ShowcaseBrandRuntime {
-	readonly artifact: CompiledBrandArtifact;
+	readonly artifact: CompiledBrandingArtifact;
 	readonly compiling: boolean;
-	readonly diagnostics: readonly BrandDiagnostic[];
+	readonly definition: BrandingDefinition;
+	readonly diagnostics: readonly BrandingDiagnostic[];
+	readonly mode: CompiledBrandingMode;
 	readonly modeId: string;
-	readonly profileId: string;
-	readonly project: BrandProject;
-	readonly scope: CompiledBrandScope;
-	readonly presetId: string;
+	readonly systemBrandingId: string;
 	readonly setAccentColor: (value: string) => Promise<boolean>;
+	readonly setDefinition: (definition: BrandingDefinition) => void;
 	readonly setModeByColorScheme: (mode: "light" | "dark") => void;
 	readonly setModeId: (modeId: string) => void;
-	readonly setPresetId: (presetId: string) => Promise<void>;
-	readonly setProfileId: (profileId: string) => void;
-	readonly updateProject: (project: BrandProject) => void;
+	readonly setSystemBrandingId: (templateId: string) => Promise<void>;
 }
 
 const BrandRuntimeContext = createContext<ShowcaseBrandRuntime | undefined>(
@@ -48,87 +47,72 @@ const BrandRuntimeContext = createContext<ShowcaseBrandRuntime | undefined>(
 
 export interface BrandRuntimeProviderProps {
 	readonly children: ReactNode;
-	readonly initialArtifact: CompiledBrandArtifact;
-	readonly initialProject: BrandProject;
+	readonly initialArtifact: CompiledBrandingArtifact;
+	readonly initialDefinition: BrandingDefinition;
 }
 
-function defaultModeId(project: BrandProject, profileId: string): string {
-	const profile = project.profiles[profileId];
-	return profile?.defaultMode ?? Object.keys(profile?.modes ?? {})[0] ?? "light";
-}
-
-function initialModeId(project: BrandProject, profileId: string): string {
-	if (typeof window === "undefined") return defaultModeId(project, profileId);
+function initialModeId(definition: BrandingDefinition): string {
+	if (typeof window === "undefined") return definition.defaultModeId;
 	let persistedTheme: string | null = null;
 	try {
 		persistedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
 	} catch {
-		return defaultModeId(project, profileId);
+		return definition.defaultModeId;
 	}
 	if (persistedTheme !== "light" && persistedTheme !== "dark") {
-		return defaultModeId(project, profileId);
+		return definition.defaultModeId;
 	}
-	const matchingMode = Object.entries(
-		project.profiles[profileId]?.modes ?? {},
-	).find(([, mode]) => mode.colorScheme === persistedTheme);
-	return matchingMode?.[0] ?? defaultModeId(project, profileId);
+	const matchingMode = Object.entries(definition.modes).find(
+		([, mode]) => mode.colorScheme === persistedTheme,
+	);
+	return matchingMode?.[0] ?? definition.defaultModeId;
 }
 
-function resolveScope(
-	artifact: CompiledBrandArtifact,
-	profileId: string,
+function resolveMode(
+	artifact: CompiledBrandingArtifact,
 	modeId: string,
-): CompiledBrandScope {
+): CompiledBrandingMode {
 	try {
-		return getCompiledScope(artifact, profileId, modeId);
+		return getCompiledMode(artifact, modeId);
 	} catch {
-		const fallbackProfileId = artifact.defaultProfileId;
-		const fallbackProfile = artifact.profiles[fallbackProfileId];
-		return getCompiledScope(
-			artifact,
-			fallbackProfileId,
-			fallbackProfile?.defaultMode ?? "light",
-		);
+		return getCompiledMode(artifact, artifact.defaultModeId);
 	}
 }
 
 export function BrandRuntimeProvider({
 	children,
 	initialArtifact,
-	initialProject,
+	initialDefinition,
 }: BrandRuntimeProviderProps): ReactElement {
-	const [project, setProject] = useState(initialProject);
+	const [definition, setDefinitionState] = useState(initialDefinition);
 	const [artifact, setArtifact] = useState(initialArtifact);
-	const [profileId, setProfileIdState] = useState(
-		initialProject.defaultProfileId,
-	);
 	const [modeId, setModeIdState] = useState(() =>
-		initialModeId(initialProject, initialProject.defaultProfileId),
+		initialModeId(initialDefinition),
 	);
-	const [presetId, setPresetIdState] = useState("verdant-ledger");
-	const [diagnostics, setDiagnostics] = useState<readonly BrandDiagnostic[]>([]);
+	const [systemBrandingId, setSystemBrandingIdState] =
+		useState("verdant-ledger");
+	const [diagnostics, setDiagnostics] = useState<readonly BrandingDiagnostic[]>(
+		[],
+	);
 	const [compiling, setCompiling] = useState(false);
 	const compilationSequence = useRef(0);
 
-	const scope = useMemo(
-		() => resolveScope(artifact, profileId, modeId),
-		[artifact, modeId, profileId],
-	);
+	const mode = useMemo(() => resolveMode(artifact, modeId), [artifact, modeId]);
 
 	useLayoutEffect(() => {
-		document.documentElement.dataset.theme = scope.colorScheme;
+		document.documentElement.dataset.theme = mode.colorScheme;
 		try {
-			window.localStorage.setItem(THEME_STORAGE_KEY, scope.colorScheme);
+			window.localStorage.setItem(THEME_STORAGE_KEY, mode.colorScheme);
 		} catch {
-			// The rendered brand remains authoritative when storage is unavailable.
+			// Runtime selection remains authoritative when storage is unavailable.
 		}
-	}, [scope.colorScheme]);
+	}, [mode.colorScheme]);
 
-	const compileDraft = useCallback(async (next: BrandProject) => {
+	const compileDraft = useCallback(async (next: BrandingDefinition) => {
 		const sequence = compilationSequence.current + 1;
 		compilationSequence.current = sequence;
 		setCompiling(true);
-		const result = await compileBrandProject(next);
+		const result = await compileBrandingDefinition(next);
 		if (compilationSequence.current !== sequence) return result;
 		setDiagnostics(result.diagnostics);
 		setCompiling(false);
@@ -136,115 +120,112 @@ export function BrandRuntimeProvider({
 		return result;
 	}, []);
 
-	const updateProject = useCallback(
-		(next: BrandProject): void => {
-			setProject(next);
+	const setDefinition = useCallback(
+		(next: BrandingDefinition): void => {
+			setDefinitionState(next);
+			if (!next.modes[modeId]) setModeIdState(next.defaultModeId);
 			void compileDraft(next);
 		},
-		[compileDraft],
-	);
-
-	const selectProfile = useCallback(
-		(nextProfileId: string): void => {
-			if (!project.profiles[nextProfileId]) return;
-			setProfileIdState(nextProfileId);
-			setModeIdState(defaultModeId(project, nextProfileId));
-		},
-		[project],
+		[compileDraft, modeId],
 	);
 
 	const selectMode = useCallback(
 		(nextModeId: string): void => {
-			if (!project.profiles[profileId]?.modes[nextModeId]) return;
+			if (!artifact.allowedModeIds.includes(nextModeId)) return;
 			setModeIdState(nextModeId);
 		},
-		[profileId, project],
+		[artifact.allowedModeIds],
 	);
 
 	const setModeByColorScheme = useCallback(
 		(colorScheme: "light" | "dark"): void => {
-			const profile = project.profiles[profileId];
-			const match = Object.entries(profile?.modes ?? {}).find(
-				([, mode]) => mode.colorScheme === colorScheme,
+			const match = Object.entries(definition.modes).find(
+				([id, candidate]) =>
+					artifact.allowedModeIds.includes(id) &&
+					candidate.colorScheme === colorScheme,
 			);
 			if (match) setModeIdState(match[0]);
 		},
-		[profileId, project],
+		[artifact.allowedModeIds, definition.modes],
 	);
 
-	const setPresetId = useCallback(
-		async (nextPresetId: string): Promise<void> => {
-			if (!brandPresets.some((preset) => preset.id === nextPresetId)) return;
-			const next = createBrandFromPreset(nextPresetId);
+	const setSystemBrandingId = useCallback(
+		async (templateId: string): Promise<void> => {
+			const catalogEntry = systemBrandingTemplates.find(
+				(template) =>
+					template.id === templateId && template.status === "available",
+			);
+			if (!catalogEntry) return;
+			const template = getSystemBrandingTemplate(
+				catalogEntry.id,
+				catalogEntry.version,
+			);
+			const next = structuredClone(template.definition);
 			const result = await compileDraft(next);
 			if (!result.ok) return;
-			setProject(next);
-			setPresetIdState(nextPresetId);
-			setProfileIdState(next.defaultProfileId);
-			setModeIdState(defaultModeId(next, next.defaultProfileId));
+			setDefinitionState(next);
+			setSystemBrandingIdState(template.id);
+			setModeIdState(initialModeId(next));
 		},
 		[compileDraft],
 	);
 
 	const setAccentColor = useCallback(
 		async (value: string): Promise<boolean> => {
-			const next = structuredClone(project);
-			const mode = next.profiles[profileId]?.modes[modeId];
-			if (!mode) return false;
-			mode.colors.accent = value;
-			mode.colors.accentForeground = bestContrastingColor(value);
-			mode.colors.focus = value;
-			mode.visualization.categorical[0] = value;
-			mode.visualization.cursor = value;
-			mode.visualization.crosshair = value;
+			const next = structuredClone(definition);
+			const nextMode = next.modes[modeId];
+			if (!nextMode) return false;
+			nextMode.colors.accent = value;
+			nextMode.colors.accentForeground = bestContrastingColor(value);
+			nextMode.colors.focus = value;
+			nextMode.visualization.categorical[0] = value;
+			nextMode.visualization.cursor = value;
+			nextMode.visualization.crosshair = value;
 			const result = await compileDraft(next);
 			if (!result.ok) return false;
-			setProject(next);
+			setDefinitionState(next);
 			return true;
 		},
-		[compileDraft, modeId, profileId, project],
+		[compileDraft, definition, modeId],
 	);
 
 	const value = useMemo<ShowcaseBrandRuntime>(
 		() => ({
 			artifact,
 			compiling,
+			definition,
 			diagnostics,
-			modeId,
-			profileId,
-			project,
-			scope,
-			presetId,
+			mode,
+			modeId: mode.modeId,
+			systemBrandingId,
 			setAccentColor,
+			setDefinition,
 			setModeByColorScheme,
 			setModeId: selectMode,
-			setPresetId,
-			setProfileId: selectProfile,
-			updateProject,
+			setSystemBrandingId,
 		}),
 		[
 			artifact,
 			compiling,
+			definition,
 			diagnostics,
-			modeId,
-			presetId,
-			profileId,
-			project,
-			scope,
+			mode,
 			selectMode,
-			selectProfile,
 			setAccentColor,
+			setDefinition,
 			setModeByColorScheme,
-			setPresetId,
-			updateProject,
+			setSystemBrandingId,
+			systemBrandingId,
 		],
 	);
 
 	return (
 		<BrandRuntimeContext.Provider value={value}>
-			<style data-lemn-brand-critical="showcase">{artifact.criticalCss}</style>
+			<style data-lemn-brand-critical="showcase">
+				{getCompiledModeCriticalCss(artifact, mode.modeId)}
+			</style>
 			<div
-				{...scope.attributes}
+				{...mode.attributes}
 				className="showcase-brand-scope"
 				data-brand-runtime-state={compiling ? "compiling" : "ready"}
 			>
@@ -257,7 +238,9 @@ export function BrandRuntimeProvider({
 export function useShowcaseBrand(): ShowcaseBrandRuntime {
 	const context = useContext(BrandRuntimeContext);
 	if (!context) {
-		throw new Error("useShowcaseBrand must be used within BrandRuntimeProvider");
+		throw new Error(
+			"useShowcaseBrand must be used within BrandRuntimeProvider",
+		);
 	}
 	return context;
 }

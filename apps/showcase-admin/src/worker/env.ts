@@ -4,5 +4,4 @@ export interface ShowcaseAdminEnv {
 	ACCESS_HEALTH_AUDIENCE?: string;
 	ACCESS_ISSUER?: string;
 	DEPLOYMENT_ENVIRONMENT?: "development" | "staging" | "production";
-	SIMULATOR?: Fetcher;
 }

@@ -9,26 +9,27 @@ sidebar:
 ## Showcase publico
 
 [showcase.ui.le-mn.com](https://showcase.ui.le-mn.com) es publico y read-only.
-Renderiza componentes/blocks reales, expone catalogos para humanos/agentes y
-demuestra cambios de Profile/mode sin cambiar funcionalidad.
+Renderiza componentes/blocks reales, expone catalogos y demuestra todos los
+System brandings inmutables en modes completos light/dark.
 
 ## Showcase Admin
 
 [admin.showcase.ui.le-mn.com](https://admin.showcase.ui.le-mn.com) es un deploy
-separado protegido por Cloudflare Access. Permite experimentar con mappings de
-proveedores, variaciones, conformance y previews de proyecto/Profile, ademas de
-crear proposal bundles.
+separado protegido por Cloudflare Access. Permite experimentar con mappings,
+variaciones, conformance, previews, contrato de host de Studio y proposal
+bundles. No posee estado durable ni activacion de Workspaces.
 
-Admin nunca escribe directamente el manifest activo ni recibe un token personal
-de GitHub. Un plan/apply AgentOps/GitHub-sync least-privilege crea un branch/PR
-revisable que sigue los gates normales.
+Admin nunca escribe el manifest activo ni recibe un token personal de GitHub.
+Los cambios de registry siguen review, conformance, licencias, changeset y
+release normales.
 
 ## Brand Studio
 
-Brand Studio es un paquete reusable, no un deploy ni un control plane. Edita un
-BrandProject controlado, compila preview/diagnosticos y emite intents tipados.
-El host posee auth, persistencia, expected revision, idempotencia, publicacion,
-rollback y audit.
+Brand Studio es un package reusable, no un deploy ni control plane. Edita un
+`BrandingDefinition` controlado, compila preview con componentes reales y emite
+intents tipados. Showcase/Admin mantienen experimentos solo en memoria.
+AgentOps posee auth, persistence, optimistic hashes, idempotency, publication,
+activation, previews y audit.
 
 ```bash
 pnpm dev:showcase

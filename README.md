@@ -15,13 +15,20 @@ This architecture applies `PAT-UI-LEMN-001`,
 `PAT-UI-SSR-BRANDING-001`, `PAT-UI-BLOCKS-001`, and
 `PAT-UI-FRONTEND-PLATFORM-BOUNDARY-001`.
 
+The cross-repository authority, runtime, MCP, consumer, and delivery decisions
+are defined in [LEMN UI and Workspace Branding vNext](BRANDING_ECOSYSTEM_VNEXT.md).
+
 ## Published packages
 
 - `@lemn-ltd/brand-contract` validates and deterministically compiles a
-  versioned BrandProject into scoped `--lemn-*` tokens, critical CSS, provider
-  adapters, diagnostics, and integrity hashes.
+  versioned `BrandingDefinition` into complete light/dark projections, scoped
+  `--lemn-*` tokens, critical CSS, provider adapters, diagnostics, and
+  integrity hashes.
 - `@lemn-ltd/ui` exposes provider-neutral components, visualizations, curated
   blocks, semantic token fallbacks, and catalog metadata.
+- `@lemn-ltd/brand-runtime` resolves and verifies signed branding artifacts on
+  the server, then produces first-byte SSR CSS, preload, scope, and bootstrap
+  data without a browser-side resolution path.
 - `@lemn-ltd/brand-studio` provides a controlled, persistence-free branding
   wizard and preview surface. Its host owns authorization, persistence,
   publication, and audit.
@@ -61,7 +68,7 @@ repository:
 For the first compatible release set:
 
 ```bash
-pnpm add @lemn-ltd/brand-contract@0.1.0 @lemn-ltd/ui@0.3.0
+pnpm add @lemn-ltd/brand-contract@1.0.0 @lemn-ltd/brand-runtime@0.1.0 @lemn-ltd/ui@0.3.1
 ```
 
 Import only the LEMN public surface and load its stylesheet once at the app
@@ -79,10 +86,10 @@ proved by conformance, and published before consumer adoption.
 
 ## Branding contract
 
-A BrandProject is authoring data, not runtime component configuration. It may
-contain multiple inheritable Profiles, and each Profile may contain multiple
-modes. The compiler resolves that source into the same scoped semantic token
-vocabulary for every project:
+A `BrandingDefinition` is authoring data, not runtime component configuration.
+It owns root typography and assets plus complete, non-inheriting visual modes.
+The deterministic compiler resolves that source into the same scoped semantic
+token vocabulary for every workspace:
 
 ```css
 [data-lemn-brand-scope="<compiled-scope-id>"] {
@@ -94,27 +101,27 @@ vocabulary for every project:
 ```
 
 Components consume only those compiled semantic values. They never parse raw
-BrandProject JSON, persist brand state, fetch a project, publish a revision, or
-mutate global tokens.
+`BrandingDefinition` JSON, persist brand state, resolve a workspace, publish a
+version, or mutate global tokens.
 
-Production hosts resolve an authorized project/environment/slot assignment,
-verify the immutable compiled artifact, and inject its critical CSS and scope
-attributes before emitting the first HTML byte. Hydration receives the same
-compiled hash. If resolution fails, the host may use only a verified compatible
-last-known-good or embedded branded fallback; it must never show an unbranded
-provider default.
+Production hosts use `@lemn-ltd/brand-runtime` to resolve the active authorized
+workspace branding, verify the signed immutable artifact, select one mode, and
+inject its critical CSS and scope attributes before emitting the first HTML
+byte. Hydration receives the same compiled hash. If active resolution fails,
+the host may use only one verified compatible embedded branded fallback;
+preview resolution fails closed and never falls back to active branding.
 
 See [SSR branding runbook](apps/docs/src/content/docs/ssr-branding/index.mdx)
 and [package consumption guide](packages/ui/README.md).
 
 ## Studio, Admin, and frontend-platform boundaries
 
-- Brand Studio edits a controlled BrandProject and emits typed intents such as
-  validate, plan publication, and apply publication. It has no credentials or
-  persistence authority.
-- Showcase Admin hosts experimentation, provider proposals, and project/profile
-  previews behind Cloudflare Access. It cannot mutate the active provider
-  manifest directly.
+- Brand Studio edits one controlled `BrandingDefinition` and emits typed host
+  intents for draft lifecycle, validation, comparison, preview, and
+  publication. It has no credentials or persistence authority.
+- Showcase Admin hosts experimentation, provider proposals, System branding
+  templates, and definition previews behind Cloudflare Access. It cannot
+  persist branding or mutate the active provider manifest directly.
 - Data fetching, routing, authentication, global application state,
   internationalization, analytics SDKs, and product workflow policy belong to
   a consuming app or a future frontend-platform package, not these UI packages.

@@ -17,7 +17,8 @@ the provider decision, final export, SemVer effect, and conformance evidence are
 This boundary implements `PAT-ARCH-REPO-BOUNDARIES-001`,
 `PAT-ARCH-SHARED-KERNEL-001`, `PAT-CODE-FRAMEWORK-API-VALIDITY-001`,
 `PAT-CODE-DEPENDENCIES-001`, `PAT-API-CONTRACTS-001`, `PAT-TEST-INTEGRITY-001`, and
-the provider governance in `PROVIDER_BRANDING_ECOSYSTEM_PLAN.md` sections 2.1, 2.7, and 7.
+the provider governance in `PAT-UI-PROVIDER-FIRST-001` and
+`PAT-UI-PROVIDER-REGISTRY-001`.
 
 ## Consumers and exclusions
 

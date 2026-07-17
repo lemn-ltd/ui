@@ -57,12 +57,14 @@ export default function HeatmapChartPage(): ReactElement {
 	return (
 		<ComponentPage
 			status="beta"
-			summary="Render categorical intensity with ECharts while consuming the same BrandProject chart tokens as Recharts components."
+			summary="Render categorical intensity with ECharts while consuming the same compiled visualization tokens as Recharts components."
 			title="Heatmap chart"
 		>
 			<ExampleBlock code={CODE} render={() => <InteractiveHeatmap />} />
 			<ExampleBlock
-				code={'<HeatmapChart aria-label="No demand" data={[]} emptyMessage="No observations yet" />'}
+				code={
+					'<HeatmapChart aria-label="No demand" data={[]} emptyMessage="No observations yet" />'
+				}
 				render={() => (
 					<HeatmapChart
 						aria-label="No demand"
@@ -73,10 +75,28 @@ export default function HeatmapChartPage(): ReactElement {
 			/>
 			<PropsTable
 				rows={[
-					{ name: "data", type: "readonly HeatmapChartDatum[]", description: "Categorical cells with x, y, and numeric value." },
-					{ name: "onValueChange", type: "(datum) => void", description: "Emits the selected cell." },
-					{ name: "showTooltip", type: "boolean", defaultValue: "true", description: "Shows provider-owned item details." },
-					{ name: "showVisualMap", type: "boolean", defaultValue: "true", description: "Shows the branded intensity scale." },
+					{
+						name: "data",
+						type: "readonly HeatmapChartDatum[]",
+						description: "Categorical cells with x, y, and numeric value.",
+					},
+					{
+						name: "onValueChange",
+						type: "(datum) => void",
+						description: "Emits the selected cell.",
+					},
+					{
+						name: "showTooltip",
+						type: "boolean",
+						defaultValue: "true",
+						description: "Shows provider-owned item details.",
+					},
+					{
+						name: "showVisualMap",
+						type: "boolean",
+						defaultValue: "true",
+						description: "Shows the branded intensity scale.",
+					},
 				]}
 			/>
 		</ComponentPage>

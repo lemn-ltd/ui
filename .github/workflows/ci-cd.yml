@@ -63,7 +63,7 @@ jobs:
             exit 0
           fi
 
-          if git diff --quiet origin/main...HEAD -- packages/brand-contract packages/ui packages/brand-studio; then
+          if git diff --quiet origin/main...HEAD -- packages/brand-contract packages/ui packages/brand-runtime packages/brand-studio; then
             exit 0
           fi
 

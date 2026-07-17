@@ -11,7 +11,7 @@ Install an exact approved `@lemn-ltd/ui` release and import only its public
 entrypoints. Provider names in the registry are implementation provenance, not
 consumer APIs: never deep-import or import an upstream UI provider for a
 catalog-owned capability. Preserve the provider-owned interaction behavior and
-apply visual identity only through a verified compiled BrandProject scope.
+apply visual identity only through a verified compiled branding mode.
 
 Product fetching, routing, authentication, global state,
 internationalization, analytics, persistence, and workflow policy stay outside

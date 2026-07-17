@@ -11,6 +11,8 @@ const releaseMetadataPaths = [
 	"packages/brand-contract/CHANGELOG.md",
 	"packages/ui/package.json",
 	"packages/ui/CHANGELOG.md",
+	"packages/brand-runtime/package.json",
+	"packages/brand-runtime/CHANGELOG.md",
 	"packages/brand-studio/package.json",
 	"packages/brand-studio/CHANGELOG.md",
 	"pnpm-lock.yaml",

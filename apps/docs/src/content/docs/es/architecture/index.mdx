@@ -1,50 +1,64 @@
 ---
 title: Arquitectura
-description: Limites de paquetes, control plane, proveedores y consumidores.
+description: Limites de UI, branding, providers, AgentOps y consumidores.
 sidebar:
   label: Arquitectura
   order: 3
 ---
 
 Owner: maintainers de LEMN UI
-Decision: 2026-07-15
+Decision: 2026-07-17
 
 ## Decision
 
-LEMN expone una sola superficie UI neutral formada por capacidades open source
+LEMN expone una superficie UI neutral formada por capacidades open source
 battle-tested seleccionadas individualmente. El proveedor de registro conserva
-el comportamiento funcional. LEMN posee API publica, branding semantico minimo,
-catalogo/blocks, provenance, conformance y release.
+el comportamiento funcional. LEMN posee API publica, adaptador semantico,
+catalogos/blocks, provenance, conformance y release.
 
-Branding es un contrato BrandProject versionado que se compila a artefactos
-inmutables con scope. Los componentes nunca parsean el JSON de authoring.
+La fuente es `BrandingDefinition` v1. Publicacion la compila a un objeto
+inmutable firmado; runtime entrega solo un mode verificado. Los componentes no
+parsean el JSON fuente.
 
 ## Responsabilidades
 
 | Limite | Posee | No posee |
 | --- | --- | --- |
-| `@lemn-ltd/brand-contract` | Schema, validacion, compilacion, diagnosticos, tokens/adaptadores, hashes | Persistencia, auth, publicacion |
-| `@lemn-ltd/ui` | Componentes, charts, estilos, blocks, catalogos | APIs de producto, auth, routing, estado global, JSON crudo |
-| `@lemn-ltd/brand-studio` | Wizard/preview controlado e intents tipados | Credenciales, persistencia, publicacion |
-| Provider registry | Un proveedor por capacidad, origen/licencia/conformance | Estado runtime o auto-updates |
-| Showcase | Ejemplos/read models publicos | Mutacion admin |
-| Showcase Admin | Experimentacion y proposals protegidos | Escritura directa del manifest |
-| AgentOps/control plane | Projects, environments, Brands, revisions, assignments, auth, audit, delivery | Forks del contrato UI |
-| Product host | Datos, auth, routing, plataforma, resolucion SSR | Forks compartidos o imports upstream |
+| `@lemn-ltd/brand-contract` | Schema, validation, compiler, diagnostics, envelope, tokens, provider themes | Persistence, auth, publicacion, seleccion activa |
+| `@lemn-ltd/brand-runtime` | Adapters server, verificacion, proyeccion, SSR, fallback embedded | Browser resolution, cookies, routing, authoring, credenciales |
+| `@lemn-ltd/ui` | Components, charts, styles, blocks, catalogs | APIs producto, auth, routing, estado global, JSON fuente |
+| `@lemn-ltd/brand-studio` | Wizard/preview controlado e intents | Fetching, secrets, persistence, autoridad de publicacion |
+| Provider registry | Un provider por capacidad, origen/licencia/conformance | Estado runtime o auto-update |
+| Showcase/Admin | Evidencia publica y experimentos/proposals protegidos | Estado durable o activacion |
+| AgentOps | Workspaces, BrandingVersions, Postgres, R2, publicacion, activacion, previews, MCP, audit | Forks UI o del contrato |
+| Product host | Datos/plataforma, identidad Workspace, SSR, props/actions | Forks compartidos o imports upstream |
 
 ```text
-registry + providers -> adapters @lemn-ltd/ui -> product SSR host
-@lemn-ltd/brand-contract -> compiled scope ------^
-@lemn-ltd/brand-studio -> typed intents -> control plane autorizado
+registry + providers -> @lemn-ltd/ui
+@lemn-ltd/brand-contract -> signed object -> AgentOps private runtime
+@lemn-ltd/brand-studio -> typed intents ----^            |
+@lemn-ltd/brand-runtime <- server consumer --------------+
 ```
 
-Una Brand contiene Profiles en cada BrandRevision inmutable; cada Profile tiene
-modes. Un Assignment de project/environment/slot selecciona revision, Profile
-por defecto y Profiles permitidos. El cambio es atomico sobre un scope completo.
+Postgres es autoridad de estado; R2 privado almacena objetos
+content-addressed; caches por hash solo aceleran. Un Workspace tiene un Branding
+y multiples BrandingVersions. Solo un humano activa una version publicada.
+Light/dark son modes completos de la misma identidad, no familias de branding.
 
-El storage transaccional del control plane es autoridad de drafts/assignments.
-KV puede cachear artefactos inmutables, pero no es autoridad mutable.
+Plataforma frontend permanece fuera del contrato visual y los consumidores
+usan versiones publicadas exactas, nunca workspace links en produccion.
 
-La consecuencia es que LEMN hereda fixes upstream via proposals revisables,
-puede cambiar identidades sin nombres de token por proyecto, prueba SSR branded
-first paint y mantiene plataforma frontend fuera del contrato visual.
+## Transporte runtime e identidad de workload
+
+Los consumidores Cloudflare de la misma cuenta usan RPC Service Binding hacia
+un `WorkerEntrypoint` dedicado de Branding Runtime. El deployment fija
+`ctx.props` inmutables con `workspaceId`, `consumerId` y el permiso
+`branding:resolve`. El binding solo expone `resolveBranding`,
+`exchangeBrandingPreview` y `resolveBrandingPreview`; no es un `Fetcher` HTTP
+anonimo y sus inputs no eligen tenant ni llevan credenciales runtime reusables.
+
+Los servers externos usan HTTPS autenticado y guardan un
+`WorkspaceRuntimeCredential` least-privilege solo en secrets/configuracion del
+server. Nunca se serializa en HTML, bootstrap, URLs, logs ni storage del
+browser. La ubicacion de red y el Service Binding no bastan como autorizacion:
+runtime valida el grant estatico del workload en cada llamada RPC.

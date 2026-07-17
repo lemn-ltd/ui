@@ -7338,7 +7338,7 @@ applies_when:
 
 ## Strategy
 
-Use the exact approved release of `@lemn-ltd/ui` as the company UI surface. Product apps consume public LEMN packages instead of copying component code or CSS, deep-importing internals, importing an upstream UI provider directly, or creating a divergent design system. Functional behavior stays with the selected upstream provider; branding stays in a compiled BrandProject scope.
+Use the exact approved release of `@lemn-ltd/ui` as the company UI surface. Product apps consume public LEMN packages instead of copying component code or CSS, deep-importing internals, importing an upstream UI provider directly, or creating a divergent design system. Functional behavior stays with the selected upstream provider; branding stays in a verified compiled BrandingDefinition mode.
 
 ## Rules
 
@@ -7465,7 +7465,7 @@ The UI ecosystem centralizes visual capabilities, visualization engines, content
 id: PAT-UI-BRAND-CONTRACT-001
 domain: UI
 category: BRANDING
-version: 1
+version: 2
 description: Use this pattern when defining, editing, compiling, storing, or applying product branding.
 precedence_level: 2
 depends_on:
@@ -7477,31 +7477,34 @@ applies_when:
 
 ## Strategy
 
-One versioned BrandProject contract is the branding source of truth. A project may own many inheritable Profiles and each Profile may own multiple modes. Components consume only compiled semantic tokens and provider adapters, never raw branding JSON or project-specific variable names.
+One versioned `BrandingDefinition` contract is the visual source of truth. It owns root assets and typography plus complete independently compiled modes. It is not an application identity, lifecycle record, or family of inheritable runtime brand identities. Components consume only verified compiled semantic tokens and provider adapters, never source JSON or Workspace-specific variable names.
 
 ## Rules
 
 ### Must
 
-- Validate BrandProject JSON against its exact versioned schema.
-- Compile deterministically into scoped CSS, DOM attributes, Recharts/ECharts adapters, asset references, compatibility metadata, diagnostics, source hash, and compiled hash.
-- Namespace runtime scopes by immutable revision/profile/mode identity so multiple projects or profiles can coexist safely.
-- Keep Brand Studio controlled and persistence-free; persistence/auth/publication enter through a typed host adapter.
-- Preserve immutable revisions, optimistic concurrency, assignment sequence, audit metadata, and compatible fallback artifacts in the owning control plane.
+- Validate `BrandingDefinition` JSON against `https://schemas.ui.le-mn.com/branding/v1.json` or the exact future schema major selected by the host.
+- Compile deterministically into complete mode projections, scoped CSS, DOM attributes, Recharts/ECharts adapters, asset references, compatibility metadata, diagnostics, definition/mode/compiled hashes, and a signed byte-addressed object envelope.
+- Namespace runtime scopes by immutable definition/mode identity so multiple compiled scopes can coexist safely.
+- Keep Brand Studio controlled and persistence-free; the host supplies exact System branding templates and executes typed intents.
+- Keep mutable Workspace/version state, optimistic definition-hash concurrency, publication, human activation, preview sessions, and audit in AgentOps rather than this repository.
+- Treat all System branding templates as immutable exact ID/version/hash starting points; applying one creates an editable copy.
 - Validate contrast, focus, status, chart-series, and asset constraints before publication.
 
 ### Must not
 
 - Do not let components fetch, store, publish, authorize, or persist branding.
 - Do not mutate global `:root` variables or localStorage from shared UI code.
-- Do not derive project-specific `--project-*` token families; all projects compile to the same semantic `--lemn-*` vocabulary inside distinct scopes.
+- Do not derive Workspace-specific token families; every definition compiles to the same semantic `--lemn-*` vocabulary inside distinct scopes.
 - Do not treat KV as the authoritative source for mutable branding state.
+- Do not restore removed aliases, dual schemas, inheritance, or nested branding identity families.
 
 ## Decision rules
 
 - If a new branding setting changes only appearance, extend the versioned contract compatibly and compile it to an existing or new semantic role.
 - If it changes component functionality, it is not branding and belongs in the component/provider contract.
-- If two brand styles must switch at runtime, model them as Profiles or modes and change the resolved scope atomically.
+- If one identity requires light/dark or another complete visual mode, model complete modes and let the trusted host select only allowed modes.
+- If the desired change represents another identity or lifecycle version, create another AgentOps draft/version rather than nesting it in the source contract.
 
 ---
 id: PAT-UI-FRONTEND-001
@@ -7645,7 +7648,7 @@ tests/setup/
 id: PAT-UI-SSR-BRANDING-001
 domain: UI
 category: SSR_BRANDING
-version: 1
+version: 2
 description: Use this pattern when a production page renders branded UI on the server or edge.
 precedence_level: 3
 depends_on:
@@ -7657,29 +7660,34 @@ applies_when:
 
 ## Strategy
 
-Resolve, authorize, verify, and inject the selected BrandRevision before emitting the first HTML byte. The browser hydrates an already branded scope; it never repairs an unbranded or provider-default first paint.
+Resolve, authorize, verify, and inject the selected published BrandingVersion mode before emitting the first HTML byte. The browser hydrates an already branded scope with the same compiled hash; it never repairs an unbranded or provider-default first paint.
 
 ## Rules
 
 ### Must
 
-- Resolve by trusted project/environment/slot assignment through a least-privilege server binding or authenticated server API.
-- Verify schema/compiler compatibility and cryptographic artifact integrity before use.
-- Inject critical scoped CSS, scope attributes, color scheme, bootstrap metadata, and allowed asset references in the server response.
-- Use a bounded cache keyed by assignment sequence/revision/profile/mode and a previously verified compatible last-known-good fallback.
-- Store user-selectable profile/mode choices in secure host-owned cookies or server state and revalidate them against the current assignment.
-- Fail closed or render an explicitly compatible branded fallback when the control plane is unavailable.
+- Derive Workspace identity from authenticated workload configuration or trusted application routing; never accept browser-selected Workspace authority.
+- For same-account Cloudflare consumers, resolve through a least-privilege RPC Service Binding to a dedicated WorkerEntrypoint whose deployment-owned static props authenticate the exact Workspace, consumer, and `branding:resolve` permission; expose only the typed branding RPC methods, not an anonymous Fetcher.
+- For external servers, use the authenticated HTTPS adapter with a least-privilege Workspace runtime credential kept only in server secret/configuration storage.
+- Verify schema/compiler compatibility, signature, byte hash, compiled hash, Workspace identity, selected allowed mode, asset references, and expiry before use.
+- Inject selected-mode critical CSS, preloads, scope attributes, color scheme, minimal bootstrap metadata, and allowed asset references in the server response.
+- Use only immutable hash-keyed runtime caching plus one verified embedded branded fallback exported for that Workspace and release.
+- Store an allowed user-selectable mode in secure host-owned state and revalidate it against the current artifact on every resolution.
+- Keep preview handoffs short-lived, one-use, session-bound, exact-hash pinned, and `no-store`; an invalid preview renders an explicit unavailable state.
 
 ### Must not
 
 - Do not render raw UI and apply branding in a browser effect.
-- Do not expose control-plane credentials, capability tokens, unpublished contracts, or unauthorized Profiles to the client.
+- Do not expose runtime/MCP credentials, source definitions, unpublished objects, R2 access, or disallowed modes to the client.
 - Do not silently use stale or hash-invalid artifacts.
 - Do not use a generic KV lookup as mutable branding authority.
+- Do not add another mutable recovery or compatibility layer beyond active runtime resolution and the verified embedded fallback.
+- Do not let preview failure fall through to active branding.
 
 ## Decision rules
 
-- If SSR cannot resolve the current artifact within its deadline, use only a verified compatible last-known-good or embedded branded fallback.
+- If active SSR cannot resolve the current object within its deadline, use only the verified compatible embedded branded fallback.
+- If preview resolution fails, render preview unavailable without active fallback.
 - If compatibility or integrity validation fails, reject the artifact and emit operational evidence without its sensitive payload.
 
 ---

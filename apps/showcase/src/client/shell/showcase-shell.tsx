@@ -1,5 +1,5 @@
+import { systemBrandingTemplates } from "@lemn-ltd/brand-contract/system-brandings";
 import { ShowcaseRenderModeProvider } from "@lemn-ltd/showcase-kit";
-import { brandPresets } from "@lemn-ltd/brand-studio";
 import {
 	AccentColorPicker,
 	Brand,
@@ -69,7 +69,10 @@ function DockPane({
 		<div style={DOCK_PANE}>
 			<Icon name={icon} size={32} />
 			<strong
-				style={{ color: "var(--lemn-color-text)", fontSize: "var(--lemn-font-size-heading)" }}
+				style={{
+					color: "var(--lemn-color-text)",
+					fontSize: "var(--lemn-font-size-heading)",
+				}}
 			>
 				{title}
 			</strong>
@@ -130,15 +133,13 @@ export function ShowcaseShell(): ReactElement {
 	const navigate = useNavigate();
 	const {
 		compiling,
+		definition,
+		mode,
 		modeId,
-		profileId,
-		project,
-		presetId,
-		scope,
+		systemBrandingId,
 		setAccentColor,
 		setModeByColorScheme,
-		setPresetId,
-		setProfileId,
+		setSystemBrandingId,
 	} = useShowcaseBrand();
 	const searchParams = new URLSearchParams(location.search);
 	const embeddedPlayground = searchParams.get("embed") === "playground";
@@ -257,7 +258,7 @@ export function ShowcaseShell(): ReactElement {
 					initials="AV"
 					name="Avery Quinn"
 				>
-					<MenuItem icon="user-check">Profile</MenuItem>
+					<MenuItem icon="user-check">Account</MenuItem>
 					<MenuItem
 						icon="settings"
 						onSelect={() => settingsEntry && navigate(pathFor(settingsEntry))}
@@ -277,33 +278,23 @@ export function ShowcaseShell(): ReactElement {
 			actions={
 				<div className="showcase-topbar-actions">
 					<SelectNative
-						aria-label="Brand preset"
+						aria-label="System branding"
 						className="showcase-brand-select"
 						disabled={compiling}
-						onValueChange={(value) => void setPresetId(value)}
-						options={brandPresets.map((preset) => ({
-							label: preset.name,
-							value: preset.id,
+						onValueChange={(value) => void setSystemBrandingId(value)}
+						options={systemBrandingTemplates.map((template) => ({
+							label: `${template.name} · v${template.version}`,
+							value: template.id,
 						}))}
-						value={presetId}
-					/>
-					<SelectNative
-						aria-label="Brand profile"
-						className="showcase-profile-select"
-						onValueChange={setProfileId}
-						options={Object.entries(project.profiles).map(([id, profile]) => ({
-							label: profile.name,
-							value: id,
-						}))}
-						value={profileId}
+						value={systemBrandingId}
 					/>
 					<AccentColorPicker
 						disabled={compiling}
 						onValueChange={(value) => void setAccentColor(value)}
-						value={project.profiles[profileId]?.modes[modeId]?.colors.accent}
+						value={definition.modes[modeId]?.colors.accent}
 					/>
 					<ThemeToggle
-						mode={scope.colorScheme}
+						mode={mode.colorScheme}
 						onModeChange={setModeByColorScheme}
 					/>
 				</div>
@@ -313,7 +304,9 @@ export function ShowcaseShell(): ReactElement {
 					items={[
 						{ label: uiShowcaseAppDescriptor.displayName },
 						{ label: activeModule?.name ?? "Core" },
-						{ label: activeEcosystem?.label ?? activeEntry?.group ?? "Overview" },
+						{
+							label: activeEcosystem?.label ?? activeEntry?.group ?? "Overview",
+						},
 					]}
 				/>
 			}

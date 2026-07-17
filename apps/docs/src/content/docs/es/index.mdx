@@ -1,49 +1,50 @@
 ---
 title: Resumen
-description: Componentes provider-first, branding compilado por proyecto y blocks curados para productos LEMN.
+description: UI provider-first, branding compilado, runtime SSR y blocks curados para productos LEMN.
 sidebar:
   label: Resumen
   order: 1
 ---
 
-Lemn UI es un ecosistema provider-first, no una coleccion de widgets reescritos
-localmente. LEMN selecciona capacidades open source battle-tested de forma
-individual, asigna exactamente un proveedor de registro a cada capacidad
-semantica y expone una API estable y neutral con una capa minima de branding
-compilado.
+Lemn UI es un ecosistema provider-first, no una coleccion de widgets reescritos.
+LEMN selecciona capacidades open source battle-tested de forma individual,
+asigna un proveedor de registro a cada capacidad semantica y expone una API
+neutral con una capa minima de branding compilado.
 
 ## Que posee este workspace
 
-- `@lemn-ltd/brand-contract`: schema BrandProject versionado, validacion,
-  compilador determinista, diagnosticos, CSS con scope, adaptadores de
-  proveedores e integridad.
-- `@lemn-ltd/ui`: componentes controlados, visualizaciones, estilos semanticos,
-  blocks y catalogos publicos.
-- `@lemn-ltd/brand-studio`: wizard controlado y sin persistencia para crear y
-  previsualizar BrandProject JSON.
-- Registry Git-authoritative con origen exacto, licencias, notices, adaptadores,
-  conformance y estado de updates.
-- Docs y Showcase publicos, mas Showcase Admin protegido por separado.
+- `@lemn-ltd/brand-contract`: `BrandingDefinition` v1, compilador determinista,
+  diagnosticos, envelope firmado, tokens, fonts y temas Recharts/ECharts.
+- `@lemn-ltd/brand-runtime`: resolucion server-only, verificacion, proyeccion de
+  un mode, helpers SSR y un fallback branded embedded.
+- `@lemn-ltd/ui`: componentes controlados, charts, estilos, blocks y catalogos.
+- `@lemn-ltd/brand-studio`: wizard controlado, sin persistencia, con preview de
+  componentes reales e intents tipados ejecutados por el host.
+- Registry Git-authoritative con origen exacto, licencias, adaptadores,
+  conformance y updates revisados.
+- Docs/Showcase publicos y Showcase Admin protegido por separado.
 
 ## Limites no negociables
 
-- Los productos importan versiones exactas aprobadas de `@lemn-ltd/*`.
-- Los productos no importan un proveedor UI para capacidades del catalogo.
-- Los componentes consumen roles `--lemn-*` compilados, nunca BrandProject JSON
-  crudo ni variables especificas por proyecto.
+- Los consumidores instalan versiones exactas; nunca `latest`.
+- No importan un provider upstream para una capacidad del catalogo.
+- Los componentes consumen roles `--lemn-*`, nunca JSON fuente ni variables
+  especificas de un Workspace.
 - El host resuelve y verifica branding antes del primer byte HTML.
-- Fetching, routing, autenticacion, estado global, internacionalizacion,
-  analytics, persistencia y politica quedan fuera de los paquetes UI.
+- AgentOps posee Workspaces, versiones, persistencia, publicacion, activacion,
+  previews, autorizacion y audit.
+- Fetching, routing, auth, estado global, i18n, analytics y politica quedan
+  fuera de UI.
 
 ## Superficies
 
 - [Docs](https://ui.le-mn.com)
 - [Showcase publico](https://showcase.ui.le-mn.com)
-- [Showcase Admin protegido](https://admin.showcase.ui.le-mn.com)
+- [Showcase Admin](https://admin.showcase.ui.le-mn.com)
 - [Catalogo JSON](https://showcase.ui.le-mn.com/catalog.json)
 - [Indice para agentes](https://showcase.ui.le-mn.com/llms.txt)
 - [Repositorio](https://github.com/lemn-ltd/ui)
 
-Empieza por [Instalar y usar](/es/getting-started/), despues revisa
+Empieza por [Instalar y usar](/es/getting-started/), luego revisa
 [Arquitectura](/es/architecture/), [Branding](/es/branding/) y el
 [runbook SSR](/es/ssr-branding/).

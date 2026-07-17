@@ -3,145 +3,145 @@
  *
  * The docs host is light-first. Starlight owns the reader's docs preference;
  * all visual values below remain the same project-neutral `--lemn-*` roles
- * consumed by published components and compiled BrandProject scopes.
+ * consumed by published components and compiled branding modes.
  */
 
 :root {
-  color-scheme: light;
-  --sl-color-accent-low: var(--lemn-color-accent-soft);
-  --sl-color-accent: var(--lemn-color-accent-hover);
-  --sl-color-accent-high: var(--lemn-color-accent);
-  --sl-color-white: var(--lemn-color-text);
-  --sl-color-gray-1: var(--lemn-color-text);
-  --sl-color-gray-2: var(--lemn-color-text-muted);
-  --sl-color-gray-3: var(--lemn-color-disabled-text);
-  --sl-color-gray-4: var(--lemn-color-border-strong);
-  --sl-color-gray-5: var(--lemn-color-border);
-  --sl-color-gray-6: var(--lemn-color-surface-muted);
-  --sl-color-black: var(--lemn-color-canvas);
-  --sl-color-bg: var(--lemn-color-canvas);
-  --sl-color-bg-nav: var(--lemn-color-surface);
-  --sl-color-bg-sidebar: var(--lemn-color-surface);
-  --sl-color-bg-inline-code: var(--lemn-color-surface-muted);
-  --sl-color-bg-accent: var(--lemn-color-accent-soft);
-  --sl-color-text: var(--lemn-color-text-muted);
-  --sl-color-text-accent: var(--lemn-color-accent);
-  --sl-color-text-invert: var(--lemn-color-accent-foreground);
-  --sl-color-hairline-light: var(--lemn-color-border);
-  --sl-color-hairline: var(--lemn-color-border);
-  --sl-color-hairline-shade: var(--lemn-color-border-strong);
-  --sl-color-backdrop-overlay: var(--lemn-color-overlay-scrim);
-  --sl-font: var(--lemn-font-body);
-  --sl-font-mono: var(--lemn-font-code);
-  --sl-content-width: 54rem;
-  --sl-text-h1: var(--lemn-font-size-display);
+	color-scheme: light;
+	--sl-color-accent-low: var(--lemn-color-accent-soft);
+	--sl-color-accent: var(--lemn-color-accent-hover);
+	--sl-color-accent-high: var(--lemn-color-accent);
+	--sl-color-white: var(--lemn-color-text);
+	--sl-color-gray-1: var(--lemn-color-text);
+	--sl-color-gray-2: var(--lemn-color-text-muted);
+	--sl-color-gray-3: var(--lemn-color-disabled-text);
+	--sl-color-gray-4: var(--lemn-color-border-strong);
+	--sl-color-gray-5: var(--lemn-color-border);
+	--sl-color-gray-6: var(--lemn-color-surface-muted);
+	--sl-color-black: var(--lemn-color-canvas);
+	--sl-color-bg: var(--lemn-color-canvas);
+	--sl-color-bg-nav: var(--lemn-color-surface);
+	--sl-color-bg-sidebar: var(--lemn-color-surface);
+	--sl-color-bg-inline-code: var(--lemn-color-surface-muted);
+	--sl-color-bg-accent: var(--lemn-color-accent-soft);
+	--sl-color-text: var(--lemn-color-text-muted);
+	--sl-color-text-accent: var(--lemn-color-accent);
+	--sl-color-text-invert: var(--lemn-color-accent-foreground);
+	--sl-color-hairline-light: var(--lemn-color-border);
+	--sl-color-hairline: var(--lemn-color-border);
+	--sl-color-hairline-shade: var(--lemn-color-border-strong);
+	--sl-color-backdrop-overlay: var(--lemn-color-overlay-scrim);
+	--sl-font: var(--lemn-font-body);
+	--sl-font-mono: var(--lemn-font-code);
+	--sl-content-width: 54rem;
+	--sl-text-h1: var(--lemn-font-size-display);
 }
 
-:root[data-theme='dark'] {
-  color-scheme: dark;
+:root[data-theme="dark"] {
+	color-scheme: dark;
 
-  --lemn-color-canvas: #020617;
-  --lemn-color-surface: #020817;
-  --lemn-color-surface-muted: #0b1220;
-  --lemn-color-surface-elevated: #0f172a;
-  --lemn-color-surface-overlay: #0b1220;
-  --lemn-color-text: #f8fafc;
-  --lemn-color-text-muted: #94a3b8;
-  --lemn-color-text-inverse: #020617;
-  --lemn-color-disabled-text: #64748b;
-  --lemn-color-disabled-surface: #0f172a;
-  --lemn-color-border: #1e293b;
-  --lemn-color-border-strong: #334155;
-  --lemn-color-accent: #2dd4bf;
-  --lemn-color-accent-foreground: #042f2e;
-  --lemn-color-accent-hover: #5eead4;
-  --lemn-color-accent-pressed: #14b8a6;
-  --lemn-color-accent-soft: rgb(45 212 191 / 0.14);
-  --lemn-color-focus: #2dd4bf;
-  --lemn-color-selection: rgb(45 212 191 / 0.2);
-  --lemn-color-overlay-scrim: rgb(2 6 23 / 0.72);
-  --lemn-scrollbar-track: #020617;
-  --lemn-scrollbar-thumb: #334155;
-  --lemn-scrollbar-thumb-hover: #64748b;
+	--lemn-color-canvas: #020617;
+	--lemn-color-surface: #020817;
+	--lemn-color-surface-muted: #0b1220;
+	--lemn-color-surface-elevated: #0f172a;
+	--lemn-color-surface-overlay: #0b1220;
+	--lemn-color-text: #f8fafc;
+	--lemn-color-text-muted: #94a3b8;
+	--lemn-color-text-inverse: #020617;
+	--lemn-color-disabled-text: #64748b;
+	--lemn-color-disabled-surface: #0f172a;
+	--lemn-color-border: #1e293b;
+	--lemn-color-border-strong: #334155;
+	--lemn-color-accent: #2dd4bf;
+	--lemn-color-accent-foreground: #042f2e;
+	--lemn-color-accent-hover: #5eead4;
+	--lemn-color-accent-pressed: #14b8a6;
+	--lemn-color-accent-soft: rgb(45 212 191 / 0.14);
+	--lemn-color-focus: #2dd4bf;
+	--lemn-color-selection: rgb(45 212 191 / 0.2);
+	--lemn-color-overlay-scrim: rgb(2 6 23 / 0.72);
+	--lemn-scrollbar-track: #020617;
+	--lemn-scrollbar-thumb: #334155;
+	--lemn-scrollbar-thumb-hover: #64748b;
 
-  --sl-color-accent-low: var(--lemn-color-accent-soft);
-  --sl-color-accent: var(--lemn-color-accent);
-  --sl-color-accent-high: var(--lemn-color-accent-hover);
-  --sl-color-text-invert: var(--lemn-color-accent-foreground);
+	--sl-color-accent-low: var(--lemn-color-accent-soft);
+	--sl-color-accent: var(--lemn-color-accent);
+	--sl-color-accent-high: var(--lemn-color-accent-hover);
+	--sl-color-text-invert: var(--lemn-color-accent-foreground);
 }
 
 html {
-  background: var(--lemn-color-canvas);
-  color: var(--lemn-color-text);
+	background: var(--lemn-color-canvas);
+	color: var(--lemn-color-text);
 }
 
 body {
-  font-family: var(--lemn-font-body);
-  font-size: var(--lemn-font-size-body);
-  line-height: var(--lemn-line-height-body);
+	font-family: var(--lemn-font-body);
+	font-size: var(--lemn-font-size-body);
+	line-height: var(--lemn-line-height-body);
 }
 
 :focus-visible {
-  outline: var(--lemn-focus-ring-width) solid var(--lemn-color-focus);
-  outline-offset: var(--lemn-focus-ring-offset);
+	outline: var(--lemn-focus-ring-width) solid var(--lemn-color-focus);
+	outline-offset: var(--lemn-focus-ring-offset);
 }
 
 * {
-  scrollbar-color: var(--lemn-scrollbar-thumb) var(--lemn-scrollbar-track);
-  scrollbar-width: thin;
+	scrollbar-color: var(--lemn-scrollbar-thumb) var(--lemn-scrollbar-track);
+	scrollbar-width: thin;
 }
 
 ::-webkit-scrollbar {
-  width: var(--lemn-scrollbar-size);
-  height: var(--lemn-scrollbar-size);
+	width: var(--lemn-scrollbar-size);
+	height: var(--lemn-scrollbar-size);
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--lemn-scrollbar-track);
+	background: var(--lemn-scrollbar-track);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--lemn-scrollbar-thumb);
-  border: 2px solid var(--lemn-scrollbar-track);
-  border-radius: var(--lemn-radius-pill);
-  background-clip: padding-box;
+	background: var(--lemn-scrollbar-thumb);
+	border: 2px solid var(--lemn-scrollbar-track);
+	border-radius: var(--lemn-radius-pill);
+	background-clip: padding-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--lemn-scrollbar-thumb-hover);
-  border-color: var(--lemn-scrollbar-track);
-  background-clip: padding-box;
+	background: var(--lemn-scrollbar-thumb-hover);
+	border-color: var(--lemn-scrollbar-track);
+	background-clip: padding-box;
 }
 
 .site-title {
-  letter-spacing: var(--lemn-letter-spacing);
+	letter-spacing: var(--lemn-letter-spacing);
 }
 
 .sl-markdown-content :is(h1, h2, h3, h4, h5, h6):not(:where(.not-content *)) {
-  color: var(--lemn-color-text);
-  font-family: var(--lemn-font-heading);
-  font-weight: var(--lemn-font-weight-semibold);
+	color: var(--lemn-color-text);
+	font-family: var(--lemn-font-heading);
+	font-weight: var(--lemn-font-weight-semibold);
 }
 
 .sl-markdown-content code:not(:where(.not-content *)),
 .expressive-code figure.frame pre {
-  background: var(--lemn-color-surface-muted);
+	background: var(--lemn-color-surface-muted);
 }
 
 .sl-markdown-content pre:not(:where(.not-content *)),
 .expressive-code figure.frame {
-  border-color: var(--lemn-color-border);
+	border-color: var(--lemn-color-border);
 }
 
-a[aria-current='page'],
-a[aria-current='page']:hover,
-a[aria-current='page']:focus {
-  background: var(--lemn-color-accent-soft);
-  color: var(--lemn-color-accent);
+a[aria-current="page"],
+a[aria-current="page"]:hover,
+a[aria-current="page"]:focus {
+	background: var(--lemn-color-accent-soft);
+	color: var(--lemn-color-accent);
 }
 
 .sl-link-button.primary {
-  background: var(--lemn-color-accent);
-  border-color: var(--lemn-color-accent);
-  color: var(--lemn-color-accent-foreground);
+	background: var(--lemn-color-accent);
+	border-color: var(--lemn-color-accent);
+	color: var(--lemn-color-accent-foreground);
 }

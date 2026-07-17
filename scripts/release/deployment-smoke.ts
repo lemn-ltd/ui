@@ -8,7 +8,7 @@ const SCHEMA_ORIGIN = "https://schemas.ui.le-mn.com";
 const SHOWCASE_ADMIN_ORIGIN = "https://admin.showcase.ui.le-mn.com";
 const SHOWCASE_ADMIN_ACCESS_TENANT = "lemn-dev.cloudflareaccess.com";
 const UI_PACKAGE_NAME = "@lemn-ltd/ui";
-const BRAND_PROJECT_SCHEMA_URL = `${SCHEMA_ORIGIN}/brand-project/v2.json`;
+const BRANDING_DEFINITION_SCHEMA_URL = `${SCHEMA_ORIGIN}/branding/v1.json`;
 export const PROTECTED_STATUS_PATHS = [
 	"/_status",
 	"/_status.json",
@@ -282,8 +282,8 @@ export async function smokeShowcaseAdminAccess(input: {
 				"Showcase Admin health is not running the production environment",
 			);
 			assert(
-				payload.simulatorConfigured === true,
-				"Showcase Admin production simulator binding is not configured",
+				payload.studioPersistence === "none",
+				"Showcase Admin must keep Studio persistence outside the UI repository",
 			);
 		},
 		retryOptions,
@@ -543,10 +543,10 @@ export async function smokeProductionDeployment(input: {
 		input.signal,
 	);
 	await retry(
-		"brand-project-schema",
+		"branding-definition-schema",
 		async () => {
 			const response = await fetchResponse(
-				BRAND_PROJECT_SCHEMA_URL,
+				BRANDING_DEFINITION_SCHEMA_URL,
 				fetchImplementation,
 				{ headers: showcaseHeaders(input.showcaseVersionId) },
 				input.signal,
@@ -555,12 +555,12 @@ export async function smokeProductionDeployment(input: {
 				response.headers
 					.get("content-type")
 					?.includes("application/schema+json"),
-				"BrandProject schema has the wrong content type",
+				"BrandingDefinition schema has the wrong content type",
 			);
 			const payload = (await response.json()) as Record<string, unknown>;
 			assert(
-				payload.$id === BRAND_PROJECT_SCHEMA_URL,
-				"BrandProject schema has the wrong canonical ID",
+				payload.$id === BRANDING_DEFINITION_SCHEMA_URL,
+				"BrandingDefinition schema has the wrong canonical ID",
 			);
 		},
 		retryOptions,

@@ -19,8 +19,9 @@ with:
 - the published `@lemn-ltd/ui` React package, including provider-backed
   components, curated blocks, semantic tokens, styles, catalog metadata,
   package docs, and public exports
-- published `@lemn-ltd/brand-contract` and `@lemn-ltd/brand-studio` packages
-  for deterministic multi-profile branding and controlled authoring
+- published `@lemn-ltd/brand-contract`, `@lemn-ltd/brand-runtime`, and
+  `@lemn-ltd/brand-studio` packages for deterministic complete-mode branding,
+  first-byte server resolution, and controlled authoring
 - a Git-authoritative provider registry with exact pins, source provenance,
   licenses, notices, SBOM, conformance, and update status
 - the internal `@lemn-ltd/showcase-kit` package for reusable showcase chrome
@@ -79,7 +80,7 @@ pattern_profile:
       - "The workspace owns one shared UI kernel consumed by multiple products plus separate package, showcase, and documentation surfaces."
       - Public/private package boundaries, stable catalog vocabulary, and dependency direction must remain explicit across packages and apps.
       - Component, token, style, and catalog decisions must stay identical across the published package, showcase, docs, and consumers.
-      - Provider authority, BrandProject compilation, Blocks, public Showcase, and protected Admin remain separate explicit package/deploy boundaries.
+      - Provider authority, BrandingDefinition compilation, server runtime, Blocks, public Showcase, and protected Admin remain separate explicit package/deploy boundaries.
       - Changesets, package publishing, docs deployment, and showcase deployment require a coherent compatibility-first release model.
 
   CODE:
@@ -105,7 +106,7 @@ pattern_profile:
   API:
     target_level: 4
     reason:
-      - "The UI, BrandProject, compiled artifact, Studio host adapter, blocks, token exports, provider read model, and catalog endpoints are stable public contracts."
+      - "The UI, BrandingDefinition, compiled artifact envelope, runtime projection, Studio host adapter, blocks, token exports, provider read model, and catalog endpoints are stable public contracts."
       - Public changes must remain additive or carry a changeset, migration guidance, and versioned compatibility decision.
       - Hono, OpenAPI-generated clients, backend DTO mappers, webhooks, and MCP server tools are not part of the current repository inventory.
 
@@ -132,7 +133,7 @@ pattern_profile:
   UI:
     target_level: 5
     reason:
-      - Reusable provider-backed components, BrandProject compilation, design tokens, blocks, CSS, accessibility behavior, and catalog documentation are the primary product of this repository.
+      - Reusable provider-backed components, BrandingDefinition compilation, server runtime contracts, design tokens, blocks, CSS, accessibility behavior, and catalog documentation are the primary product of this repository.
       - "`@lemn-ltd/ui` is the project source of truth; consumers must use public exports and the single public stylesheet instead of copying CSS or deep-importing internals."
       - Every reusable component must be composable, responsive, accessible, brand-neutral, documented, catalogued, and demonstrated in the showcase.
       - Dashboard, report, chart, agent, workflow, evidence components, and blocks must expose complete loading, empty, error, permission, pending, success, and interaction states when applicable.

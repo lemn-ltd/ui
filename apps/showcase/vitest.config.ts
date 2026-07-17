@@ -7,6 +7,10 @@ export default defineConfig({
 	plugins: [react()],
 	resolve: {
 		alias: {
+			"@lemn-ltd/brand-contract/system-brandings": path.resolve(
+				import.meta.dirname,
+				"../../packages/brand-contract/src/system-brandings.ts",
+			),
 			"@lemn-ltd/brand-contract": path.resolve(
 				import.meta.dirname,
 				"../../packages/brand-contract/src/index.ts",

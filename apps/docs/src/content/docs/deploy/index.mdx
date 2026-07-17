@@ -8,8 +8,9 @@ sidebar:
 
 ## Release surfaces
 
-- `@lemn-ltd/brand-contract`, `@lemn-ltd/ui`, and
-  `@lemn-ltd/brand-studio` publish to GitHub Packages in dependency order.
+- `@lemn-ltd/brand-contract`, `@lemn-ltd/ui`,
+  `@lemn-ltd/brand-runtime`, and `@lemn-ltd/brand-studio` publish to GitHub
+  Packages in dependency order.
 - `ui.le-mn.com` serves this Starlight documentation.
 - `showcase.ui.le-mn.com` serves the public read-only Showcase.
 - `admin.showcase.ui.le-mn.com` serves the separately deployed Showcase Admin
@@ -67,15 +68,15 @@ adapters. Network location or a Service Binding is not business authorization.
 ## Deployment sequence
 
 1. Validate and pack the exact source revision.
-2. Publish Brand Contract, then UI, then Brand Studio; an existing version must
-   have identical immutable integrity or the release stops.
+2. Publish Brand Contract, UI, Brand Runtime, then Brand Studio; an existing
+   version must have identical immutable integrity or the release stops.
 3. Install the exact published packages in clean external consumers and run
    their checks/builds.
 4. Deploy Docs and public Showcase for that release identity.
 5. Deploy protected Showcase Admin and verify unauthenticated denial plus
    authenticated behavior.
-6. Smoke public catalog/agent endpoints, branded Profile/mode switching, blocks,
-   provider read models, and build identity.
+6. Smoke public catalog/agent endpoints, System branding/mode switching,
+   blocks, provider read models, schema v1, and build identity.
 7. Record the release receipt only after every required check passes.
 
 Use staged/traffic-safe Worker versions where the deployment workflow supports

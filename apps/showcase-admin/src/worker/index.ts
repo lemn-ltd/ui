@@ -8,7 +8,6 @@ import {
 import type { ShowcaseAdminEnv } from "./env";
 import { problem } from "./problem-details";
 import { buildProposalBundle } from "./proposal";
-import { applyWithSimulator, planWithSimulator } from "./simulator";
 
 const MAX_BODY_BYTES = 1_000_000;
 
@@ -99,7 +98,7 @@ export async function handleShowcaseAdminRequest(
 					ok: true,
 					service: "ui-showcase-admin",
 					environment: env.DEPLOYMENT_ENVIRONMENT ?? "development",
-					simulatorConfigured: Boolean(env.SIMULATOR),
+					studioPersistence: "none",
 				}),
 			);
 		}
@@ -112,24 +111,6 @@ export async function handleShowcaseAdminRequest(
 				identity?.kind === "human" ? identity.email : "local-development",
 			);
 			return secure(Response.json(bundle, { status: 201 }));
-		}
-		if (url.pathname === "/api/simulator/plan" && request.method === "POST") {
-			return secure(
-				await planWithSimulator(
-					env.SIMULATOR,
-					identity,
-					await jsonBody(request),
-				),
-			);
-		}
-		if (url.pathname === "/api/simulator/apply" && request.method === "POST") {
-			return secure(
-				await applyWithSimulator(
-					env.SIMULATOR,
-					identity,
-					await jsonBody(request),
-				),
-			);
 		}
 		if (url.pathname.startsWith("/api/")) {
 			return secure(

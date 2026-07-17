@@ -1,6 +1,6 @@
 ---
 title: Install and use
-description: Install exact LEMN packages and render inside a verified compiled brand scope.
+description: Install exact LEMN packages and render inside a verified compiled branding mode.
 sidebar:
   label: Install and use
   order: 2
@@ -14,29 +14,28 @@ Commit only the package scope mapping in the consumer repository:
 @lemn-ltd:registry=https://npm.pkg.github.com
 ```
 
-Keep authentication in the user's `~/.npmrc`; never commit it or a token:
+Keep authentication in the user's `~/.npmrc`; never commit a token:
 
 ```ini
 //npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}
 ```
 
-Load a classic GitHub token with `read:packages` and repository access through
-the local secret manager.
+## 2. Install exact compatible releases
 
-## 2. Install an exact compatible release set
-
-```bash
-pnpm add @lemn-ltd/brand-contract@0.1.0 @lemn-ltd/ui@0.3.0
-```
-
-For an authorized branding authoring host, add Studio separately:
+For an SSR application:
 
 ```bash
-pnpm add @lemn-ltd/brand-studio@0.1.1
+pnpm add @lemn-ltd/brand-contract@1.0.0 @lemn-ltd/brand-runtime@0.1.0 @lemn-ltd/ui@0.3.1
 ```
 
-Never use `latest`, a caret, tilde, wildcard, branch, URL, `workspace:*`,
-`link:`, or a relative cross-repository package path.
+For an authorized authoring host, add Studio separately:
+
+```bash
+pnpm add @lemn-ltd/brand-studio@1.0.0
+```
+
+Never use `latest`, a range, branch, URL, `workspace:*`, `link:`, or a relative
+cross-repository path in a published consumer.
 
 ## 3. Import public LEMN entrypoints
 
@@ -45,48 +44,19 @@ import { Button, Card, componentCatalog } from "@lemn-ltd/ui";
 import "@lemn-ltd/ui/styles.css";
 ```
 
-Import the stylesheet once at the app root. Do not deep-import `src`, `dist`,
-component internals, or an upstream UI provider.
+Load styles once at the application root. Do not deep-import `src`, `dist`,
+component internals, or an upstream provider.
 
 ## 4. Apply branding before render
 
-Components never parse BrandProject JSON. A trusted server/edge host resolves a
-published artifact for its project, environment, slot, Profile, and mode;
-verifies compatibility and integrity; then injects critical CSS and scope
-attributes before rendering branded markup.
-
-```ts
-import {
-  getCompiledScope,
-  serializeBrandBootstrap,
-  verifyBrandArtifact,
-} from "@lemn-ltd/brand-contract";
-
-await verifyBrandArtifact(artifact);
-const scope = getCompiledScope(artifact, selectedProfile, selectedMode);
-const bootstrap = serializeBrandBootstrap(
-  artifact,
-  selectedProfile,
-  selectedMode,
-);
-```
-
-The response must contain `artifact.criticalCss` in `<head>`, the values in
-`scope.attributes` on the branded container, and the escaped bootstrap payload
-for hydration. The browser must receive the same `compiledHash` that the server
-verified. See the [SSR branding runbook](/ssr-branding/) for the complete
-security and fallback contract.
+Components never parse source branding JSON. A trusted server resolves one
+published Workspace branding version, verifies the signed compiled object, and
+injects selected-mode CSS, preloads, scope attributes, and bootstrap before
+the first branded markup. Follow the [SSR branding runbook](/ssr-branding/) and
+use `@lemn-ltd/brand-runtime`; do not recreate verification in product code.
 
 ## 5. Keep platform concerns outside UI
 
-The host owns API clients, data fetching, routing, authentication,
-authorization, global application state, internationalization, analytics,
-persistence, profile/mode cookies, and workflow policy. Pass controlled values
-and actions to LEMN components and blocks.
-
-## Agent selection rule
-
-Use the [component catalog](/component-catalog/) and
-[Showcase](https://showcase.ui.le-mn.com) first. If a reusable capability is
-missing, propose one provider of record through the registry; do not add a
-consumer-local competing implementation.
+The host owns API clients, fetching, routing, authentication, global state,
+internationalization, analytics, persistence, Workspace routing, cookies, and
+product policy. Pass controlled values and actions to components and blocks.

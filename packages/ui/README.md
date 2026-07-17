@@ -77,7 +77,7 @@ Keep the credential outside repositories in the user's `~/.npmrc`:
 Install the compatible release set with exact versions:
 
 ```bash
-pnpm add @lemn-ltd/brand-contract@0.1.0 @lemn-ltd/ui@0.3.0
+pnpm add @lemn-ltd/brand-contract@1.0.0 @lemn-ltd/brand-runtime@0.1.0 @lemn-ltd/ui@0.3.1
 ```
 
 Load styles once and import only public LEMN exports:
@@ -97,31 +97,33 @@ dependency in a published consumer.
 
 ## Branding boundary
 
-`@lemn-ltd/brand-contract` is the source schema/compiler package. A
-BrandProject may contain multiple Profiles, and each Profile may contain
-multiple modes. Its deterministic compiler emits:
+`@lemn-ltd/brand-contract` is the source schema/compiler package. One
+`BrandingDefinition` owns root assets, typography, a default mode, and complete
+visual modes. Its deterministic compiler emits:
 
 - an immutable artifact with schema/compiler compatibility metadata;
-- source and compiled SHA-256 hashes;
-- resolved, inheritance-free Profiles and modes;
+- definition, mode, byte, and compiled SHA-256 identities where applicable;
+- complete mode projections without inheritance;
 - critical scoped CSS using only the stable `--lemn-*` vocabulary;
 - DOM scope attributes and color scheme;
 - provider-specific chart adapters behind provider-neutral artifact fields;
 - an asset manifest and publication-blocking diagnostics.
 
 This package consumes only the compiled semantic output. Components do not
-parse a BrandProject, read a project ID, fetch an assignment, persist a choice,
-or mutate `:root`. The host applies the complete compiled scope atomically.
+parse a `BrandingDefinition`, resolve a Workspace, fetch an active version,
+persist a choice, or mutate `:root`. The host applies the verified compiled mode
+atomically.
 
 The package stylesheet includes a light-first branded fallback for isolated
 development and tests. It is not a substitute for production resolution.
-Production hosts must resolve and verify a published artifact before the first
-HTML byte, inject `artifact.criticalCss`, and put the selected scope attributes
-on the branded container before rendering components. A compatible verified
-last-known-good or embedded artifact is the only allowed failure fallback.
+Production hosts use `@lemn-ltd/brand-runtime` to resolve and verify a published
+artifact before the first HTML byte, inject selected-mode critical CSS, and put
+the compiled scope attributes on the branded container before rendering
+components. A compatible verified embedded branded artifact is the only
+failure fallback.
 
 Theme and accent controls are controlled visual inputs. The host owns the
-active profile/mode, cookies, authorization, server resolution, and atomic scope
+active mode, cookies, authorization, server resolution, and atomic scope
 replacement. A shared component never persists that state or writes global
 brand variables.
 
@@ -159,9 +161,10 @@ catalogs, Showcase, and drift tests are authoritative as capabilities evolve.
 ## Brand Studio is separate
 
 `@lemn-ltd/brand-studio` is the reusable, controlled authoring wizard. It can
-edit and preview a BrandProject, validate/compile it, and emit typed host
+edit and preview a `BrandingDefinition`, validate/compile it, and emit typed host
 intents. It does not belong inside this package and has no persistence,
-credentials, project authorization, publication, rollback, or audit authority.
+credentials, Workspace authorization, publication, activation, or audit
+authority.
 
 Showcase Admin is a separate protected host for experimentation and provider or
 branding proposals. It consumes Studio and registry read models; it does not

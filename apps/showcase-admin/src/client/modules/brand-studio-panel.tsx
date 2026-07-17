@@ -1,116 +1,158 @@
+import { compileBrandingDefinition } from "@lemn-ltd/brand-contract";
 import {
-	type BrandCompileResult,
-	type BrandProject,
-} from "@lemn-ltd/brand-contract";
+	getSystemBrandingTemplate,
+	systemBrandingTemplates,
+} from "@lemn-ltd/brand-contract/system-brandings";
 import {
 	BrandStudio,
-	createBrandFromPreset,
-	type BrandStudioHostAdapter,
+	type BrandStudioDraftContext,
 	type BrandStudioHostStatus,
 	type BrandStudioIntent,
 } from "@lemn-ltd/brand-studio";
-import { Alert, Input, SelectNative } from "@lemn-ltd/ui";
-import {
-	type ReactElement,
-	useMemo,
-	useState,
-} from "react";
-import { adminApi, type SimulatorContext, type SimulatorPlan } from "../api";
+import { Alert } from "@lemn-ltd/ui";
+import { type ReactElement, useMemo, useState } from "react";
 
-const INITIAL_CONTEXT: SimulatorContext = {
-	projectId: "019b7af3-0f8f-7e21-86c4-10fcfd5cb40a",
-	environmentId: "019b7af3-0f8f-7e21-86c4-10fcfd5cb40b",
-	environmentKind: "development",
-	brandId: "019b7af3-0f8f-7e21-86c4-10fcfd5cb40c",
-	revisionId: null,
-	assignmentSequence: 0,
-};
-
-function compileStatus(result: BrandCompileResult): BrandStudioHostStatus {
-	const errors = result.diagnostics.filter((diagnostic) => diagnostic.severity === "error");
-	return errors.length === 0
-		? { state: "success", message: "The draft is valid and compiles without blocking diagnostics." }
-		: { state: "error", message: `${errors.length} blocking diagnostics must be resolved.` };
-}
+const initialTemplate = getSystemBrandingTemplate("aster-vault", 1);
 
 export function BrandStudioPanel(): ReactElement {
-	const [project, setProject] = useState<BrandProject>(() =>
-		createBrandFromPreset("aster-vault", { name: "Simulator project brand" }),
+	const [definition, setDefinition] = useState(() =>
+		structuredClone(initialTemplate.definition),
 	);
-	const [context, setContext] = useState<SimulatorContext>(INITIAL_CONTEXT);
-	const [status, setStatus] = useState<BrandStudioHostStatus>({ state: "idle" });
-	const [approvedPlan, setApprovedPlan] = useState<SimulatorPlan>();
-	const [applyReceipt, setApplyReceipt] = useState<{ readonly id?: string; readonly state: string }>();
+	const [draftTitle, setDraftTitle] = useState("Protected Studio experiment");
+	const [definitionHash, setDefinitionHash] = useState(
+		initialTemplate.definitionHash,
+	);
+	const [archived, setArchived] = useState(false);
+	const [status, setStatus] = useState<BrandStudioHostStatus>({
+		state: "idle",
+		message: "The protected host keeps this experiment in React state only.",
+	});
+
+	const draft = useMemo<BrandStudioDraftContext>(
+		() => ({
+			brandingVersionId: "showcase-admin-ephemeral-version",
+			title: draftTitle,
+			definitionHash,
+			state: "draft",
+			archived,
+		}),
+		[archived, definitionHash, draftTitle],
+	);
 
 	const dispatch = async (intent: BrandStudioIntent): Promise<void> => {
+		if (intent.type === "select-system-branding") {
+			const template = getSystemBrandingTemplate(
+				intent.templateId,
+				intent.templateVersion,
+			);
+			setDefinition(structuredClone(template.definition));
+			setDefinitionHash(template.definitionHash);
+			setDraftTitle(`${template.name} experiment`);
+			setArchived(false);
+			setStatus({
+				state: "saved",
+				message: `Loaded an editable copy of ${template.name} · v${template.version}.`,
+			});
+			return;
+		}
 		if (intent.type === "validate") {
-			setStatus(compileStatus(intent.compileResult));
+			const errors = intent.compileResult.diagnostics.filter(
+				(diagnostic) => diagnostic.severity === "error",
+			);
+			setStatus({
+				state: errors.length ? "invalid" : "saved",
+				message: errors.length
+					? `${errors.length} blocking diagnostics must be resolved.`
+					: "The canonical compiler accepts this BrandingDefinition.",
+			});
 			return;
 		}
-
-		if (intent.type === "plan-publication") {
-			setStatus({ state: "pending", message: "Saving the draft and requesting an authoritative publication plan…" });
-			setApprovedPlan(undefined);
-			setApplyReceipt(undefined);
-			try {
-				const plan = await adminApi.plan(context, intent.draft);
-				setApprovedPlan(plan);
-				setContext((current) => ({
-					...current,
-					draftId: plan.draft.id,
-					draftVersion: plan.draft.version,
-				}));
+		if (intent.type === "save-draft") {
+			setStatus({ state: "saving", message: "Creating a local checkpoint…" });
+			const compiled = await compileBrandingDefinition(intent.definition);
+			if (!compiled.ok) {
 				setStatus({
-					state: "success",
-					message: `Plan ${plan.id} is ready for review and expires ${new Date(plan.expiresAt).toLocaleString()}.`,
-					expectedRevision: plan.expectedAssignmentSequence,
+					state: "invalid",
+					message: "Blocking diagnostics prevented the local checkpoint.",
 				});
-			} catch (error) {
-				setStatus({ state: "error", message: error instanceof Error ? error.message : "The simulator plan failed." });
+				return;
 			}
+			setDefinitionHash(compiled.artifact.definitionHash);
+			setDraftTitle(intent.title);
+			setStatus({
+				state: "saved",
+				message: `Local checkpoint ${compiled.artifact.definitionHash.slice(0, 12)} saved in memory.`,
+			});
 			return;
 		}
-
-		if (!approvedPlan) {
-			setStatus({ state: "error", message: "Create and review a publication plan before applying it." });
+		if (intent.type === "compare-draft") {
+			setStatus({
+				state: "idle",
+				message:
+					intent.definitionHash === definitionHash
+						? "The editor matches the local checkpoint."
+						: "The editor differs from the local checkpoint.",
+			});
 			return;
 		}
-		setStatus({ state: "pending", message: "Applying the approved plan through the protected simulator binding…" });
-		try {
-			const receipt = await adminApi.apply(approvedPlan.id, intent.idempotencyKey);
-			setApplyReceipt(receipt);
-			setContext((current) => ({
-				...current,
-				assignmentSequence: approvedPlan.expectedAssignmentSequence + 1,
-			}));
-			setStatus({ state: "success", message: `Simulator accepted the publication (${receipt.state}).` });
-		} catch (error) {
-			setStatus({ state: "error", message: error instanceof Error ? error.message : "The simulator apply failed." });
+		if (intent.type === "create-preview") {
+			setStatus({
+				state: "preview-ready",
+				message: `Preview contract pinned to ${intent.definitionHash.slice(0, 12)} for ${intent.targetId}.`,
+			});
+			return;
 		}
+		if (intent.type === "archive-draft" || intent.type === "restore-draft") {
+			const nextArchived = intent.type === "archive-draft";
+			setArchived(nextArchived);
+			setStatus({
+				state: nextArchived ? "archived" : "saved",
+				message: nextArchived
+					? "The local experiment is archived and read-only."
+					: "The local experiment is restored.",
+			});
+			return;
+		}
+		setStatus({
+			state: "permission-denied",
+			message:
+				"Publication belongs to AgentOps. Showcase Admin intentionally has no publication authority.",
+		});
 	};
 
-	const adapter = useMemo<BrandStudioHostAdapter>(() => ({ status, dispatch }), [status, approvedPlan, context]);
-
 	return (
-		<section className="admin-studio" aria-labelledby="admin-studio-title">
+		<section aria-labelledby="admin-studio-title" className="admin-studio">
 			<header className="admin-studio__header">
-				<div><span>Ephemeral authoring, protected publication</span><h2 id="admin-studio-title">Brand Studio simulator host</h2></div>
+				<div>
+					<span>Protected, persistence-free reference host</span>
+					<h2 id="admin-studio-title">Brand Studio contract lab</h2>
+				</div>
 			</header>
 			<Alert
-				message="Edits stay in this browser's React state. Plan and apply cross the Admin Worker through a Cloudflare Service Binding; no browser token is accepted or stored."
-				title="Zero-trust host boundary"
+				message="This host demonstrates controlled edits, exact System branding selection, validation, local checkpoints, preview intents, and lifecycle states. AgentOps owns durable Workspace data and publication."
+				title="Explicit authority boundary"
 				variant="info"
 			/>
-			<div className="admin-context" aria-label="Simulator publication context">
-				<label><span>Project ID</span><Input aria-label="Simulator project ID" onChange={(event) => setContext((current) => ({ ...current, projectId: event.currentTarget.value }))} value={context.projectId} /></label>
-				<label><span>Environment ID</span><Input aria-label="Simulator environment ID" onChange={(event) => setContext((current) => ({ ...current, environmentId: event.currentTarget.value }))} value={context.environmentId} /></label>
-				<label><span>Brand ID</span><Input aria-label="Simulator brand ID" onChange={(event) => setContext((current) => ({ ...current, brandId: event.currentTarget.value }))} value={context.brandId} /></label>
-				<label><span>Environment</span><SelectNative aria-label="Simulator environment kind" onValueChange={(environmentKind) => setContext((current) => ({ ...current, environmentKind: environmentKind as SimulatorContext["environmentKind"] }))} options={["development", "staging", "production"].map((value) => ({ label: value, value }))} value={context.environmentKind} /></label>
-				<label><span>Assignment sequence</span><Input aria-label="Simulator assignment sequence" min={0} onChange={(event) => setContext((current) => ({ ...current, assignmentSequence: Number(event.currentTarget.value) }))} type="number" value={String(context.assignmentSequence)} /></label>
-			</div>
-			{approvedPlan ? <p className="admin-plan-receipt"><strong>Approved plan:</strong> <code>{approvedPlan.id}</code> · draft <code>{approvedPlan.draft.id}@{approvedPlan.draft.version}</code></p> : null}
-			{applyReceipt ? <p className="admin-plan-receipt" data-state="success"><strong>Apply receipt:</strong> {applyReceipt.state}{applyReceipt.id ? <> · <code>{applyReceipt.id}</code></> : null}</p> : null}
-			<BrandStudio hostAdapter={adapter} onChange={setProject} value={project} />
+			<BrandStudio
+				draft={draft}
+				hostStatus={status}
+				onChange={(next) => {
+					setDefinition(next);
+					setStatus({ state: "dirty", message: "Unsaved local changes." });
+				}}
+				onDraftTitleChange={setDraftTitle}
+				onIntent={dispatch}
+				previewTargets={[
+					{
+						id: "public-showcase",
+						name: "Public Showcase",
+						origin: "https://showcase.ui.le-mn.com",
+						status: "active",
+					},
+				]}
+				systemBrandings={systemBrandingTemplates}
+				value={definition}
+			/>
 		</section>
 	);
 }

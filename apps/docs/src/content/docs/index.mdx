@@ -1,40 +1,44 @@
 ---
 title: Overview
-description: Provider-first components, compiled project branding, and curated blocks for LEMN products.
+description: Provider-first UI, compiled branding, server runtime, and curated blocks for LEMN products.
 sidebar:
   label: Overview
   order: 1
 ---
 
-Lemn UI is a provider-first UI ecosystem, not a collection of locally rewritten
+Lemn UI is a provider-first ecosystem, not a collection of locally rewritten
 widgets. LEMN selects individual battle-tested open-source capabilities, gives
-each semantic capability exactly one provider of record, and exposes a stable
+each semantic capability one provider of record, and exposes a stable
 provider-neutral API with a minimal compiled branding layer.
 
 ## What this workspace owns
 
-- `@lemn-ltd/brand-contract`: versioned BrandProject schema, validator,
-  deterministic compiler, diagnostics, scoped CSS, provider adapters, and
-  integrity hashes.
-- `@lemn-ltd/ui`: controlled components, visualizations, semantic styles,
-  blocks, and public catalog metadata.
-- `@lemn-ltd/brand-studio`: controlled, persistence-free wizard and live
-  preview for authoring BrandProject JSON.
-- A Git-authoritative provider registry with exact immutable origins, licenses,
-  notices, adapters, conformance, and upstream update status.
-- Public Docs and Showcase plus a separately protected Showcase Admin surface.
+- `@lemn-ltd/brand-contract`: `BrandingDefinition` v1, deterministic compiler,
+  diagnostics, signed artifact envelope, semantic tokens, font governance, and
+  Recharts/ECharts theme projections.
+- `@lemn-ltd/brand-runtime`: server-only active/preview resolution, integrity
+  verification, selected-mode projection, SSR markup helpers, and one embedded
+  branded fallback.
+- `@lemn-ltd/ui`: controlled components, visualizations, styles, blocks, and
+  public catalog metadata.
+- `@lemn-ltd/brand-studio`: controlled, persistence-free authoring wizard and
+  real component preview. Hosts supply catalog data and execute typed intents.
+- A Git-authoritative provider registry with exact origins, licenses, notices,
+  adapters, conformance, and reviewed update status.
+- Public Docs/Showcase plus a separately protected Showcase Admin lab.
 
 ## Non-negotiable boundaries
 
-- Product code imports only exact approved `@lemn-ltd/*` package versions.
-- Product code never imports an upstream UI provider for a catalog-owned
+- Consumers install exact approved `@lemn-ltd/*` versions; never `latest`.
+- Consumers never import an upstream UI provider for a catalog-owned
   capability.
-- Components consume compiled `--lemn-*` semantic roles, never raw BrandProject
-  JSON or project-specific variable names.
+- Components consume compiled `--lemn-*` roles, never source branding JSON or
+  Workspace-specific variable names.
 - Production hosts resolve and verify branding before the first HTML byte.
+- AgentOps owns Workspaces, versions, persistence, publication, activation,
+  preview sessions, authorization, and audit.
 - Data fetching, routing, authentication, global state, internationalization,
-  analytics, persistence, and product policy stay outside the UI packages.
-- Provider updates are reviewed registry proposals, never silent upgrades.
+  analytics, and product policy remain outside the UI packages.
 
 ## Production surfaces
 

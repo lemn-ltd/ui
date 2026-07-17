@@ -162,7 +162,7 @@ describe("Cloudflare Access origin validation", () => {
 		).rejects.toThrow("Cloudflare Access identity is invalid");
 	});
 
-	it("never forwards a service identity to simulator business capabilities", () => {
+	it("never grants a service identity access to Admin business capabilities", () => {
 		expect(() =>
 			accessHeaders({
 				kind: "service",

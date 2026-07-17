@@ -37,19 +37,19 @@ behavior. Agents must not rewrite those behaviors merely to apply local style.
 
 Components do not consume raw branding JSON. The host resolves and verifies a
 published `@lemn-ltd/brand-contract` artifact before rendering, then applies
-the selected Profile/mode scope atomically. All brands compile into the same
+the selected mode scope atomically. Every definition compiles into the same
 scoped `--lemn-*` semantic vocabulary.
 
 - Never hard-code a project color when a semantic role exists.
 - Never create project-specific CSS variable names.
 - Never mutate global brand variables from a component.
-- Never persist profile, mode, or accent state from shared UI.
+- Never persist mode or accent state from shared UI.
 - Never render a provider default while waiting for branding in production.
 
 Production SSR/edge hosts inject the verified critical CSS and scope attributes
 before the first HTML byte. The browser hydrates the same compiled hash. Only a
-compatible verified last-known-good or embedded branded artifact may be used as
-a failure fallback.
+a compatible verified embedded branded artifact may be used as a failure
+fallback.
 
 ## Boundaries
 
@@ -57,9 +57,9 @@ a failure fallback.
 - Product fetching, routing, authentication, global state,
   internationalization, analytics, persistence, and workflow policy remain in
   the consuming app or a separate frontend-platform package.
-- Brand Studio is a controlled, persistence-free BrandProject wizard. Its host
-  owns project context, authorization, storage, publication, rollback, and
-  audit.
+- Brand Studio is a controlled, persistence-free `BrandingDefinition` wizard.
+  Its host owns Workspace context, authorization, storage, publication,
+  activation, and audit.
 - Showcase Admin is a protected experimentation/proposal host. Public Showcase
   remains read-only.
 

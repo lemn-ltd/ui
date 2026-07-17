@@ -1,157 +1,139 @@
 ---
 title: SSR branding runbook
-description: Resolve, verify, inject, hydrate, cache, and fail safely without an unbranded first frame.
+description: Resolve, verify, inject, hydrate, and fail safely without an unbranded first frame.
 sidebar:
   label: SSR branding runbook
   order: 5
 ---
 
 Owner: LEMN UI and consuming-app maintainers
-Last reviewed: 2026-07-15
+Last reviewed: 2026-07-17
 Patterns: `PAT-UI-BRAND-CONTRACT-001`, `PAT-UI-SSR-BRANDING-001`,
 `PAT-SEC-SECRETS-001`, `PAT-TEST-EVIDENCE-001`
 
 ## Invariant
 
 A production browser must never render an unbranded component or raw provider
-default. Resolve, authorize, verify, and inject the selected immutable
-BrandRevision before emitting the first HTML byte. Client hydration confirms
-the same compiled hash; it does not repair branding after paint.
+default. Resolve, authorize, verify, and inject one published
+`BrandingVersion` mode before emitting the first HTML byte. Hydration confirms
+the exact compiled hash; it never repairs branding after paint.
 
 ## Trusted inputs
 
-The server resolves branding by a trusted project/environment/slot assignment
-through a least-privilege Service Binding or authenticated server API. A browser
-query, arbitrary header, or unvalidated cookie is not assignment authority.
+The server derives the Workspace from authenticated workload configuration or
+routing owned by the application. A browser-supplied Workspace ID is not
+authority. Mode selection is allowed only when the compiled artifact declares
+it selectable. A same-account Cloudflare host uses an RPC Service Binding to a
+dedicated `WorkerEntrypoint`. Deployment-owned static `ctx.props` authenticate
+the exact `workspaceId`, `consumerId`, and `branding:resolve` permission; no
+credential or browser-selected Workspace travels in the RPC call. An external
+server instead uses authenticated HTTPS with a least-privilege
+`WorkspaceRuntimeCredential` kept only on the server.
 
-A user-selectable Profile/mode may be stored in a secure host-owned cookie or
-server state, but the server must revalidate it against the assignment's
-currently allowed Profiles/modes on every resolution.
+MCP credentials, source definitions, reusable runtime credentials, and R2
+credentials never reach the browser.
 
 ## Response algorithm
 
-1. Derive the trusted project, environment, slot, and authorized Profile/mode.
-2. Resolve the current assignment sequence and immutable artifact with a strict
-   deadline.
-3. Check schema/compiler compatibility and verify `compiledHash` over the
-   canonical artifact payload.
-4. Select the compiled Profile/mode scope.
-5. Resolve `getCompiledScopeFontPreloads` and emit every returned descriptor as
-   a deduplicated `<link rel="preload">` in `<head>` for the selected Profile.
-6. Put verified `artifact.criticalCss` in a `<style>` element in `<head>` before
-   any branded markup.
-7. Put every `scope.attributes` entry on the branded container and set the
-   resolved color scheme.
-8. Serialize the minimal bootstrap with `serializeBrandBootstrap`, escape it for
-   the HTML context, and include it as non-executable JSON.
-9. Render components inside that scope.
-10. Hydrate only when the bootstrap `compiledHash` matches the server artifact.
-
-Core package operations:
+1. Derive the trusted Workspace and requested allowed mode.
+2. Resolve through `@lemn-ltd/brand-runtime` with a strict deadline.
+3. Verify envelope shape, signature, byte hash, compiled hash, schema/compiler,
+   Workspace identity, mode, asset references, and expiry where applicable.
+4. Project one verified mode into critical CSS, preloads, safe assets, and a
+   minimal bootstrap.
+5. Emit preloads and critical style in `<head>` before branded markup.
+6. Apply every compiled HTML attribute to the branded scope.
+7. Embed the escaped non-executable bootstrap.
+8. Render components inside that scope and hydrate only when hashes match.
 
 ```ts
 import {
-  getCompiledScope,
-  getCompiledScopeFontPreloads,
-  serializeBrandBootstrap,
-  verifyBrandArtifact,
-  type CompiledBrandArtifact,
-} from "@lemn-ltd/brand-contract";
+  createServiceBindingBrandingRuntimeClient,
+  resolveBranding,
+} from "@lemn-ltd/brand-runtime";
+import {
+  assertBrandingHydrationIdentity,
+  createBrandingSsrParts,
+} from "@lemn-ltd/brand-runtime/server";
 
-export async function prepareBrand(
-  artifact: CompiledBrandArtifact,
-  profileId: string,
-  modeId: string,
-) {
-  await verifyBrandArtifact(artifact);
-  const scope = getCompiledScope(artifact, profileId, modeId);
-  const fontPreloads = getCompiledScopeFontPreloads(artifact, profileId, modeId);
+const branding = await resolveBranding({
+  // This identity is trusted host configuration and is also verified against
+  // the response. The RPC binding derives authority from its static ctx.props.
+  workspaceId: WORKSPACE_ID,
+  modeId: requestedMode,
+  client: createServiceBindingBrandingRuntimeClient({
+    binding: env.BRANDING_RUNTIME,
+  }),
+  verifier: verifyWithPinnedPublicKey,
+  embeddedFallback,
+  allowedAssetOrigins: ["https://assets.ui.le-mn.com"],
+  timeoutMs: 1500,
+});
 
-  return {
-    fontPreloads,
-    criticalCss: artifact.criticalCss,
-    scope,
-    bootstrap: serializeBrandBootstrap(artifact, profileId, modeId),
-  };
-}
+const ssr = createBrandingSsrParts(branding, { nonce });
+// Apply ssr.htmlAttributes, append ssr.headMarkup before app markup,
+// and emit ssr.bootstrapMarkup as non-executable JSON.
+assertBrandingHydrationIdentity(
+  branding.compiledHash,
+  JSON.parse(clientBootstrapText),
+);
 ```
 
-Render each `fontPreloads` entry with its exact `rel`, `href`, `as`, `type`,
-`crossOrigin`, and `integrity` attributes before the critical style. Do not
-preload resources from another Profile or resources marked as preferred.
+The RPC binding exposes only `resolveBranding`, `exchangeBrandingPreview`, and
+`resolveBrandingPreview`. It is not an anonymous `Fetcher`, does not call the
+HTTP routes, and does not receive a reusable runtime credential. Use
+`createHttpsBrandingRuntimeClient` only for an external server and provide its
+`WorkspaceRuntimeCredential` from server secret/configuration storage.
 
-`criticalCss` is safe only after verification and because it came from the
-version-compatible compiler. Escape the bootstrap for its exact HTML context;
-do not interpolate raw source JSON, asset URLs, or untrusted strings into HTML.
+Use exact releases:
 
-## Cache and fallback
+```bash
+pnpm add @lemn-ltd/brand-contract@1.0.0 @lemn-ltd/brand-runtime@0.1.0 @lemn-ltd/ui@0.3.1
+```
 
-Use a bounded server cache keyed by assignment sequence, revision, Profile, and
-mode. Cache only verified immutable artifacts. Keep a previously verified
-compatible last-known-good artifact and an embedded compatible branded fallback
-for cold-start/control-plane failure.
+## Active fallback
 
-Resolution order:
+Every release embeds one signed, compatible, Workspace-bound branded fallback
+exported by AgentOps. Active resolution order is deliberately bounded:
 
-1. current verified assignment artifact;
-2. verified compatible last-known-good for that assignment lineage;
-3. embedded verified compatible branded fallback;
-4. fail closed with an explicitly branded service-unavailable response.
+1. current verified active runtime object;
+2. verified embedded branded fallback;
+3. fail closed with an explicitly branded unavailable response.
 
-Never silently use a hash-invalid artifact, an unauthorized Profile, a generic
-KV blob, a provider default, or unscoped package fallback as production
-recovery. Mutable branding state remains authoritative in transactional control
-plane storage; KV may only cache immutable/compatibility data.
+There is no second mutable cache or recovery authority. A timeout, invalid
+response, incompatible compiler, failed signature, or hash mismatch must emit
+sanitized fallback telemetry. Never use source JSON, generic KV, provider
+defaults, or package fallback tokens as production recovery.
 
-## Workload security
+## Preview
 
-- Give each consumer a project/environment-scoped runtime grant, not database,
-  publication, asset-store, queue, or admin credentials.
-- Authenticate the workload and authorize the requested project/environment/
-  slot on every resolution.
-- Do not expose the server credential, capability token, unpublished source
-  contract, unauthorized Profiles, or control-plane internals to the browser.
-- Log only safe identifiers, assignment sequence, revision, hashes, fallback
-  reason, latency, and correlation ID. Never log artifacts, source JSON, cookies,
-  assertions, tokens, or secrets.
+A hosted/local preview is pinned to an exact definition hash and uses a
+short-lived, session-bound, one-use handoff. The clean browser URL contains no
+credential and browser storage contains no reusable secret. Preview resolution
+is `no-store`; expiry, revocation, or mismatch renders an explicit preview
+unavailable state. It never silently falls back to active branding.
 
-## Profile/mode switching
+## Fonts, assets, and CSP
 
-A browser action requests a host-owned server transition. The host validates the
-choice, stores it in a secure cookie or server state, and returns the next
-server-rendered response with the complete verified scope. A client navigation
-may atomically replace a preverified complete scope, but it must not mutate a
-subset of global variables or synthesize a brand locally.
+Emit only the verified selected mode's managed font preloads. Add exact font
+and asset origins returned by the runtime to CSP; require immutable URLs,
+integrity where defined, correct CORS, and long-lived caching. System fonts
+require no network. A managed font download still happens in the browser even
+when HTML is server-rendered.
 
 ## Empirical acceptance
 
-For every SSR consumer and both light/dark modes, capture evidence that:
+For active, preview, and fallback paths in both supported modes, capture that:
 
-- JavaScript disabled still returns branded content with critical scoped CSS;
-- the first response contains the expected scope attributes and color scheme;
-- server bootstrap and artifact expose the same `compiledHash`;
-- no direct provider CSS/default first frame appears;
-- unauthorized project/Profile requests fail safely;
-- a tampered artifact is rejected;
-- timeout uses only the verified last-known-good or embedded branded fallback;
-- hydration reports no brand/hash mismatch;
-- multiple scopes can coexist without leaking semantic values;
-- accessibility and contrast checks pass for the selected scope.
+- JavaScript disabled returns branded content with critical scoped CSS;
+- the first response already contains exact attributes and compiled hash;
+- bootstrap and server resolution identities match;
+- no provider-default frame appears;
+- cross-Workspace and disallowed-mode requests fail safely;
+- tampered objects/signatures/assets are rejected;
+- timeout uses only the verified embedded fallback;
+- preview expiry is explicit and never becomes active branding; and
+- hydration, accessibility, contrast, CSP, font, and asset checks pass.
 
-Run the consumer's unit/contract/build suite plus deployed no-JavaScript and
-authenticated/unauthenticated smokes against the delivered source revision.
-Record actual commands, URLs, release identity, and result; do not claim stale
-evidence from another commit.
-
-## Incident checks
-
-When a branded page is wrong or unbranded:
-
-1. Compare the response's assignment sequence, revision/Profile/mode, scope ID,
-   and compiled hash with the authorized runtime resolution.
-2. Confirm critical CSS precedes branded markup and the exact attributes wrap
-   every component surface.
-3. Check compatibility/integrity rejection and fallback telemetry.
-4. Verify the workload grant and allowed Profiles without reading secret values.
-5. Roll back the assignment only through the authorized audited control-plane
-   operation; never patch CSS or provider code in the consumer.
+Record the exact package versions, commit, commands, URLs, and results. Do not
+reuse evidence from another revision.

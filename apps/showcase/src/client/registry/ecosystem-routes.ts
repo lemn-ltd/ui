@@ -17,6 +17,6 @@ export const ECOSYSTEM_ROUTES = [
 	{
 		path: "/brand-studio",
 		label: "Brand Studio",
-		summary: "Ephemeral BrandProject authoring and compiled preview.",
+		summary: "Ephemeral BrandingDefinition authoring and compiled preview.",
 	},
 ] as const;

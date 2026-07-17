@@ -26,6 +26,9 @@ const uiPackage = JSON.parse(
 const brandContractPackage = JSON.parse(
 	await readFile(resolve(root, "packages/brand-contract/package.json"), "utf8"),
 ) as UnknownRecord;
+const brandRuntimePackage = JSON.parse(
+	await readFile(resolve(root, "packages/brand-runtime/package.json"), "utf8"),
+) as UnknownRecord;
 const brandStudioPackage = JSON.parse(
 	await readFile(resolve(root, "packages/brand-studio/package.json"), "utf8"),
 ) as UnknownRecord;
@@ -180,11 +183,12 @@ test("package-set lifecycle builds in order then requires dist and a strict cons
 	const scripts = record(rootPackage.scripts, "root scripts");
 	assert.equal(
 		scripts["build:packages:release"],
-		"pnpm --filter @lemn-ltd/brand-contract run build && pnpm --filter @lemn-ltd/ui run build && pnpm --filter @lemn-ltd/brand-studio run build",
+		"pnpm --filter @lemn-ltd/brand-contract run build && pnpm --filter @lemn-ltd/ui run build && pnpm --filter @lemn-ltd/brand-runtime run build && pnpm --filter @lemn-ltd/brand-studio run build",
 	);
 	for (const [label, manifest] of [
 		["brand contract", brandContractPackage],
 		["UI", uiPackage],
+		["brand runtime", brandRuntimePackage],
 		["brand studio", brandStudioPackage],
 	] as const) {
 		assert.equal(
@@ -204,7 +208,12 @@ test("publish-ready verification follows Changesets versions and fails closed wi
 		resolve(tmpdir(), "lemn-ui-dist-contract-"),
 	);
 	try {
-		for (const directory of ["brand-contract", "ui", "brand-studio"]) {
+		for (const directory of [
+			"brand-contract",
+			"ui",
+			"brand-runtime",
+			"brand-studio",
+		]) {
 			await mkdir(resolve(temporaryRoot, "packages", directory), {
 				recursive: true,
 			});
@@ -242,7 +251,25 @@ test("publish-ready verification follows Changesets versions and fails closed wi
 				"brand-contract",
 				"@lemn-ltd/brand-contract",
 				"0.2.3",
-				{ ".": { types: "./dist/index.d.ts", default: "./dist/index.js" } },
+				{
+					".": { types: "./dist/index.d.ts", default: "./dist/index.js" },
+					"./system-brandings": {
+						types: "./dist/system-brandings.d.ts",
+						default: "./dist/system-brandings.js",
+					},
+				},
+			],
+			[
+				"brand-runtime",
+				"@lemn-ltd/brand-runtime",
+				"0.1.4",
+				{
+					".": { types: "./dist/index.d.ts", default: "./dist/index.js" },
+					"./server": {
+						types: "./dist/server.d.ts",
+						default: "./dist/server.js",
+					},
+				},
 			],
 			[
 				"brand-studio",
@@ -250,10 +277,6 @@ test("publish-ready verification follows Changesets versions and fails closed wi
 				"0.2.1",
 				{
 					".": { types: "./dist/index.d.ts", default: "./dist/index.js" },
-					"./presets": {
-						types: "./dist/presets.d.ts",
-						default: "./dist/presets.js",
-					},
 					"./styles.css": "./dist/styles.css",
 				},
 			],
@@ -273,17 +296,27 @@ test("publish-ready verification follows Changesets versions and fails closed wi
 					},
 					...(directory === "brand-studio"
 						? {
-								dependencies: { "@lemn-ltd/brand-contract": "workspace:0.2.3" },
+								dependencies: {
+									"@lemn-ltd/brand-contract": "workspace:0.2.3",
+								},
 								peerDependencies: { "@lemn-ltd/ui": "0.4.9" },
 								devDependencies: { "@lemn-ltd/ui": "workspace:0.4.9" },
 							}
-						: {}),
+						: directory === "brand-runtime"
+							? {
+									dependencies: {
+										"@lemn-ltd/brand-contract": "workspace:0.2.3",
+									},
+								}
+							: {}),
 				}),
 			);
 		}
 		for (const relativePath of [
 			"packages/brand-contract/dist/index.d.ts",
 			"packages/brand-contract/dist/index.js",
+			"packages/brand-contract/dist/system-brandings.d.ts",
+			"packages/brand-contract/dist/system-brandings.js",
 			"packages/ui/dist/index.d.ts",
 			"packages/ui/dist/index.js",
 			"packages/ui/dist/tokens.d.ts",
@@ -293,10 +326,12 @@ test("publish-ready verification follows Changesets versions and fails closed wi
 			"packages/ui/dist/blocks/index.d.ts",
 			"packages/ui/dist/blocks/index.js",
 			"packages/ui/dist/styles.css",
+			"packages/brand-runtime/dist/index.d.ts",
+			"packages/brand-runtime/dist/index.js",
+			"packages/brand-runtime/dist/server.d.ts",
+			"packages/brand-runtime/dist/server.js",
 			"packages/brand-studio/dist/index.d.ts",
 			"packages/brand-studio/dist/index.js",
-			"packages/brand-studio/dist/presets.d.ts",
-			"packages/brand-studio/dist/presets.js",
 			"packages/brand-studio/dist/styles.css",
 		]) {
 			await mkdir(resolve(temporaryRoot, relativePath, ".."), {
@@ -308,10 +343,11 @@ test("publish-ready verification follows Changesets versions and fails closed wi
 			packages: [
 				"@lemn-ltd/brand-contract@0.2.3",
 				"@lemn-ltd/ui@0.4.9",
+				"@lemn-ltd/brand-runtime@0.1.4",
 				"@lemn-ltd/brand-studio@0.2.1",
 			],
 		});
-		await rm(resolve(temporaryRoot, "packages/brand-studio/dist/presets.js"));
+		await rm(resolve(temporaryRoot, "packages/brand-runtime/dist/server.js"));
 		await assert.rejects(
 			verifyPackageDists(temporaryRoot),
 			/built dist is missing/u,
