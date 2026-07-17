@@ -44,7 +44,10 @@ fonts compile to zero network resources. Managed fonts use immutable WOFF2
 objects from `fonts.ui.le-mn.com`, exact SHA-256 and SRI metadata, pinned
 licenses, and a required system fallback. `preferred` accepts the fallback for
 fast rendering. `required` emits SSR preload metadata and a blocking font-display
-period, while retaining the emergency fallback for permanent failure.
+period, while retaining the emergency fallback for permanent failure. Both
+managed modes expose their exact verified HTTPS origins through
+`getCompiledModeFontResourceOrigins` so server CSP can authorize every emitted
+`@font-face` without turning `preferred` resources into preloads.
 
 Workspace persistence, authorization, publication, activation, preview
 sessions, and runtime credentials belong to the host platform.

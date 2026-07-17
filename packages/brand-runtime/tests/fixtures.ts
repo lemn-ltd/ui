@@ -49,6 +49,22 @@ export async function compiledObjectWithAsset(): Promise<CompiledBrandingObject>
 	return signDefinition(definition);
 }
 
+export async function compiledObjectWithManagedFont(
+	fidelity: "preferred" | "required",
+): Promise<CompiledBrandingObject> {
+	const template = getSystemBrandingTemplate("aster-vault", 1);
+	const definition = structuredClone(template.definition);
+	definition.typography.body = {
+		source: "managed",
+		ref: "managed.inter",
+		fidelity,
+		emergencyFallbackRef: "system.ui",
+		weights: [400, 500, 600],
+		styles: ["normal"],
+	};
+	return signDefinition(definition);
+}
+
 async function signDefinition(input: unknown): Promise<CompiledBrandingObject> {
 	const result = await compileBrandingDefinition(input);
 	if (!result.ok) throw new Error("System branding fixture must compile");
@@ -105,5 +121,19 @@ export async function envelopeWithAsset(
 		assetDeliveries: {
 			"primary-logo": { href },
 		},
+	};
+}
+
+export async function envelopeWithManagedFont(
+	fidelity: "preferred" | "required",
+): Promise<RuntimeBrandingEnvelope> {
+	const base = await envelope("active");
+	const object = await compiledObjectWithManagedFont(fidelity);
+	return {
+		...base,
+		definitionHash: object.artifact.definitionHash,
+		compiledHash: object.compiledHash,
+		byteHash: object.byteHash,
+		compiledObject: object,
 	};
 }

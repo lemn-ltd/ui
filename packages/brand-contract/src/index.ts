@@ -29,6 +29,7 @@ export {
 	getCompiledMode,
 	getCompiledModeCriticalCss,
 	getCompiledModeFontPreloads,
+	getCompiledModeFontResourceOrigins,
 	getCompiledModeFontResources,
 	type RechartsBrandingTheme,
 	serializeBrandingBootstrap,

@@ -6,6 +6,7 @@ import {
 	fontCatalog,
 	getCompiledMode,
 	getCompiledModeFontPreloads,
+	getCompiledModeFontResourceOrigins,
 	getCompiledModeFontResources,
 	MANAGED_FONT_REFS,
 	SYSTEM_FONT_REFS,
@@ -73,6 +74,28 @@ describe("font governance and safe serialization", () => {
 		});
 		expect(result.artifact.fontCss).toBe("");
 		expect(getCompiledModeFontPreloads(result.artifact, "light")).toEqual([]);
+		expect(
+			getCompiledModeFontResourceOrigins(result.artifact, "light"),
+		).toEqual([]);
+	});
+
+	it("exposes preferred managed font origins without forcing a preload", async () => {
+		const definition = makeBrandingDefinition();
+		definition.typography.body = {
+			source: "managed",
+			ref: "managed.inter",
+			fidelity: "preferred",
+			emergencyFallbackRef: "system.ui",
+			weights: [400, 500, 600],
+			styles: ["normal"],
+		};
+		const result = await compileBrandingDefinition(definition);
+		if (!result.ok) throw new Error("Managed fixture must compile");
+		expect(getCompiledModeFontPreloads(result.artifact, "light")).toEqual([]);
+		expect(
+			getCompiledModeFontResourceOrigins(result.artifact, "light"),
+		).toEqual(["https://fonts.ui.le-mn.com"]);
+		expect(result.artifact.fontCss).toContain("font-display: optional");
 	});
 
 	it("emits one shared managed family and SSR preload for required typography", async () => {
@@ -99,10 +122,35 @@ describe("font governance and safe serialization", () => {
 				crossOrigin: "anonymous",
 			}),
 		]);
+		expect(
+			getCompiledModeFontResourceOrigins(result.artifact, "light"),
+		).toEqual(["https://fonts.ui.le-mn.com"]);
 		expect(result.artifact.fontCss).toContain("font-display: block");
 		expect(
 			getCompiledMode(result.artifact, "light").tokens["--lemn-font-body"],
 		).toContain("Lemn Managed Inter");
+	});
+
+	it("rejects credentialed font resources before projecting a CSP origin", async () => {
+		const definition = makeBrandingDefinition();
+		definition.typography.body = {
+			source: "managed",
+			ref: "managed.inter",
+			fidelity: "preferred",
+			emergencyFallbackRef: "system.ui",
+			weights: [400],
+			styles: ["normal"],
+		};
+		const result = await compileBrandingDefinition(definition);
+		if (!result.ok) throw new Error("Managed fixture must compile");
+		const artifact = structuredClone(result.artifact);
+		const resource = artifact.fontResources[0];
+		if (!resource) throw new Error("Managed fixture needs a font resource");
+		(resource as { url: string }).url =
+			"https://user:secret@fonts.ui.le-mn.com/font.woff2";
+		expect(() => getCompiledModeFontResourceOrigins(artifact, "light")).toThrow(
+			"canonical HTTPS",
+		);
 	});
 
 	it("blocks unsafe font input and escapes bootstrap-sensitive characters", () => {

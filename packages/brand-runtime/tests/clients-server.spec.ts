@@ -6,10 +6,12 @@ import {
 import { resolveBranding } from "../src/resolve.js";
 import {
 	assertBrandingHydrationIdentity,
+	brandingContentSecurityPolicySources,
 	createBrandingSsrParts,
 } from "../src/server.js";
 import {
 	envelope,
+	envelopeWithManagedFont,
 	PREVIEW_DRAFT_TITLE,
 	PREVIEW_SESSION_BEARER,
 	PREVIEW_SESSION_ID,
@@ -343,6 +345,92 @@ describe("server transports and SSR helpers", () => {
 		expect(() =>
 			assertBrandingHydrationIdentity("0".repeat(64), resolved.bootstrap),
 		).toThrow();
+	});
+
+	it("allows preferred managed font CSS through CSP without preloading it", async () => {
+		const active = await envelopeWithManagedFont("preferred");
+		const fallback = await envelope("embedded-fallback");
+		const resolved = await resolveBranding({
+			workspaceId: WORKSPACE_ID,
+			client: { resolve: async () => active },
+			verifier,
+			embeddedFallback: fallback,
+		});
+		const parts = createBrandingSsrParts(resolved);
+
+		expect(resolved.fontPreloads).toEqual([]);
+		expect(resolved.fontResourceOrigins).toEqual([
+			"https://fonts.ui.le-mn.com",
+		]);
+		expect(resolved.criticalCss).toContain("font-display: optional");
+		expect(parts.headMarkup).not.toContain('rel="preload"');
+		expect(brandingContentSecurityPolicySources(resolved).fontSrc).toEqual([
+			"https://fonts.ui.le-mn.com",
+		]);
+	});
+
+	it("preloads required managed fonts and emits deterministic credential-free SSR", async () => {
+		const active = await envelopeWithManagedFont("required");
+		const fallback = await envelope("embedded-fallback");
+		const fetch = vi.fn(
+			async () =>
+				new Response(JSON.stringify(active), {
+					status: 200,
+					headers: { "Content-Type": "application/json" },
+				}),
+		) as unknown as typeof globalThis.fetch;
+		const client = createHttpsBrandingRuntimeClient({
+			baseUrl: "https://runtime.example.test",
+			runtimeCredential: RUNTIME_CREDENTIAL,
+			fetch,
+		});
+		const resolved = await resolveBranding({
+			workspaceId: WORKSPACE_ID,
+			client,
+			verifier,
+			embeddedFallback: fallback,
+		});
+		const first = {
+			parts: createBrandingSsrParts(resolved, { nonce: "nonce-12345678" }),
+			csp: brandingContentSecurityPolicySources(resolved),
+		};
+		const second = {
+			parts: createBrandingSsrParts(resolved, { nonce: "nonce-12345678" }),
+			csp: brandingContentSecurityPolicySources(resolved),
+		};
+		const serialized = JSON.stringify(first);
+
+		expect(resolved.fontPreloads).toHaveLength(1);
+		expect(resolved.criticalCss).toContain("font-display: block");
+		expect(first.parts.headMarkup).toContain('rel="preload"');
+		expect(first.csp.fontSrc).toEqual(["https://fonts.ui.le-mn.com"]);
+		expect(first).toEqual(second);
+		expect(serialized).not.toContain(RUNTIME_CREDENTIAL);
+		expect(serialized).not.toContain("Authorization");
+	});
+
+	it("rejects unverified or credentialed font origins at the CSP boundary", async () => {
+		const active = await envelopeWithManagedFont("required");
+		const fallback = await envelope("embedded-fallback");
+		const resolved = await resolveBranding({
+			workspaceId: WORKSPACE_ID,
+			client: { resolve: async () => active },
+			verifier,
+			embeddedFallback: fallback,
+		});
+
+		expect(() =>
+			brandingContentSecurityPolicySources({
+				...resolved,
+				fontResourceOrigins: ["https://user:secret@fonts.ui.le-mn.com"],
+			}),
+		).toThrow("credential-free HTTPS");
+		expect(() =>
+			brandingContentSecurityPolicySources({
+				...resolved,
+				fontResourceOrigins: [],
+			}),
+		).toThrow("missing from the verified resource policy");
 	});
 });
 

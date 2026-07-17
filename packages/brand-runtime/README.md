@@ -36,7 +36,10 @@ request body.
 
 `createBrandingSsrParts` emits the selected color scheme, immutable font
 preloads, critical scoped CSS, and the exact hydration bootstrap before host
-markup. Consumers must render those parts during SSR; a browser repair fetch is
-not a supported integration.
+markup. `brandingContentSecurityPolicySources` derives `font-src` from every
+verified selected-mode font resource origin, including non-preloaded
+`preferred` fonts, and rejects credentialed or non-HTTPS origins. Consumers
+must render those parts during SSR; a browser repair fetch is not a supported
+integration.
 
 Use exact package versions; never install `latest`.

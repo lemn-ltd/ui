@@ -112,6 +112,8 @@ export type ResolvedBranding = {
 	readonly criticalCss: string;
 	readonly bootstrap: BrandingBootstrap;
 	readonly fontPreloads: readonly CompiledFontPreload[];
+	/** Exact verified HTTPS origins required by selected-mode @font-face rules. */
+	readonly fontResourceOrigins: readonly string[];
 	readonly assetReferences: readonly BrandingAssetReference[];
 	readonly signature: string;
 	readonly signatureKeyId: string;

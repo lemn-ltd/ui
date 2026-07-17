@@ -2,6 +2,7 @@ import {
 	getCompiledMode,
 	getCompiledModeCriticalCss,
 	getCompiledModeFontPreloads,
+	getCompiledModeFontResourceOrigins,
 	serializeBrandingBootstrap,
 	verifyCompiledBrandingObject,
 } from "@lemn-ltd/brand-contract";
@@ -225,6 +226,10 @@ async function verifyAndProject(
 		criticalCss: getCompiledModeCriticalCss(artifact, mode.modeId),
 		bootstrap,
 		fontPreloads: getCompiledModeFontPreloads(artifact, mode.modeId),
+		fontResourceOrigins: getCompiledModeFontResourceOrigins(
+			artifact,
+			mode.modeId,
+		),
 		assetReferences: projectAssets(envelope, allowedAssetOrigins),
 		signature: envelope.compiledObject.signature.value,
 		signatureKeyId: envelope.compiledObject.signature.keyId,

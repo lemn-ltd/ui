@@ -63,12 +63,75 @@ export function brandingContentSecurityPolicySources(
 } {
 	const fontSrc = new Set<string>();
 	const imageSrc = new Set<string>();
-	for (const preload of branding.fontPreloads) addOrigin(preload.href, fontSrc);
+	for (const origin of branding.fontResourceOrigins) {
+		fontSrc.add(parseExactHttpsOrigin(origin, "font resource"));
+	}
+	for (const preload of branding.fontPreloads) {
+		const preloadOrigin = parseHttpsResourceOrigin(
+			preload.href,
+			"font preload",
+		);
+		if (!fontSrc.has(preloadOrigin)) {
+			throw new BrandingRuntimeError(
+				"BRANDING_RUNTIME_INTEGRITY_FAILED",
+				"A font preload origin is missing from the verified resource policy",
+			);
+		}
+	}
 	for (const asset of branding.assetReferences) addOrigin(asset.href, imageSrc);
 	return Object.freeze({
 		fontSrc: Object.freeze([...fontSrc].sort()),
 		imageSrc: Object.freeze([...imageSrc].sort()),
 	});
+}
+
+function parseExactHttpsOrigin(value: string, label: string): string {
+	const origin = parseHttpsResourceOrigin(value, label);
+	if (origin !== value) {
+		throw new BrandingRuntimeError(
+			"BRANDING_RUNTIME_INTEGRITY_FAILED",
+			`The verified ${label} origin is invalid`,
+		);
+	}
+	return origin;
+}
+
+function parseHttpsResourceOrigin(value: string, label: string): string {
+	if (hasControlCharacters(value) || value.includes("\\")) {
+		throw new BrandingRuntimeError(
+			"BRANDING_RUNTIME_INTEGRITY_FAILED",
+			`The verified ${label} URL is invalid`,
+		);
+	}
+	let url: URL;
+	try {
+		url = new URL(value);
+	} catch (error) {
+		throw new BrandingRuntimeError(
+			"BRANDING_RUNTIME_INTEGRITY_FAILED",
+			`The verified ${label} URL is invalid`,
+			error,
+		);
+	}
+	if (
+		url.protocol !== "https:" ||
+		url.username.length > 0 ||
+		url.password.length > 0
+	) {
+		throw new BrandingRuntimeError(
+			"BRANDING_RUNTIME_INTEGRITY_FAILED",
+			`The verified ${label} URL must use credential-free HTTPS`,
+		);
+	}
+	return url.origin;
+}
+
+function hasControlCharacters(value: string): boolean {
+	for (const character of value) {
+		const codePoint = character.codePointAt(0);
+		if (codePoint !== undefined && codePoint < 32) return true;
+	}
+	return false;
 }
 
 function assertResolvedBrandingIdentity(branding: ResolvedBranding): void {

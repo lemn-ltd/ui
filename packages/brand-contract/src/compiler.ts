@@ -428,6 +428,22 @@ export function getCompiledModeFontPreloads(
 	return Object.freeze([...byUrl.values()]);
 }
 
+export function getCompiledModeFontResourceOrigins(
+	artifact: CompiledBrandingArtifact,
+	modeId: string = artifact.defaultModeId,
+): readonly string[] {
+	const declaredOrigins = new Set(artifact.fontNetworkPolicy.allowedOrigins);
+	const origins = new Set<string>();
+	for (const resource of getCompiledModeFontResources(artifact, modeId)) {
+		const origin = parseManagedFontResourceOrigin(resource.url);
+		if (!declaredOrigins.has(origin)) {
+			throw new Error("Compiled font resource origin is not allowed by policy");
+		}
+		origins.add(origin);
+	}
+	return Object.freeze([...origins].sort());
+}
+
 export function assertCompatibleBrandingArtifact(
 	artifact: CompiledBrandingArtifact,
 ): void {
@@ -461,6 +477,7 @@ export async function verifyBrandingArtifact(
 	artifact: CompiledBrandingArtifact,
 ): Promise<void> {
 	assertCompatibleBrandingArtifact(artifact);
+	verifyFontNetworkPolicy(artifact);
 	const { compiledHash, ...payload } = artifact;
 	const actualHash = await sha256(canonicalJson(payload));
 	if (actualHash !== compiledHash) {
@@ -778,7 +795,9 @@ function compileFontNetworkPolicy(
 	resources: readonly CompiledFontResource[],
 ): FontNetworkPolicy {
 	const origins = [
-		...new Set(resources.map((resource) => new URL(resource.url).origin)),
+		...new Set(
+			resources.map((resource) => parseManagedFontResourceOrigin(resource.url)),
+		),
 	].sort();
 	return Object.freeze({
 		mode: resources.length === 0 ? "none" : "managed-immutable-cdn",
@@ -786,6 +805,56 @@ function compileFontNetworkPolicy(
 		allowedOrigins: Object.freeze(origins),
 		emergencyFallbackRequired: true,
 	});
+}
+
+function verifyFontNetworkPolicy(artifact: CompiledBrandingArtifact): void {
+	const expected = compileFontNetworkPolicy(artifact.fontResources);
+	if (
+		artifact.fontNetworkPolicy.mode !== expected.mode ||
+		artifact.fontNetworkPolicy.requiresNetwork !== expected.requiresNetwork ||
+		artifact.fontNetworkPolicy.emergencyFallbackRequired !== true ||
+		artifact.fontNetworkPolicy.allowedOrigins.length !==
+			expected.allowedOrigins.length ||
+		artifact.fontNetworkPolicy.allowedOrigins.some(
+			(origin, index) => origin !== expected.allowedOrigins[index],
+		)
+	) {
+		throw new Error("Compiled font network policy is invalid");
+	}
+	for (const modeId of artifact.allowedModeIds) {
+		getCompiledModeFontResourceOrigins(artifact, modeId);
+	}
+}
+
+function parseManagedFontResourceOrigin(value: string): string {
+	if (hasControlCharacters(value) || value.includes("\\")) {
+		throw new Error("Compiled font resource URL is invalid");
+	}
+	let url: URL;
+	try {
+		url = new URL(value);
+	} catch {
+		throw new Error("Compiled font resource URL is invalid");
+	}
+	if (
+		url.protocol !== "https:" ||
+		url.username.length > 0 ||
+		url.password.length > 0 ||
+		url.search.length > 0 ||
+		url.hash.length > 0 ||
+		url.href !== value
+	) {
+		throw new Error("Compiled font resource URL must be canonical HTTPS");
+	}
+	return url.origin;
+}
+
+function hasControlCharacters(value: string): boolean {
+	for (const character of value) {
+		const codePoint = character.codePointAt(0);
+		if (codePoint !== undefined && codePoint < 32) return true;
+	}
+	return false;
 }
 
 function fontFaceCss(resource: CompiledFontResource): string {

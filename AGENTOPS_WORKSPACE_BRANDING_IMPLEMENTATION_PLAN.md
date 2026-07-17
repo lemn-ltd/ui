@@ -996,8 +996,8 @@ Workspace-scoped credentials for Codex, Claude, and automation.
 
 [Generate MCP token]
 
-Codex       aob_ws_91f2…   Active   Last used 2 min   Expires Oct 15
-Claude      aob_ws_4ca8…   Active   Never used        Expires Oct 15
+Codex       aob_mcp_91f2…  Active   Last used 2 min   Expires Oct 15
+Claude      aob_mcp_4ca8…  Active   Never used        Expires Oct 15
 
 [Rotate] [Revoke]
 ```
@@ -1012,7 +1012,7 @@ Permissions: All branding MCP tools
 [Generate]
 
 This value is shown once.
-aob_ws_••••••••••••••••••••
+aob_mcp_••••••••••••••••••••
 [Copy token] [Done]
 ```
 
@@ -1446,4 +1446,3 @@ hidden abstractions:
 
 Any future introduction requires an explicit contract/version decision rather
 than a compatibility shim.
-
