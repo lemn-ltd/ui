@@ -106,6 +106,17 @@ export function BrandStudio({
 		setModeId(value.defaultModeId);
 	}, [modeId, value.defaultModeId, value.modes]);
 
+	useEffect(() => {
+		const activeTargets = previewTargets.filter(
+			(target) => target.status === "active",
+		);
+		setPreviewTargetId((current) =>
+			activeTargets.some((target) => target.id === current)
+				? current
+				: (activeTargets[0]?.id ?? ""),
+		);
+	}, [previewTargets]);
+
 	const effectiveReadOnly =
 		readOnly || draft.archived || draft.state !== "draft";
 	const resolvedModeId = value.modes[modeId] ? modeId : value.defaultModeId;
@@ -571,7 +582,7 @@ function renderEditor(context: EditorContext): ReactElement | null {
 				<Labeled label="Draft title">
 					<Input
 						defaultValue={draftTitle}
-						disabled={readOnly}
+						disabled={readOnly || !onDraftTitleChange}
 						key={draftTitle}
 						onBlur={(event) =>
 							onDraftTitleChange?.(

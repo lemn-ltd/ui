@@ -131,6 +131,34 @@ describe("BrandStudio", () => {
 		});
 	});
 
+	it("only enables draft title editing when the host supplies persistence ownership", () => {
+		const view = render(
+			<BrandStudio
+				draft={draft}
+				onChange={() => undefined}
+				value={initialDefinition()}
+			/>,
+		);
+		expect(
+			(screen.getByLabelText("Draft title") as HTMLInputElement).disabled,
+		).toBe(true);
+
+		const onDraftTitleChange = vi.fn();
+		view.rerender(
+			<BrandStudio
+				draft={draft}
+				onChange={() => undefined}
+				onDraftTitleChange={onDraftTitleChange}
+				value={initialDefinition()}
+			/>,
+		);
+		const titleInput = screen.getByLabelText("Draft title") as HTMLInputElement;
+		expect(titleInput.disabled).toBe(false);
+		fireEvent.change(titleInput, { target: { value: "Editorial direction" } });
+		fireEvent.blur(titleInput);
+		expect(onDraftTitleChange).toHaveBeenCalledWith("Editorial direction");
+	});
+
 	it("emits save, compare, preview, publication and archive host intents without executing them", async () => {
 		const intents: BrandStudioIntent[] = [];
 		function Harness() {
@@ -205,6 +233,113 @@ describe("BrandStudio", () => {
 			"publish-draft",
 			"archive-draft",
 		]);
+	});
+
+	it("selects the first active preview target when the host catalog arrives asynchronously", async () => {
+		const intents: BrandStudioIntent[] = [];
+		const view = render(
+			<BrandStudio
+				draft={draft}
+				onChange={() => undefined}
+				onIntent={(intent) => {
+					intents.push(intent);
+				}}
+				previewTargets={[]}
+				value={initialDefinition()}
+			/>,
+		);
+		const targetSelect = screen.getByLabelText(
+			"Preview target",
+		) as HTMLSelectElement;
+		expect(targetSelect.value).toBe("");
+		expect(targetSelect.disabled).toBe(true);
+
+		view.rerender(
+			<BrandStudio
+				draft={draft}
+				onChange={() => undefined}
+				onIntent={(intent) => {
+					intents.push(intent);
+				}}
+				previewTargets={[
+					{
+						id: "lunaria",
+						name: "Lunaria",
+						origin: "https://lunaria.example.test",
+						status: "active",
+					},
+				]}
+				value={initialDefinition()}
+			/>,
+		);
+
+		await waitFor(() => expect(targetSelect.value).toBe("lunaria"));
+		expect(targetSelect.disabled).toBe(false);
+		await waitFor(() =>
+			expect(
+				screen
+					.getByRole("button", { name: "Open preview" })
+					.hasAttribute("disabled"),
+			).toBe(false),
+		);
+		fireEvent.click(screen.getByRole("button", { name: "Open preview" }));
+		expect(intents.at(-1)).toMatchObject({
+			type: "create-preview",
+			targetId: "lunaria",
+		});
+	});
+
+	it("preserves a valid preview target selection when the host catalog changes", async () => {
+		const firstTargets = [
+			{
+				id: "lunaria",
+				name: "Lunaria",
+				origin: "https://lunaria.example.test",
+				status: "active" as const,
+			},
+			{
+				id: "lunaria-preview",
+				name: "Lunaria preview",
+				origin: "https://lunaria-preview.example.test",
+				status: "active" as const,
+			},
+		];
+		const view = render(
+			<BrandStudio
+				draft={draft}
+				onChange={() => undefined}
+				previewTargets={firstTargets}
+				value={initialDefinition()}
+			/>,
+		);
+		const targetSelect = screen.getByLabelText(
+			"Preview target",
+		) as HTMLSelectElement;
+		fireEvent.change(targetSelect, {
+			target: { value: "lunaria-preview" },
+		});
+		expect(targetSelect.value).toBe("lunaria-preview");
+
+		view.rerender(
+			<BrandStudio
+				draft={draft}
+				onChange={() => undefined}
+				previewTargets={[
+					...firstTargets,
+					{
+						id: "lunaria-local",
+						name: "Lunaria local",
+						origin: "http://localhost:3000",
+						status: "active",
+					},
+				]}
+				value={initialDefinition()}
+			/>,
+		);
+
+		await waitFor(() =>
+			expect(targetSelect.value).toBe("lunaria-preview"),
+		);
 	});
 
 	it("renders archived and publishing drafts read-only", async () => {
