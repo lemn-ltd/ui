@@ -480,8 +480,13 @@ Rules:
 - object keys are immutable and content-addressed;
 - writes use compare-and-create/conditional PUT;
 - Postgres stores object key, hash, ownership, lifecycle, and permissions;
-- objects include byte hash, semantic compiled hash, schema/compiler versions,
-  and a signature;
+- the private publication object includes the complete compiled artifact, byte
+  hash, semantic compiled hash, schema/compiler versions, and private-object
+  signature;
+- publication also creates one signed minimal runtime projection per allowed
+  mode; each has a canonical `projectionHash` and only public asset URLs with
+  exact SHA-256/SRI metadata, never source definitions, storage keys,
+  credentials, or another mode's configuration;
 - duplicate publication deliveries must verify and reuse an identical object;
 - incompatible content at an existing immutable key is an integrity failure;
   and
@@ -526,12 +531,15 @@ The consumer:
 2. verifies `definitionHash` and publishing state;
 3. compiles deterministically;
 4. fails if diagnostics contain blocking errors;
-5. conditionally writes the immutable R2 object;
-6. verifies stored bytes and compiled hash;
-7. locks the Branding row;
-8. allocates the next published version number;
-9. transitions the row to `published` with its R2 key/hash; and
-10. appends audit evidence.
+5. creates and signs one minimal mode projection for every allowed mode;
+6. conditionally writes the immutable private R2 publication object containing
+   the full artifact and signed mode projections;
+7. verifies stored bytes, compiled hash, every projection hash/signature, and
+   cross-mode publication identity;
+8. locks the Branding row;
+9. allocates the next published version number;
+10. transitions the row to `published` with its R2 key/hash; and
+11. appends audit evidence.
 
 Queue delivery is at-least-once. Event ID, source hash, immutable R2 key, state
 checks, idempotency records, and unique constraints must make duplicate
@@ -581,8 +589,8 @@ sequenceDiagram
     RT->>DB: Leer activeVersionId
     DB-->>RT: BrandingVersion publicada
     RT->>R2: Leer artefacto por compiledObjectKey
-    R2-->>RT: Branding compilado
-    RT-->>APP: CSS + bootstrap + fonts + hash
+    R2-->>RT: Objeto privado + proyecciones firmadas
+    RT-->>APP: Solo el mode firmado seleccionado
     APP->>APP: Renderizar componentes con branding
     APP-->>B: HTML ya completamente branded
 ```
@@ -596,10 +604,12 @@ For each SSR request, the runtime:
 2. reads `Branding.activeVersionId` from Postgres;
 3. resolves only a published version from the same Workspace;
 4. reads or reuses the immutable R2 object by key/hash;
-5. verifies signature, byte hash, compiled hash, schema, and compiler
-   compatibility;
-6. selects the requested allowed mode; and
-7. returns a minimal runtime projection, not the source definition.
+5. verifies private-object signature, byte hash, compiled hash, schema, and
+   compiler compatibility;
+6. selects the requested allowed, pre-signed mode and verifies its canonical
+   projection hash, signature, publication identity, and public assets; and
+7. returns only that minimal signed mode object, never the source definition or
+   full compiled object.
 
 The active pointer remains a Postgres read so activation is visible on the next
 SSR request. Immutable artifact payloads may be cached by `compiledHash` and
@@ -609,25 +619,41 @@ authority.
 ### 11.2 Runtime projection
 
 ```ts
-interface ResolvedBranding {
-  workspaceId: string
-  brandingVersionId: string
-  version: number
-  modeId: string
-  compiledHash: string
-  schemaVersion: number
-  compilerVersion: string
-  criticalCss: string
-  bootstrap: {
-    tokens: Record<string, string>
-    visualization: Record<string, unknown>
-    componentAppearance: Record<string, unknown>
+interface RuntimeBrandingEnvelope {
+  source: 'active' | 'preview'
+  modeObject: {
+    format: 'lemn.compiled-branding-mode'
+    formatVersion: 1
+    projectionHash: string
+    projection: {
+      workspaceId: string
+      brandingVersionId: string
+      version: number | null
+      schemaVersion: number
+      compilerVersion: string
+      definitionHash: string
+      compiledHash: string
+      defaultModeId: string
+      allowedModeIds: readonly string[]
+      modeId: string
+      modeHash: string
+      colorScheme: 'light' | 'dark'
+      criticalCss: string
+      bootstrap: BrandingBootstrap
+      fontPreloads: readonly FontPreload[]
+      fontResourceOrigins: readonly string[]
+      assetReferences: readonly PublicAssetReference[]
+    }
+    signature: ArtifactSignature
   }
-  fontPreloads: FontPreload[]
-  assetReferences: AssetReference[]
-  signature: string
 }
 ```
+
+`projectionHash` is SHA-256 over canonical JSON of `projection`. The signature
+payload binds Workspace, BrandingVersion, numeric version or preview draft,
+schema/compiler versions, definition/compiled/mode hashes, and
+`projectionHash`. The consumer recalculates the hash and verifies the signature;
+it does not trust transport metadata.
 
 ### 11.3 Consumer rendering
 
@@ -638,17 +664,20 @@ interface ResolvedBranding {
 - verify compatibility, signature, and hashes;
 - inject critical scoped CSS and mode before app markup;
 - emit font preloads and safe asset references;
-- serialize only the minimal hydration bootstrap;
-- hydrate with exactly the server-selected hash and mode;
+- serialize only a minimal hydration document containing the signed
+  `projectionHash` and selected-mode bootstrap;
+- carry `data-lemn-branding-projection-hash` and hydrate with exactly the
+  server-selected `projectionHash`, mode ID, and mode hash;
 - never fetch branding in a browser effect to repair the first render; and
 - never expose runtime or MCP credentials to the browser.
 
 ### 11.4 Modes
 
 Mode selection is host-owned. A secure host cookie selects an allowed mode;
-otherwise the server uses `defaultModeId`. The artifact may contain all modes,
-but the runtime response projects only the selected mode. The first delivery
-defaults to light when there is no persisted choice.
+otherwise the server uses the signed `defaultModeId`. The private artifact may
+contain all modes, but the runtime response contains only the pre-signed
+selected mode. The first delivery defaults to light when there is no persisted
+choice.
 
 ### 11.5 Runtime credentials
 
@@ -663,12 +692,17 @@ contract.
 
 ### 11.6 Embedded fallback
 
-Each consumer build embeds one exact, signed, compatible published artifact.
-Resolution order is:
+Each consumer build embeds one exact map of independently signed minimal mode
+objects for every allowed mode in a compatible published version. The map
+contains no full compiled artifact. Before any mode is used, the runtime
+verifies every signature/projection hash and requires all entries to share the
+same Workspace, BrandingVersion, version, schema/compiler,
+definition/compiled hashes, default mode, and allowed mode set. Resolution
+order is:
 
 ```text
-1. AgentOps active runtime artifact
-2. Embedded branded fallback
+1. AgentOps active signed mode object
+2. Embedded signed mode-object map
 3. Never an unbranded/provider-default render
 ```
 
@@ -1114,9 +1148,12 @@ public errors.
 - Publish as `@lemn-ltd/brand-runtime`.
 - Define private/runtime DTOs independent of Hono and Cloudflare bindings.
 - Provide server adapters for Service Binding and authenticated HTTPS.
-- Verify signature, byte hash, compiled hash, schema/compiler compatibility,
-  selected mode, and asset references.
-- Provide SSR helpers for CSS/preload/bootstrap injection and embedded fallback.
+- Parse a strict minimal mode envelope; recalculate its canonical projection
+  hash; verify signed Workspace/publication identity, compatibility, selected
+  mode, and exact public asset references. Never accept the full private
+  compiled object on the runtime boundary.
+- Provide SSR helpers for CSS/preload/bootstrap injection and an all-allowed-mode
+  embedded fallback map whose entries are verified before selection.
 - Provide preview-cookie parsing contracts without owning host cookies or
   routing.
 - Contain no React browser effect that resolves first-paint branding.
@@ -1369,11 +1406,14 @@ another Workspace or any human-only activation operation.
 - Active branding is resolved before the first HTML byte.
 - Activation appears on the next SSR reload without application deployment.
 - CSS, mode, fonts, provider adapter bootstrap, and component tokens agree.
-- Hydration uses the exact server hash and does not repair branding in an
-  effect.
+- Hydration uses the exact server `projectionHash` and mode identity and does
+  not repair branding in an effect.
 - Runtime credential never reaches the browser.
 - Runtime failure or incompatible artifacts use only a verified embedded
   branded fallback.
+- Runtime responses and fallback mode objects contain no source definition,
+  private storage key, full compiled artifact, credentials, or unselected-mode
+  configuration.
 - No test captures an unbranded/provider-default frame.
 
 ### UI and accessibility

@@ -16,15 +16,16 @@ battle-tested seleccionadas individualmente. El proveedor de registro conserva
 el comportamiento funcional. LEMN posee API publica, adaptador semantico,
 catalogos/blocks, provenance, conformance y release.
 
-La fuente es `BrandingDefinition` v1. Publicacion la compila a un objeto
-inmutable firmado; runtime entrega solo un mode verificado. Los componentes no
-parsean el JSON fuente.
+La fuente es `BrandingDefinition` v1. Publicacion guarda el objeto compilado
+completo e inmutable en R2 privado y firma una proyeccion minima por cada mode
+permitido. Runtime entrega solo la proyeccion verificada del mode seleccionado.
+Los componentes no parsean el JSON fuente.
 
 ## Responsabilidades
 
 | Limite | Posee | No posee |
 | --- | --- | --- |
-| `@lemn-ltd/brand-contract` | Schema, validation, compiler, diagnostics, envelope, tokens, provider themes | Persistence, auth, publicacion, seleccion activa |
+| `@lemn-ltd/brand-contract` | Schema, validation, compiler, diagnostics, artefacto privado y contratos de proyeccion firmada, tokens, provider themes | Persistence, auth, publicacion, seleccion activa |
 | `@lemn-ltd/brand-runtime` | Adapters server, verificacion, proyeccion, SSR, fallback embedded | Browser resolution, cookies, routing, authoring, credenciales |
 | `@lemn-ltd/ui` | Components, charts, styles, blocks, catalogs | APIs producto, auth, routing, estado global, JSON fuente |
 | `@lemn-ltd/brand-studio` | Wizard/preview controlado e intents | Fetching, secrets, persistence, autoridad de publicacion |
@@ -35,15 +36,17 @@ parsean el JSON fuente.
 
 ```text
 registry + providers -> @lemn-ltd/ui
-@lemn-ltd/brand-contract -> signed object -> AgentOps private runtime
-@lemn-ltd/brand-studio -> typed intents ----^            |
-@lemn-ltd/brand-runtime <- server consumer --------------+
+@lemn-ltd/brand-contract -> full object -> R2 privado
+                         -> signed mode projections -> AgentOps runtime
+@lemn-ltd/brand-studio -> typed intents --------------^
+@lemn-ltd/brand-runtime <- un mode para el SSR consumer
 ```
 
-Postgres es autoridad de estado; R2 privado almacena objetos
-content-addressed; caches por hash solo aceleran. Un Workspace tiene un Branding
-y multiples BrandingVersions. Solo un humano activa una version publicada.
-Light/dark son modes completos de la misma identidad, no familias de branding.
+Postgres es autoridad de estado; R2 privado almacena objetos completos
+content-addressed y sus proyecciones minimas firmadas; caches por hash solo
+aceleran. Un Workspace tiene un Branding y multiples BrandingVersions. Solo un
+humano activa una version publicada. Light/dark son modes completos de la misma
+identidad, no familias de branding.
 
 Plataforma frontend permanece fuera del contrato visual y los consumidores
 usan versiones publicadas exactas, nunca workspace links en produccion.

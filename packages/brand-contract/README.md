@@ -19,10 +19,19 @@ if (!result.ok) {
 ```
 
 Compilation produces deterministic definition, mode, artifact, and byte hashes;
-scoped semantic CSS; complete mode projections; Recharts and ECharts adapters;
+scoped semantic CSS; complete private artifacts; Recharts and ECharts adapters;
 font resources; asset metadata; diagnostics; and a minimal safe hydration
-bootstrap. Consumers select one allowed mode atomically and never parse source
-JSON in UI components.
+bootstrap. The full `CompiledBrandingObject` remains private publication storage
+and never crosses the runtime boundary.
+
+Publication creates one `CompiledBrandingModeObject` for each allowed mode. Its
+canonical `projectionHash` covers only the selected mode's critical CSS,
+bootstrap, font metadata, and public asset references. Its signature binds the
+Workspace, BrandingVersion, numeric publication version or preview draft,
+schema/compiler versions, definition/compiled/mode hashes, and
+`projectionHash`. It contains no source definition, private storage key,
+unselected mode configuration, or provider credential. Consumers verify one
+signed mode projection atomically and never parse source JSON in UI components.
 
 System brandings are available from the isolated, side-effect-free entrypoint:
 

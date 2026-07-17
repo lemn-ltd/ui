@@ -105,7 +105,8 @@ new schema major.
 ### `lemn-ltd/ui`
 
 - `@lemn-ltd/brand-contract@1.0.0`: schema, validation, canonicalization,
-  compiler, diagnostics, signed-object types, and immutable System brandings.
+  compiler, diagnostics, private full-artifact and signed minimal mode-object
+  contracts, and immutable System brandings.
 - `@lemn-ltd/ui@0.3.1`: provider-neutral components, visualizations, blocks,
   catalogs, semantic tokens, and provider adapters.
 - `@lemn-ltd/brand-runtime@0.1.0`: server-only resolution, signature/hash/schema
@@ -183,16 +184,29 @@ and `branding:resolve` permission. RPC inputs cannot override tenant identity.
 External servers use a least-privilege `WorkspaceRuntimeCredential` in
 server-only configuration.
 
-Active/fallback envelopes carry a positive numeric version. Preview envelopes
-use `version: null`, are labelled `draft`, and are pinned to one-use exchange,
-session, Workspace, exact definition hash, exact expiry, origin, and audience.
-The session bearer never enters HTML, URLs, browser storage, logs, or evidence.
+Publication keeps the full `CompiledBrandingObject` and source-adjacent data in
+private R2. It additionally materializes one signed minimal mode object per
+allowed mode. Each projection contains only its critical CSS, hydration
+bootstrap, font metadata, and public asset references; it contains no source
+definition, private storage key, provider credential, or other-mode
+configuration. Its canonical `projectionHash` is recalculated by the consumer,
+and the signature binds Workspace, BrandingVersion, numeric publication version
+or preview draft, schema/compiler versions, definition/compiled/mode hashes,
+and `projectionHash`.
 
-The server verifies signature, byte hash, definition/compiled/mode hashes,
-schema/compiler compatibility, Workspace, selected allowed mode, asset closure,
-and expiry before emitting CSS or markup. Active failure may use only the
-independently signed release-embedded branded fallback. Preview failure renders
-an explicit branded unavailable state and never falls through to active.
+Active envelopes carry exactly one positive-version mode object. Preview
+envelopes carry exactly one `version: null` mode object, are labelled `draft`,
+and are pinned to one-use exchange, session, Workspace, exact definition hash,
+exact expiry, origin, and audience. The session bearer never enters HTML, URLs,
+browser storage, logs, or evidence.
+
+The server verifies the strict envelope, canonical projection hash, signature,
+signed identity, compatibility, selected allowed mode, public asset closure,
+and expiry before emitting CSS or markup. Active failure may use only a
+release-embedded map of independently signed minimal mode objects. Every
+fallback mode is verified and must share one publication identity before any is
+selected. Preview failure renders an explicit branded unavailable state and
+never falls through to active.
 
 ## Providers, components, and blocks
 
@@ -226,7 +240,8 @@ SSR emits declarations and preloads but the browser still downloads font bytes.
 3. Publish immutable exact versions through the protected main release workflow.
 4. Install those registry versions in the simulator and Lunaria with frozen
    lockfiles and no aliases.
-5. Materialize an independently signed fallback/JWK pair from the runtime owner.
+5. Materialize an independently signed, all-allowed-mode fallback map and JWK
+   from the runtime owner without exporting the private full artifact.
 6. Deploy UI Docs, Showcase, Showcase Admin, simulator control plane/runtime,
    Branding MCP, and Lunaria from `main`.
 7. Demonstrate authoring, validation, publication, human activation, active SSR,

@@ -16,19 +16,20 @@ Patterns: `PAT-UI-BRAND-CONTRACT-001`, `PAT-UI-SSR-BRANDING-001`,
 A production browser must never render an unbranded component or raw provider
 default. Resolve, authorize, verify, and inject one published
 `BrandingVersion` mode before emitting the first HTML byte. Hydration confirms
-the exact compiled hash; it never repairs branding after paint.
+the exact signed `projectionHash`, mode ID, and mode hash; it never repairs
+branding after paint.
 
 ## Trusted inputs
 
 The server derives the Workspace from authenticated workload configuration or
 routing owned by the application. A browser-supplied Workspace ID is not
-authority. Mode selection is allowed only when the compiled artifact declares
-it selectable. A same-account Cloudflare host uses an RPC Service Binding to a
-dedicated `WorkerEntrypoint`. Deployment-owned static `ctx.props` authenticate
-the exact `workspaceId`, `consumerId`, and `branding:resolve` permission; no
-credential or browser-selected Workspace travels in the RPC call. An external
-server instead uses authenticated HTTPS with a least-privilege
-`WorkspaceRuntimeCredential` kept only on the server.
+authority. Mode selection is allowed only when the signed mode projections
+declare it selectable. A same-account Cloudflare host uses an RPC Service
+Binding to a dedicated `WorkerEntrypoint`. Deployment-owned static `ctx.props`
+authenticate the exact `workspaceId`, `consumerId`, and `branding:resolve`
+permission; no credential or browser-selected Workspace travels in the RPC
+call. An external server instead uses authenticated HTTPS with a
+least-privilege `WorkspaceRuntimeCredential` kept only on the server.
 
 MCP credentials, source definitions, reusable runtime credentials, and R2
 credentials never reach the browser.
@@ -37,14 +38,16 @@ credentials never reach the browser.
 
 1. Derive the trusted Workspace and requested allowed mode.
 2. Resolve through `@lemn-ltd/brand-runtime` with a strict deadline.
-3. Verify envelope shape, signature, byte hash, compiled hash, schema/compiler,
-   Workspace identity, mode, asset references, and expiry where applicable.
-4. Project one verified mode into critical CSS, preloads, safe assets, and a
-   minimal bootstrap.
+3. Verify the strict envelope, canonical `projectionHash`, signature,
+   definition/compiled/mode hashes, schema/compiler, signed Workspace and
+   publication identity, public asset references, and expiry where applicable.
+4. Read critical CSS, preloads, safe assets, and the minimal bootstrap only
+   from that verified mode projection.
 5. Emit preloads and critical style in `<head>` before branded markup.
 6. Apply every compiled HTML attribute to the branded scope.
 7. Embed the escaped non-executable bootstrap.
-8. Render components inside that scope and hydrate only when hashes match.
+8. Render components inside that scope and hydrate only when the projection
+   hash and mode identity match exactly.
 
 ```ts
 import {
@@ -74,7 +77,7 @@ const ssr = createBrandingSsrParts(branding, { nonce });
 // Apply ssr.htmlAttributes, append ssr.headMarkup before app markup,
 // and emit ssr.bootstrapMarkup as non-executable JSON.
 assertBrandingHydrationIdentity(
-  branding.compiledHash,
+  ssr.hydrationIdentity,
   JSON.parse(clientBootstrapText),
 );
 ```
@@ -93,8 +96,12 @@ pnpm add @lemn-ltd/brand-contract@1.0.0 @lemn-ltd/brand-runtime@0.1.0 @lemn-ltd/
 
 ## Active fallback
 
-Every release embeds one signed, compatible, Workspace-bound branded fallback
-exported by AgentOps. Active resolution order is deliberately bounded:
+Every release embeds an exact map of compatible, Workspace-bound, independently
+signed minimal mode projections exported by AgentOps. The complete private
+compiled object is not embedded. Before resolving active branding, the runtime
+verifies every fallback projection and requires identical publication identity,
+hashes, default mode, and allowed mode set. Active resolution order is
+deliberately bounded:
 
 1. current verified active runtime object;
 2. verified embedded branded fallback;
@@ -116,8 +123,9 @@ unavailable state. It never silently falls back to active branding.
 ## Fonts, assets, and CSP
 
 Emit only the verified selected mode's managed font preloads. Add exact font
-and asset origins returned by the runtime to CSP; require immutable URLs,
-integrity where defined, correct CORS, and long-lived caching. System fonts
+and public asset origins from its signed projection to CSP; require immutable
+URLs, signed SHA-256/SRI metadata, correct CORS, and long-lived caching. Private
+storage keys and credentials are never runtime asset references. System fonts
 require no network. A managed font download still happens in the browser even
 when HTML is server-rendered.
 
@@ -126,11 +134,15 @@ when HTML is server-rendered.
 For active, preview, and fallback paths in both supported modes, capture that:
 
 - JavaScript disabled returns branded content with critical scoped CSS;
-- the first response already contains exact attributes and compiled hash;
+- the first response already contains exact attributes, projection hash, and
+  mode identity;
 - bootstrap and server resolution identities match;
 - no provider-default frame appears;
 - cross-Workspace and disallowed-mode requests fail safely;
-- tampered objects/signatures/assets are rejected;
+- tampered projections, canonical hashes, signatures, identities, or assets are
+  rejected;
+- serialized runtime envelopes contain no source definition, storage key, full
+  compiled artifact, or unselected-mode configuration;
 - timeout uses only the verified embedded fallback;
 - preview expiry is explicit and never becomes active branding; and
 - hydration, accessibility, contrast, CSP, font, and asset checks pass.

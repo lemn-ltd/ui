@@ -16,18 +16,20 @@ Patterns: `PAT-UI-BRAND-CONTRACT-001`, `PAT-UI-SSR-BRANDING-001`,
 Un browser de produccion nunca renderiza un componente sin branding ni el
 default crudo del provider. Resuelve, autoriza, verifica e inyecta un mode de
 una `BrandingVersion` publicada antes del primer byte HTML. Hydration confirma
-el mismo hash; no repara branding despues del paint.
+el `projectionHash`, mode ID y mode hash exactos; no repara branding despues del
+paint.
 
 ## Inputs confiables
 
 El server deriva el Workspace desde identidad de workload o routing confiable.
 Un Workspace ID del browser no es autoridad. El mode solo puede seleccionarse
-si el artefacto compilado lo permite. Un host Cloudflare de la misma cuenta usa
-un RPC Service Binding hacia un `WorkerEntrypoint` dedicado. Sus `ctx.props`
-estaticos, definidos por deployment, autentican `workspaceId`, `consumerId` y
-el permiso `branding:resolve`; la llamada RPC no lleva una credencial ni un
-Workspace elegido por el browser. Un server externo usa HTTPS autenticado con
-un `WorkspaceRuntimeCredential` least-privilege guardado solo en server.
+si las proyecciones firmadas lo declaran permitido. Un host Cloudflare de la
+misma cuenta usa un RPC Service Binding hacia un `WorkerEntrypoint` dedicado.
+Sus `ctx.props` estaticos, definidos por deployment, autentican `workspaceId`,
+`consumerId` y el permiso `branding:resolve`; la llamada RPC no lleva una
+credencial ni un Workspace elegido por el browser. Un server externo usa HTTPS
+autenticado con un `WorkspaceRuntimeCredential` least-privilege guardado solo
+en server.
 
 El browser nunca recibe MCP tokens, source definitions, credenciales runtime
 reusables ni credenciales R2.
@@ -36,11 +38,14 @@ reusables ni credenciales R2.
 
 1. Deriva Workspace y mode permitido.
 2. Resuelve con `@lemn-ltd/brand-runtime` y deadline estricto.
-3. Verifica schema, firma, byte hash, compiled hash, compatibilidad, Workspace,
-   mode, assets y expiracion.
-4. Proyecta un mode a CSS critico, preloads, assets seguros y bootstrap minimo.
+3. Verifica envelope estricto, `projectionHash` canonico, firma, hashes de
+   definition/compiled/mode, compatibilidad, identidad firmada de Workspace y
+   publicacion, assets publicos y expiracion.
+4. Lee CSS critico, preloads, assets seguros y bootstrap minimo solo desde esa
+   proyeccion verificada.
 5. Emite preloads/style antes del markup y aplica todos los atributos de scope.
-6. Renderiza componentes y solo hidrata cuando los hashes coinciden.
+6. Renderiza componentes y solo hidrata cuando `projectionHash` e identidad del
+   mode coinciden exactamente.
 
 ```ts
 import {
@@ -68,7 +73,7 @@ const branding = await resolveBranding({
 
 const ssr = createBrandingSsrParts(branding, { nonce });
 assertBrandingHydrationIdentity(
-  branding.compiledHash,
+  ssr.hydrationIdentity,
   JSON.parse(clientBootstrapText),
 );
 ```
@@ -87,8 +92,11 @@ pnpm add @lemn-ltd/brand-contract@1.0.0 @lemn-ltd/brand-runtime@0.1.0 @lemn-ltd/
 
 ## Fallback activo
 
-Cada release incluye un fallback branded, firmado, compatible y ligado al
-Workspace. El orden es:
+Cada release incluye un mapa exacto de proyecciones minimas por mode, firmadas
+independientemente, compatibles y ligadas al Workspace. No incluye el objeto
+compilado completo privado. Antes de resolver active, runtime verifica todos
+los modes y exige la misma identidad de publicacion, hashes, default mode y set
+de modes permitidos. El orden es:
 
 1. objeto activo actual verificado;
 2. fallback branded embedded verificado;
@@ -97,6 +105,14 @@ Workspace. El orden es:
 No existe una segunda autoridad ni cache mutable de recovery. Nunca uses source
 JSON, KV generico, defaults del provider ni tokens fallback del package como
 recovery de produccion.
+
+## Fonts, assets y CSP
+
+Emite solo los preloads de fonts del mode verificado. Agrega a CSP los origins
+exactos de fonts y assets publicos firmados; exige URLs inmutables, SHA-256/SRI,
+CORS correcto y caching durable. Los storage keys privados y credenciales nunca
+son referencias runtime. SSR no evita que el browser descargue una managed
+font.
 
 ## Preview
 
@@ -110,10 +126,14 @@ secrets reusables. Resolution es `no-store`; expiry/revoke/mismatch muestran
 Prueba active, preview y fallback en ambos modes:
 
 - contenido branded con JavaScript deshabilitado;
-- CSS/atributos/hash correctos en el primer response;
+- CSS, atributos, projection hash e identidad del mode correctos en el primer
+  response;
 - bootstrap y server resolution con identidad igual;
 - cross-Workspace y mode no permitido fallan seguro;
-- objetos/firmas/assets tampered se rechazan;
+- proyecciones, hashes canonicos, firmas, identidades o assets tampered se
+  rechazan;
+- el envelope runtime serializado no contiene source definition, storage key,
+  objeto compilado completo ni configuracion de otro mode;
 - timeout usa solo el fallback embedded verificado;
 - preview expirado es explicito; y
 - hydration, a11y, contrast, CSP, fonts y assets pasan.

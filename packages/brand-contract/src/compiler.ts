@@ -101,6 +101,31 @@ export type CompiledFontPreload = {
 	readonly integrity: string;
 };
 
+export type CompiledBrandingBootstrap = {
+	readonly schemaVersion: typeof BRANDING_SCHEMA_VERSION;
+	readonly compilerVersion: typeof BRANDING_COMPILER_VERSION;
+	readonly definitionHash: string;
+	readonly compiledHash: string;
+	readonly modeHash: string;
+	readonly modeId: string;
+	readonly colorScheme: "light" | "dark";
+	readonly scopeId: string;
+	readonly attributes: Readonly<Record<string, string>>;
+	readonly tokens: Readonly<Record<string, string>>;
+	readonly visualization: {
+		readonly recharts: RechartsBrandingTheme;
+		readonly echarts: EChartsBrandingTheme;
+	};
+	readonly iconography: {
+		readonly family: string;
+		readonly style: "outline" | "filled" | "duotone";
+		readonly strokeWidth: number;
+		readonly defaultSize: string;
+		readonly customSetAssetId?: string;
+	};
+	readonly componentAppearance: Readonly<Record<string, string>>;
+};
+
 export type CompiledBrandingMode = {
 	readonly id: string;
 	readonly modeId: string;
@@ -172,6 +197,64 @@ export type CompiledBrandingObject = {
 	readonly byteHash: string;
 	readonly artifact: CompiledBrandingArtifact;
 	readonly signature: CompiledBrandingSignature;
+};
+
+export type CompiledBrandingAssetDelivery = {
+	/** Public immutable consumer URL. Private storage keys are never projected. */
+	readonly href: string;
+};
+
+export type CompiledBrandingAssetReference = {
+	readonly id: string;
+	readonly roles: readonly string[];
+	readonly href: string;
+	readonly sha256: string;
+	readonly mediaType: string;
+	readonly integrity: string;
+	readonly width?: number;
+	readonly height?: number;
+	readonly accessibleLabel?: string;
+	readonly licenseId?: string;
+};
+
+export type CompiledBrandingModeProjection = {
+	readonly workspaceId: string;
+	readonly brandingVersionId: string;
+	/** Draft previews are null; published active and fallback versions are positive. */
+	readonly version: number | null;
+	readonly schemaVersion: typeof BRANDING_SCHEMA_VERSION;
+	readonly compilerVersion: typeof BRANDING_COMPILER_VERSION;
+	readonly definitionHash: string;
+	readonly compiledHash: string;
+	readonly defaultModeId: string;
+	readonly allowedModeIds: readonly string[];
+	readonly modeId: string;
+	readonly modeHash: string;
+	readonly colorScheme: "light" | "dark";
+	readonly criticalCss: string;
+	readonly bootstrap: CompiledBrandingBootstrap;
+	readonly fontPreloads: readonly CompiledFontPreload[];
+	readonly fontResourceOrigins: readonly string[];
+	readonly assetReferences: readonly CompiledBrandingAssetReference[];
+};
+
+export type CompiledBrandingModeObject = {
+	readonly format: "lemn.compiled-branding-mode";
+	readonly formatVersion: 1;
+	readonly projectionHash: string;
+	readonly projection: CompiledBrandingModeProjection;
+	readonly signature: CompiledBrandingSignature;
+};
+
+export type CompiledBrandingModeObjectInput = {
+	readonly artifact: CompiledBrandingArtifact;
+	readonly workspaceId: string;
+	readonly brandingVersionId: string;
+	readonly version: number | null;
+	readonly modeId: string;
+	readonly assetDeliveries: Readonly<
+		Record<string, CompiledBrandingAssetDelivery>
+	>;
 };
 
 export type CompiledBrandingSigner = (
@@ -360,8 +443,15 @@ export function serializeBrandingBootstrap(
 	artifact: CompiledBrandingArtifact,
 	modeId: string = artifact.defaultModeId,
 ): string {
+	return serializeBootstrapJson(getCompiledBrandingBootstrap(artifact, modeId));
+}
+
+export function getCompiledBrandingBootstrap(
+	artifact: CompiledBrandingArtifact,
+	modeId: string = artifact.defaultModeId,
+): CompiledBrandingBootstrap {
 	const mode = getCompiledMode(artifact, modeId);
-	return serializeBootstrapJson({
+	return deepFreeze({
 		schemaVersion: artifact.schemaVersion,
 		compilerVersion: artifact.compilerVersion,
 		definitionHash: artifact.definitionHash,
@@ -376,6 +466,7 @@ export function serializeBrandingBootstrap(
 			recharts: mode.recharts,
 			echarts: mode.echarts,
 		},
+		iconography: { ...mode.configuration.iconography },
 		componentAppearance: definitionAppearance(mode.tokens),
 	});
 }
@@ -385,7 +476,10 @@ export function getCompiledModeCriticalCss(
 	modeId: string = artifact.defaultModeId,
 ): string {
 	const mode = getCompiledMode(artifact, modeId);
-	return [artifact.fontCss, mode.css].filter(Boolean).join("\n\n");
+	const fontCss = getCompiledModeFontResources(artifact, modeId)
+		.map(fontFaceCss)
+		.join("\n\n");
+	return [fontCss, mode.css].filter(Boolean).join("\n\n");
 }
 
 export function getCompiledModeFontResources(
@@ -507,13 +601,7 @@ export async function createCompiledBrandingObject(
 		byteHash,
 	});
 	const signature = await signer(signedPayload);
-	if (
-		signature.algorithm !== "Ed25519" ||
-		signature.keyId.trim().length === 0 ||
-		!/^[A-Za-z0-9_-]+$/.test(signature.value)
-	) {
-		throw new Error("Compiled branding signer returned an invalid signature");
-	}
+	assertValidBrandingSignature(signature);
 	return deepFreeze({
 		format: "lemn.compiled-branding",
 		formatVersion: 1,
@@ -549,10 +637,321 @@ export async function verifyCompiledBrandingObject(
 	if (actualByteHash !== value.byteHash) {
 		throw new Error("Compiled branding object byte hash verification failed");
 	}
+	assertValidBrandingSignature(value.signature);
 	const signedPayload = compiledObjectSignaturePayload(value);
 	if (!(await verifier(signedPayload, value.signature))) {
 		throw new Error("Compiled branding object signature verification failed");
 	}
+}
+
+export async function createCompiledBrandingModeObject(
+	input: CompiledBrandingModeObjectInput,
+	signer: CompiledBrandingSigner,
+): Promise<CompiledBrandingModeObject> {
+	await verifyBrandingArtifact(input.artifact);
+	assertProjectionIdentity(input);
+	const mode = getCompiledMode(input.artifact, input.modeId);
+	const projection = deepFreeze<CompiledBrandingModeProjection>({
+		workspaceId: input.workspaceId,
+		brandingVersionId: input.brandingVersionId,
+		version: input.version,
+		schemaVersion: input.artifact.schemaVersion,
+		compilerVersion: input.artifact.compilerVersion,
+		definitionHash: input.artifact.definitionHash,
+		compiledHash: input.artifact.compiledHash,
+		defaultModeId: input.artifact.defaultModeId,
+		allowedModeIds: Object.freeze([...input.artifact.allowedModeIds]),
+		modeId: mode.modeId,
+		modeHash: mode.modeHash,
+		colorScheme: mode.colorScheme,
+		criticalCss: getCompiledModeCriticalCss(input.artifact, mode.modeId),
+		bootstrap: getCompiledBrandingBootstrap(input.artifact, mode.modeId),
+		fontPreloads: getCompiledModeFontPreloads(input.artifact, mode.modeId),
+		fontResourceOrigins: getCompiledModeFontResourceOrigins(
+			input.artifact,
+			mode.modeId,
+		),
+		assetReferences: projectCompiledAssetReferences(
+			input.artifact,
+			mode,
+			input.assetDeliveries,
+		),
+	});
+	const projectionHash = await sha256(canonicalJson(projection));
+	const unsigned = {
+		format: "lemn.compiled-branding-mode" as const,
+		formatVersion: 1 as const,
+		projectionHash,
+		projection,
+	};
+	const signature = await signer(compiledModeObjectSignaturePayload(unsigned));
+	assertValidBrandingSignature(signature);
+	return deepFreeze({ ...unsigned, signature: { ...signature } });
+}
+
+export async function verifyCompiledBrandingModeObject(
+	value: CompiledBrandingModeObject,
+	verifier: CompiledBrandingVerifier,
+): Promise<void> {
+	if (
+		value.format !== "lemn.compiled-branding-mode" ||
+		value.formatVersion !== 1
+	) {
+		throw new Error("Unsupported compiled branding mode object format");
+	}
+	assertCompatibleBrandingModeProjection(value.projection);
+	assertValidBrandingSignature(value.signature);
+	const actualProjectionHash = await sha256(canonicalJson(value.projection));
+	if (actualProjectionHash !== value.projectionHash) {
+		throw new Error(
+			"Compiled branding mode projection hash verification failed",
+		);
+	}
+	if (
+		!(await verifier(
+			compiledModeObjectSignaturePayload(value),
+			value.signature,
+		))
+	) {
+		throw new Error(
+			"Compiled branding mode object signature verification failed",
+		);
+	}
+}
+
+function assertCompatibleBrandingModeProjection(
+	projection: CompiledBrandingModeProjection,
+): void {
+	if (
+		projection.schemaVersion !== BRANDING_SCHEMA_VERSION ||
+		projection.compilerVersion.split(".")[0] !==
+			BRANDING_COMPILER_VERSION.split(".")[0]
+	) {
+		throw new Error("Compiled branding mode projection is incompatible");
+	}
+	if (
+		!isProjectionIdentifier(projection.workspaceId) ||
+		!isProjectionIdentifier(projection.brandingVersionId) ||
+		(projection.version !== null &&
+			(!Number.isInteger(projection.version) || projection.version < 1)) ||
+		!isSha256(projection.definitionHash) ||
+		!isSha256(projection.compiledHash) ||
+		!isSha256(projection.modeHash)
+	) {
+		throw new Error("Compiled branding mode projection identity is invalid");
+	}
+	const allowedModeIds = [...projection.allowedModeIds];
+	if (
+		allowedModeIds.length === 0 ||
+		allowedModeIds.some((modeId) => !isProjectionIdentifier(modeId)) ||
+		new Set(allowedModeIds).size !== allowedModeIds.length ||
+		allowedModeIds.some(
+			(modeId, index) => modeId !== [...allowedModeIds].sort()[index],
+		) ||
+		!allowedModeIds.includes(projection.defaultModeId) ||
+		!allowedModeIds.includes(projection.modeId)
+	) {
+		throw new Error("Compiled branding mode selection policy is invalid");
+	}
+	const bootstrap = projection.bootstrap;
+	if (
+		bootstrap.schemaVersion !== projection.schemaVersion ||
+		bootstrap.compilerVersion !== projection.compilerVersion ||
+		bootstrap.definitionHash !== projection.definitionHash ||
+		bootstrap.compiledHash !== projection.compiledHash ||
+		bootstrap.modeHash !== projection.modeHash ||
+		bootstrap.modeId !== projection.modeId ||
+		bootstrap.colorScheme !== projection.colorScheme ||
+		bootstrap.scopeId !== bootstrap.attributes["data-lemn-brand-scope"] ||
+		bootstrap.attributes["data-lemn-mode"] !== projection.modeId ||
+		!isSha256(bootstrap.attributes["data-lemn-branding"] ?? "")
+	) {
+		throw new Error("Compiled branding mode bootstrap metadata is invalid");
+	}
+	assertProjectedIconography(projection);
+	assertProjectedFonts(projection);
+	assertProjectedAssets(projection.assetReferences);
+}
+
+function assertProjectedIconography(
+	projection: CompiledBrandingModeProjection,
+): void {
+	const iconography = projection.bootstrap.iconography;
+	const customIconReferences = projection.assetReferences.filter((reference) =>
+		reference.roles.includes("customIconSet"),
+	);
+	if (
+		!isCanonicalText(iconography.family, 80) ||
+		!["outline", "filled", "duotone"].includes(iconography.style) ||
+		!Number.isFinite(iconography.strokeWidth) ||
+		iconography.strokeWidth < 0.5 ||
+		iconography.strokeWidth > 4 ||
+		!/^(?:0|\d+(?:\.\d+)?(?:px|rem|em))$/.test(iconography.defaultSize) ||
+		(iconography.customSetAssetId !== undefined &&
+			!isProjectionIdentifier(iconography.customSetAssetId)) ||
+		projection.bootstrap.tokens["--lemn-icon-style"] !== iconography.style ||
+		projection.bootstrap.tokens["--lemn-icon-stroke-width"] !==
+			String(iconography.strokeWidth) ||
+		projection.bootstrap.tokens["--lemn-icon-size"] !==
+			iconography.defaultSize ||
+		(iconography.customSetAssetId === undefined
+			? customIconReferences.length !== 0
+			: customIconReferences.length !== 1 ||
+				customIconReferences[0]?.id !== iconography.customSetAssetId)
+	) {
+		throw new Error("Compiled branding mode iconography is invalid");
+	}
+}
+
+function assertProjectionIdentity(
+	input: Pick<
+		CompiledBrandingModeObjectInput,
+		"workspaceId" | "brandingVersionId" | "version"
+	>,
+): void {
+	if (
+		!isProjectionIdentifier(input.workspaceId) ||
+		!isProjectionIdentifier(input.brandingVersionId) ||
+		(input.version !== null &&
+			(!Number.isInteger(input.version) || input.version < 1))
+	) {
+		throw new Error("Compiled branding mode identity is invalid");
+	}
+}
+
+function assertProjectedFonts(
+	projection: CompiledBrandingModeProjection,
+): void {
+	const origins = [...projection.fontResourceOrigins];
+	if (
+		new Set(origins).size !== origins.length ||
+		origins.some((origin, index) => origin !== [...origins].sort()[index])
+	) {
+		throw new Error("Compiled branding mode font origins are invalid");
+	}
+	for (const origin of origins) {
+		let parsed: URL;
+		try {
+			parsed = new URL(origin);
+		} catch {
+			throw new Error("Compiled branding mode font origin is invalid");
+		}
+		if (parsed.protocol !== "https:" || parsed.origin !== origin) {
+			throw new Error("Compiled branding mode font origin is invalid");
+		}
+	}
+	for (const preload of projection.fontPreloads) {
+		const origin = parseManagedFontResourceOrigin(preload.href);
+		if (
+			!origins.includes(origin) ||
+			!/^sha256-[A-Za-z0-9+/]+={0,2}$/.test(preload.integrity)
+		) {
+			throw new Error("Compiled branding mode font preload is invalid");
+		}
+	}
+}
+
+function assertProjectedAssets(
+	references: readonly CompiledBrandingAssetReference[],
+): void {
+	const ids = references.map((reference) => reference.id);
+	if (
+		new Set(ids).size !== ids.length ||
+		ids.some((id, index) => id !== [...ids].sort()[index])
+	) {
+		throw new Error("Compiled branding mode asset references are invalid");
+	}
+	for (const reference of references) {
+		if (
+			!isProjectionIdentifier(reference.id) ||
+			!isSafePublicAssetHref(reference.href) ||
+			!isSha256(reference.sha256) ||
+			!isCanonicalMediaType(reference.mediaType) ||
+			reference.integrity !== sha256Integrity(reference.sha256) ||
+			(reference.width !== undefined &&
+				(!Number.isInteger(reference.width) || reference.width < 1)) ||
+			(reference.height !== undefined &&
+				(!Number.isInteger(reference.height) || reference.height < 1)) ||
+			(reference.accessibleLabel !== undefined &&
+				!isCanonicalText(reference.accessibleLabel, 120)) ||
+			(reference.licenseId !== undefined &&
+				!isCanonicalText(reference.licenseId, 80)) ||
+			new Set(reference.roles).size !== reference.roles.length ||
+			reference.roles.some(
+				(role, index) =>
+					!isProjectionIdentifier(role) ||
+					role !== [...reference.roles].sort()[index],
+			)
+		) {
+			throw new Error("Compiled branding mode asset reference is invalid");
+		}
+	}
+}
+
+function projectCompiledAssetReferences(
+	artifact: CompiledBrandingArtifact,
+	mode: CompiledBrandingMode,
+	deliveries: Readonly<Record<string, CompiledBrandingAssetDelivery>>,
+): readonly CompiledBrandingAssetReference[] {
+	const rolesByAsset = new Map<string, string[]>();
+	for (const [role, assetId] of Object.entries(artifact.assetRoles)) {
+		const roles = rolesByAsset.get(assetId) ?? [];
+		roles.push(role);
+		rolesByAsset.set(assetId, roles);
+	}
+	const customIconSetAssetId = mode.configuration.iconography.customSetAssetId;
+	if (customIconSetAssetId) {
+		const roles = rolesByAsset.get(customIconSetAssetId) ?? [];
+		roles.push("customIconSet");
+		rolesByAsset.set(customIconSetAssetId, roles);
+	}
+	const references = [...rolesByAsset.keys()].sort().map((id) => {
+		const asset = artifact.assetManifest[id];
+		const delivery = deliveries[id];
+		if (!asset || !delivery || !isSafePublicAssetHref(delivery.href)) {
+			throw new Error(
+				`Compiled branding asset '${id}' has no safe public delivery`,
+			);
+		}
+		return {
+			id,
+			roles: Object.freeze([...(rolesByAsset.get(id) ?? [])].sort()),
+			href: delivery.href,
+			sha256: asset.sha256,
+			mediaType: asset.mediaType,
+			integrity: sha256Integrity(asset.sha256),
+			...(asset.width === undefined ? {} : { width: asset.width }),
+			...(asset.height === undefined ? {} : { height: asset.height }),
+			...(asset.accessibleLabel
+				? { accessibleLabel: asset.accessibleLabel }
+				: {}),
+			...(asset.licenseId ? { licenseId: asset.licenseId } : {}),
+		};
+	});
+	return deepFreeze(references);
+}
+
+function compiledModeObjectSignaturePayload(
+	value: Pick<
+		CompiledBrandingModeObject,
+		"format" | "formatVersion" | "projectionHash" | "projection"
+	>,
+): string {
+	const projection = value.projection;
+	return canonicalJson({
+		format: value.format,
+		formatVersion: value.formatVersion,
+		workspaceId: projection.workspaceId,
+		brandingVersionId: projection.brandingVersionId,
+		version: projection.version,
+		schemaVersion: projection.schemaVersion,
+		compilerVersion: projection.compilerVersion,
+		definitionHash: projection.definitionHash,
+		compiledHash: projection.compiledHash,
+		modeId: projection.modeId,
+		modeHash: projection.modeHash,
+		projectionHash: value.projectionHash,
+	});
 }
 
 function compiledObjectSignaturePayload(
@@ -574,6 +973,82 @@ function compiledObjectSignaturePayload(
 		compiledHash: value.compiledHash,
 		byteHash: value.byteHash,
 	});
+}
+
+function assertValidBrandingSignature(
+	signature: CompiledBrandingSignature,
+): void {
+	if (
+		signature.algorithm !== "Ed25519" ||
+		!/^[A-Za-z0-9_-]{1,200}$/.test(signature.keyId) ||
+		!/^[A-Za-z0-9_-]+$/.test(signature.value)
+	) {
+		throw new Error("Compiled branding signer returned an invalid signature");
+	}
+}
+
+function isProjectionIdentifier(value: string): boolean {
+	return (
+		value.length >= 1 &&
+		value.length <= 200 &&
+		value.trim() === value &&
+		!hasControlCharacters(value)
+	);
+}
+
+function isSha256(value: string): boolean {
+	return /^[a-f0-9]{64}$/.test(value);
+}
+
+function isCanonicalMediaType(value: string): boolean {
+	return (
+		value.length <= 80 &&
+		/^[a-z0-9][a-z0-9!#$&^_.+-]*\/[a-z0-9][a-z0-9!#$&^_.+-]*$/i.test(value)
+	);
+}
+
+function isCanonicalText(value: string, maximumLength: number): boolean {
+	return (
+		value.length >= 1 &&
+		value.length <= maximumLength &&
+		value.trim() === value &&
+		!hasControlCharacters(value)
+	);
+}
+
+function isSafePublicAssetHref(value: string): boolean {
+	if (
+		hasControlCharacters(value) ||
+		value.includes("\\") ||
+		value.includes("?") ||
+		value.includes("#")
+	) {
+		return false;
+	}
+	if (value.startsWith("/") && !value.startsWith("//")) return true;
+	try {
+		const url = new URL(value);
+		return (
+			url.protocol === "https:" &&
+			url.username.length === 0 &&
+			url.password.length === 0 &&
+			url.search.length === 0 &&
+			url.hash.length === 0 &&
+			url.href === value
+		);
+	} catch {
+		return false;
+	}
+}
+
+function sha256Integrity(hex: string): string {
+	if (!isSha256(hex)) throw new Error("Branding asset hash is invalid");
+	const bytes = new Uint8Array(
+		hex.match(/.{2}/g)?.map((pair) => Number.parseInt(pair, 16)) ?? [],
+	);
+	let binary = "";
+	for (const byte of bytes) binary += String.fromCharCode(byte);
+	return `sha256-${btoa(binary)}`;
 }
 
 function definitionAppearance(
@@ -1225,6 +1700,9 @@ function compileTokens(
 		"--lemn-component-controls": mode.componentAppearance.controls,
 		"--lemn-component-cards": mode.componentAppearance.cards,
 		"--lemn-component-inputs": mode.componentAppearance.inputs,
+		"--lemn-icon-style": mode.iconography.style,
+		"--lemn-icon-stroke-width": String(mode.iconography.strokeWidth),
+		"--lemn-icon-size": mode.iconography.defaultSize,
 		"--lemn-shadow-none": "none",
 		"--lemn-content-max": "1200px",
 		"--lemn-scrollbar-track": colors.surfaceMuted,

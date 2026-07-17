@@ -6,6 +6,20 @@ export type BrandingSsrParts = {
 	readonly htmlAttributes: Readonly<Record<string, string>>;
 	readonly headMarkup: string;
 	readonly bootstrapMarkup: string;
+	readonly hydrationIdentity: BrandingHydrationIdentity;
+};
+
+export type BrandingHydrationDocument = {
+	readonly projectionHash: string;
+	readonly bootstrap: ResolvedBranding["bootstrap"];
+};
+
+export type BrandingHydrationIdentity = {
+	readonly projectionHash: string;
+	readonly compiledHash: string;
+	readonly modeId: string;
+	readonly modeHash: string;
+	readonly colorScheme: "light" | "dark";
 };
 
 export function createBrandingSsrParts(
@@ -22,31 +36,52 @@ export function createBrandingSsrParts(
 				`<link rel="preload" href="${escapeAttribute(preload.href)}" as="font" type="font/woff2" crossorigin="anonymous" integrity="${escapeAttribute(preload.integrity)}">`,
 		)
 		.join("");
-	const styleMarkup = `<style data-lemn-critical-branding="${branding.compiledHash}"${nonce}>${escapeStyleText(branding.criticalCss)}</style>`;
+	const styleMarkup = `<style data-lemn-critical-branding="${branding.projectionHash}"${nonce}>${escapeStyleText(branding.criticalCss)}</style>`;
 	const colorSchemeMarkup = `<meta name="color-scheme" content="${branding.colorScheme}">`;
-	const bootstrap = serializeBootstrapJson(branding.bootstrap);
-	const bootstrapMarkup = `<script id="lemn-branding-bootstrap" type="application/json" data-lemn-branding-bootstrap="${branding.compiledHash}"${nonce}>${bootstrap}</script>`;
+	const hydrationDocument: BrandingHydrationDocument = {
+		projectionHash: branding.projectionHash,
+		bootstrap: branding.bootstrap,
+	};
+	const hydrationIdentity: BrandingHydrationIdentity = Object.freeze({
+		projectionHash: branding.projectionHash,
+		compiledHash: branding.compiledHash,
+		modeId: branding.modeId,
+		modeHash: branding.bootstrap.modeHash,
+		colorScheme: branding.colorScheme,
+	});
+	const bootstrap = serializeBootstrapJson(hydrationDocument);
+	const bootstrapMarkup = `<script id="lemn-branding-bootstrap" type="application/json" data-lemn-branding-bootstrap="${branding.projectionHash}"${nonce}>${bootstrap}</script>`;
 	return Object.freeze({
 		htmlAttributes: Object.freeze({
 			...branding.bootstrap.attributes,
 			"data-lemn-branding-version": branding.brandingVersionId,
 			"data-lemn-branding-hash": branding.compiledHash,
+			"data-lemn-branding-projection-hash": branding.projectionHash,
+			"data-lemn-branding-mode-hash": branding.bootstrap.modeHash,
 			"data-lemn-branding-source": branding.source,
 			"data-lemn-color-scheme": branding.colorScheme,
 		}),
 		headMarkup: `${colorSchemeMarkup}${preloadMarkup}${styleMarkup}`,
 		bootstrapMarkup,
+		hydrationIdentity,
 	});
 }
 
 export function assertBrandingHydrationIdentity(
-	serverCompiledHash: string,
-	bootstrap: unknown,
-): asserts bootstrap is ResolvedBranding["bootstrap"] {
+	expected: BrandingHydrationIdentity,
+	document: unknown,
+): asserts document is BrandingHydrationDocument {
 	if (
-		!isRecord(bootstrap) ||
-		bootstrap.compiledHash !== serverCompiledHash ||
-		!/^[a-f0-9]{64}$/.test(serverCompiledHash)
+		!/^[a-f0-9]{64}$/.test(expected.projectionHash) ||
+		!/^[a-f0-9]{64}$/.test(expected.compiledHash) ||
+		!/^[a-f0-9]{64}$/.test(expected.modeHash) ||
+		!isRecord(document) ||
+		!isRecord(document.bootstrap) ||
+		document.projectionHash !== expected.projectionHash ||
+		document.bootstrap.compiledHash !== expected.compiledHash ||
+		document.bootstrap.modeId !== expected.modeId ||
+		document.bootstrap.modeHash !== expected.modeHash ||
+		document.bootstrap.colorScheme !== expected.colorScheme
 	) {
 		throw new BrandingRuntimeError(
 			"BRANDING_RUNTIME_INTEGRITY_FAILED",
@@ -136,6 +171,7 @@ function hasControlCharacters(value: string): boolean {
 
 function assertResolvedBrandingIdentity(branding: ResolvedBranding): void {
 	if (
+		!/^[a-f0-9]{64}$/.test(branding.projectionHash) ||
 		branding.bootstrap.compiledHash !== branding.compiledHash ||
 		branding.bootstrap.definitionHash !== branding.definitionHash ||
 		branding.bootstrap.modeId !== branding.modeId ||

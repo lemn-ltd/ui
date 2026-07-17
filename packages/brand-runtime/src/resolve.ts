@@ -1,10 +1,6 @@
 import {
-	getCompiledMode,
-	getCompiledModeCriticalCss,
-	getCompiledModeFontPreloads,
-	getCompiledModeFontResourceOrigins,
-	serializeBrandingBootstrap,
-	verifyCompiledBrandingObject,
+	type CompiledBrandingModeObject,
+	verifyCompiledBrandingModeObject,
 } from "@lemn-ltd/brand-contract";
 import {
 	BrandingPreviewUnavailableError,
@@ -16,7 +12,6 @@ import {
 } from "./schema.js";
 import type {
 	BrandingAssetReference,
-	BrandingBootstrap,
 	BrandingFallbackEvent,
 	BrandingRuntimeSource,
 	EmbeddedBrandingFallback,
@@ -28,6 +23,13 @@ import type {
 const DEFAULT_TIMEOUT_MS = 2_000;
 const MIN_TIMEOUT_MS = 25;
 const MAX_TIMEOUT_MS = 5_000;
+
+type VerifiedEmbeddedFallback = {
+	readonly brandingVersionId: string;
+	readonly defaultModeId: string;
+	readonly allowedModeIds: readonly string[];
+	readonly modes: ReadonlyMap<string, ResolvedBranding>;
+};
 
 export async function resolveBranding(
 	options: ResolveBrandingOptions,
@@ -53,17 +55,17 @@ export async function resolveBranding(
 				timeoutMs,
 				previewModeId,
 			);
-			const envelope = parseRuntimeBrandingEnvelope(input);
-			return await verifyAndProject(
+			const envelope = parseRuntimeResponse(input);
+			return await verifyAndProjectEnvelope({
 				envelope,
-				options.workspaceId,
-				previewModeId,
-				options.verifier,
-				"preview",
-				options.preview,
-				now(),
+				workspaceId: options.workspaceId,
+				requestedModeId: previewModeId,
+				verifier: options.verifier,
+				expectedSource: "preview",
+				preview: options.preview,
+				now: now(),
 				allowedAssetOrigins,
-			);
+			});
 		} catch (error) {
 			if (error instanceof BrandingPreviewUnavailableError) throw error;
 			throw new BrandingPreviewUnavailableError(
@@ -73,18 +75,12 @@ export async function resolveBranding(
 		}
 	}
 
-	let fallback: EmbeddedBrandingFallback;
+	let fallback: VerifiedEmbeddedFallback;
 	try {
-		fallback = parseEmbeddedBrandingFallback(options.embeddedFallback);
-		const selectedFallback = selectFallbackMode(fallback, options.modeId);
-		await verifyAndProject(
-			selectedFallback,
+		fallback = await verifyEmbeddedFallback(
+			parseEmbeddedBrandingFallback(options.embeddedFallback),
 			options.workspaceId,
-			selectedFallback.modeId,
 			options.verifier,
-			"embedded-fallback",
-			undefined,
-			now(),
 			allowedAssetOrigins,
 		);
 	} catch (error) {
@@ -97,35 +93,22 @@ export async function resolveBranding(
 
 	try {
 		const input = await resolveWithDeadline(options, timeoutMs, options.modeId);
-		const envelope = parseRuntimeBrandingEnvelope(input);
-		return await verifyAndProject(
-			envelope,
-			options.workspaceId,
-			options.modeId,
-			options.verifier,
-			"active",
-			undefined,
-			now(),
+		return await verifyAndProjectEnvelope({
+			envelope: parseRuntimeResponse(input),
+			workspaceId: options.workspaceId,
+			requestedModeId: options.modeId,
+			verifier: options.verifier,
+			expectedSource: "active",
+			now: now(),
 			allowedAssetOrigins,
-		);
+		});
 	} catch (error) {
-		const code = fallbackCode(error);
 		emitFallback(options, {
-			code,
+			code: fallbackCode(error),
 			workspaceId: options.workspaceId,
 			fallbackBrandingVersionId: fallback.brandingVersionId,
 		});
-		const selectedFallback = selectFallbackMode(fallback, options.modeId);
-		return verifyAndProject(
-			selectedFallback,
-			options.workspaceId,
-			selectedFallback.modeId,
-			options.verifier,
-			"embedded-fallback",
-			undefined,
-			now(),
-			allowedAssetOrigins,
-		);
+		return selectEmbeddedFallback(fallback, options.modeId);
 	}
 }
 
@@ -164,99 +147,271 @@ async function resolveWithDeadline(
 	}
 }
 
-async function verifyAndProject(
-	envelope: RuntimeBrandingEnvelope,
-	workspaceId: string,
-	requestedModeId: string | undefined,
-	verifier: ResolveBrandingOptions["verifier"],
-	expectedSource: BrandingRuntimeSource,
-	preview: ResolveBrandingOptions["preview"],
-	now: Date,
-	allowedAssetOrigins: ReadonlySet<string>,
-): Promise<ResolvedBranding> {
-	if (envelope.workspaceId !== workspaceId) {
-		throw new BrandingRuntimeError(
-			"BRANDING_RUNTIME_INTEGRITY_FAILED",
-			"Branding Runtime crossed the Workspace boundary",
-		);
-	}
-	if (envelope.source !== expectedSource) {
+async function verifyAndProjectEnvelope(input: {
+	readonly envelope: RuntimeBrandingEnvelope;
+	readonly workspaceId: string;
+	readonly requestedModeId?: string;
+	readonly verifier: ResolveBrandingOptions["verifier"];
+	readonly expectedSource: RuntimeBrandingEnvelope["source"];
+	readonly preview?: ResolveBrandingOptions["preview"];
+	readonly now: Date;
+	readonly allowedAssetOrigins: ReadonlySet<string>;
+}): Promise<ResolvedBranding> {
+	if (input.envelope.source !== input.expectedSource) {
 		throw new BrandingRuntimeError(
 			"BRANDING_RUNTIME_RESPONSE_INVALID",
 			"Branding Runtime returned an unexpected resolution source",
 		);
 	}
-	verifyEnvelopeMetadata(envelope);
-	verifyPreviewMetadata(envelope, preview, now);
+	if (
+		input.envelope.etag !== undefined &&
+		input.envelope.etag !== `"${input.envelope.modeObject.projectionHash}"`
+	) {
+		throw new BrandingRuntimeError(
+			"BRANDING_RUNTIME_RESPONSE_INVALID",
+			"Branding Runtime returned an ETag for another projection",
+		);
+	}
+	verifyPreviewMetadata(input.envelope, input.preview, input.now);
+	return verifyAndProjectModeObject({
+		modeObject: input.envelope.modeObject,
+		workspaceId: input.workspaceId,
+		requestedModeId: input.requestedModeId,
+		verifier: input.verifier,
+		source: input.expectedSource,
+		allowedAssetOrigins: input.allowedAssetOrigins,
+		...(input.envelope.etag ? { etag: input.envelope.etag } : {}),
+		...(input.envelope.source === "preview"
+			? {
+					previewSessionId: input.envelope.previewSessionId,
+					draftTitle: input.envelope.draftTitle,
+					expiresAt: input.envelope.expiresAt,
+				}
+			: {}),
+	});
+}
+
+function parseRuntimeResponse(input: unknown): RuntimeBrandingEnvelope {
 	try {
-		await verifyCompiledBrandingObject(envelope.compiledObject, verifier);
+		return parseRuntimeBrandingEnvelope(input);
 	} catch (error) {
 		throw new BrandingRuntimeError(
-			"BRANDING_RUNTIME_INTEGRITY_FAILED",
-			"The compiled branding object failed integrity verification",
+			"BRANDING_RUNTIME_RESPONSE_INVALID",
+			"Branding Runtime returned an invalid response envelope",
 			error,
 		);
 	}
+}
 
-	const artifact = envelope.compiledObject.artifact;
-	const expectedModeId = requestedModeId ?? artifact.defaultModeId;
-	if (envelope.modeId !== expectedModeId) {
+async function verifyAndProjectModeObject(input: {
+	readonly modeObject: CompiledBrandingModeObject;
+	readonly workspaceId: string;
+	readonly requestedModeId?: string;
+	readonly verifier: ResolveBrandingOptions["verifier"];
+	readonly source: BrandingRuntimeSource;
+	readonly allowedAssetOrigins: ReadonlySet<string>;
+	readonly etag?: string;
+	readonly previewSessionId?: string;
+	readonly draftTitle?: string;
+	readonly expiresAt?: string;
+}): Promise<ResolvedBranding> {
+	try {
+		await verifyCompiledBrandingModeObject(input.modeObject, input.verifier);
+	} catch (error) {
+		throw new BrandingRuntimeError(
+			"BRANDING_RUNTIME_INTEGRITY_FAILED",
+			"The compiled branding mode projection failed integrity verification",
+			error,
+		);
+	}
+	const projection = input.modeObject.projection;
+	if (projection.workspaceId !== input.workspaceId) {
+		throw new BrandingRuntimeError(
+			"BRANDING_RUNTIME_INTEGRITY_FAILED",
+			"Branding Runtime crossed the signed Workspace boundary",
+		);
+	}
+	if (
+		(input.source === "preview" && projection.version !== null) ||
+		(input.source !== "preview" && projection.version === null)
+	) {
+		throw new BrandingRuntimeError(
+			"BRANDING_RUNTIME_RESPONSE_INVALID",
+			"Branding Runtime returned an invalid version for its source",
+		);
+	}
+	const expectedModeId =
+		input.requestedModeId &&
+		projection.allowedModeIds.includes(input.requestedModeId)
+			? input.requestedModeId
+			: projection.defaultModeId;
+	if (projection.modeId !== expectedModeId) {
 		throw new BrandingRuntimeError(
 			"BRANDING_RUNTIME_RESPONSE_INVALID",
 			"Branding Runtime did not resolve the requested mode",
 		);
 	}
-	const mode = getCompiledMode(artifact, envelope.modeId);
-	const bootstrap = parseBootstrap(
-		serializeBrandingBootstrap(artifact, mode.modeId),
-	);
 	const resolved: ResolvedBranding = {
-		workspaceId: envelope.workspaceId,
-		brandingVersionId: envelope.brandingVersionId,
-		version: envelope.version,
-		modeId: mode.modeId,
-		colorScheme: mode.colorScheme,
-		allowedModeIds: artifact.allowedModeIds,
-		definitionHash: artifact.definitionHash,
-		compiledHash: artifact.compiledHash,
-		byteHash: envelope.compiledObject.byteHash,
-		schemaVersion: artifact.schemaVersion,
-		compilerVersion: artifact.compilerVersion,
-		source: envelope.source,
-		criticalCss: getCompiledModeCriticalCss(artifact, mode.modeId),
-		bootstrap,
-		fontPreloads: getCompiledModeFontPreloads(artifact, mode.modeId),
-		fontResourceOrigins: getCompiledModeFontResourceOrigins(
-			artifact,
-			mode.modeId,
+		workspaceId: projection.workspaceId,
+		brandingVersionId: projection.brandingVersionId,
+		version: projection.version,
+		modeId: projection.modeId,
+		colorScheme: projection.colorScheme,
+		allowedModeIds: projection.allowedModeIds,
+		definitionHash: projection.definitionHash,
+		compiledHash: projection.compiledHash,
+		projectionHash: input.modeObject.projectionHash,
+		schemaVersion: projection.schemaVersion,
+		compilerVersion: projection.compilerVersion,
+		source: input.source,
+		criticalCss: projection.criticalCss,
+		bootstrap: projection.bootstrap,
+		fontPreloads: projection.fontPreloads,
+		fontResourceOrigins: projection.fontResourceOrigins,
+		assetReferences: validateAssetReferences(
+			projection.assetReferences,
+			input.allowedAssetOrigins,
 		),
-		assetReferences: projectAssets(envelope, allowedAssetOrigins),
-		signature: envelope.compiledObject.signature.value,
-		signatureKeyId: envelope.compiledObject.signature.keyId,
-		...(envelope.etag ? { etag: envelope.etag } : {}),
-		...(envelope.source === "preview"
-			? {
-					previewSessionId: envelope.previewSessionId,
-					draftTitle: envelope.draftTitle,
-					expiresAt: envelope.expiresAt,
-				}
+		signature: input.modeObject.signature.value,
+		signatureKeyId: input.modeObject.signature.keyId,
+		...(input.etag ? { etag: input.etag } : {}),
+		...(input.previewSessionId
+			? { previewSessionId: input.previewSessionId }
 			: {}),
+		...(input.draftTitle ? { draftTitle: input.draftTitle } : {}),
+		...(input.expiresAt ? { expiresAt: input.expiresAt } : {}),
 	};
 	return deepFreeze(resolved);
 }
 
-function verifyEnvelopeMetadata(envelope: RuntimeBrandingEnvelope): void {
-	const compiledObject = envelope.compiledObject;
-	if (
-		envelope.definitionHash !== compiledObject.artifact.definitionHash ||
-		envelope.compiledHash !== compiledObject.compiledHash ||
-		envelope.byteHash !== compiledObject.byteHash
-	) {
-		throw new BrandingRuntimeError(
-			"BRANDING_RUNTIME_INTEGRITY_FAILED",
-			"Branding Runtime metadata does not match the signed object",
+async function verifyEmbeddedFallback(
+	fallback: EmbeddedBrandingFallback,
+	workspaceId: string,
+	verifier: ResolveBrandingOptions["verifier"],
+	allowedAssetOrigins: ReadonlySet<string>,
+): Promise<VerifiedEmbeddedFallback> {
+	const modeEntries = Object.entries(fallback.modes).sort(([left], [right]) =>
+		left.localeCompare(right),
+	);
+	const resolvedModes = new Map<string, ResolvedBranding>();
+	let identity:
+		| (Pick<
+				ResolvedBranding,
+				| "workspaceId"
+				| "brandingVersionId"
+				| "version"
+				| "definitionHash"
+				| "compiledHash"
+				| "schemaVersion"
+				| "compilerVersion"
+				| "allowedModeIds"
+		  > & { readonly defaultModeId: string })
+		| undefined;
+
+	for (const [modeId, modeObject] of modeEntries) {
+		if (modeObject.projection.modeId !== modeId) {
+			throw new Error(
+				"Embedded fallback mode key does not match its signed mode",
+			);
+		}
+		const resolved = await verifyAndProjectModeObject({
+			modeObject,
+			workspaceId,
+			requestedModeId: modeId,
+			verifier,
+			source: "embedded-fallback",
+			allowedAssetOrigins,
+		});
+		const candidate = {
+			workspaceId: resolved.workspaceId,
+			brandingVersionId: resolved.brandingVersionId,
+			version: resolved.version,
+			definitionHash: resolved.definitionHash,
+			compiledHash: resolved.compiledHash,
+			schemaVersion: resolved.schemaVersion,
+			compilerVersion: resolved.compilerVersion,
+			defaultModeId: modeObject.projection.defaultModeId,
+			allowedModeIds: resolved.allowedModeIds,
+		};
+		if (identity && !sameFallbackIdentity(identity, candidate)) {
+			throw new Error(
+				"Embedded fallback signed modes do not share one identity",
+			);
+		}
+		identity ??= candidate;
+		resolvedModes.set(modeId, resolved);
+	}
+
+	if (!identity || identity.version === null) {
+		throw new Error(
+			"Embedded fallback must contain a published BrandingVersion",
 		);
 	}
+	const modeIds = [...resolvedModes.keys()];
+	if (!sameStrings(modeIds, identity.allowedModeIds)) {
+		throw new Error("Embedded fallback must contain every allowed signed mode");
+	}
+	return Object.freeze({
+		brandingVersionId: identity.brandingVersionId,
+		defaultModeId: identity.defaultModeId,
+		allowedModeIds: identity.allowedModeIds,
+		modes: resolvedModes,
+	});
+}
+
+function sameFallbackIdentity(
+	left: {
+		readonly workspaceId: string;
+		readonly brandingVersionId: string;
+		readonly version: number | null;
+		readonly definitionHash: string;
+		readonly compiledHash: string;
+		readonly schemaVersion: number;
+		readonly compilerVersion: string;
+		readonly defaultModeId: string;
+		readonly allowedModeIds: readonly string[];
+	},
+	right: {
+		readonly workspaceId: string;
+		readonly brandingVersionId: string;
+		readonly version: number | null;
+		readonly definitionHash: string;
+		readonly compiledHash: string;
+		readonly schemaVersion: number;
+		readonly compilerVersion: string;
+		readonly defaultModeId: string;
+		readonly allowedModeIds: readonly string[];
+	},
+): boolean {
+	return (
+		left.workspaceId === right.workspaceId &&
+		left.brandingVersionId === right.brandingVersionId &&
+		left.version === right.version &&
+		left.definitionHash === right.definitionHash &&
+		left.compiledHash === right.compiledHash &&
+		left.schemaVersion === right.schemaVersion &&
+		left.compilerVersion === right.compilerVersion &&
+		left.defaultModeId === right.defaultModeId &&
+		sameStrings(left.allowedModeIds, right.allowedModeIds)
+	);
+}
+
+function selectEmbeddedFallback(
+	fallback: VerifiedEmbeddedFallback,
+	requestedModeId: string | undefined,
+): ResolvedBranding {
+	const modeId =
+		requestedModeId && fallback.allowedModeIds.includes(requestedModeId)
+			? requestedModeId
+			: fallback.defaultModeId;
+	const resolved = fallback.modes.get(modeId);
+	if (!resolved) {
+		throw new BrandingRuntimeError(
+			"BRANDING_FALLBACK_INVALID",
+			"The embedded branded fallback does not contain its selected mode",
+		);
+	}
+	return resolved;
 }
 
 function verifyPreviewMetadata(
@@ -269,7 +424,8 @@ function verifyPreviewMetadata(
 		envelope.source !== "preview" ||
 		envelope.previewSessionId !== preview.sessionId ||
 		envelope.draftTitle !== preview.draftTitle ||
-		envelope.definitionHash !== preview.definitionHash ||
+		envelope.modeObject.projection.workspaceId !== preview.workspaceId ||
+		envelope.modeObject.projection.definitionHash !== preview.definitionHash ||
 		envelope.expiresAt !== preview.expiresAt ||
 		new Date(envelope.expiresAt).getTime() <= now.getTime()
 	) {
@@ -301,79 +457,33 @@ function validatePreviewRequest(
 	}
 }
 
-function selectFallbackMode(
-	fallback: EmbeddedBrandingFallback,
-	requestedModeId: string | undefined,
-): EmbeddedBrandingFallback {
-	const artifact = fallback.compiledObject.artifact;
-	const modeId =
-		requestedModeId && artifact.allowedModeIds.includes(requestedModeId)
-			? requestedModeId
-			: artifact.defaultModeId;
-	return modeId === fallback.modeId ? fallback : { ...fallback, modeId };
-}
-
-function projectAssets(
-	envelope: RuntimeBrandingEnvelope,
+function validateAssetReferences(
+	references: readonly BrandingAssetReference[],
 	allowedAssetOrigins: ReadonlySet<string>,
 ): readonly BrandingAssetReference[] {
-	const artifact = envelope.compiledObject.artifact;
-	const manifestIds = Object.keys(artifact.assetManifest).sort();
-	const deliveryIds = Object.keys(envelope.assetDeliveries).sort();
-	if (manifestIds.join("\u0000") !== deliveryIds.join("\u0000")) {
-		throw new BrandingRuntimeError(
-			"BRANDING_RUNTIME_INTEGRITY_FAILED",
-			"Runtime asset delivery does not match the signed artifact manifest",
-		);
-	}
-	const rolesByAsset = new Map<string, string[]>();
-	for (const [role, assetId] of Object.entries(artifact.assetRoles)) {
-		const roles = rolesByAsset.get(assetId) ?? [];
-		roles.push(role);
-		rolesByAsset.set(assetId, roles);
-	}
-	return manifestIds.map((id) => {
-		const asset = artifact.assetManifest[id];
-		const delivery = envelope.assetDeliveries[id];
-		if (
-			!asset ||
-			!delivery ||
-			!safeAssetHref(delivery.href, allowedAssetOrigins)
-		) {
+	for (const reference of references) {
+		if (!safeAssetHref(reference.href, allowedAssetOrigins)) {
 			throw new BrandingRuntimeError(
 				"BRANDING_RUNTIME_INTEGRITY_FAILED",
-				`Runtime asset '${id}' is invalid`,
+				`Signed branding asset '${reference.id}' has an unsafe delivery URL`,
 			);
 		}
-		const expectedIntegrity = sha256Integrity(asset.sha256);
-		if (delivery.integrity && delivery.integrity !== expectedIntegrity) {
-			throw new BrandingRuntimeError(
-				"BRANDING_RUNTIME_INTEGRITY_FAILED",
-				`Runtime asset '${id}' has invalid integrity metadata`,
-			);
-		}
-		return Object.freeze({
-			id,
-			roles: Object.freeze([...(rolesByAsset.get(id) ?? [])].sort()),
-			href: delivery.href,
-			sha256: asset.sha256,
-			mediaType: asset.mediaType,
-			integrity: expectedIntegrity,
-			...(asset.width === undefined ? {} : { width: asset.width }),
-			...(asset.height === undefined ? {} : { height: asset.height }),
-			...(asset.accessibleLabel
-				? { accessibleLabel: asset.accessibleLabel }
-				: {}),
-			...(asset.licenseId ? { licenseId: asset.licenseId } : {}),
-		});
-	});
+	}
+	return references;
 }
 
 function safeAssetHref(
 	value: string,
 	allowedAssetOrigins: ReadonlySet<string>,
 ): boolean {
-	if (hasControlCharacters(value) || value.includes("\\")) return false;
+	if (
+		hasControlCharacters(value) ||
+		value.includes("\\") ||
+		value.includes("?") ||
+		value.includes("#")
+	) {
+		return false;
+	}
 	if (value.startsWith("/") && !value.startsWith("//")) return true;
 	try {
 		const url = new URL(value);
@@ -381,6 +491,7 @@ function safeAssetHref(
 			url.protocol === "https:" &&
 			!url.username &&
 			!url.password &&
+			url.href === value &&
 			allowedAssetOrigins.has(url.origin)
 		);
 	} catch {
@@ -427,64 +538,14 @@ function hasControlCharacters(value: string): boolean {
 	return false;
 }
 
-function sha256Integrity(hex: string): string {
-	const bytes = new Uint8Array(
-		hex.match(/.{2}/g)?.map((pair) => Number.parseInt(pair, 16)) ?? [],
+function sameStrings(
+	left: readonly string[],
+	right: readonly string[],
+): boolean {
+	return (
+		left.length === right.length &&
+		left.every((value, index) => value === right[index])
 	);
-	let binary = "";
-	for (const byte of bytes) binary += String.fromCharCode(byte);
-	return `sha256-${btoa(binary)}`;
-}
-
-function parseBootstrap(serialized: string): BrandingBootstrap {
-	const value = JSON.parse(serialized) as unknown;
-	if (
-		!isRecord(value) ||
-		!isRecord(value.tokens) ||
-		!isRecord(value.visualization) ||
-		!isRecord(value.componentAppearance)
-	) {
-		throw new BrandingRuntimeError(
-			"BRANDING_RUNTIME_INTEGRITY_FAILED",
-			"The branding bootstrap projection is invalid",
-		);
-	}
-	const attributes = value.attributes;
-	if (
-		!isRecord(attributes) ||
-		Object.values(attributes).some((entry) => typeof entry !== "string")
-	) {
-		throw new BrandingRuntimeError(
-			"BRANDING_RUNTIME_INTEGRITY_FAILED",
-			"The branding bootstrap attributes are invalid",
-		);
-	}
-	if (Object.values(value.tokens).some((entry) => typeof entry !== "string")) {
-		throw new BrandingRuntimeError(
-			"BRANDING_RUNTIME_INTEGRITY_FAILED",
-			"The branding bootstrap tokens are invalid",
-		);
-	}
-	const requiredStrings = [
-		"compilerVersion",
-		"definitionHash",
-		"compiledHash",
-		"modeHash",
-		"modeId",
-		"colorScheme",
-		"scopeId",
-	] as const;
-	if (
-		typeof value.schemaVersion !== "number" ||
-		requiredStrings.some((key) => typeof value[key] !== "string") ||
-		(value.colorScheme !== "light" && value.colorScheme !== "dark")
-	) {
-		throw new BrandingRuntimeError(
-			"BRANDING_RUNTIME_INTEGRITY_FAILED",
-			"The branding bootstrap identity is invalid",
-		);
-	}
-	return value as BrandingBootstrap;
 }
 
 function validateTimeout(value: number): number {
@@ -521,10 +582,6 @@ function emitFallback(
 	} catch {
 		// Operational reporting must never suppress an already verified branded fallback.
 	}
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-	return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function deepFreeze<T>(value: T): T {

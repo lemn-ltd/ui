@@ -16,15 +16,16 @@ selected, battle-tested open-source capabilities. Functional behavior remains
 with the provider of record. LEMN owns public APIs, semantic branding adapters,
 curated catalogs/blocks, provenance, conformance, and releases.
 
-Branding source is `BrandingDefinition` v1. Publication compiles it into an
-immutable signed object; runtime consumers receive only one verified mode
+Branding source is `BrandingDefinition` v1. Publication keeps the complete
+immutable compiled object in private R2 and signs one minimal projection per
+allowed mode. A runtime response contains only the selected verified mode
 projection. Components never parse source JSON.
 
 ## Responsibility map
 
 | Boundary | Owns | Must not own |
 | --- | --- | --- |
-| `@lemn-ltd/brand-contract` | Schema, validation, deterministic compiler, diagnostics, artifact envelope, tokens, provider themes | Persistence, authorization, publication, active selection |
+| `@lemn-ltd/brand-contract` | Schema, validation, deterministic compiler, diagnostics, private artifact and signed mode-projection contracts, tokens, provider themes | Persistence, authorization, publication, active selection |
 | `@lemn-ltd/brand-runtime` | Server resolution adapters, verification, selected-mode projection, SSR helpers, embedded fallback | Browser resolution, cookies, routing, source authoring, credentials |
 | `@lemn-ltd/ui` | Controlled public components, visualizations, styles, blocks, catalogs | Product APIs, auth, routes, global state, source branding JSON |
 | `@lemn-ltd/brand-studio` | Controlled wizard, real preview, JSON review, typed host intents | Fetching, credentials, persistence, publication authority |
@@ -41,20 +42,22 @@ provider registry + selected upstream packages
                     ▼
               @lemn-ltd/ui
 
-@lemn-ltd/brand-contract ─► signed compiled object ─► AgentOps private runtime
-            │                                           │
-            └─► @lemn-ltd/brand-studio                  ▼
-                                                @lemn-ltd/brand-runtime
-                                                         │
-                                                         ▼
-                                                  product SSR host
+@lemn-ltd/brand-contract ─► private full object ─► AgentOps private R2
+            │                         │
+            │                         └─► signed per-mode projections
+            └─► @lemn-ltd/brand-studio                   │
+                                                        ▼
+                                              AgentOps private runtime
+                                                        │
+                                                        ▼
+                                      one selected mode in product SSR host
 ```
 
 The UI repository contains no mutable control-plane authority. Postgres is
 authoritative for Workspace/version state; private R2 stores content-addressed
-compiled objects; runtime caches are hash-keyed accelerators only. Consumers
-pin exact published versions and never connect repositories with workspace
-links in production.
+full compiled objects and their signed minimal mode projections; runtime caches
+are hash-keyed accelerators only. Consumers pin exact published versions and
+never connect repositories with workspace links in production.
 
 ## Runtime transport and workload identity
 

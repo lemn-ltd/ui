@@ -1,5 +1,7 @@
 import type {
-	CompiledBrandingObject,
+	CompiledBrandingAssetReference,
+	CompiledBrandingBootstrap,
+	CompiledBrandingModeObject,
 	CompiledBrandingVerifier,
 	CompiledFontPreload,
 } from "@lemn-ltd/brand-contract";
@@ -28,73 +30,32 @@ export type BrandingPreviewExchangeRequest = {
 
 export type BrandingPreviewExchangeResult = BrandingPreviewSelection;
 
-export type RuntimeAssetDelivery = {
-	readonly href: string;
-	readonly integrity?: string;
-};
-
 type RuntimeBrandingEnvelopeBase = {
-	readonly workspaceId: string;
-	readonly brandingVersionId: string;
-	readonly modeId: string;
-	readonly definitionHash: string;
-	readonly compiledHash: string;
-	readonly byteHash: string;
-	readonly compiledObject: CompiledBrandingObject;
-	readonly assetDeliveries: Readonly<Record<string, RuntimeAssetDelivery>>;
+	readonly modeObject: CompiledBrandingModeObject;
 	readonly etag?: string;
 };
 
 export type RuntimeBrandingEnvelope =
 	| (RuntimeBrandingEnvelopeBase & {
 			readonly source: "active";
-			readonly version: number;
 	  })
 	| (RuntimeBrandingEnvelopeBase & {
 			readonly source: "preview";
-			readonly version: null;
 			readonly previewSessionId: string;
 			readonly draftTitle: string;
 			readonly expiresAt: string;
-	  })
-	| (RuntimeBrandingEnvelopeBase & {
-			readonly source: "embedded-fallback";
-			readonly version: number;
-			readonly exportedAt: string;
 	  });
 
-export type EmbeddedBrandingFallback = Extract<
-	RuntimeBrandingEnvelope,
-	{ readonly source: "embedded-fallback" }
->;
-
-export type BrandingAssetReference = {
-	readonly id: string;
-	readonly roles: readonly string[];
-	readonly href: string;
-	readonly sha256: string;
-	readonly mediaType: string;
-	readonly integrity?: string;
-	readonly width?: number;
-	readonly height?: number;
-	readonly accessibleLabel?: string;
-	readonly licenseId?: string;
+export type EmbeddedBrandingFallback = {
+	readonly format: "lemn.embedded-branding-fallback";
+	readonly formatVersion: 1;
+	readonly exportedAt: string;
+	readonly modes: Readonly<Record<string, CompiledBrandingModeObject>>;
 };
 
-export type BrandingBootstrap = {
-	readonly schemaVersion: number;
-	readonly compilerVersion: string;
-	readonly definitionHash: string;
-	readonly compiledHash: string;
-	readonly modeHash: string;
-	readonly modeId: string;
-	readonly colorScheme: "light" | "dark";
-	readonly scopeId: string;
-	readonly attributes: Readonly<Record<string, string>>;
-	readonly tokens: Readonly<Record<string, string>>;
-	readonly visualization: Readonly<Record<string, unknown>>;
-	readonly componentAppearance: Readonly<Record<string, unknown>>;
-};
+export type BrandingAssetReference = CompiledBrandingAssetReference;
+
+export type BrandingBootstrap = CompiledBrandingBootstrap;
 
 export type ResolvedBranding = {
 	readonly workspaceId: string;
@@ -105,7 +66,7 @@ export type ResolvedBranding = {
 	readonly allowedModeIds: readonly string[];
 	readonly definitionHash: string;
 	readonly compiledHash: string;
-	readonly byteHash: string;
+	readonly projectionHash: string;
 	readonly schemaVersion: number;
 	readonly compilerVersion: string;
 	readonly source: BrandingRuntimeSource;

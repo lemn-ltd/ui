@@ -31,6 +31,5 @@ export type {
 	EmbeddedBrandingFallback,
 	ResolveBrandingOptions,
 	ResolvedBranding,
-	RuntimeAssetDelivery,
 	RuntimeBrandingEnvelope,
 } from "./types.js";

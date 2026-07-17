@@ -2,11 +2,19 @@
 
 Server-only branding resolution and SSR helpers for LEMN applications.
 
-The package resolves one active or preview `BrandingVersion`, verifies the
-signed compiled object, projects one allowed mode, and produces critical CSS,
-font preloads, safe asset references, and a minimal hydration bootstrap before
-the first HTML byte is sent. Active resolution has a bounded embedded branded
-fallback. Preview resolution never silently falls back to active branding.
+The package resolves one active or preview `BrandingVersion`, accepts only one
+minimal signed `CompiledBrandingModeObject`, verifies its canonical
+`projectionHash` and signed Workspace/publication identity, and produces
+critical CSS, font preloads, safe public asset references, and a minimal
+hydration bootstrap before the first HTML byte is sent. Runtime envelopes never
+contain the source definition, a full compiled artifact, private storage keys,
+provider credentials, or another mode's configuration.
+
+Active resolution has a bounded embedded branded fallback containing an exact
+map of independently signed minimal mode projections. Every projection in the
+map is verified before use and must share one publication identity; this allows
+server-owned light/dark selection without embedding the private full artifact.
+Preview resolution never silently falls back to active branding.
 
 Runtime and MCP credentials are different. Same-account Cloudflare consumers
 use the RPC Service Binding adapter with a dedicated `WorkerEntrypoint` and
@@ -35,8 +43,11 @@ calls `resolveBranding`, `exchangeBrandingPreview`, and
 request body.
 
 `createBrandingSsrParts` emits the selected color scheme, immutable font
-preloads, critical scoped CSS, and the exact hydration bootstrap before host
-markup. `brandingContentSecurityPolicySources` derives `font-src` from every
+preloads, critical scoped CSS, and a hydration document bound to the exact
+signed `projectionHash` and mode before host markup.
+`assertBrandingHydrationIdentity` rejects a document from another mode even when
+both modes share one `compiledHash`. `brandingContentSecurityPolicySources`
+derives `font-src` from every
 verified selected-mode font resource origin, including non-preloaded
 `preferred` fonts, and rejects credentialed or non-HTTPS origins. Consumers
 must render those parts during SSR; a browser repair fetch is not a supported

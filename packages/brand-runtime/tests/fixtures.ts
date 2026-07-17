@@ -1,12 +1,16 @@
 import {
-	type CompiledBrandingObject,
+	type CompiledBrandingArtifact,
+	type CompiledBrandingModeObject,
 	type CompiledBrandingVerifier,
 	compileBrandingDefinition,
-	createCompiledBrandingObject,
+	createCompiledBrandingModeObject,
 	sha256,
 } from "@lemn-ltd/brand-contract";
 import { getSystemBrandingTemplate } from "@lemn-ltd/brand-contract/system-brandings";
-import type { RuntimeBrandingEnvelope } from "../src/types.js";
+import type {
+	EmbeddedBrandingFallback,
+	RuntimeBrandingEnvelope,
+} from "../src/types.js";
 
 export const WORKSPACE_ID = "workspace-lunaria-care";
 export const ACTIVE_VERSION_ID = "branding-version-active";
@@ -22,12 +26,18 @@ export const verifier: CompiledBrandingVerifier = async (payload, signature) =>
 	signature.keyId === "test-ed25519-1" &&
 	signature.value === (await sha256(`${payload}:${SIGNING_SECRET}`));
 
-export async function compiledObject(): Promise<CompiledBrandingObject> {
+const signer = async (payload: string) => ({
+	algorithm: "Ed25519" as const,
+	keyId: "test-ed25519-1",
+	value: await sha256(`${payload}:${SIGNING_SECRET}`),
+});
+
+export async function compiledArtifact(): Promise<CompiledBrandingArtifact> {
 	const template = getSystemBrandingTemplate("aster-vault", 1);
-	return signDefinition(template.definition);
+	return compileDefinition(template.definition);
 }
 
-export async function compiledObjectWithAsset(): Promise<CompiledBrandingObject> {
+export async function compiledArtifactWithAsset(): Promise<CompiledBrandingArtifact> {
 	const template = getSystemBrandingTemplate("aster-vault", 1);
 	const definition = {
 		...structuredClone(template.definition),
@@ -46,12 +56,12 @@ export async function compiledObjectWithAsset(): Promise<CompiledBrandingObject>
 		},
 		assetRoles: { primaryLogo: "primary-logo" },
 	};
-	return signDefinition(definition);
+	return compileDefinition(definition);
 }
 
-export async function compiledObjectWithManagedFont(
+export async function compiledArtifactWithManagedFont(
 	fidelity: "preferred" | "required",
-): Promise<CompiledBrandingObject> {
+): Promise<CompiledBrandingArtifact> {
 	const template = getSystemBrandingTemplate("aster-vault", 1);
 	const definition = structuredClone(template.definition);
 	definition.typography.body = {
@@ -62,38 +72,24 @@ export async function compiledObjectWithManagedFont(
 		weights: [400, 500, 600],
 		styles: ["normal"],
 	};
-	return signDefinition(definition);
-}
-
-async function signDefinition(input: unknown): Promise<CompiledBrandingObject> {
-	const result = await compileBrandingDefinition(input);
-	if (!result.ok) throw new Error("System branding fixture must compile");
-	return createCompiledBrandingObject(result.artifact, async (payload) => ({
-		algorithm: "Ed25519",
-		keyId: "test-ed25519-1",
-		value: await sha256(`${payload}:${SIGNING_SECRET}`),
-	}));
+	return compileDefinition(definition);
 }
 
 export async function envelope(
 	source: RuntimeBrandingEnvelope["source"] = "active",
 	modeId = "light",
 ): Promise<RuntimeBrandingEnvelope> {
-	const object = await compiledObject();
-	return {
-		workspaceId: WORKSPACE_ID,
-		brandingVersionId:
-			source === "embedded-fallback" ? FALLBACK_VERSION_ID : ACTIVE_VERSION_ID,
-		version:
-			source === "preview" ? null : source === "embedded-fallback" ? 1 : 2,
+	const artifact = await compiledArtifact();
+	const modeObject = await signedModeObject({
+		artifact,
+		brandingVersionId: ACTIVE_VERSION_ID,
+		version: source === "preview" ? null : 2,
 		modeId,
-		definitionHash: object.artifact.definitionHash,
-		compiledHash: object.compiledHash,
-		byteHash: object.byteHash,
+	});
+	return {
 		source,
-		compiledObject: object,
-		assetDeliveries: {},
-		etag: `"${object.compiledHash}"`,
+		modeObject,
+		etag: `"${modeObject.projectionHash}"`,
 		...(source === "preview"
 			? {
 					previewSessionId: PREVIEW_SESSION_ID,
@@ -101,39 +97,111 @@ export async function envelope(
 					expiresAt: "2035-01-01T00:00:00.000Z",
 				}
 			: {}),
-		...(source === "embedded-fallback"
-			? { exportedAt: "2026-07-17T00:00:00.000Z" }
-			: {}),
+	};
+}
+
+export async function embeddedFallback(): Promise<EmbeddedBrandingFallback> {
+	const artifact = await compiledArtifact();
+	const modes = Object.fromEntries(
+		await Promise.all(
+			artifact.allowedModeIds.map(
+				async (modeId) =>
+					[
+						modeId,
+						await signedModeObject({
+							artifact,
+							brandingVersionId: FALLBACK_VERSION_ID,
+							version: 1,
+							modeId,
+						}),
+					] as const,
+			),
+		),
+	);
+	return {
+		format: "lemn.embedded-branding-fallback",
+		formatVersion: 1,
+		exportedAt: "2026-07-17T00:00:00.000Z",
+		modes,
 	};
 }
 
 export async function envelopeWithAsset(
 	href: string,
 ): Promise<RuntimeBrandingEnvelope> {
-	const base = await envelope("active");
-	const object = await compiledObjectWithAsset();
+	const artifact = await compiledArtifactWithAsset();
+	const modeObject = await signedModeObject({
+		artifact,
+		brandingVersionId: ACTIVE_VERSION_ID,
+		version: 2,
+		modeId: "light",
+		assetDeliveries: { "primary-logo": { href } },
+	});
 	return {
-		...base,
-		definitionHash: object.artifact.definitionHash,
-		compiledHash: object.compiledHash,
-		byteHash: object.byteHash,
-		compiledObject: object,
-		assetDeliveries: {
-			"primary-logo": { href },
-		},
+		source: "active",
+		modeObject,
+		etag: `"${modeObject.projectionHash}"`,
 	};
 }
 
 export async function envelopeWithManagedFont(
 	fidelity: "preferred" | "required",
 ): Promise<RuntimeBrandingEnvelope> {
-	const base = await envelope("active");
-	const object = await compiledObjectWithManagedFont(fidelity);
+	const artifact = await compiledArtifactWithManagedFont(fidelity);
+	const modeObject = await signedModeObject({
+		artifact,
+		brandingVersionId: ACTIVE_VERSION_ID,
+		version: 2,
+		modeId: "light",
+	});
 	return {
-		...base,
-		definitionHash: object.artifact.definitionHash,
-		compiledHash: object.compiledHash,
-		byteHash: object.byteHash,
-		compiledObject: object,
+		source: "active",
+		modeObject,
+		etag: `"${modeObject.projectionHash}"`,
 	};
+}
+
+export async function envelopeWithSingleAllowedMode(): Promise<RuntimeBrandingEnvelope> {
+	const template = getSystemBrandingTemplate("aster-vault", 1);
+	const definition = structuredClone(template.definition);
+	definition.runtimeSelection = { selectable: false };
+	const artifact = await compileDefinition(definition);
+	const modeObject = await signedModeObject({
+		artifact,
+		brandingVersionId: ACTIVE_VERSION_ID,
+		version: 3,
+		modeId: artifact.defaultModeId,
+	});
+	return {
+		source: "active",
+		modeObject,
+		etag: `"${modeObject.projectionHash}"`,
+	};
+}
+
+async function signedModeObject(input: {
+	readonly artifact: CompiledBrandingArtifact;
+	readonly brandingVersionId: string;
+	readonly version: number | null;
+	readonly modeId: string;
+	readonly assetDeliveries?: Readonly<
+		Record<string, { readonly href: string }>
+	>;
+}): Promise<CompiledBrandingModeObject> {
+	return createCompiledBrandingModeObject(
+		{
+			...input,
+			workspaceId: WORKSPACE_ID,
+			assetDeliveries: input.assetDeliveries ?? {},
+		},
+		signer,
+	);
+}
+
+async function compileDefinition(
+	input: unknown,
+): Promise<CompiledBrandingArtifact> {
+	const result = await compileBrandingDefinition(input);
+	if (!result.ok) throw new Error("System branding fixture must compile");
+	return result.artifact;
 }

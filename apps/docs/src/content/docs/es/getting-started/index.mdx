@@ -50,10 +50,11 @@ provider upstream.
 ## 4. Aplica branding antes de renderizar
 
 Los componentes nunca parsean JSON fuente. Un server confiable resuelve una
-version publicada del Workspace, verifica el objeto compilado firmado e inyecta
-CSS, preloads, atributos y bootstrap del mode antes del primer markup. Usa
-`@lemn-ltd/brand-runtime`; no recrees verification en producto. Sigue el
-[runbook SSR](/es/ssr-branding/).
+version publicada del Workspace, verifica la proyeccion minima firmada del mode
+y su projection hash canonico, e inyecta CSS, preloads, atributos y bootstrap
+antes del primer markup. El objeto compilado completo permanece privado en el
+storage de publicacion. Usa `@lemn-ltd/brand-runtime`; no recrees verification
+en producto. Sigue el [runbook SSR](/es/ssr-branding/).
 
 ## 5. Mantiene plataforma fuera de UI
 

@@ -96,6 +96,9 @@
 	--lemn-component-controls: solid;
 	--lemn-component-cards: bordered;
 	--lemn-component-inputs: outlined;
+	--lemn-icon-style: outline;
+	--lemn-icon-stroke-width: 2;
+	--lemn-icon-size: 16px;
 
 	--lemn-font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
 	--lemn-font-heading: "Inter", ui-sans-serif, system-ui, sans-serif;

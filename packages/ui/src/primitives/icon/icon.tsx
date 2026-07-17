@@ -60,7 +60,7 @@ import {
   ZoomIn,
   ZoomOut,
 } from 'lucide-react';
-import type { ReactElement, SVGProps } from 'react';
+import type { CSSProperties, ReactElement, SVGProps } from 'react';
 import './icon.css';
 
 /**
@@ -200,15 +200,21 @@ export interface IconProps extends Omit<SVGProps<SVGSVGElement>, 'name' | 'ref'>
   readonly size?: IconSize;
 }
 
-export function Icon({ name, size = 16, className, ...rest }: IconProps): ReactElement {
+export function Icon({ name, size, className, style, ...rest }: IconProps): ReactElement {
   const Glyph = GLYPHS[name];
+  const resolvedSize = size ?? 16;
+  const brandedDefaultSize =
+    size === undefined
+      ? ({ height: 'var(--lemn-icon-size)', width: 'var(--lemn-icon-size)' } satisfies CSSProperties)
+      : undefined;
   return (
     <Glyph
       aria-hidden="true"
       className={['ui-icon', className].filter(Boolean).join(' ')}
-      data-size={size}
-      height={size}
-      width={size}
+      data-size={size ?? 'branding'}
+      height={resolvedSize}
+      style={{ ...brandedDefaultSize, ...style }}
+      width={resolvedSize}
       {...rest}
     />
   );

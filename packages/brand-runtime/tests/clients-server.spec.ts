@@ -10,6 +10,7 @@ import {
 	createBrandingSsrParts,
 } from "../src/server.js";
 import {
+	embeddedFallback,
 	envelope,
 	envelopeWithManagedFont,
 	PREVIEW_DRAFT_TITLE,
@@ -90,7 +91,7 @@ describe("server transports and SSR helpers", () => {
 					sessionId: PREVIEW_SESSION_ID,
 					sessionBearer: PREVIEW_SESSION_BEARER,
 					draftTitle: PREVIEW_DRAFT_TITLE,
-					definitionHash: preview.definitionHash,
+					definitionHash: preview.modeObject.projection.definitionHash,
 					expiresAt: preview.expiresAt,
 				},
 			},
@@ -108,7 +109,7 @@ describe("server transports and SSR helpers", () => {
 			requestedModeId: "dark",
 		});
 		expect(String(captured[0]?.init?.body)).not.toContain(
-			preview.definitionHash,
+			preview.modeObject.projection.definitionHash,
 		);
 	});
 
@@ -168,7 +169,7 @@ describe("server transports and SSR helpers", () => {
 			sessionId: PREVIEW_SESSION_ID,
 			sessionBearer: PREVIEW_SESSION_BEARER,
 			draftTitle: PREVIEW_DRAFT_TITLE,
-			definitionHash: preview.definitionHash,
+			definitionHash: preview.modeObject.projection.definitionHash,
 			expiresAt: preview.expiresAt,
 		}));
 		const client = createServiceBindingBrandingRuntimeClient({
@@ -199,7 +200,7 @@ describe("server transports and SSR helpers", () => {
 					sessionId: PREVIEW_SESSION_ID,
 					sessionBearer: PREVIEW_SESSION_BEARER,
 					draftTitle: PREVIEW_DRAFT_TITLE,
-					definitionHash: preview.definitionHash,
+					definitionHash: preview.modeObject.projection.definitionHash,
 					expiresAt: preview.expiresAt,
 				},
 			},
@@ -266,7 +267,7 @@ describe("server transports and SSR helpers", () => {
 								sessionId: PREVIEW_SESSION_ID,
 								sessionBearer: PREVIEW_SESSION_BEARER,
 								draftTitle: PREVIEW_DRAFT_TITLE,
-								definitionHash: preview.definitionHash,
+								definitionHash: preview.modeObject.projection.definitionHash,
 								expiresAt: preview.expiresAt,
 							},
 						},
@@ -314,7 +315,7 @@ describe("server transports and SSR helpers", () => {
 
 	it("places critical branding and the exact bootstrap before host markup", async () => {
 		const active = await envelope("active");
-		const fallback = await envelope("embedded-fallback");
+		const fallback = await embeddedFallback();
 		const resolved = await resolveBranding({
 			workspaceId: WORKSPACE_ID,
 			client: { resolve: async () => active },
@@ -326,30 +327,70 @@ describe("server transports and SSR helpers", () => {
 		expect(parts.htmlAttributes["data-lemn-branding-hash"]).toBe(
 			resolved.compiledHash,
 		);
+		expect(parts.htmlAttributes["data-lemn-branding-projection-hash"]).toBe(
+			resolved.projectionHash,
+		);
+		expect(parts.htmlAttributes["data-lemn-branding-mode-hash"]).toBe(
+			resolved.bootstrap.modeHash,
+		);
 		expect(parts.headMarkup).toContain(
-			`<style data-lemn-critical-branding="${resolved.compiledHash}"`,
+			`<style data-lemn-critical-branding="${resolved.projectionHash}"`,
 		);
 		expect(parts.headMarkup).toContain(
 			'<meta name="color-scheme" content="light">',
 		);
 		expect(parts.bootstrapMarkup).toContain(
-			`data-lemn-branding-bootstrap="${resolved.compiledHash}"`,
+			`data-lemn-branding-bootstrap="${resolved.projectionHash}"`,
 		);
 		expect(parts.bootstrapMarkup).not.toContain("</script><script");
+		const hydrationDocument = parseHydrationDocument(parts.bootstrapMarkup);
 		expect(() =>
 			assertBrandingHydrationIdentity(
-				resolved.compiledHash,
-				resolved.bootstrap,
+				parts.hydrationIdentity,
+				hydrationDocument,
 			),
 		).not.toThrow();
 		expect(() =>
-			assertBrandingHydrationIdentity("0".repeat(64), resolved.bootstrap),
+			assertBrandingHydrationIdentity(parts.hydrationIdentity, {
+				...hydrationDocument,
+				projectionHash: "0".repeat(64),
+			}),
 		).toThrow();
+	});
+
+	it("rejects hydration from another mode even when both share one compiled hash", async () => {
+		const fallback = await embeddedFallback();
+		const light = await resolveBranding({
+			workspaceId: WORKSPACE_ID,
+			modeId: "light",
+			client: { resolve: async () => envelope("active", "light") },
+			verifier,
+			embeddedFallback: fallback,
+		});
+		const dark = await resolveBranding({
+			workspaceId: WORKSPACE_ID,
+			modeId: "dark",
+			client: { resolve: async () => envelope("active", "dark") },
+			verifier,
+			embeddedFallback: fallback,
+		});
+		const lightParts = createBrandingSsrParts(light);
+		const darkParts = createBrandingSsrParts(dark);
+		const lightDocument = parseHydrationDocument(lightParts.bootstrapMarkup);
+
+		expect(light.compiledHash).toBe(dark.compiledHash);
+		expect(light.projectionHash).not.toBe(dark.projectionHash);
+		expect(() =>
+			assertBrandingHydrationIdentity(
+				darkParts.hydrationIdentity,
+				lightDocument,
+			),
+		).toThrow("do not match");
 	});
 
 	it("allows preferred managed font CSS through CSP without preloading it", async () => {
 		const active = await envelopeWithManagedFont("preferred");
-		const fallback = await envelope("embedded-fallback");
+		const fallback = await embeddedFallback();
 		const resolved = await resolveBranding({
 			workspaceId: WORKSPACE_ID,
 			client: { resolve: async () => active },
@@ -371,7 +412,7 @@ describe("server transports and SSR helpers", () => {
 
 	it("preloads required managed fonts and emits deterministic credential-free SSR", async () => {
 		const active = await envelopeWithManagedFont("required");
-		const fallback = await envelope("embedded-fallback");
+		const fallback = await embeddedFallback();
 		const fetch = vi.fn(
 			async () =>
 				new Response(JSON.stringify(active), {
@@ -411,7 +452,7 @@ describe("server transports and SSR helpers", () => {
 
 	it("rejects unverified or credentialed font origins at the CSP boundary", async () => {
 		const active = await envelopeWithManagedFont("required");
-		const fallback = await envelope("embedded-fallback");
+		const fallback = await embeddedFallback();
 		const resolved = await resolveBranding({
 			workspaceId: WORKSPACE_ID,
 			client: { resolve: async () => active },
@@ -443,4 +484,11 @@ function rejectablePromise<T>(): {
 		rejectPromise = reject;
 	});
 	return { promise, reject: rejectPromise };
+}
+
+function parseHydrationDocument(markup: string): unknown {
+	const start = markup.indexOf(">");
+	const end = markup.lastIndexOf("</script>");
+	if (start < 0 || end <= start) throw new Error("Invalid bootstrap markup");
+	return JSON.parse(markup.slice(start + 1, end));
 }

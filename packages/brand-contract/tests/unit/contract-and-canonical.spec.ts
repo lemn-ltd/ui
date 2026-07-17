@@ -43,6 +43,19 @@ describe("BrandingDefinition v1", () => {
 		const danglingAsset = makeBrandingDefinition();
 		danglingAsset.assetRoles = { primaryLogo: "missing-logo" };
 		expect(safeParseBrandingDefinition(danglingAsset).success).toBe(false);
+
+		const nonCanonicalAsset = makeBrandingDefinition();
+		nonCanonicalAsset.assets = {
+			logo: {
+				id: "logo",
+				kind: "logo",
+				storageKey: "assets/logo.svg",
+				sha256: "a".repeat(64),
+				mediaType: "image/svg+xml",
+				accessibleLabel: "Lemn\nLogo",
+			},
+		};
+		expect(safeParseBrandingDefinition(nonCanonicalAsset).success).toBe(false);
 	});
 
 	it("rejects every non-JSON extension value at the schema boundary", () => {

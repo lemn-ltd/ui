@@ -100,4 +100,12 @@ describe('Icon', () => {
     expect(svg?.getAttribute('aria-hidden')).toBe('true');
     expect(svg?.getAttribute('width')).toBe('20');
   });
+
+  it('uses the branding default size only when no explicit size is provided', () => {
+    const { container } = render(<Icon name="search" />);
+    const svg = container.querySelector('svg');
+    expect(svg?.getAttribute('data-size')).toBe('branding');
+    expect(svg?.getAttribute('style')).toContain('var(--lemn-icon-size)');
+    expect(svg?.getAttribute('width')).toBe('16');
+  });
 });

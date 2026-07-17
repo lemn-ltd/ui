@@ -18,10 +18,23 @@ describe("untrusted runtime boundaries", () => {
 			string,
 			unknown
 		>;
-		const object = input.compiledObject as {
-			artifact: Record<string, unknown>;
+		const object = input.modeObject as {
+			projection: Record<string, unknown>;
 		};
-		object.artifact.nonJson = new Date();
+		object.projection.nonJson = new Date();
+		expect(() => parseRuntimeBrandingEnvelope(input)).toThrow();
+	});
+
+	it("rejects legacy envelopes that expose full compiled artifacts", async () => {
+		const input = {
+			...(await envelope("active")),
+			compiledObject: {
+				artifact: {
+					modes: { dark: { privateSentinel: "must-not-cross-runtime" } },
+				},
+			},
+		};
+
 		expect(() => parseRuntimeBrandingEnvelope(input)).toThrow();
 	});
 
@@ -60,11 +73,26 @@ describe("untrusted runtime boundaries", () => {
 	it("requires null version only for draft previews", async () => {
 		const active = await envelope("active");
 		const preview = await envelope("preview");
-		expect(() =>
-			parseRuntimeBrandingEnvelope({ ...active, version: null }),
-		).toThrow();
-		expect(() =>
-			parseRuntimeBrandingEnvelope({ ...preview, version: 1 }),
-		).toThrow();
+		const invalidActive = structuredClone(active);
+		invalidActive.modeObject.projection.version = null;
+		const invalidPreview = structuredClone(preview);
+		invalidPreview.modeObject.projection.version = 1;
+		expect(() => parseRuntimeBrandingEnvelope(invalidActive)).toThrow();
+		expect(() => parseRuntimeBrandingEnvelope(invalidPreview)).toThrow();
+	});
+
+	it("rejects non-canonical signing key identifiers without trimming", async () => {
+		for (const keyId of [" test-ed25519-1", "test-ed25519-1\nother"]) {
+			const input = structuredClone(await envelope("active"));
+			input.modeObject.signature.keyId = keyId;
+			expect(() => parseRuntimeBrandingEnvelope(input)).toThrow();
+		}
+	});
+
+	it("never normalizes whitespace inside a signed mode projection", async () => {
+		const input = structuredClone(await envelope("active"));
+		input.modeObject.projection.workspaceId = ` ${WORKSPACE_ID} `;
+
+		expect(() => parseRuntimeBrandingEnvelope(input)).toThrow();
 	});
 });

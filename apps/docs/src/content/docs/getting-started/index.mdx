@@ -50,10 +50,12 @@ component internals, or an upstream provider.
 ## 4. Apply branding before render
 
 Components never parse source branding JSON. A trusted server resolves one
-published Workspace branding version, verifies the signed compiled object, and
-injects selected-mode CSS, preloads, scope attributes, and bootstrap before
-the first branded markup. Follow the [SSR branding runbook](/ssr-branding/) and
-use `@lemn-ltd/brand-runtime`; do not recreate verification in product code.
+published Workspace branding version, verifies its signed minimal mode
+projection and canonical projection hash, and injects selected-mode CSS,
+preloads, scope attributes, and bootstrap before the first branded markup. The
+full compiled object remains private to publication storage. Follow the
+[SSR branding runbook](/ssr-branding/) and use `@lemn-ltd/brand-runtime`; do not
+recreate verification in product code.
 
 ## 5. Keep platform concerns outside UI
 

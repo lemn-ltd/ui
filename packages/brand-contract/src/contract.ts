@@ -47,6 +47,23 @@ const extensionsSchema = z.record(extensionKeySchema, jsonValueSchema);
 const sha256Schema = z
 	.string()
 	.regex(/^[a-f0-9]{64}$/, "Use a lowercase SHA-256 digest");
+const canonicalTextSchema = (maximumLength: number) =>
+	z
+		.string()
+		.min(1)
+		.max(maximumLength)
+		.refine(
+			(value) => value.trim() === value && !hasControlCharacters(value),
+			"Use canonical text without surrounding whitespace or control characters",
+		);
+const mediaTypeSchema = z
+	.string()
+	.min(3)
+	.max(80)
+	.regex(
+		/^[a-z0-9][a-z0-9!#$&^_.+-]*\/[a-z0-9][a-z0-9!#$&^_.+-]*$/i,
+		"Use a canonical media type",
+	);
 const hexColorSchema = z
 	.string()
 	.regex(/^#[0-9a-fA-F]{6}$/, "Use a six-digit hexadecimal color");
@@ -76,11 +93,11 @@ export const brandingAssetSchema = z
 			.max(240)
 			.regex(/^[a-zA-Z0-9/_\-.]+$/),
 		sha256: sha256Schema,
-		mediaType: z.string().min(3).max(80),
+		mediaType: mediaTypeSchema,
 		width: z.number().int().positive().optional(),
 		height: z.number().int().positive().optional(),
-		accessibleLabel: z.string().trim().min(1).max(120).optional(),
-		licenseId: z.string().trim().min(1).max(80).optional(),
+		accessibleLabel: canonicalTextSchema(120).optional(),
+		licenseId: canonicalTextSchema(80).optional(),
 		variants: z.record(identifierSchema, identifierSchema).optional(),
 	})
 	.strict();
@@ -316,7 +333,7 @@ export const brandingVisualizationSchema = z
 
 export const brandingIconographySchema = z
 	.object({
-		family: z.string().trim().min(1).max(80),
+		family: canonicalTextSchema(80),
 		style: z.enum(["outline", "filled", "duotone"]),
 		strokeWidth: z.number().min(0.5).max(4),
 		defaultSize: cssLengthSchema,
@@ -503,4 +520,12 @@ export function parseBrandingDefinition(input: unknown): BrandingDefinition {
 
 export function safeParseBrandingDefinition(input: unknown) {
 	return brandingDefinitionSchema.safeParse(input);
+}
+
+function hasControlCharacters(value: string): boolean {
+	for (const character of value) {
+		const codePoint = character.codePointAt(0);
+		if (codePoint !== undefined && codePoint < 32) return true;
+	}
+	return false;
 }

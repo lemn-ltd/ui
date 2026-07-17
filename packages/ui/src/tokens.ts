@@ -100,6 +100,11 @@ export const tokens = {
 		cards: "--lemn-component-cards",
 		inputs: "--lemn-component-inputs",
 	},
+	iconography: {
+		style: "--lemn-icon-style",
+		strokeWidth: "--lemn-icon-stroke-width",
+		size: "--lemn-icon-size",
+	},
 	typography: {
 		family: {
 			body: "--lemn-font-body",
