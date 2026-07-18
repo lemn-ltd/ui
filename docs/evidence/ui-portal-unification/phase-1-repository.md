@@ -4,7 +4,7 @@ Status: **PASS — repository and build reconciliation complete**
 Evidence date: 2026-07-18
 Authority: [`UI_PORTAL_UNIFICATION_HANDOFF.md`](../../../UI_PORTAL_UNIFICATION_HANDOFF.md)
 Target branch: `main`
-Validated implementation-tree capture: `b2ec2f42871bae2a6beaf8086c3a022ac04750e7`
+Validated implementation-tree capture: `3daee44c95eaf9c182ab83f1f506f461c290faea`
 Base commit: `ca24a1482e4b4f09c98d081d6541572d3128268f`
 
 ## Evidence boundary
@@ -19,17 +19,20 @@ metadata only and do not change the validated application, package, build,
 test, or release paths.
 
 The capture includes the corrective clean-run release gates added after hosted
-validation exposed assumptions hidden by local generated output and nested
-process isolation: a
-contract imported UI package output before it was built, and the original
-release workflow conflated its main-ref guard with Cloudflare authorization.
-It also separates candidate Portal smoke from Docs and adds the integrated
-post-Docs production smoke. The release-version child now receives only the
-non-secret `GITHUB_REF` required to repeat the main-only guard; GitHub SHA and
-package credentials remain excluded. Generated `dist` directories were removed
-before the final root validation to prove the correction without residual artifacts.
+validation exposed assumptions hidden by local generated output, nested process
+isolation, and Changesets metadata propagation. A contract imported UI package
+output before it was built, the original release workflow conflated its main-ref
+guard with Cloudflare authorization, and Changesets rewrote private consumer
+manifests that were initially outside the governed release commit. Candidate
+Portal smoke is now separate from Docs and an integrated post-Docs production
+smoke remains mandatory. The release-version child receives only the non-secret
+`GITHUB_REF` required to repeat the main-only guard; GitHub SHA and package
+credentials remain excluded. Both private consumer manifests are version-pinned
+to the prepared public packages and staged as governed release metadata.
+Generated `dist` directories were removed before the final root validation to
+prove the correction without residual artifacts.
 
-Phase 1 does not claim a GitHub publication, hosted deployment, Cloudflare DNS
+Phase 1 does not claim a GitHub Packages publication, hosted deployment, Cloudflare DNS
 or Access mutation, production HTTP/browser behavior, or deletion of old live
 resources. Those assertions are `N/A-PHASE-1` and require the separate Phase 2
 production receipt. Documentation-only sign-off edits after the staged-tree
@@ -78,11 +81,11 @@ place after managed-file reconciliation.
 | Provider registry test | `PASS` | `31/31`; command `1.51s`, Vitest duration `309ms`. |
 | `pnpm audit --prod` | `PASS` | Zero known production vulnerabilities; `0.65s`. |
 | `pnpm pack:packages` | `PASS` | Four packages, `918` entries, `154` CSS files, zero `src` leaks, eight UI public entrypoints, strict TypeScript with `skipLibCheck: false`; `31.16s`. |
-| `pnpm changeset:status` | `PASS` | UI minor and Brand Studio major; no patch release; `1.11s`. |
+| `pnpm changeset:status` | `PASS` | No pending patch, minor, or major bump after hosted preparation produced release commit `0cbd8d643e4d91eee0c715ea47a99575dedaa5d6`; `0.8s`. |
 | Direct validators | `PASS` | Script catalog `4/4`; identity, domains, package identity, brand neutrality, Branding vNext, release, boundaries, and bundles all pass. |
-| Zero-legacy validator | `PASS` | `1258` active tracked repository files, `210` reachable Portal modules, Portal `74/74`, dist boundaries `7/7`. |
-| Release contracts | `PASS` | `171/171`, including clean package-output ordering, nested main-ref propagation without registry credentials, least-privilege release guards, candidate-versus-Docs smoke separation, and final cross-surface smoke. |
-| Final clean-dist `pnpm validate` | `PASS` | `packages/ui/dist` and `apps/ui-portal/dist` were removed first; five AgentOps files, script catalog `4/4`, Portal `74/74`, dist `7/7`, release contracts `171/171`, zero legacy `1258/210`. |
+| Zero-legacy validator | `PASS` | `1257` active tracked repository files, `210` reachable Portal modules, Portal `74/74`, dist boundaries `7/7`. |
+| Release contracts | `PASS` | `174/174`, including clean package-output ordering, nested main-ref propagation without registry credentials, governed private-consumer discovery, pre-commit worktree fail-closed behavior, least-privilege release guards, candidate-versus-Docs smoke separation, and final cross-surface smoke. |
+| Final clean-dist `pnpm validate` | `PASS` | `packages/ui/dist` and `apps/ui-portal/dist` were removed first; five AgentOps files, script catalog `4/4`, Portal `74/74`, dist `7/7`, release contracts `174/174`, zero legacy `1257/210`. |
 | Portal `cf:types` | `PASS` | Generated types unchanged; `1.44s`. |
 | Portal production Wrangler dry run | `PASS` | `618` assets; Worker upload `323.87 KiB` / `72.08 KiB gzip`; `3.45s`. |
 | Docs production Wrangler dry run | `PASS` | `24` pages, `110` assets; Worker upload `0.38 KiB` / `0.27 KiB gzip`; `3.71s`. |
@@ -93,14 +96,14 @@ place after managed-file reconciliation.
 
 ### Package archives and public boundaries
 
-The package smoke covered these exact pre-release package versions:
+The package smoke covered these exact prepared package versions:
 
 | Package | Version | Result |
 | --- | --- | --- |
 | `@lemn-ltd/brand-contract` | `1.0.0` | `PASS` |
-| `@lemn-ltd/ui` | `0.3.1` | `PASS` |
+| `@lemn-ltd/ui` | `0.4.0` | `PASS` |
 | `@lemn-ltd/brand-runtime` | `0.1.1` | `PASS` |
-| `@lemn-ltd/brand-studio` | `1.0.0` | `PASS` |
+| `@lemn-ltd/brand-studio` | `2.0.0` | `PASS` |
 
 Bundle measurements are exact raw/gzip bytes:
 
@@ -175,11 +178,11 @@ accessibility, and the anonymous/Admin bundle boundary.
 | --- | --- | --- |
 | Client and Worker have one entrypoint each, one router, shared shell primitives, and explicit module direction. | `PASS` | Architecture/source/import/build contracts pass; Worker does not import browser-only modules. |
 | Folded catalog helpers are app-local and old package/app identities are absent. | `PASS` | Structural, package graph, archive, identity, and zero-legacy gates pass. |
-| Core catalog and block changes are versioned through the material public packages only. | `PASS` | Changeset status records UI minor and Brand Studio major; Portal remains private/unpublished. |
+| Core catalog and block changes are versioned through the material public packages only. | `PASS` | Hosted Changesets preparation consumed the UI minor and Brand Studio major changesets into `0.4.0` and `2.0.0`; Portal remains private/unpublished. |
 | Dependencies are exact or pinned catalog references; no `latest` contract is active. | `PASS` | Lockfile, provider, package, release, and dependency validators pass. |
 | Docs remain separately deployable at `ui.le-mn.com`. | `PASS` | Docs check/build/dry-run pass with `24` pages and `110` assets. |
-| Scripts, Make targets, workflows, artifacts, caches, types, smoke, rollback, metadata, and docs use Portal vocabulary. | `PASS` | Script catalog, release contracts `171/171`, identity, domains, docs, and zero-legacy checks pass. |
-| Release workflow rebuilds and validates the exact release SHA, deploys Portal transactionally before docs, and verifies exact published packages in a clean consumer. | `PASS` | Package operations use a main-only ref guard without Cloudflare credentials; Cloudflare mutations retain the scoped Cloudflare guard. Candidate Portal/schema/Access smoke precedes activation, Docs deploys after Portal, and an integrated production smoke follows Docs. Static workflow/security/release contracts are part of `171/171`; the token-backed execution belongs to Phase 2. |
+| Scripts, Make targets, workflows, artifacts, caches, types, smoke, rollback, metadata, and docs use Portal vocabulary. | `PASS` | Script catalog, release contracts `174/174`, identity, domains, docs, and zero-legacy checks pass. |
+| Release workflow rebuilds and validates the exact release SHA, deploys Portal transactionally before docs, and verifies exact published packages in a clean consumer. | `PASS` | Package operations use a main-only ref guard without Cloudflare credentials; Cloudflare mutations retain the scoped Cloudflare guard. Release preparation refuses any dirty starting tree, unstaged/untracked generated output, or staged path outside its governed metadata set before commit/push. Candidate Portal/schema/Access smoke precedes activation, Docs deploys after Portal, and an integrated production smoke follows Docs. Static workflow/security/release contracts are part of `174/174`; the token-backed execution belongs to Phase 2. |
 
 ## AgentOps managed-file reconciliation
 
@@ -192,7 +195,7 @@ final root validation passed for all five files.
 | Managed path | Effective checksum after Phase 1 sign-off sync | Revisions |
 | --- | --- | --- |
 | `AGENTS.md` | `sha256:b36c288a9c6f7cd86d45a58614061de49fef43ebd8d8b253abe7ef73f926f075` | organization `12` |
-| `patterns/pattern-audit.md` | `sha256:a070a07d08b223a5931b3eb28e816fa37e3ed188f7e6e85b1a3022e5204d6337` | project `13` |
+| `patterns/pattern-audit.md` | `sha256:b01aa54dca65e4ee38b18fe2ab65b7a785d2d2cfb43bb1761986750229965431` | project `16` |
 | `patterns/pattern-profile.md` | `sha256:b319f7d694404eb361ecb52c204dc1ed8ca8ba539dedcc6e93afe97ee6d6b879` | project `8` |
 | `patterns/pattern-system.md` | `sha256:9e9b238a3cd1ea40ff787a905d9159ffa11df389219ee6ad1875fe75f2c72052` | organization `2`, project `1` |
 | `patterns/patterns.md` | `sha256:3fad04e4c722da256fb633c277a0b7ea7db1a52c172094f570743143fd437df9` | organization `13`, project `8` |
@@ -208,25 +211,30 @@ rename without breaking managed-file identity/history.
 | Warning | Owner | Risk | Disposition / follow-up |
 | --- | --- | --- | --- |
 | First full validation overlapped a concurrent Portal build and transiently missed `accordion.page-*.js.map` in shared `apps/ui-portal/dist`. | UI tooling | Concurrent writers can invalidate shared generated output. | Isolated Portal rebuild passed `7/7`, then the complete validation rerun passed. Keep build/validation jobs serialized when sharing `dist`. |
-| The first hosted validation of commit `cf5bf3d` found that a release contract relied on pre-existing UI `dist`, and review found the package guard and smoke sequence defects before production approval. | Release tooling | A clean runner would fail before E2E, while an approved release could fail before deployment. | The failed run performed no production mutation. The corrected tree builds the UI contract dependency from a clean `dist`, splits ref and Cloudflare guards, keeps Portal-before-Docs, and adds the final integrated smoke. |
-| The first production-approved run of commit `b6e19e3` passed all eight upstream jobs and Cloudflare preflight, then stopped before versioning because the sanitized nested Changesets environment omitted `GITHUB_REF`. | Release tooling | The outer main guard passed, but the deliberately repeated child guard could not prove the same ref. | Run `29654120028` performed no package or production mutation. Capture `b2ec2f42871bae2a6beaf8086c3a022ac04750e7` explicitly forwards only `GITHUB_REF` to release versioning, keeps `GITHUB_SHA` and `NODE_AUTH_TOKEN` excluded, and adds the exact nested guard regression contract; all `171/171` release contracts pass. |
+| Hosted run `29653726997` for commit `cf5bf3d` found that a release contract relied on pre-existing UI `dist`, and review found the package guard and smoke sequence defects before production approval. | Release tooling | A clean runner would fail before E2E, while an approved release could fail before deployment. | The failed run performed no production mutation. The corrected tree builds the UI contract dependency from a clean `dist`, splits ref and Cloudflare guards, keeps Portal-before-Docs, and adds the final integrated smoke. |
+| The first production-approved run of commit `b6e19e3` passed all eight upstream jobs and Cloudflare preflight, then stopped before versioning because the sanitized nested Changesets environment omitted `GITHUB_REF`. | Release tooling | The outer main guard passed, but the deliberately repeated child guard could not prove the same ref. | Run `29654120028` performed no package or production mutation. The capture explicitly forwards only `GITHUB_REF` to release versioning, keeps `GITHUB_SHA` and `NODE_AUTH_TOKEN` excluded, and adds the exact nested guard regression contract. |
+| The next approved run of commit `a921fef` prepared and pushed release commit `0cbd8d643e4d91eee0c715ea47a99575dedaa5d6`, then the exact-revision clean install detected unstaged private consumer manifests. | Release tooling | Changesets correctly aligned Docs and Portal workspace dependencies, but the release transaction initially governed only public package metadata. | Run `29655221671` published no package and performed no Cloudflare production mutation. Capture `3daee44c95eaf9c182ab83f1f506f461c290faea` pins the private consumers to UI `0.4.0` and Brand Studio `2.0.0`, discovers every future private internal consumer, governs both current manifests, and fails before commit/push on omitted output; all `174/174` release contracts pass. |
 | Provider-registry Vitest reports `esbuild` deprecated in favor of `oxc`. | UI tooling | Future Vitest removal of the option. | Tests pass `31/31`; migrate with a dedicated toolchain update rather than suppressing the warning. |
 | Brand Studio Recharts reports width/height `0` in four tests. | Brand Studio | Test-environment layout lacks real dimensions. | All assertions pass; retain visibility and use explicit measured containers when revising those fixtures. |
 | Lightning CSS emits two warnings for the valid CSS Custom Highlight API `::highlight`. | UI CSS | Parser/minifier support warning only. | Build output is valid; re-evaluate on Lightning CSS upgrade. |
 | Vite reports the ECharts chunk at `1118.14 kB` raw / `371.00 kB` gzip, above `500 kB`. | Visualization owner | Performance cost for visualization consumers. | Public boundary is measured separately at `534259` / `127920` bytes; keep as an explicit performance follow-up. |
 | Wrangler `4.103.0` reports `4.112.0` available. | Release tooling | No current functional failure. | Upgrade only through the pinned dependency/update process with dry-run evidence. |
-| Changesets' vendored macOS `term-size` prints `Bad CPU type in executable`. | Release tooling | Nonfunctional terminal-size probe noise. | Changeset status exits `0` with the correct release plan; retain until upstream/toolchain update removes it. |
+| Changesets' vendored macOS `term-size` prints `Bad CPU type in executable`. | Release tooling | Nonfunctional terminal-size probe noise. | Changeset status exits `0` and correctly reports no pending patch, minor, or major bump; retain until upstream/toolchain update removes it. |
 
-## Phase 2 exclusions
+## Phase 2 exclusions at the Phase 1 gate
+
+This table records the historical scope boundary when Phase 1 was signed off.
+Any subsequently provisioned live resource still requires exact Phase 2 proof
+before the overall migration can be marked complete.
 
 | Live assertion | Status | Reason / required Phase 2 proof |
 | --- | --- | --- |
 | `pnpm validate:release-hosts` | `N/A-PHASE-1` | Honest pre-provision probe reports `ENOTFOUND` for both A and AAAA of `portal.ui.le-mn.com`. DNS intentionally does not exist yet; this is a Phase 2 pre-provision/cutover prerequisite and is not part of root `pnpm validate`. |
-| Create/deploy `lemn-ui-portal` and attach Portal/schema domains. | `N/A-PHASE-1` | Requires live Cloudflare mutation and deployed-version receipt. |
-| Create path-scoped human Access and isolated service-health identity. | `N/A-PHASE-1` | Requires live policies, audiences, credentials, anonymous denial, human browser, and service-only deep-health proof. |
-| Populate canonical production GitHub environment inputs. | `N/A-PHASE-1` | Requires production environment mutation and secret/variable inventory evidence. |
-| Publish packages and run the clean registry consumer smoke. | `N/A-PHASE-1` | Requires the exact versions to exist in GitHub Packages and a scoped token. Static lifecycle/security contracts pass within `171/171`. |
-| Deploy docs and Portal through the governed workflow. | `N/A-PHASE-1` | Requires commit/push, hosted run, environment review, deployment receipts, and HTTP/browser proof. |
+| Create/deploy `lemn-ui-portal` and attach Portal/schema domains. | `N/A-PHASE-1` | At the Phase 1 gate this required live Cloudflare mutation and a deployed-version receipt. |
+| Create path-scoped human Access and isolated service-health identity. | `N/A-PHASE-1` | At the Phase 1 gate this required live policies, audiences, credentials, anonymous denial, human browser, and service-only deep-health proof. |
+| Populate canonical production GitHub environment inputs. | `N/A-PHASE-1` | At the Phase 1 gate this required production environment mutation and secret/variable inventory evidence. |
+| Publish packages and run the clean registry consumer smoke. | `N/A-PHASE-1` | At the Phase 1 gate, the exact versions did not yet exist in GitHub Packages. Publication and the scoped-token consumer proof remain Phase 2; static lifecycle/security contracts pass within `174/174`. |
+| Deploy docs and Portal through the governed workflow. | `N/A-PHASE-1` | Requires the final correction commit/push, hosted run, environment review, deployment receipts, and HTTP/browser proof. |
 | Delete exclusive old Workers, domains, DNS, Access resources, service credentials, GitHub inputs, workflows, and artifacts. | `N/A-PHASE-1` | Deletion may occur only after canonical production proof and ownership confirmation; no redirect or tombstone is allowed. |
 | Negative proof that legacy live hosts/resources are unavailable. | `N/A-PHASE-1` | Must be captured after ordered deletion in `phase-2-production.md`. |
 

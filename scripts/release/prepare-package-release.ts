@@ -1,13 +1,15 @@
 #!/usr/bin/env node
-import { execFileSync, spawnSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { appendFile, readdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { releaseChildEnvironment } from "./child-process-security.ts";
 
 const root = resolve(import.meta.dirname, "../..");
 const releaseCommitSubject = "chore: release packages [skip ci]";
-const releaseMetadataPaths = [
+export const releaseMetadataPaths = [
 	".changeset",
+	"apps/docs/package.json",
+	"apps/ui-portal/package.json",
 	"packages/brand-contract/package.json",
 	"packages/brand-contract/CHANGELOG.md",
 	"packages/ui/package.json",
@@ -43,7 +45,7 @@ interface PrepareReleaseDependencies {
 	readonly hasPendingChangesets: () => Promise<boolean>;
 	readonly versionPackages: () => Promise<void>;
 	readonly readPackageManifest: () => Promise<PackageManifest>;
-	readonly hasStagedChanges: () => boolean;
+	readonly worktreeStatus: () => string;
 	readonly writeOutputs: (identity: ReleaseIdentity) => Promise<void>;
 }
 
@@ -115,6 +117,41 @@ function defaultGit(args: readonly string[]): string {
 	}).trim();
 }
 
+function assertCleanWorktree(status: string, phase: string): void {
+	if (status.trim()) {
+		throw new Error(
+			`Release preparation requires a clean worktree ${phase}; refusing uncommitted or untracked files`,
+		);
+	}
+}
+
+export function assertOnlyStagedReleaseMetadata(status: string): void {
+	const entries = status.split("\n").filter(Boolean);
+	if (entries.length === 0) {
+		throw new Error("Changesets produced no release metadata changes");
+	}
+	for (const entry of entries) {
+		const indexStatus = entry[0];
+		const worktreeStatus = entry[1];
+		if (indexStatus === "?" || indexStatus === " " || worktreeStatus !== " ") {
+			throw new Error(
+				"Changesets left unstaged or untracked release output; refusing an incomplete release commit",
+			);
+		}
+		const path = entry.slice(3);
+		const governed = releaseMetadataPaths.some((candidate) =>
+			candidate === ".changeset"
+				? path.startsWith(".changeset/")
+				: path === candidate,
+		);
+		if (!governed) {
+			throw new Error(
+				`Changesets staged output outside the governed release metadata set: ${path}`,
+			);
+		}
+	}
+}
+
 async function defaultHasPendingChangesets(): Promise<boolean> {
 	const entries = await readdir(resolve(root, ".changeset"));
 	return entries.some(
@@ -165,18 +202,8 @@ const defaultDependencies: PrepareReleaseDependencies = {
 		);
 	},
 	readPackageManifest: defaultReadPackageManifest,
-	hasStagedChanges: () => {
-		const result = spawnSync("git", ["diff", "--cached", "--quiet"], {
-			cwd: root,
-			stdio: "ignore",
-		});
-		if (result.error) throw result.error;
-		if (result.status === 0) return false;
-		if (result.status === 1) return true;
-		throw new Error(
-			`git diff --cached --quiet failed with exit ${String(result.status)}`,
-		);
-	},
+	worktreeStatus: () =>
+		defaultGit(["status", "--porcelain=v1", "--untracked-files=normal"]),
 	writeOutputs: defaultWriteOutputs,
 };
 
@@ -271,6 +298,10 @@ export async function preparePackageRelease(
 	const remoteSha = dependencies.git(["rev-parse", "refs/remotes/origin/main"]);
 	assertGitSha(localSha, "Local SHA");
 	assertGitSha(remoteSha, "Protected main SHA");
+	assertCleanWorktree(
+		dependencies.worktreeStatus(),
+		"before release versioning",
+	);
 
 	const resumed =
 		localSha === remoteSha
@@ -280,9 +311,7 @@ export async function preparePackageRelease(
 	if (!resumed && (await dependencies.hasPendingChangesets())) {
 		await dependencies.versionPackages();
 		dependencies.git(["add", ...releaseMetadataPaths]);
-		if (!dependencies.hasStagedChanges()) {
-			throw new Error("Changesets produced no release metadata changes");
-		}
+		assertOnlyStagedReleaseMetadata(dependencies.worktreeStatus());
 
 		const manifest = await dependencies.readPackageManifest();
 		const packageName = requireText(
@@ -307,6 +336,10 @@ export async function preparePackageRelease(
 			"-m",
 			`Release-Origin: ${input.triggerSha}\nRelease-Id: ${pendingReleaseId}`,
 		]);
+		assertCleanWorktree(
+			dependencies.worktreeStatus(),
+			"after the release commit and before push",
+		);
 		dependencies.git(["push", "origin", "HEAD:refs/heads/main"]);
 	}
 

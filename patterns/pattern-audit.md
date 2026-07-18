@@ -104,7 +104,7 @@ pattern_audit:
 ### Phase 1 repository/build evidence
 
 The validated staged implementation-tree capture is
-`b2ec2f42871bae2a6beaf8086c3a022ac04750e7`. The requirement-level receipt at
+`3daee44c95eaf9c182ab83f1f506f461c290faea`. The requirement-level receipt at
 `docs/evidence/ui-portal-unification/phase-1-repository.md` records:
 
 - frozen installation and credential-free rebuild pass;
@@ -117,10 +117,11 @@ The validated staged implementation-tree capture is
   and `90` visual/responsive tests, with zero failures, retries, or skips;
 - the deterministic visual inventory is `180` PNGs: `90` Darwin and `90`
   Linux;
-- release contracts pass `171/171`, including nested main-ref propagation
-  without registry credentials; Portal dist boundaries pass `7/7`, and
-  zero legacy passes over `1258` active tracked files and `210` reachable
-  Portal modules;
+- release contracts pass `174/174`, including nested main-ref propagation
+  without registry credentials, exhaustive private-consumer governance, and
+  pre-commit rejection of omitted generated output; Portal dist boundaries pass
+  `7/7`, and zero legacy passes over `1257` active tracked files and `210`
+  reachable Portal modules;
 - package smoke verifies four archives, `918` entries, `154` CSS files, zero
   `src` leaks, eight UI public entrypoints, and strict TypeScript consumption;
 - production audit reports zero known vulnerabilities and the staged secret
@@ -130,7 +131,7 @@ The validated staged implementation-tree capture is
 - docs production dry run passes with `24` pages, `110` assets, and Worker
   upload `0.38 KiB` / `0.27 KiB gzip`;
 - local Portal smoke returns HTTP `200` for health, home, and a built asset;
-- final clean-dist `pnpm validate` passes with release contracts `171/171`
+- final clean-dist `pnpm validate` passes with release contracts `174/174`
   after the UI package contract dependency is built explicitly;
 - package preparation/publication use a main-only ref guard without receiving
   Cloudflare credentials, while actual Cloudflare mutations retain the scoped
@@ -138,6 +139,12 @@ The validated staged implementation-tree capture is
 - transactional Portal smoke no longer depends on the not-yet-deployed Docs
   identity; the workflow deploys Portal, then Docs, then runs the integrated
   production smoke;
+- hosted run `29655221671` prepared and pushed release commit
+  `0cbd8d643e4d91eee0c715ea47a99575dedaa5d6`, then stopped before package
+  publication or Cloudflare mutation because private consumer manifests were
+  initially outside the governed metadata set; the capture governs all current
+  and future private internal consumers and rejects omitted output before
+  commit/push;
 - the only observed concurrent shared-dist race was resolved by an isolated
   Portal rebuild and a successful complete rerun.
 
@@ -149,14 +156,16 @@ evaluated through `PAT-UI-PROVIDER-FIRST-001`, `PAT-CODE-DEPENDENCIES-001`,
 workspace introduces no product OpenAPI surface, consistent with the profile.
 
 AgentOps status was checked before mutation for organization `lemn`, the
-workspace declared in `.agentops/project.json`, and environment `development`. All five managed files were
-byte-equal locally, remotely, and in the manifest at the gate capture:
+workspace declared in `.agentops/project.json`, and environment `development`.
+All five managed files were byte-equal locally, remotely, and in the manifest
+at the gate capture. The committed `.agentops/project.json` is the checksum and
+revision authority; this managed file intentionally does not embed its own
+current checksum because doing so would be recursively unstable:
 
 - `AGENTS.md`: `sha256:b36c288a9c6f7cd86d45a58614061de49fef43ebd8d8b253abe7ef73f926f075`,
   organization revision `12`;
-- `patterns/pattern-audit.md`:
-  `sha256:e6ca148e7cf7fdd623665b2bb4677407e6a3b4ba7aad6fd33a8371ae884a2cce`,
-  project revision `10`;
+- `patterns/pattern-audit.md`: current checksum and project revision are
+  recorded in `.agentops/project.json` and verified by `pnpm validate:agentops`;
 - `patterns/pattern-profile.md`:
   `sha256:b319f7d694404eb361ecb52c204dc1ed8ca8ba539dedcc6e93afe97ee6d6b879`,
   project revision `8`;

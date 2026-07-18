@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+	assertOnlyStagedReleaseMetadata,
 	parseReleaseCommits,
 	preparePackageRelease,
 	releaseCommitForTrigger,
@@ -57,8 +58,8 @@ function resumedReleaseDependencies() {
 			async readPackageManifest() {
 				return { name: artifact.packageName, version: artifact.version };
 			},
-			hasStagedChanges() {
-				return false;
+			worktreeStatus() {
+				return "";
 			},
 			async writeOutputs() {},
 		},
@@ -118,6 +119,7 @@ test("an old run cannot deploy its release commit after protected main advances 
 test("release metadata push is fast-forward-only and a non-FF failure stops", async () => {
 	let head = triggerSha;
 	let version = "0.1.2";
+	let staged = false;
 	const commands: string[][] = [];
 	await assert.rejects(
 		preparePackageRelease(
@@ -125,17 +127,18 @@ test("release metadata push is fast-forward-only and a non-FF failure stops", as
 			{
 				git(args) {
 					commands.push([...args]);
-					if (
-						args[0] === "fetch" ||
-						args[0] === "add" ||
-						args[0] === "config"
-					) {
+					if (args[0] === "fetch" || args[0] === "config") {
+						return "";
+					}
+					if (args[0] === "add") {
+						staged = true;
 						return "";
 					}
 					if (args[0] === "rev-parse" && args[1] === "HEAD") return head;
 					if (args[0] === "rev-parse") return triggerSha;
 					if (args[0] === "commit") {
 						head = committedSha;
+						staged = false;
 						return "";
 					}
 					if (args[0] === "push") throw new Error("non-fast-forward");
@@ -150,8 +153,8 @@ test("release metadata push is fast-forward-only and a non-FF failure stops", as
 				async readPackageManifest() {
 					return { name: artifact.packageName, version };
 				},
-				hasStagedChanges() {
-					return true;
+				worktreeStatus() {
+					return staged ? "M  packages/ui/package.json" : "";
 				},
 				async writeOutputs() {},
 			},
@@ -163,6 +166,68 @@ test("release metadata push is fast-forward-only and a non-FF failure stops", as
 	assert.equal(
 		commands.some((args) => args.some((arg) => arg.includes("force"))),
 		false,
+	);
+});
+
+test("release preparation refuses omitted generated output before commit or push", async () => {
+	const commands: string[][] = [];
+	let afterVersioning = false;
+	await assert.rejects(
+		preparePackageRelease(
+			{ triggerSha },
+			{
+				git(args) {
+					commands.push([...args]);
+					if (args[0] === "fetch" || args[0] === "add") return "";
+					if (args[0] === "rev-parse") return triggerSha;
+					throw new Error(`Unexpected git command: ${args.join(" ")}`);
+				},
+				async hasPendingChangesets() {
+					return true;
+				},
+				async versionPackages() {
+					afterVersioning = true;
+				},
+				async readPackageManifest() {
+					return { name: artifact.packageName, version: artifact.version };
+				},
+				worktreeStatus() {
+					return afterVersioning
+						? "M  packages/ui/package.json\n?? apps/docs/generated-release.json"
+						: "";
+				},
+				async writeOutputs() {},
+			},
+		),
+		/unstaged or untracked release output/u,
+	);
+	assert.equal(
+		commands.some((args) => args[0] === "commit"),
+		false,
+	);
+	assert.equal(
+		commands.some((args) => args[0] === "push"),
+		false,
+	);
+});
+
+test("release metadata status accepts only a non-empty staged set", () => {
+	assert.doesNotThrow(() =>
+		assertOnlyStagedReleaseMetadata(
+			"M  packages/ui/package.json\nD  .changeset/ui-minor.md",
+		),
+	);
+	assert.throws(
+		() => assertOnlyStagedReleaseMetadata(""),
+		/no release metadata changes/u,
+	);
+	assert.throws(
+		() => assertOnlyStagedReleaseMetadata(" M apps/docs/package.json"),
+		/unstaged or untracked release output/u,
+	);
+	assert.throws(
+		() => assertOnlyStagedReleaseMetadata("M  README.md"),
+		/outside the governed release metadata set/u,
 	);
 });
 

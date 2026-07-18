@@ -3,6 +3,7 @@ import {
 	access,
 	mkdir,
 	mkdtemp,
+	readdir,
 	readFile,
 	rm,
 	writeFile,
@@ -11,7 +12,10 @@ import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import test from "node:test";
 import { runChangesetCommand } from "../../scripts/release/changeset-command.ts";
-import { releaseVersionChildEnvironment } from "../../scripts/release/prepare-package-release.ts";
+import {
+	releaseMetadataPaths,
+	releaseVersionChildEnvironment,
+} from "../../scripts/release/prepare-package-release.ts";
 import { runReleaseMutationGuard } from "../../scripts/release/release-mutation-guard.ts";
 import { guardReleaseRefFromEnvironment } from "../../scripts/release/release-ref-guard.ts";
 import { verifyPackageDists } from "../../scripts/release/verify-package-dists.ts";
@@ -41,6 +45,28 @@ const portalPackage = JSON.parse(
 	await readFile(resolve(root, "apps/ui-portal/package.json"), "utf8"),
 ) as UnknownRecord;
 const contributing = await readFile(resolve(root, "CONTRIBUTING.md"), "utf8");
+const governedReleaseMetadataPaths = new Set<string>(releaseMetadataPaths);
+const workspaceManifestPaths = (
+	await Promise.all(
+		["apps", "packages"].map(async (workspaceRoot) =>
+			(
+				await readdir(resolve(root, workspaceRoot), { withFileTypes: true })
+			)
+				.filter((entry) => entry.isDirectory())
+				.map((entry) => `${workspaceRoot}/${entry.name}/package.json`),
+		),
+	)
+)
+	.flat()
+	.sort();
+const workspaceManifests = await Promise.all(
+	workspaceManifestPaths.map(async (path) => ({
+		path,
+		manifest: JSON.parse(
+			await readFile(resolve(root, path), "utf8"),
+		) as UnknownRecord,
+	})),
+);
 
 function record(value: unknown, description: string): UnknownRecord {
 	assert.ok(
@@ -206,6 +232,58 @@ test("nested release versioning preserves only the CI ref required by its main g
 	assert.equal(childEnvironment.GITHUB_SHA, undefined);
 	assert.equal(childEnvironment.NODE_AUTH_TOKEN, undefined);
 	await guardReleaseRefFromEnvironment(childEnvironment);
+});
+
+test("release governs every public package and private internal consumer manifest", () => {
+	const publicVersions = new Map(
+		workspaceManifests
+			.filter(({ manifest }) => manifest.private !== true)
+			.map(({ manifest, path }) => {
+				assert.ok(
+					governedReleaseMetadataPaths.has(path),
+					`${path} must be governed release metadata`,
+				);
+				return [String(manifest.name), String(manifest.version)] as const;
+			}),
+	);
+	const privateConsumers: string[] = [];
+	for (const { manifest, path } of workspaceManifests.filter(
+		({ manifest }) => manifest.private === true,
+	)) {
+		let consumesPublishedWorkspacePackage = false;
+		for (const field of [
+			"dependencies",
+			"devDependencies",
+			"peerDependencies",
+			"optionalDependencies",
+		]) {
+			const dependencies = manifest[field];
+			if (dependencies === undefined) continue;
+			for (const [name, specification] of Object.entries(
+				record(dependencies, `${path} ${field}`),
+			)) {
+				const version = publicVersions.get(name);
+				if (!version) continue;
+				consumesPublishedWorkspacePackage = true;
+				assert.equal(
+					specification,
+					`workspace:${version}`,
+					`${path} must pin ${name} to its prepared exact version`,
+				);
+			}
+		}
+		if (consumesPublishedWorkspacePackage) {
+			privateConsumers.push(path);
+			assert.ok(
+				governedReleaseMetadataPaths.has(path),
+				`${path} must be staged with generated release metadata`,
+			);
+		}
+	}
+	assert.deepEqual(privateConsumers.sort(), [
+		"apps/docs/package.json",
+		"apps/ui-portal/package.json",
+	]);
 });
 
 test("package-set lifecycle builds in order then requires dist and a strict consumer smoke", () => {
