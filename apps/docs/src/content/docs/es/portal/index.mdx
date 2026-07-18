@@ -1,0 +1,53 @@
+---
+title: Lemn UI
+description: Limites de Catalogo publico y Admin protegido en el UI Portal unificado.
+sidebar:
+  label: Lemn UI
+  order: 8
+---
+
+Lemn UI funciona como una sola aplicacion UI Portal y un solo Cloudflare Worker
+en [portal.ui.le-mn.com](https://portal.ui.le-mn.com). El Catalogo publico y el
+Admin protegido comparten identidad de release, no el limite de autorizacion.
+
+## Catalogo publico
+
+El Catalogo renderiza componentes y blocks reales con fixtures deterministas.
+Sus rutas estables son `/`, `/foundations`, `/components`, `/visualizations`,
+`/blocks`, `/patterns`, `/providers` y `/playground`, junto con sus rutas de
+detalle y endpoints publicos de catalogo, proveedores, blocks y guias para
+agentes.
+
+El Playground no persiste estado y solo ofrece presets de branding System
+aprobados. El source, tests y exports de componentes Agents se conservan, pero
+Agents no forma parte del registry activo, rutas, navegacion, busqueda, guias
+machine-readable ni bundles del Portal.
+
+## Admin protegido
+
+Cloudflare Access protege `/admin` en el edge y el Worker vuelve a verificar la
+assertion en origin. Las rutas protegidas son `/admin/registry`,
+`/admin/conformance`, `/admin/brand-studio`, `/admin/releases` y
+`/admin/settings`; las APIs protegidas viven bajo `/api/admin/*`.
+
+Admin es una superficie de lectura y propuestas. Registry lee estado
+Git-authoritative y puede preparar proposal bundles revisables. Conformance
+muestra evidencia inmutable. Releases informa metadata exacta del deploy.
+Settings muestra configuracion efectiva y valores enmascarados. Ninguna area
+escribe estado durable, despliega desde el browser, cambia providers ni evita
+los gates normales.
+
+## Brand Studio
+
+Brand Studio es un package reusable, no un deploy ni control plane. Edita un
+`BrandingDefinition` controlado, compila preview con componentes reales y emite
+intents tipados. El host Admin mantiene experimentos solo en memoria. AgentOps
+posee auth, persistence, optimistic hashes, idempotency, publication,
+activation, previews y audit.
+
+```bash
+pnpm dev:portal
+```
+
+UI Portal usa el puerto local `6500`. No hay redirects para hosts o rutas
+retirados; los consumidores deben usar el dominio y rutas canonicos.

@@ -1,0 +1,51 @@
+{
+	"$schema": "https://json.schemastore.org/tsconfig",
+	"extends": "../../tsconfig.base.json",
+	"compilerOptions": {
+		"allowImportingTsExtensions": true,
+		"declaration": false,
+		"declarationMap": false,
+		"jsx": "react-jsx",
+		"lib": ["ES2022", "DOM", "DOM.Iterable"],
+		"module": "ESNext",
+		"moduleResolution": "Bundler",
+		"noEmit": true,
+		"paths": {
+			"@portal/catalog-kit": ["./src/client/shared/catalog-kit/index.ts"],
+			"@lemn-ltd/brand-contract": [
+				"../../packages/brand-contract/src/index.ts"
+			],
+			"@lemn-ltd/brand-contract/system-brandings": [
+				"../../packages/brand-contract/src/system-brandings.ts"
+			],
+			"@lemn-ltd/brand-studio": ["../../packages/brand-studio/src/index.ts"],
+			"@lemn-ltd/provider-registry": [
+				"../../packages/provider-registry/src/index.ts"
+			],
+			"@lemn-ltd/provider-registry/manifest.json": [
+				"../../packages/provider-registry/registry/provider-registry.v1.json"
+			],
+			"@lemn-ltd/ui": ["../../packages/ui/src/index.ts"],
+			"@lemn-ltd/ui/blocks/core": ["../../packages/ui/src/blocks/core.ts"],
+			"@lemn-ltd/ui/blocks/core/catalog": [
+				"../../packages/ui/src/blocks/core-block-catalog.ts"
+			],
+			"@lemn-ltd/ui/blocks": ["../../packages/ui/src/blocks/index.ts"],
+			"@lemn-ltd/ui/catalog/core": ["../../packages/ui/src/catalog-core.ts"],
+			"@lemn-ltd/ui/catalog": ["../../packages/ui/src/catalog.ts"],
+			"@lemn-ltd/ui/tokens": ["../../packages/ui/src/tokens.ts"]
+		},
+		"target": "ES2022",
+		"types": ["@cloudflare/workers-types", "vitest/globals"]
+	},
+	"include": [
+		"src/**/*.ts",
+		"src/**/*.tsx",
+		"tests/**/*.ts",
+		"vite.config.ts",
+		"vitest.config.ts",
+		"playwright.config.ts",
+		"playwright.linux-snapshots.config.ts",
+		"worker-configuration.d.ts"
+	]
+}

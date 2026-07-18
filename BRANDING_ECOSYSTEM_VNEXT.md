@@ -113,7 +113,7 @@ new schema major.
   verification, selected-mode projection, SSR helpers, and bounded fallback.
 - `@lemn-ltd/brand-studio@1.0.0`: controlled wizard, real preview, diagnostics,
   JSON review, and typed host intents without persistence or authority.
-- Showcase and Docs prove the public catalog; protected Showcase Admin is a
+- Lemn UI and Docs prove the public catalog; protected Lemn UI Admin is a
   persistence-free sandbox for mappings, proposals, and experiments.
 
 ### AgentOps branding simulator
@@ -242,7 +242,7 @@ SSR emits declarations and preloads but the browser still downloads font bytes.
    lockfiles and no aliases.
 5. Materialize an independently signed, all-allowed-mode fallback map and JWK
    from the runtime owner without exporting the private full artifact.
-6. Deploy UI Docs, Showcase, Showcase Admin, simulator control plane/runtime,
+6. Deploy UI Docs, Lemn UI Portal, simulator control plane/runtime,
    Branding MCP, and Lunaria from `main`.
 7. Demonstrate authoring, validation, publication, human activation, active SSR,
    exact preview, light/dark switching, live visual changes after reload, runtime

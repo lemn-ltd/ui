@@ -4,14 +4,13 @@ Read this reference when using `component-capture-migration`, then inspect the c
 
 ## Package Layout
 
-- Workspace root: `/Users/angelloor/Documents/SWE/LEMN/code/ui`
+- Workspace root: `/Users/aweaxiecy/Workspaces/ui`
 - Design system package: `packages/ui`
 - Human docs app: `apps/docs`
-- Showcase app: `apps/showcase`
-- Showcase kit helpers: `packages/showcase-kit`
+- Lemn UI Portal app: `apps/ui-portal`
 - Component docs: `packages/ui/docs/components.md`
 - Public docs domain: `https://ui.le-mn.com`
-- Public showcase domain: `https://showcase.ui.le-mn.com`
+- Public Portal domain: `https://portal.ui.le-mn.com`
 
 ## Core Design-System Files
 
@@ -36,25 +35,24 @@ Read this reference when using `component-capture-migration`, then inspect the c
   - `packages/ui/src/styles.css`
   - `packages/ui/src/foundations/theme.ts`
 
-## Showcase Files
+## Lemn UI Portal Files
 
-- App command: `pnpm dev:showcase`
+- App command: `pnpm dev:portal`
 - Vite dev server: `http://localhost:6500`
-- Page examples: `apps/showcase/src/client/pages/core/components/*.page.tsx`
-- Agent component examples: `apps/showcase/src/client/pages/agents/components/*.page.tsx`
-- Registry root: `apps/showcase/src/client/registry/showcase-registry.ts`
-- Component registry helper: `apps/showcase/src/client/registry/component-entry.ts`
+- Page examples: `apps/ui-portal/src/client/pages/core/components/*.page.tsx`
+- Registry root: `apps/ui-portal/src/client/registry/catalog-registry.ts`
+- Component registry helper: `apps/ui-portal/src/client/registry/component-entry.ts`
 - Registry entry files:
-  - `apps/showcase/src/client/registry/entries/primitives.tsx`
-  - `apps/showcase/src/client/registry/entries/forms.tsx`
-  - `apps/showcase/src/client/registry/entries/overlays.tsx`
-  - `apps/showcase/src/client/registry/entries/navigation.tsx`
-  - `apps/showcase/src/client/registry/entries/data-display.tsx`
-  - `apps/showcase/src/client/registry/entries/feedback.tsx`
-  - `apps/showcase/src/client/registry/entries/layout.tsx`
-  - `apps/showcase/src/client/registry/entries/agents.tsx`
-- Fixtures: `apps/showcase/src/client/fixtures/`
-- How to add showcase pages: `packages/showcase-kit/docs/adding-a-showcase.md`
+  - `apps/ui-portal/src/client/registry/entries/primitives.tsx`
+  - `apps/ui-portal/src/client/registry/entries/forms.tsx`
+  - `apps/ui-portal/src/client/registry/entries/overlays.tsx`
+  - `apps/ui-portal/src/client/registry/entries/navigation.tsx`
+  - `apps/ui-portal/src/client/registry/entries/data-display.tsx`
+  - `apps/ui-portal/src/client/registry/entries/feedback.tsx`
+  - `apps/ui-portal/src/client/registry/entries/layout.tsx`
+  - `apps/ui-portal/src/client/registry/entries/visualizations.tsx`
+- Fixtures: `apps/ui-portal/src/client/fixtures/`
+- Agent source and exports remain in the repository but are not part of the active Portal registry, routes, navigation, search, machine catalogs, or browser bundles.
 
 ## Docs Files
 
@@ -70,31 +68,31 @@ Read this reference when using `component-capture-migration`, then inspect the c
 
 - Component/unit tests live beside components, e.g. `packages/ui/src/primitives/button/tests/button.spec.tsx`.
 - Catalog drift guard: `packages/ui/src/tests/catalog.spec.ts`.
-- Showcase behavior/visual tests: `apps/showcase/tests/e2e/`.
-- Visual route list: `apps/showcase/tests/e2e/visual.e2e.ts`.
+- Portal behavior/visual tests: `apps/ui-portal/tests/e2e/`.
+- Visual route list: `apps/ui-portal/tests/e2e/visual.e2e.ts`.
 - Playwright projects already cover:
   - desktop: `1280x900`
   - tablet: `768x1024`
   - mobile: `375x812`
   - light and dark themes for visual tests
-- Deterministic Playwright helpers: `apps/showcase/tests/helpers/deterministic.ts`.
+- Deterministic Playwright helpers: `apps/ui-portal/tests/helpers/deterministic.ts`.
 
 ## Useful Commands
 
 ```bash
-pnpm dev:showcase
+pnpm dev:portal
 pnpm --filter @lemn-ltd/ui run test
 pnpm --filter @lemn-ltd/ui run check
-pnpm --filter @lemn-ltd/ui-showcase run test
-pnpm --filter @lemn-ltd/ui-showcase run test:e2e
+pnpm --filter @lemn-ltd/ui-portal run test
+pnpm --filter @lemn-ltd/ui-portal run test:e2e
 pnpm run check
 pnpm run build
 ```
 
 ## Local Conventions To Preserve
 
-- Catalog drives showcase metadata. A showcase component route must have a matching `@lemn-ltd/ui` catalog entry.
-- Use `componentEntry('<slug>', () => <Page />)` for catalog-backed showcase entries.
+- Catalog drives Portal metadata. A Portal component route must have a matching active `@lemn-ltd/ui` catalog entry.
+- Use `componentEntry('<slug>', () => <Page />)` for catalog-backed Portal entries.
 - Component folders usually contain the `.tsx`, `.css`, and `tests/` files.
 - Components use typed props, explicit exported types, local CSS imports, and `data-*` attributes for variants/states.
-- Keep visual baselines under `apps/showcase`, not package or product app folders.
+- Keep visual baselines under `apps/ui-portal`, not package or product app folders.

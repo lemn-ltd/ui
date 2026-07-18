@@ -3,24 +3,25 @@ SHELL := /bin/bash
 
 PNPM ?= pnpm
 
-.PHONY: help install dev dev-docs validate-agentops validate-identity validate-package-identity validate-brand-neutrality validate-boundaries validate-release-preconditions validate check test test-e2e-ui-showcase test-e2e-ui-showcase-shard build pack-packages release-preflight clean
+.PHONY: help install dev dev-docs validate-agentops validate-identity validate-package-identity validate-brand-neutrality validate-boundaries validate-ui-portal-zero-legacy validate-release-preconditions validate check test test-e2e-ui-portal test-e2e-ui-portal-shard build pack-packages release-preflight clean
 
 help:
 	@printf 'Useful targets:\n'
 	@printf '  make install                  Install workspace dependencies with the lockfile frozen.\n'
-	@printf '  make dev                      Restart the local UI Showcase at http://localhost:6500.\n'
+	@printf '  make dev                      Restart the local UI Portal at http://localhost:6500.\n'
 	@printf '  make dev-docs                 Start the local docs site at http://localhost:6600.\n'
 	@printf '  make validate-agentops        Verify the managed-file lock and local checksums.\n'
 	@printf '  make validate-identity        Verify workspace scopes, docs identity, and legacy-name removal.\n'
 	@printf '  make validate-package-identity Verify the canonical package and registry contract.\n'
-	@printf '  make validate-brand-neutrality Scan shared UI and showcase source for product-specific names.\n'
+	@printf '  make validate-brand-neutrality Scan shared UI and portal source for product-specific names.\n'
 	@printf '  make validate-boundaries      Scan @lemn-ltd/ui runtime imports for boundary violations.\n'
-	@printf '  make validate-release-preconditions Validate static release contracts and production DNS.\n'
+	@printf '  make validate-ui-portal-zero-legacy Reject retired app, Worker, domain, route, and credential identities.\n'
+	@printf '  make validate-release-preconditions Validate static release contracts before a rollout.\n'
 	@printf '  make validate                 Run all repository validation scripts, including release metadata.\n'
 	@printf '  make check                    Typecheck all workspace packages.\n'
 	@printf '  make test                     Run all workspace test suites.\n'
-	@printf '  make test-e2e-ui-showcase     Run the complete isolated Playwright showcase suite.\n'
-	@printf '  make build                    Build all workspace packages and the showcase.\n'
+	@printf '  make test-e2e-ui-portal      Run the complete isolated Playwright Portal suite.\n'
+	@printf '  make build                    Build all workspace packages and the portal.\n'
 	@printf '  make pack-packages            Pack and smoke-test the exact release package set with a clean npm consumer.\n'
 	@printf '  make release-preflight        Run validation, check, test, build, and package smoke.\n'
 	@printf '  make clean                    Remove generated local build/test artifacts.\n'
@@ -29,8 +30,8 @@ install:
 	$(PNPM) install --frozen-lockfile
 
 dev:
-	$(PNPM) kill:showcase
-	$(PNPM) dev:showcase
+	$(PNPM) kill:portal
+	$(PNPM) dev:portal
 
 dev-docs:
 	$(PNPM) dev:docs
@@ -50,6 +51,9 @@ validate-brand-neutrality:
 validate-boundaries:
 	$(PNPM) validate:boundaries
 
+validate-ui-portal-zero-legacy:
+	$(PNPM) validate:ui-portal-zero-legacy
+
 validate-release-preconditions:
 	$(PNPM) validate:release-preconditions
 
@@ -62,12 +66,12 @@ check:
 test:
 	$(PNPM) test
 
-test-e2e-ui-showcase:
-	$(PNPM) --filter @lemn-ltd/ui-showcase run test:e2e
+test-e2e-ui-portal:
+	$(PNPM) --filter @lemn-ltd/ui-portal run test:e2e
 
-test-e2e-ui-showcase-shard:
+test-e2e-ui-portal-shard:
 	@test -n "$(SHARD)" || { printf 'SHARD is required (for example, 1/3).\n' >&2; exit 2; }
-	$(PNPM) --filter @lemn-ltd/ui-showcase exec playwright test --shard=$(SHARD)
+	$(PNPM) --filter @lemn-ltd/ui-portal exec playwright test --shard=$(SHARD)
 
 build:
 	$(PNPM) build
@@ -79,4 +83,4 @@ release-preflight: validate-release-preconditions check test build pack-packages
 
 clean:
 	rm -rf .turbo coverage playwright-report test-results
-	rm -rf apps/showcase/dist packages/showcase-kit/dist packages/brand-contract/dist packages/ui/dist packages/brand-studio/dist
+	rm -rf apps/ui-portal/dist packages/brand-contract/dist packages/ui/dist packages/brand-studio/dist

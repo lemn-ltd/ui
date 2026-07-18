@@ -1,8 +1,9 @@
 # @lemn-ltd/ui agent usage guide
 
 Use this guide to select and compose public LEMN components and blocks. The
-interactive [Showcase](https://showcase.ui.le-mn.com) renders real capabilities;
-the machine-readable catalog and these docs explain when to use them.
+interactive [Lemn UI Portal](https://portal.ui.le-mn.com) renders real
+capabilities; the machine-readable catalog and these docs explain when to use
+them.
 
 ## Consumption contract
 
@@ -60,17 +61,20 @@ fallback.
 - Brand Studio is a controlled, persistence-free `BrandingDefinition` wizard.
   Its host owns Workspace context, authorization, storage, publication,
   activation, and audit.
-- Showcase Admin is a protected experimentation/proposal host. Public Showcase
-  remains read-only.
+- UI Portal Admin is an Access-protected, persistence-free experimentation and
+  proposal area. The public Catalog remains read-only.
+- Agent-oriented source and exports are retained for consumers, but they are not
+  registered in the active UI Portal and have no active routes, search, LLM
+  inventory, or browser bundle.
 
 ## Guide index
 
 - [components.md](components.md) — component selection guidance.
 - [patterns.md](patterns.md) — composition, state, branding, and block recipes.
-- [catalog.json](https://showcase.ui.le-mn.com/catalog.json) — current component
+- [catalog.json](https://portal.ui.le-mn.com/catalog.json) — current active Core component
   inventory.
-- [llms.txt](https://showcase.ui.le-mn.com/llms.txt) — concise agent index.
-- [llms-full.txt](https://showcase.ui.le-mn.com/llms-full.txt) — expanded agent
+- [llms.txt](https://portal.ui.le-mn.com/llms.txt) — concise agent index.
+- [llms-full.txt](https://portal.ui.le-mn.com/llms-full.txt) — expanded agent
   documentation.
 
 These rules apply `PAT-UI-LEMN-001`, `PAT-UI-PROVIDER-FIRST-001`,

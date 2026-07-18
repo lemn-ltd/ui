@@ -12,6 +12,8 @@ export {
 	type CoreComponentGroup,
 	componentCatalog,
 	componentExportsFromSlug,
+	coreComponentCatalog,
+	coreComponentExportsFromSlug,
 } from "./catalog.js";
 export * from "./data-display/index.js";
 export * from "./feedback/index.js";

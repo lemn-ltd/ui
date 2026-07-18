@@ -1,0 +1,215 @@
+import {
+	ComponentPage,
+	ExampleBlock,
+	PropsTable,
+	VariantsGallery,
+} from "@portal/catalog-kit";
+import {
+	Button,
+	InfoBanner,
+	type InfoBannerDensity,
+	type InfoBannerVariant,
+} from "@lemn-ltd/ui";
+import type { ReactElement } from "react";
+
+const VARIANTS: readonly InfoBannerVariant[] = [
+	"info",
+	"warn",
+	"danger",
+	"success",
+];
+const DENSITIES: readonly InfoBannerDensity[] = ["default", "compact"];
+
+const VARIANT_MESSAGES: Record<InfoBannerVariant, string> = {
+	info: "Sync runs every five minutes; the latest data is already loaded.",
+	warn: "You have used 90% of your quota. Consider upgrading soon.",
+	danger: "The last upload failed. Check the file format and try again.",
+	success: "Your changes are saved and now live for everyone.",
+};
+
+function InfoBannerPage(): ReactElement {
+	return (
+		<ComponentPage
+			status="stable"
+			summary="An in-content tinted banner with a tone left border. Variant drives the icon and accent through data-variant; this is not the page-level SystemBar."
+			title="Info banner"
+		>
+			<ExampleBlock
+				code={`<InfoBanner
+  actions={<Button size="sm" variant="outline">Review</Button>}
+  dismissible
+  title="Scheduled sync"
+>
+  Sync runs every five minutes; the latest data is already loaded.
+</InfoBanner>`}
+				render={() => (
+					<InfoBanner
+						actions={
+							<Button size="sm" variant="outline">
+								Review
+							</Button>
+						}
+						dismissible
+						title="Scheduled sync"
+					>
+						{VARIANT_MESSAGES.info}
+					</InfoBanner>
+				)}
+			/>
+
+			<VariantsGallery
+				columns={1}
+				items={VARIANTS.map((variant) => ({
+					label: variant,
+					render: () => (
+						<InfoBanner variant={variant}>
+							{VARIANT_MESSAGES[variant]}
+						</InfoBanner>
+					),
+				}))}
+			/>
+
+			<ExampleBlock
+				code={`<InfoBanner density="compact" variant="danger">
+  fetch failed: 504 Gateway Timeout
+</InfoBanner>`}
+				render={() => (
+					<InfoBanner density="compact" variant="danger">
+						fetch failed: 504 Gateway Timeout
+					</InfoBanner>
+				)}
+			/>
+
+			<VariantsGallery
+				columns={1}
+				items={DENSITIES.map((density) => ({
+					label: density,
+					render: () => (
+						<InfoBanner density={density} variant="warn">
+							Quota warning
+						</InfoBanner>
+					),
+				}))}
+			/>
+
+			<ExampleBlock
+				code={`// Rendered as the LAST element of the scrolling content region:
+<InfoBanner variant="danger" floating>
+  Service unavailable — make sure the service is running and try again.
+</InfoBanner>`}
+				render={() => (
+					<div
+						style={{
+							maxHeight: 220,
+							overflowY: "auto",
+							display: "grid",
+							gap: "var(--lemn-space-3)",
+						}}
+					>
+						{Array.from({ length: 8 }, (_, index) => (
+							<p key={index} style={{ color: "var(--lemn-color-text-muted)", margin: 0 }}>
+								Scrolling content row {index + 1} — the floating banner below
+								stays pinned to the bottom edge while you scroll.
+							</p>
+						))}
+						<InfoBanner floating variant="danger">
+							Service unavailable — make sure the service is running and try
+							again.
+						</InfoBanner>
+					</div>
+				)}
+			/>
+
+			<PropsTable
+				rows={[
+					{
+						name: "title",
+						type: "ReactNode",
+						description:
+							"Optional heading that labels a region when no stronger live role applies.",
+					},
+					{
+						name: "icon",
+						type: "ReactNode | false",
+						description:
+							"Overrides the system variant glyph or omits it explicitly.",
+					},
+					{
+						name: "actions",
+						type: "ReactNode",
+						description: "Action row rendered after the body.",
+					},
+					{
+						name: "dismissible",
+						type: "boolean",
+						defaultValue: "false",
+						description: "Adds an accessible dismiss action.",
+					},
+					{
+						name: "dismissLabel",
+						type: "string",
+						defaultValue: "'Dismiss'",
+						description: "Accessible name for the dismiss action.",
+					},
+					{
+						name: "onDismiss",
+						type: "() => void",
+						description:
+							"Notification callback after the banner dismisses itself.",
+					},
+					{
+						name: "urgency",
+						type: "'none' | 'polite' | 'assertive'",
+						description:
+							"Chooses region, status, or alert semantics independently of color.",
+					},
+					{
+						name: "variant",
+						type: "'info' | 'warn' | 'danger' | 'success'",
+						defaultValue: "'info'",
+						description:
+							"Tone treatment; written to data-variant and selects the leading icon.",
+					},
+					{
+						name: "density",
+						type: "'default' | 'compact'",
+						defaultValue: "'default'",
+						description:
+							"Visual density. Use compact for row-level status details and short inline errors.",
+					},
+					{
+						name: "floating",
+						type: "boolean",
+						defaultValue: "false",
+						description:
+							"Sticks the banner to the bottom edge of the scrolling content region (render it as the last content element). Announces via role status/alert.",
+					},
+					{
+						name: "children",
+						type: "ReactNode",
+						description: "Banner body content.",
+					},
+					{
+						name: "role",
+						type: "AriaRole",
+						description:
+							"Optional explicit landmark or live-region role; inferred from urgency otherwise.",
+					},
+					{
+						name: "aria-label / aria-labelledby",
+						type: "string",
+						description:
+							"Accessible naming for banner regions without relying on visible text alone.",
+					},
+					{
+						name: "…rest",
+						type: "HTMLAttributes<HTMLDivElement>",
+						description: "Native div props (className, id, …).",
+					},
+				]}
+			/>
+		</ComponentPage>
+	);
+}
+
+export default InfoBannerPage;

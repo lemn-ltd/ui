@@ -15,10 +15,8 @@ const expectedPackageNames = new Map([
   ['packages/brand-studio/package.json', '@lemn-ltd/brand-studio'],
   ['packages/provider-registry/package.json', '@lemn-ltd/provider-registry'],
   ['packages/ui/package.json', '@lemn-ltd/ui'],
-  ['packages/showcase-kit/package.json', '@lemn-ltd/showcase-kit'],
   ['apps/docs/package.json', '@lemn-ltd/ui-docs'],
-  ['apps/showcase/package.json', '@lemn-ltd/ui-showcase'],
-  ['apps/showcase-admin/package.json', '@lemn-ltd/ui-showcase-admin'],
+  ['apps/ui-portal/package.json', '@lemn-ltd/ui-portal'],
 ]);
 
 const files = execFileSync(

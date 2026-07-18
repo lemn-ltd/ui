@@ -91,6 +91,14 @@ describe('Git-authoritative provider registry', () => {
     expect(new Set(records.map((entry) => entry.catalogSlug)).size).toBe(131);
     const exports = records.flatMap((entry) => asArray(entry.finalPublicExports));
     expect(new Set(exports).size).toBe(exports.length);
+    const exportsBySlug = new Map(
+      records.map((entry) => [entry.catalogSlug, asArray(entry.finalPublicExports)]),
+    );
+    expect(exportsBySlug.get('select')).toEqual(['InputSelect']);
+    expect(exportsBySlug.get('search')).toEqual(['InputSearch']);
+    expect(exportsBySlug.get('radio')).toEqual(['RadioGroup', 'RadioGroupItem']);
+    expect(exportsBySlug.get('automation-graph')).toEqual(['GraphCanvas']);
+    expect(exportsBySlug.get('wait-retry-chip')).toEqual(['WaitChip', 'RetryChip']);
     expect(
       records.every(
         (entry) =>

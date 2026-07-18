@@ -1,0 +1,40 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "lemn-ui-portal",
+	"main": "src/worker/index.ts",
+	"compatibility_date": "2026-05-14",
+	"compatibility_flags": ["nodejs_compat"],
+	"workers_dev": false,
+	"preview_urls": false,
+	"routes": [
+		{
+			"pattern": "portal.ui.le-mn.com",
+			"custom_domain": true
+		},
+		{
+			"pattern": "schemas.ui.le-mn.com",
+			"custom_domain": true
+		}
+	],
+	"assets": {
+		"directory": "./dist/client",
+		"binding": "ASSETS",
+		"not_found_handling": "single-page-application",
+		"run_worker_first": true
+	},
+	"observability": {
+		"enabled": true,
+		"head_sampling_rate": 1
+	},
+	"vars": {
+		"ACCESS_ISSUER": "https://lemn-dev.cloudflareaccess.com",
+		"DEPLOYMENT_ENVIRONMENT": "production",
+		"BUILD_VERSION": "0.0.0",
+		"BUILD_GIT_SHA": "local",
+		"BUILD_TIME": "local"
+	},
+	"dev": {
+		"port": 6500,
+		"local_protocol": "http"
+	}
+}

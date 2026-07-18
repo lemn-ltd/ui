@@ -18,7 +18,7 @@ Este documento define una implementación completa y revisable para:
 5. adoptar dos motores de gráficos complementarios de forma progresiva;
 6. conservar el patrón de construcción de Lemn UI;
 7. evitar dependencias, abstracciones y coste de bundle innecesarios;
-8. actualizar catálogo, showcase, documentación y pruebas como una sola entrega coherente;
+8. actualizar catálogo, Lemn UI Portal, documentación y pruebas como una sola entrega coherente;
 9. dejar un procedimiento independiente para auditar el resultado después de implementarlo.
 
 Este plan es la fuente de alcance de la implementación. Si durante la ejecución aparece una decisión que cambia la API pública, el inventario, el motor, la taxonomía o los criterios de aceptación, el agente debe detener esa parte, registrar la propuesta y solicitar aprobación antes de ampliar el alcance.
@@ -37,7 +37,7 @@ Este plan es la fuente de alcance de la implementación. Si durante la ejecució
 - Ningún tipo público expondrá tipos de Recharts, ECharts o D3.
 - Core y Agents son módulos. Las familias son una dimensión distinta dentro de cada módulo.
 - El campo técnico del catálogo para el módulo será area y la familia seguirá representada por group.
-- Foundations y Patterns pertenecen al showcase y no forman parte del catálogo de componentes distribuido.
+- Foundations y Patterns pertenecen al Portal y no forman parte del catálogo de componentes distribuido.
 - Cada página de componente tendrá un máximo de tres ejemplos reales e interactivos.
 - No se copiarán código, textos, ejemplos, activos ni atribuciones de sitios de referencia externos.
 
@@ -55,7 +55,7 @@ Patrones materialmente aplicables:
 
 | Patrón | Aplicación en esta entrega |
 | --- | --- |
-| PAT-ARCH-CHANGE-SCOPE-001 | Limitar cambios a catálogo, UI, showcase, docs, pruebas y tooling directamente necesario. |
+| PAT-ARCH-CHANGE-SCOPE-001 | Limitar cambios a catálogo, UI, Portal, docs, pruebas y tooling directamente necesario. |
 | PAT-ARCH-ABSTRACTIONS-001 | Crear abstracciones solo después de demostrar repetición real. |
 | PAT-CODE-FRAMEWORK-API-VALIDITY-001 | Verificar APIs reales de Radix, Recharts y React antes de usarlas. |
 | PAT-CODE-DEPENDENCIES-001 | Justificar, fijar, auditar y aislar cada dependencia nueva. |
@@ -68,7 +68,7 @@ Los tests existentes están colocados junto al código bajo packages/ui/src. Aun
 
 ## 4. Precondición de workspace
 
-La fotografía usada para este plan muestra cambios previos sin confirmar en apps/showcase y packages/showcase-kit. No pertenecen a esta expansión.
+La fotografía usada para este plan mostraba cambios previos sin confirmar en la aplicación de catálogo y sus helpers históricos. No pertenecían a esta expansión y no deben interpretarse como evidencia del checkout actual.
 
 Antes de comenzar la implementación:
 
@@ -77,7 +77,7 @@ Antes de comenzar la implementación:
 3. preservar el trabajo existente;
 4. usar un checkout o worktree limpio dedicado a esta entrega;
 5. no usar reset, checkout destructivo ni stash sin autorización;
-6. no mezclar los cambios previos del showcase con los commits de esta implementación.
+6. no mezclar cambios previos del Portal con los commits de esta implementación.
 
 La implementación no debe empezar sobre un árbol sucio si no existe una atribución inequívoca de cada cambio.
 
@@ -102,7 +102,7 @@ Fotografía observada al redactar:
 - packages/ui/src/tokens.ts todavía refleja valores dark anteriores para superficies y texto.
 - Las pruebas de tokens validan forma y claves, pero no paridad exacta.
 - Sparkline puede renderizar role="img" sin exigir un nombre accesible.
-- docs/showcase-component-documentation-migration/SPEC.md contiene siete menciones de una marca externa de referencia que deben desaparecer sin trasladarse a documentos nuevos.
+- Un borrador de migración anterior contenía siete menciones de una marca externa de referencia; ninguna debe trasladarse a documentos nuevos.
 
 El agente debe volver a medir esta base al iniciar. Si cambió, registrará la nueva cifra y explicará cualquier desviación antes de continuar.
 
@@ -147,14 +147,14 @@ Familias de Agents:
 
 ### 6.3 Componente
 
-El componente es la unidad pública identificada por slug, título, API, exports, documentación, showcase y pruebas.
+El componente es la unidad pública identificada por slug, título, API, exports, documentación, Portal y pruebas.
 
 ### 6.4 Dimensiones que no deben mezclarse
 
 - area identifica el módulo.
 - group identifica la familia.
 - slug identifica el componente.
-- Foundations y Patterns son secciones editoriales del showcase.
+- Foundations y Patterns son secciones editoriales del Portal.
 - No se añadirá un campo category redundante.
 - No se volverá a usar Agents como familia, porque es un módulo.
 
@@ -202,8 +202,8 @@ El tipo debe ser una unión discriminada que impida familias inválidas para cad
 Requisitos:
 
 - Cada entrada debe declarar area explícitamente.
-- apps/showcase/src/client/registry/component-entry.ts debe dejar de inferir el área a partir de group.
-- Las rutas deben continuar usando /core/components/:slug y /agents/components/:slug.
+- `apps/ui-portal/src/client/registry/component-entry.ts` debe dejar de inferir el área a partir de `group`.
+- El registro activo del Portal contiene solo Core. Sus componentes usan `/components/:slug` y las visualizaciones `/visualizations/:slug`; el código y los exports de Agents se conservan, pero no se registran en rutas, navegación, búsqueda, catálogos públicos, documentos LLM ni bundles del Portal.
 - El orden de familias debe definirse por módulo, no en una lista global ambigua.
 - Los tests deben impedir slugs duplicados, familias cruzadas, componentes sin docs y exports inexistentes.
 - La API pública debe exportar ComponentArea, CoreComponentGroup, AgentComponentGroup y ComponentCatalogEntry.
@@ -414,7 +414,7 @@ Cada componente mantiene:
 - export de familia;
 - export raíz;
 - entrada de catálogo;
-- entrada de showcase;
+- entrada de Portal;
 - documentación.
 
 ### 12.2 ChartFrame
@@ -659,7 +659,7 @@ Mantener el caso actual de fecha única y extender con:
 - locale y weekStartsOn;
 - min, max y predicate de disabled;
 - navegación de teclado entre meses;
-- today inyectable para tests y showcases deterministas.
+- today inyectable para tests y fixtures deterministas.
 
 La lógica de fechas compartida debe extraerse a helpers puros internos. No se añadirá una dependencia de fechas salvo que una necesidad de timezone, calendario o locale no pueda resolverse de manera robusta con la plataforma y se justifique por escrito.
 
@@ -719,7 +719,7 @@ El patrón observado y aprobado para componentes nuevos es:
 11. tokens del sistema en vez de valores aislados;
 12. export de carpeta, familia y root;
 13. entrada de catálogo;
-14. página de showcase real;
+14. página de Portal real;
 15. documentación y API table;
 16. fixtures deterministas;
 17. sin fetching, reglas de negocio ni dependencias de producto.
@@ -845,7 +845,7 @@ Para Sparkline:
 - respetar prefers-reduced-motion;
 - animation acepta auto o none;
 - no animar datasets densos por defecto;
-- dividir por ruta o feature las páginas del showcase.
+- dividir por ruta o feature las páginas del Portal.
 
 ### 19.2 Pruebas de bundle obligatorias
 
@@ -946,10 +946,10 @@ Problema:
 Solución:
 
 - introducir contrato significativo/decorativo;
-- actualizar tests, showcase y docs;
+- actualizar tests, Portal y docs;
 - preservar compatibilidad cuando no degrade accesibilidad.
 
-## 22. Showcase y documentación
+## 22. Lemn UI Portal y documentación
 
 ### 22.1 Página por componente
 
@@ -1042,7 +1042,7 @@ Para cada componente nuevo o extendido:
 5. implementar TSX y CSS;
 6. añadir exports;
 7. añadir catálogo;
-8. integrar un preview real en showcase;
+8. integrar un preview real en el Portal;
 9. añadir máximo tres ejemplos;
 10. documentar props;
 11. escribir tests unitarios;
@@ -1232,7 +1232,7 @@ Gate:
 - Tabs y TabNavigation tienen semánticas distintas;
 - InfoBanner cubre callout sin componente duplicado.
 
-### Fase 8. Showcase y documentación
+### Fase 8. Lemn UI Portal y documentación
 
 Acciones:
 
@@ -1251,7 +1251,7 @@ Gate:
 - todas las rutas resuelven;
 - no hay imports o comandos de instalación incorrectos;
 - neutralidad en cero;
-- catálogo, docs y showcase sin drift.
+- catálogo, docs y Portal sin drift.
 
 ### Fase 9. Validación integral y preparación de 0.2.0
 
@@ -1298,10 +1298,10 @@ La creación de commits, push, publicación y deploy se realiza únicamente si l
 - fixtures o scripts de bundle
 - configuración de tests solo si es indispensable
 
-### Showcase
+### Lemn UI Portal
 
-- apps/showcase/src/client/registry/**
-- apps/showcase/src/client/shell/**
+- apps/ui-portal/src/client/registry/**
+- apps/ui-portal/src/client/shell/**
 - páginas y ejemplos de componentes
 - estilos estrictamente relacionados
 - tests unitarios y E2E
@@ -1312,7 +1312,7 @@ La creación de commits, push, publicación y deploy se realiza únicamente si l
 - docs/README.md
 - docs/component-capability-expansion/README.md
 - docs/visualization-system/README.md
-- docs/showcase-component-documentation-migration/SPEC.md
+- UI_PORTAL_UNIFICATION_HANDOFF.md
 - patterns/pattern-audit.md
 - changeset correspondiente
 
@@ -1400,8 +1400,8 @@ Ejecutar desde el root, adaptando únicamente si los scripts reales cambian de n
     pnpm --filter @lemn-ltd/ui run test
     pnpm --filter @lemn-ltd/ui run validate:boundaries
     pnpm --filter @lemn-ltd/ui run validate:brand-neutrality
-    pnpm --filter @lemn-ltd/ui-showcase run test
-    pnpm --filter @lemn-ltd/ui-showcase run test:e2e
+    pnpm --filter @lemn-ltd/ui-portal run test
+    pnpm --filter @lemn-ltd/ui-portal run test:e2e
     pnpm --filter @lemn-ltd/ui-docs run check
     pnpm run check
     pnpm run test
@@ -1431,7 +1431,7 @@ Secuencia recomendada:
 5. add native visualizations;
 6. add inputs and date composition;
 7. extend tabs, banner and add navigation/layout components;
-8. update showcase and docs;
+8. update Portal and docs;
 9. add release notes, evidence and final gates.
 
 Reglas:
@@ -1466,7 +1466,7 @@ La implementación se considera completa solo si:
 17. CSS y espejo TypeScript tienen paridad exacta;
 18. Sparkline resuelve significativo/decorativo;
 19. cada página tiene máximo tres ejemplos reales;
-20. catálogo, exports, showcase y docs están sincronizados;
+20. catálogo, exports, Portal y docs están sincronizados;
 21. no existen menciones de la marca externa de benchmark;
 22. no existe código o contenido copiado;
 23. check, tests, build, E2E, a11y, bundle y visual pasan;
@@ -1684,7 +1684,7 @@ Porque trasladaría una decisión interna a todos los consumidores, filtraría d
 
 ### ¿Los componentes nuevos siguen el patrón actual?
 
-Sí: TSX tipado, CSS local, tokens, estado controlado/no controlado, native o Radix según complejidad, exports, catálogo, showcase, docs y tests. Charts añade Recharts solo dentro de su familia.
+Sí: TSX tipado, CSS local, tokens, estado controlado/no controlado, native o Radix según complejidad, exports, catálogo, Portal, docs y tests. Charts añade Recharts solo dentro de su familia.
 
 ### ¿El patrón es usado por otros sistemas?
 
@@ -1696,7 +1696,7 @@ Done significa:
 
 - código completo;
 - catálogo completo;
-- showcase completo;
+- Portal completo;
 - docs completas;
 - tests completos;
 - a11y verificada;

@@ -1,0 +1,61 @@
+---
+title: Lemn UI
+description: Public Catalog and protected Admin boundaries in the unified UI Portal.
+sidebar:
+  label: Lemn UI
+  order: 8
+---
+
+Lemn UI runs as one UI Portal application and one Cloudflare Worker at
+[portal.ui.le-mn.com](https://portal.ui.le-mn.com). The public Catalog and the
+protected Admin share a release identity without sharing an authorization
+boundary.
+
+## Public Catalog
+
+The public Catalog renders real LEMN components and blocks using deterministic
+fixtures. Its stable route families are:
+
+- `/`, `/foundations`, `/components`, `/visualizations`, `/blocks`,
+  `/patterns`, `/providers`, and `/playground`;
+- detail routes below foundations, components, visualizations, blocks, and
+  patterns;
+- public machine-readable catalog, provider, block, and agent guidance
+  endpoints.
+
+The Playground is persistence-free and exposes only approved System branding
+presets. Agents component source, tests, and package exports remain available
+to maintainers, but Agents are intentionally absent from the active Portal
+registry, routes, navigation, search, machine guidance, and client bundles.
+
+## Protected Admin
+
+Cloudflare Access protects `/admin` at the edge, and the Worker verifies the
+Access assertion again at the origin. The protected route families are
+`/admin/registry`, `/admin/conformance`, `/admin/brand-studio`,
+`/admin/releases`, and `/admin/settings`; protected APIs live under
+`/api/admin/*`.
+
+Admin is a read and proposal surface. The registry view reads Git-authoritative
+state and may create reviewable proposal bundles. Conformance renders immutable
+evidence. Releases report exact deployed metadata. Settings reports effective
+configuration and masked values. None of these areas writes durable product
+state, deploys from the browser, changes provider configuration, or bypasses
+normal review and release gates.
+
+## Brand Studio
+
+Brand Studio is a reusable package, not a deployment or control plane. It edits
+a controlled `BrandingDefinition`, compiles a real component preview, exposes
+diagnostics, and emits typed host intents. The Admin host keeps experiments in
+memory only. AgentOps supplies Workspace authorization, persistence, optimistic
+hashes, idempotency, publication, activation, previews, and audit.
+
+## Local development
+
+```bash
+pnpm dev:portal
+```
+
+The UI Portal uses local port `6500`. Retired hosts and route families are not
+redirected; consumers must use the canonical domain and routes.

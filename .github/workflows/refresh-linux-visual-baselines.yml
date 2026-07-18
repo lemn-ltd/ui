@@ -54,14 +54,14 @@ jobs:
               .trim().split("\n").filter(Boolean);
             if (files.length === 0) throw new Error("Snapshot refresh produced no changes");
             const invalid = files.filter((file) =>
-              !/^apps\/showcase\/tests\/e2e\/visual\.e2e\.ts-snapshots\/.+-linux\.png$/u.test(file));
+              !/^apps\/ui-portal\/tests\/e2e\/visual\.e2e\.ts-snapshots\/.+-linux\.png$/u.test(file));
             if (invalid.length > 0) throw new Error(`Unexpected generated paths: ${invalid.join(", ")}`);
           '
 
       - name: Upload generated Linux baselines
         uses: actions/upload-artifact@v4
         with:
-          name: showcase-linux-visual-baselines-${{ github.sha }}
-          path: apps/showcase/tests/e2e/visual.e2e.ts-snapshots/*-linux.png
+          name: ui-portal-linux-visual-baselines-${{ github.sha }}
+          path: apps/ui-portal/tests/e2e/visual.e2e.ts-snapshots/*-linux.png
           if-no-files-found: error
           retention-days: 1

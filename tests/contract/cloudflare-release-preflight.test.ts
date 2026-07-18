@@ -9,7 +9,7 @@ import {
 	verifyCloudflareReleaseAccess,
 } from "../../scripts/release/cloudflare-preflight.ts";
 
-const accountId = "71da6f8791d79c8abe7beea6f03d0162";
+const accountId = "a".repeat(32);
 const apiToken = "contract-scoped-api-token";
 
 const targets: CloudflareReleaseTarget[] = [
@@ -20,22 +20,16 @@ const targets: CloudflareReleaseTarget[] = [
 		hostname: "ui.le-mn.com",
 	},
 	{
-		id: "showcase",
+		id: "portal",
 		accountId,
-		workerName: "lemn-ui-showcase",
-		hostname: "showcase.ui.le-mn.com",
+		workerName: "lemn-ui-portal",
+		hostname: "portal.ui.le-mn.com",
 	},
 	{
 		id: "schema",
 		accountId,
-		workerName: "lemn-ui-showcase",
+		workerName: "lemn-ui-portal",
 		hostname: "schemas.ui.le-mn.com",
-	},
-	{
-		id: "showcase-admin",
-		accountId,
-		workerName: "lemn-ui-showcase-admin",
-		hostname: "admin.showcase.ui.le-mn.com",
 	},
 ];
 
@@ -45,7 +39,8 @@ function response(result: unknown, status = 200): Response {
 
 function cloudflareFixture(
 	options: {
-		conflictingDomain?: boolean;
+		conflictingHostname?: string;
+		duplicateHostname?: string;
 		inactiveToken?: boolean;
 		malformedDomainItem?: boolean;
 		malformedWorkerItem?: boolean;
@@ -90,34 +85,26 @@ function cloudflareFixture(
 			if (options.malformedWorkerItem) return response([{}]);
 			return response(
 				options.missingResources
-					? [{ id: "lemn-ui-showcase" }]
-					: [
-							{ id: "lemn-ui-docs" },
-							{ id: "lemn-ui-showcase" },
-							{ id: "lemn-ui-showcase-admin" },
-						],
+					? []
+					: [{ id: "lemn-ui-docs" }, { id: "lemn-ui-portal" }],
 			);
 		}
 		if (url.includes("/workers/domains?")) {
 			const requestUrl = new URL(url);
 			if (options.malformedDomainItem) return response([{}]);
 			if (options.missingResources) return response([]);
-			return response([
-				{
-					hostname: requestUrl.searchParams.get("hostname"),
-					service: options.conflictingDomain
-						? "different-worker"
-						: requestUrl.searchParams.get("hostname") === "ui.le-mn.com"
-							? "lemn-ui-docs"
-							: requestUrl.searchParams.get("hostname") ===
-									"showcase.ui.le-mn.com"
-								? "lemn-ui-showcase"
-								: requestUrl.searchParams.get("hostname") ===
-										"schemas.ui.le-mn.com"
-									? "lemn-ui-showcase"
-									: "lemn-ui-showcase-admin",
-				},
-			]);
+			const hostname = requestUrl.searchParams.get("hostname");
+			const service =
+				hostname === options.conflictingHostname
+					? "different-worker"
+					: hostname === "ui.le-mn.com"
+						? "lemn-ui-docs"
+						: "lemn-ui-portal";
+			const mappings = [{ hostname, service }];
+			if (hostname === options.duplicateHostname) {
+				mappings.push({ hostname, service: "duplicate-worker" });
+			}
+			return response(mappings);
 		}
 		throw new Error(`Unexpected Cloudflare fixture request: ${url}`);
 	};
@@ -136,9 +123,18 @@ async function verifyFixture(
 	});
 }
 
-test("all Wrangler deploy targets use the confirmed Lemn DEV account", async () => {
-	const configuredTargets = await loadCloudflareReleaseTargets();
+test("generic Wrangler deploy targets resolve the confirmed account from the environment", async () => {
+	const configuredTargets = await loadCloudflareReleaseTargets(undefined, {
+		CLOUDFLARE_ACCOUNT_ID: accountId,
+	});
 	assert.deepEqual(configuredTargets, targets);
+});
+
+test("generic Wrangler deploy targets fail closed without an account source", async () => {
+	await assert.rejects(
+		loadCloudflareReleaseTargets(undefined, {}),
+		/CLOUDFLARE_ACCOUNT_ID/u,
+	);
 });
 
 test("production token guidance names the exact account and zone grants", () => {
@@ -148,10 +144,10 @@ test("production token guidance names the exact account and zone grants", () => 
 	);
 });
 
-test("preflight uses only bearer-token auth and performs no mutation", async () => {
+test("preflight verifies an account-owned bearer token and performs no mutation", async () => {
 	const fixture = cloudflareFixture();
 	await verifyFixture(fixture);
-	assert.equal(fixture.requests.length, 10);
+	assert.equal(fixture.requests.length, 8);
 	assert.ok(
 		fixture.requests[0]?.url.endsWith(`/accounts/${accountId}/tokens/verify`),
 	);
@@ -227,10 +223,32 @@ test("post-deploy resource smoke requires all Workers and exact domain mappings"
 	);
 });
 
-test("preflight rejects a conflicting existing custom-domain mapping", async () => {
+test("preflight defers an existing Portal hostname handoff to transactional rollout", async () => {
+	await verifyFixture(
+		cloudflareFixture({ conflictingHostname: "schemas.ui.le-mn.com" }),
+	);
+	await verifyFixture(
+		cloudflareFixture({ conflictingHostname: "portal.ui.le-mn.com" }),
+	);
 	await assert.rejects(
-		verifyFixture(cloudflareFixture({ conflictingDomain: true })),
+		verifyFixture(
+			cloudflareFixture({ conflictingHostname: "schemas.ui.le-mn.com" }),
+			true,
+		),
 		/already mapped to another Worker/u,
+	);
+});
+
+test("preflight rejects Docs conflicts and duplicate hostname mappings", async () => {
+	await assert.rejects(
+		verifyFixture(cloudflareFixture({ conflictingHostname: "ui.le-mn.com" })),
+		/already mapped to another Worker/u,
+	);
+	await assert.rejects(
+		verifyFixture(
+			cloudflareFixture({ duplicateHostname: "schemas.ui.le-mn.com" }),
+		),
+		/duplicate custom-domain mappings/u,
 	);
 });
 

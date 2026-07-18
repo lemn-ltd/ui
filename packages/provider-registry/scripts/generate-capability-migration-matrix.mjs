@@ -11,6 +11,7 @@ const targetVersion = '0.3.0';
 
 const catalogFiles = [
   'catalog-primary-entries.ts',
+  'catalog-agent-primary-entries.ts',
   'catalog-secondary-entries.ts',
   'catalog-automation-entries.ts',
   'catalog-visualization-entries.ts',
@@ -177,24 +178,33 @@ function unwrap(node) {
 }
 
 async function exportExceptions() {
-  const path = resolve(uiSourceRoot, 'catalog.ts');
-  const source = ts.createSourceFile(path, await readFile(path, 'utf8'), ts.ScriptTarget.Latest, true);
   const exceptions = new Map();
-  for (const statement of source.statements) {
-    if (!ts.isVariableStatement(statement)) continue;
-    for (const declaration of statement.declarationList.declarations) {
-      if (!ts.isIdentifier(declaration.name) || declaration.name.text !== 'COMPONENT_EXPORT_EXCEPTIONS') continue;
-      const initializer = declaration.initializer && unwrap(declaration.initializer);
-      if (!initializer || !ts.isObjectLiteralExpression(initializer)) continue;
-      for (const entry of initializer.properties) {
-        if (!ts.isPropertyAssignment(entry)) continue;
-        const slug = ts.isStringLiteral(entry.name) || ts.isIdentifier(entry.name) ? entry.name.text : undefined;
-        const values = unwrap(entry.initializer);
-        if (!slug || !ts.isArrayLiteralExpression(values)) continue;
-        exceptions.set(slug, values.elements.filter(ts.isStringLiteral).map((value) => value.text));
+  const sources = [
+    ['catalog-core.ts', 'CORE_COMPONENT_EXPORT_EXCEPTIONS'],
+    ['catalog.ts', 'AGENT_COMPONENT_EXPORT_EXCEPTIONS'],
+  ];
+
+  for (const [file, variableName] of sources) {
+    const path = resolve(uiSourceRoot, file);
+    const source = ts.createSourceFile(path, await readFile(path, 'utf8'), ts.ScriptTarget.Latest, true);
+    for (const statement of source.statements) {
+      if (!ts.isVariableStatement(statement)) continue;
+      for (const declaration of statement.declarationList.declarations) {
+        if (!ts.isIdentifier(declaration.name) || declaration.name.text !== variableName) continue;
+        const initializer = declaration.initializer && unwrap(declaration.initializer);
+        if (!initializer || !ts.isObjectLiteralExpression(initializer)) continue;
+        for (const entry of initializer.properties) {
+          if (!ts.isPropertyAssignment(entry)) continue;
+          const slug = ts.isStringLiteral(entry.name) || ts.isIdentifier(entry.name) ? entry.name.text : undefined;
+          const values = unwrap(entry.initializer);
+          if (!slug || !ts.isArrayLiteralExpression(values)) continue;
+          if (exceptions.has(slug)) throw new Error(`Duplicate catalog export exception for ${slug}.`);
+          exceptions.set(slug, values.elements.filter(ts.isStringLiteral).map((value) => value.text));
+        }
       }
     }
   }
+
   return exceptions;
 }
 

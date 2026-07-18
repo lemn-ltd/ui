@@ -37,8 +37,7 @@
   gap: var(--lemn-space-5);
 }
 
-.ui-appointment-schedule-block__list,
-.ui-approval-queue-block__list {
+.ui-appointment-schedule-block__list {
   display: grid;
   gap: var(--lemn-space-3);
   padding: 0;
@@ -46,8 +45,7 @@
   list-style: none;
 }
 
-.ui-appointment-schedule-block__list > .ui-skeleton,
-.ui-approval-queue-block__list > .ui-skeleton {
+.ui-appointment-schedule-block__list > .ui-skeleton {
   min-height: 104px;
 }
 

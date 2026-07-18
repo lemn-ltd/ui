@@ -28,7 +28,7 @@ const packageSetSource = await readFile(
 	"utf8",
 );
 const rolloutSource = await readFile(
-	resolve(root, "scripts/release/showcase-production-rollout.ts"),
+	resolve(root, "scripts/release/ui-portal-production-rollout.ts"),
 	"utf8",
 );
 const workflow = parse(workflowSource) as UnknownRecord;
@@ -65,6 +65,10 @@ function productionSecret(name: string): string {
 	return expression(`secrets.PRODUCTION_${name}`);
 }
 
+function productionVariable(name: string): string {
+	return expression(`vars.PRODUCTION_${name}`);
+}
+
 test("manual production release is main-only and workflow concurrency never cancels", () => {
 	assert.match(String(releaseJob.if), /github\.ref == 'refs\/heads\/main'/u);
 	assert.match(
@@ -80,27 +84,17 @@ test("manual production release is main-only and workflow concurrency never canc
 	assert.ok(Number(releaseJob["timeout-minutes"]) >= 60);
 });
 
-test("production credentials remain exclusive to the protected environment job", () => {
+test("production Access credentials and audiences remain exclusive to the protected environment job", () => {
 	assert.equal(releaseJob.environment, "production");
-	const productionSecretPattern =
-		/secrets\.PRODUCTION_(?:CLOUDFLARE_API_TOKEN|STATUS_TOKEN|SHOWCASE_ADMIN_ACCESS_CLIENT_(?:ID|SECRET))/u;
+	const productionInputPattern =
+		/(?:secrets|vars)\.PRODUCTION_(?:CLOUDFLARE_(?:ACCOUNT_ID|API_TOKEN)|UI_PORTAL_(?:ACCESS_CLIENT_(?:ID|SECRET)|(?:HEALTH_)?ACCESS_AUDIENCE))/u;
 	for (const [jobName, job] of Object.entries(jobs)) {
 		if (jobName === "release-and-deploy") continue;
-		assert.doesNotMatch(JSON.stringify(job), productionSecretPattern);
+		assert.doesNotMatch(JSON.stringify(job), productionInputPattern);
 	}
-	const workflowWithoutRollbackBridge = workflowSource.replaceAll(
-		"secrets.STATUS_TOKEN || secrets.PRODUCTION_STATUS_TOKEN",
-		"",
-	);
 	assert.doesNotMatch(
-		workflowWithoutRollbackBridge,
-		/secrets\.(?:CLOUDFLARE_API_KEY|CLOUDFLARE_EMAIL|CLOUDFLARE_API_TOKEN|STATUS_TOKEN)(?![A-Z0-9_])/u,
-	);
-	assert.equal(
-		workflowSource.match(
-			/secrets\.STATUS_TOKEN \|\| secrets\.PRODUCTION_STATUS_TOKEN/gu,
-		)?.length,
-		2,
+		workflowSource,
+		/secrets\.(?:CLOUDFLARE_API_KEY|CLOUDFLARE_EMAIL|CLOUDFLARE_API_TOKEN)(?![A-Z0-9_])/u,
 	);
 	const preflightEnv = record(
 		step("Preflight Cloudflare release access").env,
@@ -110,30 +104,42 @@ test("production credentials remain exclusive to the protected environment job",
 		preflightEnv.CLOUDFLARE_API_TOKEN,
 		productionSecret("CLOUDFLARE_API_TOKEN"),
 	);
+	assert.equal(
+		preflightEnv.CLOUDFLARE_ACCOUNT_ID,
+		productionVariable("CLOUDFLARE_ACCOUNT_ID"),
+	);
 	assert.match(
 		String(step("Preflight Cloudflare release access").run),
-		/PRODUCTION_CLOUDFLARE_API_TOKEN[\s\S]*Workers Scripts: Edit[\s\S]*Zone: Read, Workers Routes: Edit/u,
+		/PRODUCTION_CLOUDFLARE_API_TOKEN[\s\S]*Workers Scripts: Edit[\s\S]*Zone: Read, Workers Routes: Edit[\s\S]*PRODUCTION_CLOUDFLARE_ACCOUNT_ID/u,
 	);
 	assert.doesNotMatch(workflowSource, /CLOUDFLARE_API_KEY|CLOUDFLARE_EMAIL/u);
 	assert.equal(
-		preflightEnv.PRODUCTION_STATUS_TOKEN,
-		productionSecret("STATUS_TOKEN"),
+		preflightEnv.UI_PORTAL_ACCESS_CLIENT_ID,
+		productionSecret("UI_PORTAL_ACCESS_CLIENT_ID"),
 	);
 	assert.equal(
-		preflightEnv.ROLLBACK_STATUS_TOKEN,
-		expression("secrets.STATUS_TOKEN || secrets.PRODUCTION_STATUS_TOKEN"),
-	);
-	assert.equal(
-		preflightEnv.SHOWCASE_ADMIN_ACCESS_CLIENT_ID,
-		productionSecret("SHOWCASE_ADMIN_ACCESS_CLIENT_ID"),
-	);
-	assert.equal(
-		preflightEnv.SHOWCASE_ADMIN_ACCESS_CLIENT_SECRET,
-		productionSecret("SHOWCASE_ADMIN_ACCESS_CLIENT_SECRET"),
+		preflightEnv.UI_PORTAL_ACCESS_CLIENT_SECRET,
+		productionSecret("UI_PORTAL_ACCESS_CLIENT_SECRET"),
 	);
 	assert.match(
 		String(step("Preflight Cloudflare release access").run),
-		/SHOWCASE_ADMIN_ACCESS_CLIENT_ID[\s\S]*SHOWCASE_ADMIN_ACCESS_CLIENT_SECRET/u,
+		/UI_PORTAL_ACCESS_CLIENT_ID[\s\S]*UI_PORTAL_ACCESS_CLIENT_SECRET/u,
+	);
+	assert.equal(
+		preflightEnv.PRODUCTION_UI_PORTAL_ACCESS_AUDIENCE,
+		productionVariable("UI_PORTAL_ACCESS_AUDIENCE"),
+	);
+	assert.equal(
+		preflightEnv.PRODUCTION_UI_PORTAL_HEALTH_ACCESS_AUDIENCE,
+		productionVariable("UI_PORTAL_HEALTH_ACCESS_AUDIENCE"),
+	);
+	assert.doesNotMatch(
+		workflowSource,
+		/secrets\.PRODUCTION_UI_PORTAL_(?:ACCESS_AUDIENCE|HEALTH_ACCESS_AUDIENCE)/u,
+	);
+	assert.match(
+		String(step("Preflight Cloudflare release access").run),
+		/\^\[0-9a-f\]\{64\}\$/u,
 	);
 });
 
@@ -146,12 +152,32 @@ test("release permissions are limited to protected main and package writes", () 
 
 test("preflight precedes the single stateful release preparation and package gate", () => {
 	assert.ok(
+		stepIndex("Validate release preconditions") <
+			stepIndex("Preflight Cloudflare release access"),
+	);
+	assert.ok(
 		stepIndex("Preflight Cloudflare release access") <
 			stepIndex("Prepare or resume release metadata"),
 	);
 	assert.ok(
 		stepIndex("Prepare or resume release metadata") <
+			stepIndex("Install exact prepared release revision"),
+	);
+	assert.ok(
+		stepIndex("Install exact prepared release revision") <
+			stepIndex("Validate exact prepared release revision"),
+	);
+	assert.ok(
+		stepIndex("Validate exact prepared release revision") <
 			stepIndex("Publish or verify exact package set"),
+	);
+	assert.ok(
+		stepIndex("Publish or verify exact package set") <
+			stepIndex("Verify exact published package set in a clean consumer"),
+	);
+	assert.ok(
+		stepIndex("Verify exact published package set in a clean consumer") <
+			stepIndex("Roll out UI Portal with protected rollback"),
 	);
 	assert.equal(
 		step("Prepare or resume release metadata").run,
@@ -174,6 +200,176 @@ test("preflight precedes the single stateful release preparation and package gat
 	assert.doesNotMatch(workflowSource, /npm view|E404/u);
 });
 
+test("the exact prepared release SHA receives a frozen install and the full repository gate", () => {
+	const install = step("Install exact prepared release revision");
+	const installRun = String(install.run);
+	const installEnv = record(install.env, "exact release install env");
+	assert.equal(
+		installEnv.EXPECTED_RELEASE_GIT_SHA,
+		expression("steps.release.outputs.sha"),
+	);
+	assert.equal(installEnv.NODE_AUTH_TOKEN, expression("secrets.GITHUB_TOKEN"));
+	assert.equal(installEnv.GITHUB_TOKEN, undefined);
+	assert.equal(installEnv.CLOUDFLARE_API_TOKEN, undefined);
+	assert.equal(installEnv.UI_PORTAL_ACCESS_CLIENT_SECRET, undefined);
+	assert.match(installRun, /git rev-parse HEAD/u);
+	assert.match(installRun, /EXPECTED_RELEASE_GIT_SHA/u);
+	assert.match(installRun, /git diff --exit-code/u);
+	assert.match(installRun, /git diff --cached --exit-code/u);
+	assert.match(installRun, /git status --porcelain --untracked-files=normal/u);
+	assert.match(installRun, /pnpm install --frozen-lockfile --ignore-scripts/u);
+	assert.match(
+		installRun,
+		/env -u NODE_AUTH_TOKEN -u GITHUB_TOKEN pnpm rebuild --pending/u,
+	);
+
+	const validation = step("Validate exact prepared release revision");
+	assert.equal(validation.env, undefined);
+	assert.deepEqual(String(validation.run).trim().split("\n"), [
+		"pnpm validate",
+		"pnpm check",
+		"pnpm test",
+		"pnpm build",
+	]);
+	assert.ok(
+		stepIndex("Prepare or resume release metadata") <
+			stepIndex("Install exact prepared release revision"),
+	);
+	assert.ok(
+		stepIndex("Install exact prepared release revision") <
+			stepIndex("Validate exact prepared release revision"),
+	);
+	assert.ok(
+		stepIndex("Validate exact prepared release revision") <
+			stepIndex("Audit release dependency graph"),
+	);
+});
+
+test("the exact prepared release revision is audited and Cloudflare dry-run before publication", () => {
+	assert.equal(step("Audit release dependency graph").run, "pnpm audit --prod");
+	const dryRun = step("Dry-run Cloudflare deployables");
+	assert.match(
+		String(dryRun.run),
+		/pnpm --filter @lemn-ltd\/ui-portal run cf:dry-run/u,
+	);
+	assert.match(
+		String(dryRun.run),
+		/pnpm --filter @lemn-ltd\/ui-docs run cf:dry-run/u,
+	);
+	const dryRunEnv = record(dryRun.env, "Cloudflare dry-run env");
+	assert.equal(
+		dryRunEnv.CLOUDFLARE_API_TOKEN,
+		productionSecret("CLOUDFLARE_API_TOKEN"),
+	);
+	assert.equal(
+		dryRunEnv.CLOUDFLARE_ACCOUNT_ID,
+		expression("steps.cloudflare.outputs.portal_account_id"),
+	);
+	assert.equal(dryRunEnv.UI_PORTAL_ACCESS_CLIENT_ID, undefined);
+	assert.equal(dryRunEnv.UI_PORTAL_ACCESS_CLIENT_SECRET, undefined);
+	assert.ok(
+		stepIndex("Validate exact prepared release revision") <
+			stepIndex("Audit release dependency graph"),
+	);
+	assert.ok(
+		stepIndex("Audit release dependency graph") <
+			stepIndex("Dry-run Cloudflare deployables"),
+	);
+	assert.ok(
+		stepIndex("Dry-run Cloudflare deployables") <
+			stepIndex("Publish or verify exact package set"),
+	);
+});
+
+test("published packages are installed in a clean consumer before any production deploy", () => {
+	const verification = step(
+		"Verify exact published package set in a clean consumer",
+	);
+	const env = record(verification.env, "published consumer verification env");
+
+	assert.equal(verification.run, "pnpm smoke:packages:github-packages");
+	assert.equal(env.NODE_AUTH_TOKEN, expression("secrets.GITHUB_TOKEN"));
+	assert.equal(env.GITHUB_TOKEN, undefined);
+	assert.equal(env.CLOUDFLARE_API_TOKEN, undefined);
+	assert.ok(
+		stepIndex("Publish or verify exact package set") <
+			stepIndex("Verify exact published package set in a clean consumer"),
+	);
+	assert.ok(
+		stepIndex("Verify exact published package set in a clean consumer") <
+			stepIndex("Roll out UI Portal with protected rollback"),
+	);
+	assert.ok(
+		stepIndex("Verify exact published package set in a clean consumer") <
+			stepIndex("Deploy docs"),
+	);
+});
+
+test("dependency lifecycle scripts never receive a GitHub package credential", () => {
+	for (const [jobName, jobValue] of Object.entries(jobs)) {
+		const job = record(jobValue, jobName);
+		const jobSteps = Array.isArray(job.steps)
+			? (job.steps as UnknownRecord[])
+			: [];
+		const installIndex = jobSteps.findIndex(
+			(candidate) => candidate.name === "Install dependencies",
+		);
+		if (installIndex === -1) continue;
+		const install = jobSteps[installIndex] as UnknownRecord;
+		assert.match(String(install.run), /--ignore-scripts/u);
+		assert.equal(
+			record(install.env, `${jobName} install env`).NODE_AUTH_TOKEN,
+			expression("secrets.GITHUB_TOKEN"),
+		);
+		const rebuild = jobSteps[installIndex + 1] as UnknownRecord;
+		assert.equal(
+			rebuild.name,
+			"Rebuild approved dependencies without registry credentials",
+		);
+		assert.equal(
+			rebuild.run,
+			"env -u NODE_AUTH_TOKEN -u GITHUB_TOKEN pnpm rebuild --pending",
+		);
+		assert.equal(rebuild.env, undefined);
+	}
+});
+
+test("release bootstrap defers strict host checks until Cloudflare mappings exist", () => {
+	const scripts = record(rootPackage.scripts, "root scripts");
+	assert.equal(scripts["validate:release-preconditions"], "pnpm validate");
+	assert.equal(
+		scripts["validate:release-hosts"],
+		"node scripts/check-release-hosts.mjs",
+	);
+
+	const validationSteps = record(jobs.validate, "validate job")
+		.steps as UnknownRecord[];
+	assert.equal(
+		validationSteps.some(
+			(candidate) => candidate.name === "Validate release host DNS",
+		),
+		false,
+	);
+
+	const stagedDeployment = rolloutSource.indexOf("if (stagedDeployment(");
+	const mappingSmoke = rolloutSource.indexOf(
+		"cloudflareMappingSmokeCommand",
+		stagedDeployment,
+	);
+	const productionSmoke = rolloutSource.indexOf(
+		"await dependencies.smokeProduction(",
+		mappingSmoke,
+	);
+	const activation = rolloutSource.indexOf(
+		"activateCandidateCommand(",
+		productionSmoke,
+	);
+	assert.ok(stagedDeployment >= 0);
+	assert.ok(mappingSmoke > stagedDeployment);
+	assert.ok(productionSmoke > mappingSmoke);
+	assert.ok(activation > productionSmoke);
+});
+
 test("package release receives explicit API and registry authentication", () => {
 	const prepareEnv = record(
 		step("Prepare or resume release metadata").env,
@@ -185,13 +381,28 @@ test("package release receives explicit API and registry authentication", () => 
 	);
 	assert.equal(publishEnv.GITHUB_TOKEN, expression("secrets.GITHUB_TOKEN"));
 	assert.equal(publishEnv.NODE_AUTH_TOKEN, expression("secrets.GITHUB_TOKEN"));
+	assert.equal(prepareEnv.CLOUDFLARE_API_TOKEN, undefined);
+	assert.equal(publishEnv.CLOUDFLARE_API_TOKEN, undefined);
+	assert.match(publishSource, /"--ignore-scripts"/u);
+	assert.doesNotMatch(prepareSource, /env:\s*process\.env/u);
+	assert.doesNotMatch(publishSource, /env:\s*process\.env/u);
+});
+
+test("secret preflight removes Access credentials before invoking Cloudflare tooling", () => {
+	const run = String(step("Preflight Cloudflare release access").run);
+	for (const name of [
+		"UI_PORTAL_ACCESS_CLIENT_ID",
+		"UI_PORTAL_ACCESS_CLIENT_SECRET",
+		"PRODUCTION_UI_PORTAL_ACCESS_AUDIENCE",
+		"PRODUCTION_UI_PORTAL_HEALTH_ACCESS_AUDIENCE",
+	]) {
+		assert.match(run, new RegExp(`-u ${name}`, "u"));
+	}
+	assert.match(run, /pnpm preflight:cloudflare:release/u);
+	assert.doesNotMatch(run, /pnpm release:preflight/u);
 	assert.equal(
-		prepareEnv.CLOUDFLARE_API_TOKEN,
-		productionSecret("CLOUDFLARE_API_TOKEN"),
-	);
-	assert.equal(
-		publishEnv.CLOUDFLARE_API_TOKEN,
-		productionSecret("CLOUDFLARE_API_TOKEN"),
+		step("Validate release preconditions").run,
+		"pnpm release:preflight",
 	);
 });
 
@@ -233,12 +444,11 @@ test("package and release entrypoints share main-only guarded implementations", 
 		"pnpm guard:release:mutation && pnpm validate:release-preconditions",
 	);
 	for (const name of [
-		"deploy:showcase:prod",
-		"deploy:showcase-admin:prod",
+		"deploy:portal:prod",
 		"prepare:packages:release",
 		"publish:packages:release",
 		"publish:packages:verify",
-		"rollout:showcase:prod",
+		"rollout:portal:prod",
 	]) {
 		assert.match(String(scripts[name]), /^pnpm guard:release:mutation && /u);
 	}
@@ -247,9 +457,10 @@ test("package and release entrypoints share main-only guarded implementations", 
 		"pnpm release:preflight && pnpm check && pnpm test && pnpm build:packages:release && pnpm publish:packages:release",
 	);
 	assert.equal(scripts["publish:ui"], undefined);
+	assert.equal(scripts["deploy:portal-admin:prod"], undefined);
 });
 
-test("docs and showcase consume one immutable release identity", () => {
+test("docs and portal consume one immutable release identity", () => {
 	const prepare = step("Prepare or resume release metadata");
 	assert.equal(prepare.id, "release");
 	const docsEnv = record(step("Build docs").env, "docs env");
@@ -267,7 +478,7 @@ test("docs and showcase consume one immutable release identity", () => {
 	);
 
 	const rolloutEnv = record(
-		step("Roll out showcase with protected rollback").env,
+		step("Roll out UI Portal with protected rollback").env,
 		"rollout env",
 	);
 	assert.equal(
@@ -293,8 +504,7 @@ test("docs and showcase consume one immutable release identity", () => {
 test("all production deploys receive only the scoped Environment API token", () => {
 	for (const name of [
 		"Deploy docs",
-		"Deploy Access-protected Showcase Admin",
-		"Roll out showcase with protected rollback",
+		"Roll out UI Portal with protected rollback",
 	]) {
 		const env = record(step(name).env, `${name} env`);
 		assert.equal(
@@ -305,56 +515,52 @@ test("all production deploys receive only the scoped Environment API token", () 
 		assert.equal(env.CLOUDFLARE_EMAIL, undefined);
 		assert.match(
 			String(env.CLOUDFLARE_ACCOUNT_ID),
-			/steps\.cloudflare\.outputs\.(?:docs|showcase|showcase_admin)_account_id/u,
+			/steps\.cloudflare\.outputs\.(?:docs|portal)_account_id/u,
 		);
 	}
 	const rolloutEnv = record(
-		step("Roll out showcase with protected rollback").env,
+		step("Roll out UI Portal with protected rollback").env,
 		"rollout env",
 	);
 	assert.equal(
-		rolloutEnv.PRODUCTION_STATUS_TOKEN,
-		productionSecret("STATUS_TOKEN"),
+		rolloutEnv.UI_PORTAL_ACCESS_CLIENT_ID,
+		productionSecret("UI_PORTAL_ACCESS_CLIENT_ID"),
 	);
 	assert.equal(
-		rolloutEnv.ROLLBACK_STATUS_TOKEN,
-		expression("secrets.STATUS_TOKEN || secrets.PRODUCTION_STATUS_TOKEN"),
+		rolloutEnv.UI_PORTAL_ACCESS_CLIENT_SECRET,
+		productionSecret("UI_PORTAL_ACCESS_CLIENT_SECRET"),
 	);
 	assert.equal(
-		rolloutEnv.SHOWCASE_ADMIN_ACCESS_CLIENT_ID,
-		productionSecret("SHOWCASE_ADMIN_ACCESS_CLIENT_ID"),
+		rolloutEnv.PRODUCTION_UI_PORTAL_ACCESS_AUDIENCE,
+		productionVariable("UI_PORTAL_ACCESS_AUDIENCE"),
 	);
 	assert.equal(
-		rolloutEnv.SHOWCASE_ADMIN_ACCESS_CLIENT_SECRET,
-		productionSecret("SHOWCASE_ADMIN_ACCESS_CLIENT_SECRET"),
+		rolloutEnv.PRODUCTION_UI_PORTAL_HEALTH_ACCESS_AUDIENCE,
+		productionVariable("UI_PORTAL_HEALTH_ACCESS_AUDIENCE"),
 	);
-	for (const name of [
-		"Deploy docs",
-		"Deploy Access-protected Showcase Admin",
-	]) {
+	for (const name of ["Deploy docs"]) {
 		const env = record(step(name).env, `${name} env`);
-		assert.equal(env.SHOWCASE_ADMIN_ACCESS_CLIENT_ID, undefined);
-		assert.equal(env.SHOWCASE_ADMIN_ACCESS_CLIENT_SECRET, undefined);
+		assert.equal(env.UI_PORTAL_ACCESS_CLIENT_ID, undefined);
+		assert.equal(env.UI_PORTAL_ACCESS_CLIENT_SECRET, undefined);
+		assert.equal(env.PRODUCTION_UI_PORTAL_ACCESS_AUDIENCE, undefined);
+		assert.equal(env.PRODUCTION_UI_PORTAL_HEALTH_ACCESS_AUDIENCE, undefined);
 	}
-	assert.equal(
-		stepIndex("Roll out showcase with protected rollback"),
-		steps.length - 1,
+	assert.ok(
+		stepIndex("Roll out UI Portal with protected rollback") <
+			stepIndex("Deploy docs"),
 	);
+	assert.equal(stepIndex("Deploy docs"), steps.length - 1);
 });
 
 test("workflow never invokes direct publisher, secret mutation, or Worker deploy commands", () => {
 	assert.equal(step("Deploy docs").run, "pnpm deploy:docs:prod");
 	assert.equal(
-		step("Deploy Access-protected Showcase Admin").run,
-		"pnpm deploy:showcase-admin:prod",
-	);
-	assert.equal(
-		step("Roll out showcase with protected rollback").run,
-		"pnpm rollout:showcase:prod",
+		step("Roll out UI Portal with protected rollback").run,
+		"pnpm rollout:portal:prod",
 	);
 	assert.doesNotMatch(
 		workflowSource,
-		/run:\s*pnpm --dir apps\/(?:docs|showcase|showcase-admin) exec wrangler (?:deploy|secret|rollback|versions)/u,
+		/run:\s*pnpm --dir apps\/(?:docs|ui-portal) exec wrangler (?:deploy|secret|rollback|versions)/u,
 	);
 	assert.doesNotMatch(
 		rolloutSource,
@@ -364,32 +570,32 @@ test("workflow never invokes direct publisher, secret mutation, or Worker deploy
 	assert.match(rolloutSource, /versions[\s\S]{0,40}deploy/u);
 });
 
-test("CI and release smoke local showcase assets before package publication", () => {
+test("CI and release smoke local portal assets before package publication", () => {
 	const validationSteps = record(jobs.validate, "validate job")
 		.steps as UnknownRecord[];
 	const localSmoke = validationSteps.find(
-		(candidate) => candidate.name === "Smoke showcase deployment locally",
+		(candidate) => candidate.name === "Smoke UI Portal deployment locally",
 	);
 	assert.ok(localSmoke);
-	assert.equal(localSmoke.run, "pnpm smoke:showcase:local");
-	const releaseSmoke = step("Build and smoke showcase deployment locally");
-	assert.equal(releaseSmoke.run, "pnpm smoke:showcase:local");
+	assert.equal(localSmoke.run, "pnpm smoke:portal:local");
+	const releaseSmoke = step("Build and smoke UI Portal deployment locally");
+	assert.equal(releaseSmoke.run, "pnpm smoke:portal:local");
 	assert.ok(
-		stepIndex("Build and smoke showcase deployment locally") <
+		stepIndex("Build and smoke UI Portal deployment locally") <
 			stepIndex("Publish or verify exact package set"),
 	);
 });
 
 test("the validation gate isolates complete E2E and accessibility shard matrices", () => {
-	const e2eJob = record(jobs["showcase-e2e"], "showcase E2E job");
-	const strategy = record(e2eJob.strategy, "showcase E2E strategy");
-	const matrix = record(strategy.matrix, "showcase E2E matrix");
+	const e2eJob = record(jobs["ui-portal-e2e"], "UI Portal E2E job");
+	const strategy = record(e2eJob.strategy, "portal E2E strategy");
+	const matrix = record(strategy.matrix, "portal E2E matrix");
 	const e2eSteps = e2eJob.steps as UnknownRecord[];
 	const e2eImagePull = e2eSteps.find(
 		(candidate) => candidate.name === "Pull pinned Playwright image",
 	);
 	const shard = e2eSteps.find(
-		(candidate) => candidate.name === "Run showcase E2E shard",
+		(candidate) => candidate.name === "Run UI Portal E2E shard",
 	);
 	assert.ok(e2eImagePull);
 	assert.ok(shard);
@@ -422,24 +628,24 @@ test("the validation gate isolates complete E2E and accessibility shard matrices
 	assert.doesNotMatch(String(shard.run), /accessibility/u);
 
 	const accessibilityJob = record(
-		jobs["showcase-accessibility"],
-		"showcase accessibility job",
+		jobs["ui-portal-accessibility"],
+		"UI Portal accessibility job",
 	);
 	const accessibilityStrategy = record(
 		accessibilityJob.strategy,
-		"showcase accessibility strategy",
+		"portal accessibility strategy",
 	);
 	const accessibilityMatrix = record(
 		accessibilityStrategy.matrix,
-		"showcase accessibility matrix",
+		"portal accessibility matrix",
 	);
 	const accessibilityPermissions = record(
 		accessibilityJob.permissions,
-		"showcase accessibility permissions",
+		"portal accessibility permissions",
 	);
 	assert.equal(
 		accessibilityJob.name,
-		`Showcase Accessibility (${expression("matrix.shard")}/4)`,
+		`UI Portal Accessibility (${expression("matrix.shard")}/4)`,
 	);
 	assert.equal(accessibilityJob.needs, "validate");
 	assert.equal(accessibilityJob.container, undefined);
@@ -455,7 +661,7 @@ test("the validation gate isolates complete E2E and accessibility shard matrices
 		(candidate) => candidate.name === "Install Chromium",
 	);
 	const crawl = accessibilitySteps.find(
-		(candidate) => candidate.name === "Run showcase accessibility crawl",
+		(candidate) => candidate.name === "Run UI Portal accessibility crawl",
 	);
 	assert.ok(browserInstall);
 	assert.ok(crawl);
@@ -465,8 +671,8 @@ test("the validation gate isolates complete E2E and accessibility shard matrices
 	assert.doesNotMatch(String(crawl.run), /--grep/u);
 	assert.deepEqual(releaseJob.needs, [
 		"validate",
-		"showcase-e2e",
-		"showcase-accessibility",
+		"ui-portal-e2e",
+		"ui-portal-accessibility",
 	]);
 });
 

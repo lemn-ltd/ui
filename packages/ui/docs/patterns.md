@@ -1,7 +1,7 @@
 # Screen composition recipes
 
-> How to assemble whole screens from `@lemn-ltd/ui` components. Each recipe
-> mirrors a live pattern page in the showcase (`/<module>/patterns/<slug>`).
+> How to assemble whole screens from `@lemn-ltd/ui` components. Each active
+> Core recipe mirrors a live UI Portal page at `/patterns/<slug>`.
 > Component names link to their selection guidance in [components.md](components.md).
 
 ## Rules before composing
@@ -19,15 +19,17 @@
 - Model loading, empty, error, permission, validation, pending, success, and
   retry states when they apply.
 
-## Module routes
+## UI Portal availability
 
-- Core patterns live under `/core/patterns/*`.
-- Agent workflow patterns live under `/agents/patterns/*`.
+- Core patterns live under `/patterns/*`.
+- Agent workflow pattern source is retained for consumers, but it is not
+  registered in the active UI Portal and has no active routes, search, LLM
+  inventory, or browser bundle.
 
 ## Blocks versus screen patterns
 
 A **block** is a published, purpose-specific composition with a stable slug,
-controlled data/action contract, complete applicable states, Showcase evidence,
+controlled data/action contract, complete applicable states, UI Portal evidence,
 and a real consumer. A **screen pattern** is guidance that a product uses to
 assemble its own screen and product policy.
 
@@ -37,13 +39,19 @@ Use `DashboardOverviewBlock` for an operational metric/trend/ranking surface,
 `blockCatalog` from `@lemn-ltd/ui/blocks` when the host needs the block-only
 entrypoint.
 
+Build scripts, route manifests, and other Node-only consumers that need only
+the active Core metadata import `coreBlockCatalog` from
+`@lemn-ltd/ui/blocks/core/catalog`. That entrypoint intentionally exports no
+React components or CSS; UI code renders Core blocks from
+`@lemn-ltd/ui/blocks/core`.
+
 Do not turn a single control into a block, hide a product API inside a block,
 or create another Button/Dialog/chart implementation within a composition.
 Keep a one-consumer product composition app-local until repeated need is proven.
 
 ## List + table
 
-`/core/patterns/list-table`
+`/patterns/list-table`
 
 **Composes** [`sidebar`](components.md#sidebar), [`top-bar`](components.md#top-bar), [`list-shell`](components.md#list-shell), [`button`](components.md#button), [`filter`](components.md#filter), [`list-filters-bar`](components.md#list-filters-bar), [`data-table`](components.md#data-table)
 
@@ -51,7 +59,7 @@ Frame the screen with Sidebar (mode="expanded") on the left and a main column wh
 
 ## List + grid
 
-`/core/patterns/list-grid`
+`/patterns/list-grid`
 
 **Composes** [`sidebar`](components.md#sidebar), [`top-bar`](components.md#top-bar), [`list-shell`](components.md#list-shell), [`button`](components.md#button), [`filter`](components.md#filter), [`list-filters-bar`](components.md#list-filters-bar), [`section-grid`](components.md#section-grid), [`card`](components.md#card), [`badge`](components.md#badge), [`relative-time`](components.md#relative-time)
 
@@ -59,7 +67,7 @@ Use the same Sidebar + TopBar + ListShell shell as List + table, with a PageHead
 
 ## List + split
 
-`/core/patterns/list-split`
+`/patterns/list-split`
 
 **Composes** [`avatar`](components.md#avatar), [`badge`](components.md#badge), [`relative-time`](components.md#relative-time)
 
@@ -67,7 +75,7 @@ Build a two-column master-detail grid (a scrollable list rail beside a detail pa
 
 ## Detail
 
-`/core/patterns/detail`
+`/patterns/detail`
 
 **Composes** [`entity-toolbar`](components.md#entity-toolbar), [`button`](components.md#button), [`badge`](components.md#badge), [`stats-strip`](components.md#stats-strip), [`card`](components.md#card), [`tabs`](components.md#tabs)
 
@@ -75,7 +83,7 @@ Lead with an EntityToolbar: pass an `identity` slot (title plus a status Badge) 
 
 ## Settings form
 
-`/core/patterns/settings-form`
+`/patterns/settings-form`
 
 **Composes** [`sidebar`](components.md#sidebar), [`field`](components.md#field), [`input`](components.md#input), [`select`](components.md#select), [`toggle`](components.md#toggle), [`button`](components.md#button), [`version-tag`](components.md#version-tag)
 
@@ -83,7 +91,7 @@ Put a secondary drill-in Sidebar (mode="secondary" with `back`/`title`/`hint`) b
 
 ## Dashboard
 
-`/core/patterns/dashboard`
+`/patterns/dashboard`
 
 **Composes** [`sidebar`](components.md#sidebar), [`top-bar`](components.md#top-bar), [`list-shell`](components.md#list-shell), [`stats-strip`](components.md#stats-strip), [`section-grid`](components.md#section-grid), [`card`](components.md#card), [`sparkline`](components.md#sparkline)
 
@@ -91,7 +99,7 @@ Reuse the Sidebar + TopBar + ListShell overview shell with a PageHeader at the t
 
 ## States
 
-`/core/patterns/states`
+`/patterns/states`
 
 **Composes** [`skeleton`](components.md#skeleton), [`empty-state`](components.md#empty-state), [`info-banner`](components.md#info-banner), [`button`](components.md#button)
 
@@ -99,7 +107,7 @@ Lay three labeled frames side by side to compare data-surface states. Loading st
 
 ## Responsive
 
-`/core/patterns/responsive`
+`/patterns/responsive`
 
 **Composes** [`sidebar`](components.md#sidebar), [`top-bar`](components.md#top-bar), [`list-shell`](components.md#list-shell), [`button`](components.md#button), [`filter`](components.md#filter), [`list-filters-bar`](components.md#list-filters-bar), [`section-grid`](components.md#section-grid), [`card`](components.md#card), [`badge`](components.md#badge), [`data-table`](components.md#data-table)
 
@@ -107,7 +115,7 @@ Compose the full list shell — Sidebar + TopBar + ListShell — with a PageHead
 
 ## Resource manager
 
-`/core/patterns/resource-manager`
+`/patterns/resource-manager`
 
 **Composes** [`sidebar`](components.md#sidebar), [`top-bar`](components.md#top-bar), [`list-shell`](components.md#list-shell), [`page-header`](components.md#page-header), [`list-filters-bar`](components.md#list-filters-bar), [`filter`](components.md#filter), [`filter-chip`](components.md#filter-chip), [`data-table`](components.md#data-table), [`form-dialog`](components.md#form-dialog), [`confirm-dialog`](components.md#confirm-dialog), [`menu`](components.md#menu), [`toaster`](components.md#toaster)
 
@@ -123,7 +131,7 @@ The end-to-end CRUD screen. Frame with Sidebar + TopBar + ListShell; a PageHeade
 
 ## Agent session
 
-`/agents/patterns/agent-session`
+Source retained; not registered in the active UI Portal.
 
 **Composes** [`sidebar`](components.md#sidebar), [`top-bar`](components.md#top-bar), [`list-shell`](components.md#list-shell), [`page-header`](components.md#page-header), [`agent-activity-line`](components.md#agent-activity-line), [`user-message-bubble`](components.md#user-message-bubble), [`agent-message-bubble`](components.md#agent-message-bubble), [`agent-reasoning-block`](components.md#agent-reasoning-block), [`agent-tool-call-list`](components.md#agent-tool-call-list), [`composer`](components.md#composer), [`card`](components.md#card), [`badge`](components.md#badge)
 
@@ -131,7 +139,7 @@ Frame the session with Sidebar + TopBar + ListShell. The main column owns the me
 
 ## Automation builder
 
-`/agents/patterns/automation-builder`
+Source retained; not registered in the active UI Portal.
 
 **Composes** [`sidebar`](components.md#sidebar), [`top-bar`](components.md#top-bar), [`list-shell`](components.md#list-shell), [`page-header`](components.md#page-header), [`trigger-composer`](components.md#trigger-composer), [`automation-graph`](components.md#automation-graph), [`node-inspector`](components.md#node-inspector), NodePalette, [`planner-status`](components.md#planner-status), [`proposal-preview`](components.md#proposal-preview)
 
@@ -139,7 +147,7 @@ Use TriggerComposer as the controlled entry-point editor, then place the graph c
 
 ## Run monitor
 
-`/agents/patterns/run-monitor`
+Source retained; not registered in the active UI Portal.
 
 **Composes** [`sidebar`](components.md#sidebar), [`top-bar`](components.md#top-bar), [`list-shell`](components.md#list-shell), [`page-header`](components.md#page-header), [`automation-status-badge`](components.md#automation-status-badge), [`stats-strip`](components.md#stats-strip), [`card`](components.md#card), [`run-timeline`](components.md#run-timeline), [`node-attempts-table`](components.md#node-attempts-table), [`runtime-refs-panel`](components.md#runtime-refs-panel), [`approval-panel`](components.md#approval-panel)
 

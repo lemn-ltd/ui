@@ -19,7 +19,7 @@ small, neutral, documented, and releasable.
 - Do not add product names, tenant names, customer names, personal names,
   product-specific route names, or product-specific icons under `packages/ui/src`.
 - Use generic examples such as `Example workspace`, `Acme`, or `Design System`
-  in tests and showcase fixtures.
+  in tests and Portal fixtures.
 - Components must be prop-driven and presentational. The host owns data fetching,
   permissions, persistence, routing, telemetry, and product policy.
 - Agent components may model reusable lifecycle, approval, execution, evidence,
@@ -48,15 +48,15 @@ small, neutral, documented, and releasable.
 - When adding a component-local CSS file, verify `pnpm --filter @lemn-ltd/ui run
   build` copies it to `dist` with the same relative path.
 
-## Documentation And Showcase
+## Documentation And Lemn UI Portal
 
 - Update `src/catalog.ts` or the relevant catalog entry file when adding,
   renaming, or changing component status.
 - Update `packages/ui/docs/components.md` for every catalogued component.
 - Update `packages/ui/docs/patterns.md` when changing recommended screen
   composition.
-- Add or update a showcase page when a component or important variant changes.
-- Keep showcase examples neutral and deterministic.
+- Add or update a Portal page when a component or important variant changes.
+- Keep Portal examples neutral and deterministic.
 - Put the canonical, deterministic interaction in the first `ExampleBlock` of
   every component or pattern page. The overview reuses that real rendered example
   as its lazy preview, and the shared playground makes it interactive.
@@ -81,12 +81,12 @@ pnpm --filter @lemn-ltd/ui run test
 pnpm --filter @lemn-ltd/ui run build
 ```
 
-For showcase or docs behavior, also run:
+For Portal or docs behavior, also run:
 
 ```bash
-pnpm --filter @lemn-ltd/ui-showcase run check
-pnpm --filter @lemn-ltd/ui-showcase run test
-pnpm dev:showcase
+pnpm --filter @lemn-ltd/ui-portal run check
+pnpm --filter @lemn-ltd/ui-portal run test
+pnpm dev:portal
 ```
 
 ## Release Rules
@@ -110,13 +110,13 @@ pnpm dev:showcase
   complete built tarballs in a clean consumer, and Cloudflare release access.
   A scope, owner, authentication, version, package-content, dependency, or
   Cloudflare mismatch fails closed before package publication or
-  docs/showcase deployment.
+  docs/Portal deployment.
 - `pnpm version:packages`, `pnpm publish:packages:release`, `pnpm deploy:docs:prod`,
-  `pnpm deploy:showcase:prod`, and `pnpm release` are production mutation
+  `pnpm deploy:portal:prod`, and `pnpm release` are production mutation
   entrypoints. They require branch `main` and the non-mutating Cloudflare
   account and production-domain preflight; a credentialed feature checkout still fails
   before versioning, publishing, or deploying.
-- The CI workflow deploys docs to `ui.le-mn.com` and the interactive showcase
-  to `showcase.ui.le-mn.com` after the release automation has run.
+- The CI workflow deploys docs to `ui.le-mn.com` and Lemn UI to
+  `portal.ui.le-mn.com` after the release automation has run.
 - After publish, update consuming repos to the new version and regenerate their
   lockfiles.

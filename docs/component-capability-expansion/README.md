@@ -1,7 +1,7 @@
 # Component capability expansion
 
 This document records the `@lemn-ltd/ui` 0.2.0 component expansion and the
-contract that keeps package exports, the catalog, the showcase, and written
+contract that keeps package exports, the catalog, the Portal, and written
 guidance aligned.
 
 ## Result
@@ -54,11 +54,13 @@ the derived semantic tokens to the document root.
 The public discriminated types are `ComponentArea`, `CoreComponentGroup`,
 `AgentComponentGroup`, and `ComponentCatalogEntry`. Consumers that previously
 treated `group` as an area must branch on `entry.area` and use the group union
-appropriate to that area. Routes remain `/core/components/:slug` and
-`/agents/components/:slug`.
+appropriate to that area. The active Lemn UI Portal registry contains Core
+only. Core components use `/components/:slug` or `/visualizations/:slug`;
+Agent source and package exports remain available but are not registered in
+Portal routes, navigation, search, machine catalogs, or browser bundles.
 
 Catalog tests enforce exact counts, unique slugs, valid area-family pairs,
-public exports, written component guidance, and showcase routes. A component is
+public exports, written component guidance, and Portal routes. A component is
 not complete until all of those surfaces are updated together.
 
 ## Selection rules
@@ -106,7 +108,7 @@ For every future component change:
 
 1. Add or update the implementation, colocated tests, public export, and CSS.
 2. Add the explicit area-family catalog entry.
-3. Add or update the live showcase page, with no more than three examples.
+3. Add or update the live Portal page, with no more than three examples.
 4. Update `packages/ui/docs/components.md` and relevant composition guidance.
 5. Verify package checks, catalog drift, boundaries, bundles, responsive themes,
    accessibility, and the public docs build.

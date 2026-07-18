@@ -9,8 +9,6 @@
   "updateInternalDependencies": "patch",
   "ignore": [
     "@lemn-ltd/ui-docs",
-    "@lemn-ltd/ui-showcase",
-    "@lemn-ltd/ui-showcase-admin",
-    "@lemn-ltd/showcase-kit"
+    "@lemn-ltd/ui-portal"
   ]
 }

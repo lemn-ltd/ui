@@ -680,6 +680,269 @@
       ]
     },
     {
+      "catalogSlug": "dialog",
+      "capabilityId": "ui.core.dialog",
+      "finalCapabilityId": "ui.core.dialog",
+      "finalPublicExports": [
+        "Dialog"
+      ],
+      "disposition": "keep-provider-backed",
+      "provider": {
+        "implementationId": "radix-ui.dialog@1.4.3",
+        "id": "radix-ui",
+        "name": "Radix UI",
+        "repository": "https://github.com/radix-ui/primitives",
+        "ingestionMode": "runtime_dependency",
+        "packageName": "radix-ui",
+        "packageVersion": "1.4.3",
+        "packageIntegrity": "sha512-aWizCQiyeAenIdUbqEpXgRA1ya65P13NKn/W8rWkcN0OPkRDxdBVLWnIEDsS2RpwCK2nobI7oMUSmexzTDyAmA=="
+      },
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Dialog behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/overlays/dialog/tests/dialog.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "drawer",
+      "capabilityId": "ui.core.drawer",
+      "finalCapabilityId": "ui.core.drawer",
+      "finalPublicExports": [
+        "Drawer"
+      ],
+      "disposition": "keep-provider-backed",
+      "provider": {
+        "implementationId": "radix-ui.drawer@1.4.3",
+        "id": "radix-ui",
+        "name": "Radix UI",
+        "repository": "https://github.com/radix-ui/primitives",
+        "ingestionMode": "runtime_dependency",
+        "packageName": "radix-ui",
+        "packageVersion": "1.4.3",
+        "packageIntegrity": "sha512-aWizCQiyeAenIdUbqEpXgRA1ya65P13NKn/W8rWkcN0OPkRDxdBVLWnIEDsS2RpwCK2nobI7oMUSmexzTDyAmA=="
+      },
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Drawer behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/overlays/drawer/tests/drawer.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "markdown-viewer",
+      "capabilityId": "ui.core.markdown-viewer",
+      "finalCapabilityId": "ui.core.markdown-viewer",
+      "finalPublicExports": [
+        "MarkdownViewer"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Markdown viewer remains a LEMN-owned overlays capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain MarkdownViewer as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/overlays/markdown-viewer/tests/markdown-viewer.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "confirm-dialog",
+      "capabilityId": "ui.core.confirm-dialog",
+      "finalCapabilityId": "ui.core.confirm-dialog",
+      "finalPublicExports": [
+        "ConfirmDialog"
+      ],
+      "disposition": "keep-provider-backed",
+      "provider": {
+        "implementationId": "radix-ui.confirm-dialog@1.4.3",
+        "id": "radix-ui",
+        "name": "Radix UI",
+        "repository": "https://github.com/radix-ui/primitives",
+        "ingestionMode": "runtime_dependency",
+        "packageName": "radix-ui",
+        "packageVersion": "1.4.3",
+        "packageIntegrity": "sha512-aWizCQiyeAenIdUbqEpXgRA1ya65P13NKn/W8rWkcN0OPkRDxdBVLWnIEDsS2RpwCK2nobI7oMUSmexzTDyAmA=="
+      },
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain ConfirmDialog behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/overlays/confirm-dialog/tests/confirm-dialog.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "form-dialog",
+      "capabilityId": "ui.core.form-dialog",
+      "finalCapabilityId": "ui.core.form-dialog",
+      "finalPublicExports": [
+        "FormDialog"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Form dialog remains a LEMN-owned overlays capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain FormDialog as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/overlays/form-dialog/tests/form-dialog.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "menu",
+      "capabilityId": "ui.core.menu",
+      "finalCapabilityId": "ui.core.menu",
+      "finalPublicExports": [
+        "Menu"
+      ],
+      "disposition": "keep-provider-backed",
+      "provider": {
+        "implementationId": "radix-ui.menu@1.4.3",
+        "id": "radix-ui",
+        "name": "Radix UI",
+        "repository": "https://github.com/radix-ui/primitives",
+        "ingestionMode": "runtime_dependency",
+        "packageName": "radix-ui",
+        "packageVersion": "1.4.3",
+        "packageIntegrity": "sha512-aWizCQiyeAenIdUbqEpXgRA1ya65P13NKn/W8rWkcN0OPkRDxdBVLWnIEDsS2RpwCK2nobI7oMUSmexzTDyAmA=="
+      },
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Menu behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/overlays/menu/tests/menu.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "popover",
+      "capabilityId": "ui.core.popover",
+      "finalCapabilityId": "ui.core.popover",
+      "finalPublicExports": [
+        "Popover"
+      ],
+      "disposition": "keep-provider-backed",
+      "provider": {
+        "implementationId": "radix-ui.popover@1.4.3",
+        "id": "radix-ui",
+        "name": "Radix UI",
+        "repository": "https://github.com/radix-ui/primitives",
+        "ingestionMode": "runtime_dependency",
+        "packageName": "radix-ui",
+        "packageVersion": "1.4.3",
+        "packageIntegrity": "sha512-aWizCQiyeAenIdUbqEpXgRA1ya65P13NKn/W8rWkcN0OPkRDxdBVLWnIEDsS2RpwCK2nobI7oMUSmexzTDyAmA=="
+      },
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Popover behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/overlays/popover/tests/popover.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "tooltip",
+      "capabilityId": "ui.core.tooltip",
+      "finalCapabilityId": "ui.core.tooltip",
+      "finalPublicExports": [
+        "Tooltip"
+      ],
+      "disposition": "keep-provider-backed",
+      "provider": {
+        "implementationId": "radix-ui.tooltip@1.4.3",
+        "id": "radix-ui",
+        "name": "Radix UI",
+        "repository": "https://github.com/radix-ui/primitives",
+        "ingestionMode": "runtime_dependency",
+        "packageName": "radix-ui",
+        "packageVersion": "1.4.3",
+        "packageIntegrity": "sha512-aWizCQiyeAenIdUbqEpXgRA1ya65P13NKn/W8rWkcN0OPkRDxdBVLWnIEDsS2RpwCK2nobI7oMUSmexzTDyAmA=="
+      },
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain Tooltip behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/overlays/tooltip/tests/tooltip.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "hint-icon",
+      "capabilityId": "ui.core.hint-icon",
+      "finalCapabilityId": "ui.core.hint-icon",
+      "finalPublicExports": [
+        "HintIcon"
+      ],
+      "disposition": "native-with-rationale",
+      "nativeRationale": "Hint icon remains a LEMN-owned overlays capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain HintIcon as reviewed native LEMN behavior in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/overlays/hint-icon/tests/hint-icon.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
+      "catalogSlug": "command-palette",
+      "capabilityId": "ui.overlay.command-palette",
+      "finalCapabilityId": "ui.overlay.command-palette",
+      "finalPublicExports": [
+        "CommandPalette"
+      ],
+      "disposition": "keep-provider-backed",
+      "provider": {
+        "implementationId": "cmdk.command-palette@1.1.1",
+        "id": "cmdk",
+        "name": "cmdk",
+        "repository": "https://github.com/pacocoursey/cmdk",
+        "ingestionMode": "runtime_dependency",
+        "packageName": "cmdk",
+        "packageVersion": "1.1.1",
+        "packageIntegrity": "sha512-Vsv7kFaXm+ptHDMZ7izaRsP70GgrW9NBNGswt9OZaVBLlE0SNpDq8eu/VGXyF9r7M0azK3Wy7OlYXsuyYLFzHg=="
+      },
+      "migration": {
+        "status": "complete",
+        "publicVersionEffect": "minor",
+        "targetPackageVersion": "0.3.0",
+        "summary": "Retain CommandPalette behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
+      },
+      "conformanceProof": [
+        "packages/ui/src/overlays/command-palette/tests/command-palette.spec.tsx",
+        "packages/ui/src/tests/catalog.spec.ts"
+      ]
+    },
+    {
       "catalogSlug": "agent-activity-line",
       "capabilityId": "ui.agents.agent-activity-line",
       "finalCapabilityId": "ui.agents.agent-activity-line",
@@ -997,269 +1260,6 @@
         "summary": "Retain ExecutionMap behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
       },
       "conformanceProof": [
-        "packages/ui/src/tests/catalog.spec.ts"
-      ]
-    },
-    {
-      "catalogSlug": "dialog",
-      "capabilityId": "ui.core.dialog",
-      "finalCapabilityId": "ui.core.dialog",
-      "finalPublicExports": [
-        "Dialog"
-      ],
-      "disposition": "keep-provider-backed",
-      "provider": {
-        "implementationId": "radix-ui.dialog@1.4.3",
-        "id": "radix-ui",
-        "name": "Radix UI",
-        "repository": "https://github.com/radix-ui/primitives",
-        "ingestionMode": "runtime_dependency",
-        "packageName": "radix-ui",
-        "packageVersion": "1.4.3",
-        "packageIntegrity": "sha512-aWizCQiyeAenIdUbqEpXgRA1ya65P13NKn/W8rWkcN0OPkRDxdBVLWnIEDsS2RpwCK2nobI7oMUSmexzTDyAmA=="
-      },
-      "migration": {
-        "status": "complete",
-        "publicVersionEffect": "minor",
-        "targetPackageVersion": "0.3.0",
-        "summary": "Retain Dialog behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
-      },
-      "conformanceProof": [
-        "packages/ui/src/overlays/dialog/tests/dialog.spec.tsx",
-        "packages/ui/src/tests/catalog.spec.ts"
-      ]
-    },
-    {
-      "catalogSlug": "drawer",
-      "capabilityId": "ui.core.drawer",
-      "finalCapabilityId": "ui.core.drawer",
-      "finalPublicExports": [
-        "Drawer"
-      ],
-      "disposition": "keep-provider-backed",
-      "provider": {
-        "implementationId": "radix-ui.drawer@1.4.3",
-        "id": "radix-ui",
-        "name": "Radix UI",
-        "repository": "https://github.com/radix-ui/primitives",
-        "ingestionMode": "runtime_dependency",
-        "packageName": "radix-ui",
-        "packageVersion": "1.4.3",
-        "packageIntegrity": "sha512-aWizCQiyeAenIdUbqEpXgRA1ya65P13NKn/W8rWkcN0OPkRDxdBVLWnIEDsS2RpwCK2nobI7oMUSmexzTDyAmA=="
-      },
-      "migration": {
-        "status": "complete",
-        "publicVersionEffect": "minor",
-        "targetPackageVersion": "0.3.0",
-        "summary": "Retain Drawer behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
-      },
-      "conformanceProof": [
-        "packages/ui/src/overlays/drawer/tests/drawer.spec.tsx",
-        "packages/ui/src/tests/catalog.spec.ts"
-      ]
-    },
-    {
-      "catalogSlug": "markdown-viewer",
-      "capabilityId": "ui.core.markdown-viewer",
-      "finalCapabilityId": "ui.core.markdown-viewer",
-      "finalPublicExports": [
-        "MarkdownViewer"
-      ],
-      "disposition": "native-with-rationale",
-      "nativeRationale": "Markdown viewer remains a LEMN-owned overlays capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
-      "migration": {
-        "status": "complete",
-        "publicVersionEffect": "minor",
-        "targetPackageVersion": "0.3.0",
-        "summary": "Retain MarkdownViewer as reviewed native LEMN behavior in the 0.3.0 cutover."
-      },
-      "conformanceProof": [
-        "packages/ui/src/overlays/markdown-viewer/tests/markdown-viewer.spec.tsx",
-        "packages/ui/src/tests/catalog.spec.ts"
-      ]
-    },
-    {
-      "catalogSlug": "confirm-dialog",
-      "capabilityId": "ui.core.confirm-dialog",
-      "finalCapabilityId": "ui.core.confirm-dialog",
-      "finalPublicExports": [
-        "ConfirmDialog"
-      ],
-      "disposition": "keep-provider-backed",
-      "provider": {
-        "implementationId": "radix-ui.confirm-dialog@1.4.3",
-        "id": "radix-ui",
-        "name": "Radix UI",
-        "repository": "https://github.com/radix-ui/primitives",
-        "ingestionMode": "runtime_dependency",
-        "packageName": "radix-ui",
-        "packageVersion": "1.4.3",
-        "packageIntegrity": "sha512-aWizCQiyeAenIdUbqEpXgRA1ya65P13NKn/W8rWkcN0OPkRDxdBVLWnIEDsS2RpwCK2nobI7oMUSmexzTDyAmA=="
-      },
-      "migration": {
-        "status": "complete",
-        "publicVersionEffect": "minor",
-        "targetPackageVersion": "0.3.0",
-        "summary": "Retain ConfirmDialog behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
-      },
-      "conformanceProof": [
-        "packages/ui/src/overlays/confirm-dialog/tests/confirm-dialog.spec.tsx",
-        "packages/ui/src/tests/catalog.spec.ts"
-      ]
-    },
-    {
-      "catalogSlug": "form-dialog",
-      "capabilityId": "ui.core.form-dialog",
-      "finalCapabilityId": "ui.core.form-dialog",
-      "finalPublicExports": [
-        "FormDialog"
-      ],
-      "disposition": "native-with-rationale",
-      "nativeRationale": "Form dialog remains a LEMN-owned overlays capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
-      "migration": {
-        "status": "complete",
-        "publicVersionEffect": "minor",
-        "targetPackageVersion": "0.3.0",
-        "summary": "Retain FormDialog as reviewed native LEMN behavior in the 0.3.0 cutover."
-      },
-      "conformanceProof": [
-        "packages/ui/src/overlays/form-dialog/tests/form-dialog.spec.tsx",
-        "packages/ui/src/tests/catalog.spec.ts"
-      ]
-    },
-    {
-      "catalogSlug": "menu",
-      "capabilityId": "ui.core.menu",
-      "finalCapabilityId": "ui.core.menu",
-      "finalPublicExports": [
-        "Menu"
-      ],
-      "disposition": "keep-provider-backed",
-      "provider": {
-        "implementationId": "radix-ui.menu@1.4.3",
-        "id": "radix-ui",
-        "name": "Radix UI",
-        "repository": "https://github.com/radix-ui/primitives",
-        "ingestionMode": "runtime_dependency",
-        "packageName": "radix-ui",
-        "packageVersion": "1.4.3",
-        "packageIntegrity": "sha512-aWizCQiyeAenIdUbqEpXgRA1ya65P13NKn/W8rWkcN0OPkRDxdBVLWnIEDsS2RpwCK2nobI7oMUSmexzTDyAmA=="
-      },
-      "migration": {
-        "status": "complete",
-        "publicVersionEffect": "minor",
-        "targetPackageVersion": "0.3.0",
-        "summary": "Retain Menu behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
-      },
-      "conformanceProof": [
-        "packages/ui/src/overlays/menu/tests/menu.spec.tsx",
-        "packages/ui/src/tests/catalog.spec.ts"
-      ]
-    },
-    {
-      "catalogSlug": "popover",
-      "capabilityId": "ui.core.popover",
-      "finalCapabilityId": "ui.core.popover",
-      "finalPublicExports": [
-        "Popover"
-      ],
-      "disposition": "keep-provider-backed",
-      "provider": {
-        "implementationId": "radix-ui.popover@1.4.3",
-        "id": "radix-ui",
-        "name": "Radix UI",
-        "repository": "https://github.com/radix-ui/primitives",
-        "ingestionMode": "runtime_dependency",
-        "packageName": "radix-ui",
-        "packageVersion": "1.4.3",
-        "packageIntegrity": "sha512-aWizCQiyeAenIdUbqEpXgRA1ya65P13NKn/W8rWkcN0OPkRDxdBVLWnIEDsS2RpwCK2nobI7oMUSmexzTDyAmA=="
-      },
-      "migration": {
-        "status": "complete",
-        "publicVersionEffect": "minor",
-        "targetPackageVersion": "0.3.0",
-        "summary": "Retain Popover behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
-      },
-      "conformanceProof": [
-        "packages/ui/src/overlays/popover/tests/popover.spec.tsx",
-        "packages/ui/src/tests/catalog.spec.ts"
-      ]
-    },
-    {
-      "catalogSlug": "tooltip",
-      "capabilityId": "ui.core.tooltip",
-      "finalCapabilityId": "ui.core.tooltip",
-      "finalPublicExports": [
-        "Tooltip"
-      ],
-      "disposition": "keep-provider-backed",
-      "provider": {
-        "implementationId": "radix-ui.tooltip@1.4.3",
-        "id": "radix-ui",
-        "name": "Radix UI",
-        "repository": "https://github.com/radix-ui/primitives",
-        "ingestionMode": "runtime_dependency",
-        "packageName": "radix-ui",
-        "packageVersion": "1.4.3",
-        "packageIntegrity": "sha512-aWizCQiyeAenIdUbqEpXgRA1ya65P13NKn/W8rWkcN0OPkRDxdBVLWnIEDsS2RpwCK2nobI7oMUSmexzTDyAmA=="
-      },
-      "migration": {
-        "status": "complete",
-        "publicVersionEffect": "minor",
-        "targetPackageVersion": "0.3.0",
-        "summary": "Retain Tooltip behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
-      },
-      "conformanceProof": [
-        "packages/ui/src/overlays/tooltip/tests/tooltip.spec.tsx",
-        "packages/ui/src/tests/catalog.spec.ts"
-      ]
-    },
-    {
-      "catalogSlug": "hint-icon",
-      "capabilityId": "ui.core.hint-icon",
-      "finalCapabilityId": "ui.core.hint-icon",
-      "finalPublicExports": [
-        "HintIcon"
-      ],
-      "disposition": "native-with-rationale",
-      "nativeRationale": "Hint icon remains a LEMN-owned overlays capability because its product-neutral composition is specific to the shared catalog and no accepted upstream provider owns this exact semantic contract.",
-      "migration": {
-        "status": "complete",
-        "publicVersionEffect": "minor",
-        "targetPackageVersion": "0.3.0",
-        "summary": "Retain HintIcon as reviewed native LEMN behavior in the 0.3.0 cutover."
-      },
-      "conformanceProof": [
-        "packages/ui/src/overlays/hint-icon/tests/hint-icon.spec.tsx",
-        "packages/ui/src/tests/catalog.spec.ts"
-      ]
-    },
-    {
-      "catalogSlug": "command-palette",
-      "capabilityId": "ui.overlay.command-palette",
-      "finalCapabilityId": "ui.overlay.command-palette",
-      "finalPublicExports": [
-        "CommandPalette"
-      ],
-      "disposition": "keep-provider-backed",
-      "provider": {
-        "implementationId": "cmdk.command-palette@1.1.1",
-        "id": "cmdk",
-        "name": "cmdk",
-        "repository": "https://github.com/pacocoursey/cmdk",
-        "ingestionMode": "runtime_dependency",
-        "packageName": "cmdk",
-        "packageVersion": "1.1.1",
-        "packageIntegrity": "sha512-Vsv7kFaXm+ptHDMZ7izaRsP70GgrW9NBNGswt9OZaVBLlE0SNpDq8eu/VGXyF9r7M0azK3Wy7OlYXsuyYLFzHg=="
-      },
-      "migration": {
-        "status": "complete",
-        "publicVersionEffect": "minor",
-        "targetPackageVersion": "0.3.0",
-        "summary": "Retain CommandPalette behind a provider-neutral LEMN adapter in the 0.3.0 cutover."
-      },
-      "conformanceProof": [
-        "packages/ui/src/overlays/command-palette/tests/command-palette.spec.tsx",
         "packages/ui/src/tests/catalog.spec.ts"
       ]
     },

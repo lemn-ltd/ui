@@ -11,6 +11,9 @@ const fixtures = [
   { id: 'line-chart', entry: join(fixturesRoot, 'line-chart.ts') },
   { id: 'tracker', entry: join(fixturesRoot, 'tracker.ts') },
   { id: 'catalog', entry: join(fixturesRoot, 'catalog.ts') },
+  { id: 'catalog-core', entry: join(fixturesRoot, 'catalog-core.ts') },
+  { id: 'blocks-core', entry: join(fixturesRoot, 'blocks-core.ts') },
+  { id: 'blocks-core-catalog', entry: join(fixturesRoot, 'blocks-core-catalog.ts') },
 ];
 
 function isExternal(id) {
@@ -74,6 +77,19 @@ for (const fixture of fixtures) {
   if (fixture.id === 'button') assertAbsent(modules, /(?:^|\/)victory-vendor(?:\/|$)/i, fixture.id);
   if (fixture.id === 'catalog') {
     assertAbsent(modules, /(?:^|\/)react(?:-dom)?(?:\/|$)/i, fixture.id);
+  }
+  if (fixture.id === 'catalog-core') {
+    assertAbsent(modules, /catalog-(?:agent|automation)-entries/i, fixture.id);
+    assertAbsent(modules, /(?:^|\/)agents(?:\/|$)/i, fixture.id);
+  }
+  if (fixture.id === 'blocks-core') {
+    assertAbsent(modules, /approval-queue-block/i, fixture.id);
+    assertAbsent(modules, /(?:^|\/)agents(?:\/|$)/i, fixture.id);
+  }
+  if (fixture.id === 'blocks-core-catalog') {
+    assertAbsent(modules, /(?:^|\/)react(?:-dom)?(?:\/|$)/i, fixture.id);
+    assertAbsent(modules, /(?:^|\/)blocks\/(?:appointment-schedule|dashboard-overview|approval-queue)-block/i, fixture.id);
+    assertAbsent(modules, /(?:^|\/)blocks\/blocks\.css$/i, fixture.id);
   }
   if (fixture.id === 'line-chart' && !modules.some((id) => /(?:^|\/)recharts(?:\/|$)/i.test(id))) {
     throw new Error('line-chart must include Recharts');

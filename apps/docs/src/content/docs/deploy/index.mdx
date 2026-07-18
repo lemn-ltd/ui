@@ -12,9 +12,10 @@ sidebar:
   `@lemn-ltd/brand-runtime`, and `@lemn-ltd/brand-studio` publish to GitHub
   Packages in dependency order.
 - `ui.le-mn.com` serves this Starlight documentation.
-- `showcase.ui.le-mn.com` serves the public read-only Showcase.
-- `admin.showcase.ui.le-mn.com` serves the separately deployed Showcase Admin
-  behind Cloudflare Access.
+- `portal.ui.le-mn.com` serves the public Catalog and Access-protected Admin
+  from Worker `lemn-ui-portal`.
+- `schemas.ui.le-mn.com` serves the public schema contract from that same
+  Worker.
 
 Package identity, source commit, generated provenance/notices/SBOM, and deployed
 build identity must all refer to the same approved release.
@@ -39,7 +40,8 @@ The release workflow must also prove:
 - provider, brand contract, SSR, accessibility, interaction, visual, and bundle
   conformance applicable to the change;
 - Cloudflare configuration dry-runs and least-privilege credential preflight;
-- public/protected route behavior and deployed build identity;
+- public/protected route behavior, Access origin validation, protected Admin
+  assets, and deployed build identity;
 - rollback or recovery metadata before shifting production traffic.
 
 Do not represent an earlier commit's checks as evidence for the release SHA.
@@ -48,35 +50,51 @@ Do not represent an earlier commit's checks as evidence for the release SHA.
 
 GitHub Actions supplies its job token for package publication. Cloudflare
 credentials are resolved only inside the protected production environment and
-must be scoped to the owned account/resources and required actions. Never place
-tokens, account keys, auth headers, or secret values in repository files,
-command arguments, build artifacts, logs, or documentation.
+must be scoped to Worker `lemn-ui-portal`, the owned domains, Access resources,
+and the exact required actions. Production environment inputs use `UI_PORTAL`
+naming. Never place tokens, account keys, auth headers, or secret values in
+repository files, command arguments, build artifacts, logs, or documentation.
 
-The protected GitHub Environment supplies exactly
-`PRODUCTION_CLOUDFLARE_API_TOKEN` and `PRODUCTION_STATUS_TOKEN`. The Cloudflare
-token is an account-owned API token scoped to Account `Lemn DEV` with `Workers
-Scripts: Edit` (reported as `Workers Scripts Write` by the API), and Zone
-`le-mn.com` with `Zone: Read` plus `Workers Routes: Edit` (reported as `Zone
-Workers Routes Write` by the API). Do not grant KV, R2, account settings, user,
-or wider zone access. The release guard rejects Global API Key, key/email,
-missing, expired, disabled, and wrong-account authentication.
+The exact protected Environment inputs are
+`PRODUCTION_CLOUDFLARE_API_TOKEN`,
+`PRODUCTION_UI_PORTAL_ACCESS_CLIENT_ID`, and
+`PRODUCTION_UI_PORTAL_ACCESS_CLIENT_SECRET` secrets, plus the protected
+`PRODUCTION_CLOUDFLARE_ACCOUNT_ID`,
+`PRODUCTION_UI_PORTAL_ACCESS_AUDIENCE`, and
+`PRODUCTION_UI_PORTAL_HEALTH_ACCESS_AUDIENCE` variables. The account ID is an
+exact 32-character lowercase hexadecimal value. Each audience is an exact
+64-character lowercase hexadecimal value, the two values must differ, and
+release automation injects them into the candidate without logging them or
+storing them in Wrangler config. The Cloudflare token needs only
+Account `Lemn DEV` / `Workers Scripts: Edit` and Zone `le-mn.com` /
+`Zone: Read` plus `Workers Routes: Edit`. The Access pair belongs to the fresh
+health-only service identity and is sent only to `/health/deep` by the release
+smoke; it is never used for an Admin business capability.
 
-Showcase is public/read-only. Showcase Admin requires a cryptographically
-verified Cloudflare Access application assertion and uses only narrow server
-adapters. Network location or a Service Binding is not business authorization.
+The Catalog and minimal `/health` response are anonymous and read-only. The
+edge protects `/admin`, `/admin/*`, `/api/admin/*`, and Admin-only assets with
+Cloudflare Access. The Worker cryptographically verifies the Access assertion
+at origin. Service identity is least privilege and may call only the protected
+operational health capability at `/health/deep` used by release verification; deeper status and
+release diagnostics are never public.
 
 ## Deployment sequence
 
-1. Validate and pack the exact source revision.
+1. Prepare or resume the immutable release commit, verify that exact checked-out
+   SHA, run a frozen install, and rerun `pnpm validate`, `pnpm check`,
+   `pnpm test`, and `pnpm build` on it.
 2. Publish Brand Contract, UI, Brand Runtime, then Brand Studio; an existing
    version must have identical immutable integrity or the release stops.
 3. Install the exact published packages in clean external consumers and run
    their checks/builds.
-4. Deploy Docs and public Showcase for that release identity.
-5. Deploy protected Showcase Admin and verify unauthenticated denial plus
-   authenticated behavior.
-6. Smoke public catalog/agent endpoints, System branding/mode switching,
-   blocks, provider read models, schema v1, and build identity.
+4. Upload an inactive UI Portal candidate for that release identity, then smoke
+   public Catalog routes and machine endpoints, unauthenticated Admin denial,
+   authenticated Admin behavior, protected assets, System branding, blocks,
+   provider read models, schema v1, and build identity.
+5. Activate that exact Portal candidate transactionally and repeat public and
+   protected smoke checks; a failure restores and re-verifies the captured
+   Portal baseline.
+6. Deploy Docs last with the same immutable release identity.
 7. Record the release receipt only after every required check passes.
 
 Use staged/traffic-safe Worker versions where the deployment workflow supports
@@ -84,13 +102,25 @@ them. Any observed concurrent deployment, identity mismatch, integrity
 mismatch, or failed smoke stops the rollout rather than overwriting external
 state.
 
-For Showcase, inspect the captured baseline with `wrangler deployments list
---json`, upload an inactive candidate, smoke public and protected routes with
-the candidate's `PRODUCTION_STATUS_TOKEN`, then activate that exact version.
-Keep the baseline status credential available to the rollout process until the
-active smoke is stable. A failure after activation runs `wrangler rollback
-<captured-version-id> --yes` and re-verifies the baseline. Credentials are
-Environment-scoped only; no retired repository key/email credential is kept.
+For the UI Portal, capture the baseline with `wrangler deployments list
+--json`, upload an inactive candidate, and verify protected health through the
+scoped Cloudflare Access service identity before activation. A failure after
+activation runs `wrangler rollback <captured-version-id> --yes` and re-verifies
+the baseline. Credentials are Environment-scoped only. There is one production
+Worker and no deployed development or staging Worker.
+
+If the final Docs deployment fails after the Portal has activated, rerun the
+same protected-main workflow instead of creating a new release. Release
+preparation resumes the already-pushed release commit, the exact-SHA frozen
+install and full gates run again, published packages are accepted only after
+immutable-integrity verification, and the Portal rollout revalidates the
+already-owned release before Docs is deployed again. Re-running never rolls the
+Portal back merely because the final Docs mutation failed, and it never
+publishes a sibling version for the same trigger SHA.
+
+Retired domains and route families receive no redirects or tombstone Workers.
+Negative verification must prove they no longer resolve to an active Lemn UI
+deployment.
 
 ## Post-deploy evidence
 

@@ -2,6 +2,7 @@
 import { execFileSync, spawnSync } from "node:child_process";
 import { appendFile, readdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
+import { releaseChildEnvironment } from "./child-process-security.ts";
 
 const root = resolve(import.meta.dirname, "../..");
 const releaseCommitSubject = "chore: release packages [skip ci]";
@@ -147,10 +148,11 @@ const defaultDependencies: PrepareReleaseDependencies = {
 	git: defaultGit,
 	hasPendingChangesets: defaultHasPendingChangesets,
 	versionPackages: async () => {
+		const childEnvironment = releaseChildEnvironment(process.env);
 		execFileSync("pnpm", ["version:packages"], {
 			cwd: root,
 			stdio: "inherit",
-			env: process.env,
+			env: childEnvironment,
 		});
 		execFileSync(
 			"pnpm",
@@ -158,7 +160,7 @@ const defaultDependencies: PrepareReleaseDependencies = {
 			{
 				cwd: root,
 				stdio: "inherit",
-				env: process.env,
+				env: childEnvironment,
 			},
 		);
 	},

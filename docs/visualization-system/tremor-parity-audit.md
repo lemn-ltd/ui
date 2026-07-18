@@ -23,7 +23,7 @@ tokens, accessibility contract, state model, and renderer-neutral public API.
 - Responsive captures: `tmp/component-capture/tremor-visualizations/` contains
   desktop (1280x900), tablet (768x1024), and mobile (375x812) captures plus the
   observed page structure. The directory is intentionally git-ignored.
-- Lemn baseline: the package source, package tests, showcase pages, and
+- Lemn baseline: the package source, package tests, Portal pages, and
   `docs/visualization-system/README.md` on `main` before this migration.
 
 ## Product brief
@@ -71,7 +71,7 @@ or axis type crosses the package boundary.
   start/end ticks, tooltip lifecycle/content, datum selection, legend position
   and slider, and `connectNulls`.
 - Target: shared Cartesian configuration plus `mode`, `fill="none"`, and
-  `connectNulls`. Maximum three showcase examples: default, percent/fill, and
+  `connectNulls`. Maximum three Portal examples: default, percent/fill, and
   selection/custom-tooltip configuration.
 
 ### BarChart — extend
@@ -175,7 +175,7 @@ or axis type crosses the package boundary.
 - `PAT-TEST-MEANINGFUL-001`: tests assert callbacks, sorting, selection,
   accessibility values, modes, and responsive behavior rather than snapshots
   alone.
-- Each showcase page contains no more than three examples.
+- Each Portal page contains no more than three examples.
 - Selection is optional. Without a callback, charts remain presentational and do
   not manufacture click semantics.
 - Legend series visibility and datum selection are separate interactions.
@@ -188,10 +188,10 @@ The migration is complete only when:
 
 1. every delta above is represented by a public type and working behavior, or is
    explicitly documented as a deliberate Lemn difference;
-2. package exports, generated declarations, catalog metadata, showcase API
+2. package exports, generated declarations, catalog metadata, Portal API
    tables, and the visualization guide agree;
 3. focused component tests cover each new capability and existing compatibility;
-4. the showcase is verified in light and dark modes at 1280x900, 768x1024, and
+4. the Portal is verified in light and dark modes at 1280x900, 768x1024, and
    375x812, including pointer and keyboard interactions;
 5. package checks, builds, relevant Playwright tests, and the visualization
    benchmark pass with evidence recorded in the pattern audit.

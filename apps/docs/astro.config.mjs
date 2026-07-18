@@ -53,7 +53,7 @@ export default defineConfig({
             { label: 'Provider governance', slug: 'providers' },
             { label: 'Component catalog', slug: 'component-catalog' },
             { label: 'Blocks', slug: 'blocks' },
-            { label: 'Showcase', slug: 'showcase' },
+            { label: 'Lemn UI', slug: 'portal' },
           ],
         },
         {

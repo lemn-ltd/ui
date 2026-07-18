@@ -49,9 +49,7 @@ async function createProjectionFixture(): Promise<string> {
 		"apps/docs/src/content/docs/changelog",
 		"apps/docs/src/content/docs/es/changelog",
 		"apps/docs",
-		"apps/showcase",
-		"apps/showcase-admin",
-		"packages/showcase-kit",
+		"apps/ui-portal",
 		"packages/ui",
 	]) {
 		await mkdir(resolve(fixtureRoot, directory), { recursive: true });
@@ -61,9 +59,7 @@ async function createProjectionFixture(): Promise<string> {
 		"pnpm-workspace.yaml",
 		".changeset/config.json",
 		"apps/docs/package.json",
-		"apps/showcase/package.json",
-		"apps/showcase-admin/package.json",
-		"packages/showcase-kit/package.json",
+		"apps/ui-portal/package.json",
 		"packages/ui/package.json",
 		"packages/ui/CHANGELOG.md",
 	]) {

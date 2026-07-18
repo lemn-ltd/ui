@@ -1262,7 +1262,7 @@ public errors.
 - Prove components render from the same compiled mode contract in SSR and
   hydration.
 
-#### Showcase and docs
+#### Lemn UI Portal and docs
 
 - Demonstrate all system brandings in light/dark with real components.
 - Demonstrate BrandingDefinition JSON and compiler diagnostics.
@@ -1369,7 +1369,7 @@ historical release notes excluded.
 3. Convert SystemBrandingTemplate catalog.
 4. Update Brand Studio.
 5. Add `@lemn-ltd/brand-runtime`.
-6. Update UI/showcase/docs and publish exact package versions.
+6. Update UI/Portal/docs and publish exact package versions.
 
 Exit gate: all public packages build, validate, package, and compile every
 system branding in light/dark without blocking diagnostics.

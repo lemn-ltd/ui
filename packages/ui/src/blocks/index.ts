@@ -10,6 +10,7 @@ export {
 } from './approval-queue-block.js';
 export {
   blockCatalog,
+  coreBlockCatalog,
   type BlockCatalogEntry,
   type BlockStatus,
 } from './block-catalog.js';

@@ -48,9 +48,12 @@ jobs:
           restore-keys: ${{ runner.os }}-pnpm-
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --ignore-scripts
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Rebuild approved dependencies without registry credentials
+        run: env -u NODE_AUTH_TOKEN -u GITHUB_TOKEN pnpm rebuild --pending
 
       - name: Require changesets for package changes
         if: github.event_name == 'pull_request' && !startsWith(github.head_ref, 'changeset-release/')
@@ -72,9 +75,6 @@ jobs:
       - name: Validate repo policy and release metadata
         run: pnpm validate
 
-      - name: Validate release host DNS
-        run: pnpm validate:release-hosts
-
       - name: Check
         run: pnpm check
 
@@ -84,8 +84,8 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Smoke showcase deployment locally
-        run: pnpm smoke:showcase:local
+      - name: Smoke UI Portal deployment locally
+        run: pnpm smoke:portal:local
 
       - name: Pack and install package-set smoke
         run: pnpm pack:packages
@@ -93,8 +93,8 @@ jobs:
       - name: Verify generated files are committed
         run: git diff --exit-code
 
-  showcase-e2e:
-    name: Showcase E2E (${{ matrix.shard }}/3)
+  ui-portal-e2e:
+    name: UI Portal E2E (${{ matrix.shard }}/3)
     needs: validate
     runs-on: ubuntu-24.04
     timeout-minutes: 35
@@ -130,9 +130,12 @@ jobs:
           restore-keys: ${{ runner.os }}-pnpm-
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --ignore-scripts
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Rebuild approved dependencies without registry credentials
+        run: env -u NODE_AUTH_TOKEN -u GITHUB_TOKEN pnpm rebuild --pending
 
       - name: Free runner disk for pinned Playwright image
         run: |
@@ -149,7 +152,7 @@ jobs:
       - name: Pull pinned Playwright image
         run: docker pull mcr.microsoft.com/playwright:v1.60.0-noble
 
-      - name: Run showcase E2E shard
+      - name: Run UI Portal E2E shard
         run: |
           status=0
           docker run --rm --ipc=host \
@@ -157,7 +160,7 @@ jobs:
             --volume "$GITHUB_WORKSPACE:/work" \
             --workdir /work \
             mcr.microsoft.com/playwright:v1.60.0-noble \
-            sh -lc 'corepack enable && pnpm --filter @lemn-ltd/ui-showcase exec playwright test \
+            sh -lc 'corepack enable && pnpm --filter @lemn-ltd/ui-portal exec playwright test \
               --project=behavior \
               --project=visual-light-mobile \
               --project=visual-light-tablet \
@@ -167,12 +170,12 @@ jobs:
               --project=visual-dark-desktop \
               --shard=${{ matrix.shard }}/3' || status=$?
           sudo chown -R "$(id -u):$(id -g)" \
-            apps/showcase/test-results \
-            apps/showcase/playwright-report 2>/dev/null || true
+            apps/ui-portal/test-results \
+            apps/ui-portal/playwright-report 2>/dev/null || true
           exit "$status"
 
-  showcase-accessibility:
-    name: Showcase Accessibility (${{ matrix.shard }}/4)
+  ui-portal-accessibility:
+    name: UI Portal Accessibility (${{ matrix.shard }}/4)
     needs: validate
     runs-on: ubuntu-latest
     timeout-minutes: 25
@@ -208,19 +211,22 @@ jobs:
           restore-keys: ${{ runner.os }}-pnpm-
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --ignore-scripts
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install Chromium
-        run: pnpm --filter @lemn-ltd/ui-showcase exec playwright install --with-deps chromium
+      - name: Rebuild approved dependencies without registry credentials
+        run: env -u NODE_AUTH_TOKEN -u GITHUB_TOKEN pnpm rebuild --pending
 
-      - name: Run showcase accessibility crawl
-        run: pnpm --filter @lemn-ltd/ui-showcase exec playwright test --project=accessibility --shard=${{ matrix.shard }}/4
+      - name: Install Chromium
+        run: pnpm --filter @lemn-ltd/ui-portal exec playwright install --with-deps chromium
+
+      - name: Run UI Portal accessibility crawl
+        run: pnpm --filter @lemn-ltd/ui-portal exec playwright test --project=accessibility --shard=${{ matrix.shard }}/4
 
   release-and-deploy:
     name: Release And Deploy
-    needs: [validate, showcase-e2e, showcase-accessibility]
+    needs: [validate, ui-portal-e2e, ui-portal-accessibility]
     if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -255,9 +261,15 @@ jobs:
           restore-keys: ${{ runner.os }}-pnpm-
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --ignore-scripts
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Rebuild approved dependencies without registry credentials
+        run: env -u NODE_AUTH_TOKEN -u GITHUB_TOKEN pnpm rebuild --pending
+
+      - name: Validate release preconditions
+        run: pnpm release:preflight
 
       - name: Preflight Cloudflare release access
         id: cloudflare
@@ -266,46 +278,102 @@ jobs:
             echo '::error::Missing production Environment secret PRODUCTION_CLOUDFLARE_API_TOKEN. Required account-owned Cloudflare token grants: Account "Lemn DEV" -> Workers Scripts: Edit; Zone "le-mn.com" -> Zone: Read, Workers Routes: Edit.' >&2
             exit 1
           fi
-          for name in PRODUCTION_STATUS_TOKEN ROLLBACK_STATUS_TOKEN; do
+          if [[ ! "${CLOUDFLARE_ACCOUNT_ID}" =~ ^[0-9a-f]{32}$ ]]; then
+            echo '::error::PRODUCTION_CLOUDFLARE_ACCOUNT_ID must be an exact 32-character lowercase hexadecimal protected Environment variable' >&2
+            exit 1
+          fi
+          for name in UI_PORTAL_ACCESS_CLIENT_ID UI_PORTAL_ACCESS_CLIENT_SECRET; do
             if [ -z "${!name}" ]; then
-              echo "::error::Missing required production environment secret: ${name}" >&2
+              echo "::error::Missing required production Environment secret: PRODUCTION_${name}" >&2
               exit 1
             fi
           done
-          if [ -z "${SHOWCASE_ADMIN_ACCESS_CLIENT_ID}" ]; then
-            echo '::error::Missing required production Environment secret: PRODUCTION_SHOWCASE_ADMIN_ACCESS_CLIENT_ID' >&2
+          if [ "${UI_PORTAL_ACCESS_CLIENT_ID}" = "${UI_PORTAL_ACCESS_CLIENT_SECRET}" ]; then
+            echo '::error::UI Portal Access client ID and secret must be distinct' >&2
             exit 1
           fi
-          if [ -z "${SHOWCASE_ADMIN_ACCESS_CLIENT_SECRET}" ]; then
-            echo '::error::Missing required production Environment secret: PRODUCTION_SHOWCASE_ADMIN_ACCESS_CLIENT_SECRET' >&2
+          for name in PRODUCTION_UI_PORTAL_ACCESS_AUDIENCE PRODUCTION_UI_PORTAL_HEALTH_ACCESS_AUDIENCE; do
+            if [[ ! "${!name}" =~ ^[0-9a-f]{64}$ ]]; then
+              echo "::error::${name} must be an exact 64-character lowercase hexadecimal protected Environment variable" >&2
+              exit 1
+            fi
+          done
+          if [ "${PRODUCTION_UI_PORTAL_ACCESS_AUDIENCE}" = "${PRODUCTION_UI_PORTAL_HEALTH_ACCESS_AUDIENCE}" ]; then
+            echo '::error::UI Portal Admin and health Access audiences must be distinct' >&2
             exit 1
           fi
-          pnpm release:preflight
+          env \
+            -u UI_PORTAL_ACCESS_CLIENT_ID \
+            -u UI_PORTAL_ACCESS_CLIENT_SECRET \
+            -u PRODUCTION_UI_PORTAL_ACCESS_AUDIENCE \
+            -u PRODUCTION_UI_PORTAL_HEALTH_ACCESS_AUDIENCE \
+            pnpm preflight:cloudflare:release
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.PRODUCTION_CLOUDFLARE_API_TOKEN }}
-          PRODUCTION_STATUS_TOKEN: ${{ secrets.PRODUCTION_STATUS_TOKEN }}
-          ROLLBACK_STATUS_TOKEN: ${{ secrets.STATUS_TOKEN || secrets.PRODUCTION_STATUS_TOKEN }}
-          SHOWCASE_ADMIN_ACCESS_CLIENT_ID: ${{ secrets.PRODUCTION_SHOWCASE_ADMIN_ACCESS_CLIENT_ID }}
-          SHOWCASE_ADMIN_ACCESS_CLIENT_SECRET: ${{ secrets.PRODUCTION_SHOWCASE_ADMIN_ACCESS_CLIENT_SECRET }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.PRODUCTION_CLOUDFLARE_ACCOUNT_ID }}
+          UI_PORTAL_ACCESS_CLIENT_ID: ${{ secrets.PRODUCTION_UI_PORTAL_ACCESS_CLIENT_ID }}
+          UI_PORTAL_ACCESS_CLIENT_SECRET: ${{ secrets.PRODUCTION_UI_PORTAL_ACCESS_CLIENT_SECRET }}
+          PRODUCTION_UI_PORTAL_ACCESS_AUDIENCE: ${{ vars.PRODUCTION_UI_PORTAL_ACCESS_AUDIENCE }}
+          PRODUCTION_UI_PORTAL_HEALTH_ACCESS_AUDIENCE: ${{ vars.PRODUCTION_UI_PORTAL_HEALTH_ACCESS_AUDIENCE }}
 
       - name: Prepare or resume release metadata
         id: release
         run: pnpm prepare:packages:release
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.PRODUCTION_CLOUDFLARE_API_TOKEN }}
           GITHUB_SHA: ${{ github.sha }}
+
+      - name: Install exact prepared release revision
+        run: |
+          actual_sha="$(git rev-parse HEAD)"
+          if [ "${actual_sha}" != "${EXPECTED_RELEASE_GIT_SHA}" ]; then
+            echo '::error::The checked-out release revision does not match the immutable release SHA produced by preparation' >&2
+            exit 1
+          fi
+          git diff --exit-code
+          git diff --cached --exit-code
+          test -z "$(git status --porcelain --untracked-files=normal)"
+          pnpm install --frozen-lockfile --ignore-scripts
+          env -u NODE_AUTH_TOKEN -u GITHUB_TOKEN pnpm rebuild --pending
+        env:
+          EXPECTED_RELEASE_GIT_SHA: ${{ steps.release.outputs.sha }}
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Validate exact prepared release revision
+        run: |
+          pnpm validate
+          pnpm check
+          pnpm test
+          pnpm build
+
+      - name: Audit release dependency graph
+        run: pnpm audit --prod
+
+      - name: Dry-run Cloudflare deployables
+        run: |
+          pnpm --filter @lemn-ltd/ui-portal run cf:dry-run
+          pnpm --filter @lemn-ltd/ui-docs run cf:dry-run
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.PRODUCTION_CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ steps.cloudflare.outputs.portal_account_id }}
+          PUBLIC_BUILD_VERSION: ${{ steps.release.outputs.version }}
+          PUBLIC_BUILD_GIT_SHA: ${{ steps.release.outputs.sha }}
+          PUBLIC_BUILD_TIME: ${{ steps.release.outputs.time }}
 
       - name: Build release packages in dependency order
         run: pnpm build:packages:release
 
-      - name: Build and smoke showcase deployment locally
-        run: pnpm smoke:showcase:local
+      - name: Build and smoke UI Portal deployment locally
+        run: pnpm smoke:portal:local
 
       - name: Publish or verify exact package set
         run: pnpm publish:packages:release
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.PRODUCTION_CLOUDFLARE_API_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify exact published package set in a clean consumer
+        run: pnpm smoke:packages:github-packages
+        env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build docs
@@ -315,6 +383,20 @@ jobs:
           PUBLIC_BUILD_GIT_SHA: ${{ steps.release.outputs.sha }}
           PUBLIC_BUILD_TIME: ${{ steps.release.outputs.time }}
 
+      - name: Roll out UI Portal with protected rollback
+        run: pnpm rollout:portal:prod
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.PRODUCTION_CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ steps.cloudflare.outputs.portal_account_id }}
+          EXPECTED_RELEASE_ID: ${{ steps.release.outputs.release_id }}
+          EXPECTED_RELEASE_VERSION: ${{ steps.release.outputs.version }}
+          EXPECTED_RELEASE_GIT_SHA: ${{ steps.release.outputs.sha }}
+          EXPECTED_RELEASE_TIME: ${{ steps.release.outputs.time }}
+          UI_PORTAL_ACCESS_CLIENT_ID: ${{ secrets.PRODUCTION_UI_PORTAL_ACCESS_CLIENT_ID }}
+          UI_PORTAL_ACCESS_CLIENT_SECRET: ${{ secrets.PRODUCTION_UI_PORTAL_ACCESS_CLIENT_SECRET }}
+          PRODUCTION_UI_PORTAL_ACCESS_AUDIENCE: ${{ vars.PRODUCTION_UI_PORTAL_ACCESS_AUDIENCE }}
+          PRODUCTION_UI_PORTAL_HEALTH_ACCESS_AUDIENCE: ${{ vars.PRODUCTION_UI_PORTAL_HEALTH_ACCESS_AUDIENCE }}
+
       - name: Deploy docs
         run: pnpm deploy:docs:prod
         env:
@@ -323,23 +405,3 @@ jobs:
           PUBLIC_BUILD_VERSION: ${{ steps.release.outputs.version }}
           PUBLIC_BUILD_GIT_SHA: ${{ steps.release.outputs.sha }}
           PUBLIC_BUILD_TIME: ${{ steps.release.outputs.time }}
-
-      - name: Deploy Access-protected Showcase Admin
-        run: pnpm deploy:showcase-admin:prod
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.PRODUCTION_CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ steps.cloudflare.outputs.showcase_admin_account_id }}
-
-      - name: Roll out showcase with protected rollback
-        run: pnpm rollout:showcase:prod
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.PRODUCTION_CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ steps.cloudflare.outputs.showcase_account_id }}
-          EXPECTED_RELEASE_ID: ${{ steps.release.outputs.release_id }}
-          EXPECTED_RELEASE_VERSION: ${{ steps.release.outputs.version }}
-          EXPECTED_RELEASE_GIT_SHA: ${{ steps.release.outputs.sha }}
-          EXPECTED_RELEASE_TIME: ${{ steps.release.outputs.time }}
-          PRODUCTION_STATUS_TOKEN: ${{ secrets.PRODUCTION_STATUS_TOKEN }}
-          ROLLBACK_STATUS_TOKEN: ${{ secrets.STATUS_TOKEN || secrets.PRODUCTION_STATUS_TOKEN }}
-          SHOWCASE_ADMIN_ACCESS_CLIENT_ID: ${{ secrets.PRODUCTION_SHOWCASE_ADMIN_ACCESS_CLIENT_ID }}
-          SHOWCASE_ADMIN_ACCESS_CLIENT_SECRET: ${{ secrets.PRODUCTION_SHOWCASE_ADMIN_ACCESS_CLIENT_SECRET }}

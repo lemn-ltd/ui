@@ -7354,7 +7354,7 @@ Use the exact approved release of `@lemn-ltd/ui` as the company UI surface. Prod
 - Import `@lemn-ltd/ui/styles.css` exactly once at the app root.
 - Resolve and verify a compatible `@lemn-ltd/brand-contract` artifact before rendering branded production HTML.
 - Prefer existing catalog components before creating local UI.
-- Use the showcase/catalog to choose components and verify behavior.
+- Use the Lemn UI Portal catalog to choose components and verify behavior.
 - Add or select reusable missing capabilities through the provider registry before updating consumers.
 
 ### Must not
@@ -7772,7 +7772,7 @@ Blocks are curated compositions with a named purpose, documented data/action con
 - Give every block a stable slug, purpose, status, component inventory, controlled data contract, and complete applicable states.
 - Compose only public LEMN components and provider-neutral types.
 - Keep product fetching, persistence, authorization, routing, and workflow policy in the host.
-- Demonstrate the block with realistic deterministic fixtures in Showcase and at least one consumer before stable promotion.
+- Demonstrate the block with realistic deterministic fixtures in the Lemn UI Portal and at least one consumer before stable promotion.
 
 ### Must not
 

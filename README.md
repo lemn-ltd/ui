@@ -38,12 +38,10 @@ Internal workspace packages and applications:
 - `@lemn-ltd/provider-registry` is the Git-authoritative mapping from each
   public capability to exactly one provider of record, immutable origin,
   license, adapter, and conformance evidence.
-- `@lemn-ltd/showcase-kit` contains reusable showcase chrome.
-- `apps/showcase` is the public, read-only catalog at
-  [showcase.ui.le-mn.com](https://showcase.ui.le-mn.com).
-- `apps/showcase-admin` is the separate Cloudflare Access-protected proposal
-  and experimentation surface at
-  [admin.showcase.ui.le-mn.com](https://admin.showcase.ui.le-mn.com).
+- `apps/ui-portal` is the single private Lemn UI application. It serves the
+  public Catalog and the Cloudflare Access-protected Admin from the
+  `lemn-ui-portal` Worker at
+  [portal.ui.le-mn.com](https://portal.ui.le-mn.com).
 - `apps/docs` is this ecosystem's Starlight documentation at
   [ui.le-mn.com](https://ui.le-mn.com).
 
@@ -114,14 +112,14 @@ preview resolution fails closed and never falls back to active branding.
 See [SSR branding runbook](apps/docs/src/content/docs/ssr-branding/index.mdx)
 and [package consumption guide](packages/ui/README.md).
 
-## Studio, Admin, and frontend-platform boundaries
+## Portal, Studio, and frontend-platform boundaries
 
 - Brand Studio edits one controlled `BrandingDefinition` and emits typed host
   intents for draft lifecycle, validation, comparison, preview, and
   publication. It has no credentials or persistence authority.
-- Showcase Admin hosts experimentation, provider proposals, System branding
-  templates, and definition previews behind Cloudflare Access. It cannot
-  persist branding or mutate the active provider manifest directly.
+- Lemn UI Admin hosts experimentation, provider proposals, System branding
+  templates, and definition previews under `/admin` behind Cloudflare Access.
+  It cannot persist branding or mutate the active provider manifest directly.
 - Data fetching, routing, authentication, global application state,
   internationalization, analytics SDKs, and product workflow policy belong to
   a consuming app or a future frontend-platform package, not these UI packages.
@@ -138,9 +136,9 @@ provider implementation.
 
 Agents should start from the LEMN catalog and never guess an upstream import:
 
-- [catalog.json](https://showcase.ui.le-mn.com/catalog.json)
-- [llms.txt](https://showcase.ui.le-mn.com/llms.txt)
-- [llms-full.txt](https://showcase.ui.le-mn.com/llms-full.txt)
+- [catalog.json](https://portal.ui.le-mn.com/catalog.json)
+- [llms.txt](https://portal.ui.le-mn.com/llms.txt)
+- [llms-full.txt](https://portal.ui.le-mn.com/llms-full.txt)
 - [component selection guide](packages/ui/docs/components.md)
 - [composition patterns](packages/ui/docs/patterns.md)
 
@@ -149,7 +147,7 @@ Selection order:
 1. Reuse an existing public LEMN component or block.
 2. Keep one-off product behavior local and compose public primitives.
 3. For a reusable gap, propose one provider of record in the registry.
-4. Add the LEMN adapter, provenance, license, conformance, docs, showcase, and
+4. Add the LEMN adapter, provenance, license, conformance, docs, Portal evidence, and
    changeset before publishing an exact release.
 
 ## Local development
@@ -161,8 +159,7 @@ Packages read access for private dependencies.
 corepack enable
 corepack prepare pnpm@11.8.0 --activate
 pnpm install
-pnpm dev:showcase
-pnpm dev:showcase-admin
+pnpm dev:portal
 pnpm dev:docs
 ```
 

@@ -41,6 +41,10 @@
   gap: var(--lemn-space-2);
 }
 
+.ui-key-value-editor__row .ui-input {
+  min-inline-size: 0;
+}
+
 .ui-key-value-editor__empty {
   margin: 0;
   padding: var(--lemn-space-3);

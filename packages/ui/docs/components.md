@@ -1,10 +1,11 @@
 # Component selection guide
 
 > When to reach for each `@lemn-ltd/ui` component. This is the agent-facing
-> companion to the live showcase (`apps/showcase`): the showcase renders every
-> component, its variants, and its full props; this guide says **when to use
-> which**, what to use **instead**, and what each pairs with. One section per
-> component. The structured source is `src/catalog.ts`; screen recipes are in
+> companion to the [live UI Portal](https://portal.ui.le-mn.com)
+> (`apps/ui-portal`): the Portal renders every active Core component, its
+> variants, and its full props; this guide says **when to use which**, what to
+> use **instead**, and what each pairs with. One section per component. The
+> structured source is `src/catalog.ts`; screen recipes are in
 > [patterns.md](patterns.md).
 
 Install an exact approved `@lemn-ltd/ui` release and import only its public
@@ -54,7 +55,7 @@ section below for the precise call.
 
 ### Button
 
-`/core/components/button` · stable
+`/components/button` · stable
 
 A clickable action with six variants mapped to data-variant.
 
@@ -76,7 +77,7 @@ A clickable action with six variants mapped to data-variant.
 
 ### Icon button
 
-`/core/components/icon-button` · stable
+`/components/icon-button` · stable
 
 A square, icon-only action requiring an aria-label; four variants.
 
@@ -95,7 +96,7 @@ A square, icon-only action requiring an aria-label; four variants.
 
 ### Scroll to bottom button
 
-`/core/components/scroll-to-bottom-button` · stable
+`/components/scroll-to-bottom-button` · stable
 
 A compact floating chevron action that appears when a scrollport moves away from its newest content and restores the bottom-pinned view.
 
@@ -114,7 +115,7 @@ A compact floating chevron action that appears when a scrollport moves away from
 
 ### Input
 
-`/core/components/input` · stable
+`/components/input` · stable
 
 A single-line text field with an invalid state for inline errors.
 
@@ -137,7 +138,7 @@ A single-line text field with an invalid state for inline errors.
 
 ### Textarea
 
-`/core/components/textarea` · stable
+`/components/textarea` · stable
 
 A multi-line text field with an invalid state and a default row count.
 
@@ -156,7 +157,7 @@ A multi-line text field with an invalid state and a default row count.
 
 ### Select
 
-`/core/components/select` · stable
+`/components/select` · stable
 
 A styled wrapper over the native select with a trailing chevron.
 
@@ -179,7 +180,7 @@ A styled wrapper over the native select with a trailing chevron.
 
 ### Search
 
-`/core/components/search` · stable
+`/components/search` · stable
 
 An expand-on-focus search field that collapses back to its icon.
 
@@ -199,7 +200,7 @@ An expand-on-focus search field that collapses back to its icon.
 
 ### Checkbox
 
-`/core/components/checkbox` · stable
+`/components/checkbox` · stable
 
 A checkbox with checked, unchecked, and indeterminate states.
 
@@ -218,7 +219,7 @@ A checkbox with checked, unchecked, and indeterminate states.
 
 ### Radio
 
-`/core/components/radio` · stable
+`/components/radio` · stable
 
 A single-choice radio group built from RadioGroup and RadioGroupItem.
 
@@ -238,7 +239,7 @@ A single-choice radio group built from RadioGroup and RadioGroupItem.
 
 ### Toggle
 
-`/core/components/toggle` · stable
+`/components/toggle` · stable
 
 A switch with a sliding thumb for an immediate on/off setting.
 
@@ -259,7 +260,7 @@ A switch with a sliding thumb for an immediate on/off setting.
 
 ### Badge
 
-`/core/components/badge` · stable
+`/components/badge` · stable
 
 A small status label with eight tones and an optional leading dot.
 
@@ -281,7 +282,7 @@ A small status label with eight tones and an optional leading dot.
 
 ### Tag
 
-`/core/components/tag` · stable
+`/components/tag` · stable
 
 An inline metadata label with three variants.
 
@@ -301,7 +302,7 @@ An inline metadata label with three variants.
 
 ### Avatar
 
-`/core/components/avatar` · stable
+`/components/avatar` · stable
 
 A circular identity badge, with a group that collapses overflow into +N.
 
@@ -322,7 +323,7 @@ A circular identity badge, with a group that collapses overflow into +N.
 
 ### Meter
 
-`/core/components/meter` · beta
+`/visualizations/meter` · beta
 
 A linear ratio bar for a single value against a max — quota used, budget spent, progress; tone signals headroom.
 
@@ -340,7 +341,7 @@ A linear ratio bar for a single value against a max — quota used, budget spent
 
 ### Kbd
 
-`/core/components/kbd` · stable
+`/components/kbd` · stable
 
 A keyboard key hint that composes into shortcut chords.
 
@@ -358,7 +359,7 @@ A keyboard key hint that composes into shortcut chords.
 
 ### Filter pill
 
-`/core/components/filter-pill` · stable
+`/components/filter-pill` · stable
 
 A toggleable filter trigger with active and open states.
 
@@ -378,7 +379,7 @@ A toggleable filter trigger with active and open states.
 
 ### Scope pill
 
-`/core/components/scope-pill` · stable
+`/components/scope-pill` · stable
 
 A read-only pill labelling the scope something applies to.
 
@@ -400,7 +401,7 @@ A read-only pill labelling the scope something applies to.
 
 ### Field
 
-`/core/components/field` · stable
+`/components/field` · stable
 
 The canonical form row: label, required asterisk, hint, and error, wired to any control via a render contract.
 
@@ -425,7 +426,7 @@ disabled, required, and `aria-describedby` wiring.
 
 ### Calendar
 
-`/core/components/calendar` · beta
+`/components/calendar` · beta
 
 A one- or two-month date grid with discriminated single/range state, partial
 range preview, selected/today markers, quick-year navigation, locale-aware
@@ -447,7 +448,7 @@ labels, and shared disabled-date rules.
 
 ### Inline edit
 
-`/core/components/inline-edit` · stable
+`/components/inline-edit` · stable
 
 Edit-in-place control for a text, number, or single-selection value, with edit, save, and cancel affordances.
 
@@ -465,7 +466,7 @@ Edit-in-place control for a text, number, or single-selection value, with edit, 
 
 ### Segmented control
 
-`/core/components/segmented-control` · stable
+`/components/segmented-control` · stable
 
 Single-select control on a recessed track; the pressed segment rises to a raised pill.
 
@@ -485,7 +486,7 @@ Single-select control on a recessed track; the pressed segment rises to a raised
 
 ### Combobox
 
-`/core/components/combobox` · stable
+`/components/combobox` · stable
 
 Searchable select with single and multi modes, built on the canonical Popover and a cmdk filter.
 
@@ -505,7 +506,7 @@ Searchable select with single and multi modes, built on the canonical Popover an
 
 ### Accordion
 
-`/core/components/accordion` · stable
+`/components/accordion` · stable
 
 Stacked disclosure rows in single (one-open) or multiple modes, with an animated body height.
 
@@ -524,7 +525,7 @@ Stacked disclosure rows in single (one-open) or multiple modes, with an animated
 
 ### SelectionList
 
-`/core/components/selection-list` · stable
+`/components/selection-list` · stable
 
 Searchable grouped multi-select: category pills with counts, group select-all with indeterminate state, and indented item rows with optional badges.
 
@@ -545,7 +546,7 @@ Searchable grouped multi-select: category pills with counts, group select-all wi
 
 ### Select native
 
-`/core/components/select-native` · beta
+`/components/select-native` · beta
 
 Use `SelectNative` for short form choices where browser-native mobile UI,
 autofill, form submission, and progressive enhancement are more valuable than
@@ -555,7 +556,7 @@ popup itself must follow the design-system surface.
 
 ### Radio card group
 
-`/core/components/radio-card-group` · beta
+`/components/radio-card-group` · beta
 
 Use `RadioCardGroup` for a small mutually exclusive choice where every option
 needs a label, description, or icon and the full card should be clickable. It
@@ -564,7 +565,7 @@ preserves the selected provider's keyboard semantics and a visible selection mar
 
 ### Toggle group
 
-`/core/components/toggle-group` · beta
+`/components/toggle-group` · beta
 
 Use `ToggleGroup` for compact single- or multi-select commands such as editor
 formatting. It is not an on/off setting; use [`toggle`](#toggle) for a switch.
@@ -573,7 +574,7 @@ for a single compact view choice and [`tabs`](#tabs) for panels.
 
 ### Slider
 
-`/core/components/slider` · beta
+`/components/slider` · beta
 
 Use `Slider` for a bounded numeric value or range when direct manipulation is
 more useful than typing. Supply exactly one accessible label per thumb and use
@@ -582,7 +583,7 @@ more useful than typing. Supply exactly one accessible label per thumb and use
 
 ### Date picker
 
-`/core/components/date-picker` · beta
+`/components/date-picker` · beta
 
 Use `DatePicker` for one labelled date field. It composes `Field`, `Button`,
 `Popover`, and the shared single-mode [`calendar`](#calendar), supports
@@ -591,7 +592,7 @@ hidden form input. Manual text entry is intentionally not implemented.
 
 ### Date range picker
 
-`/core/components/date-range-picker` · beta
+`/components/date-range-picker` · beta
 
 Use `DateRangePicker` for an explicit start/end field. A partial range remains
 visible and keeps the popover open until the end is selected; one or two months
@@ -600,7 +601,7 @@ pickers only when start and end are independent values.
 
 ### Composer
 
-`/core/components/composer` · beta
+`/components/composer` · beta
 
 Chat/agent message input: a compact auto-grow composer with a lower anchored Send action that swaps to Stop while streaming.
 
@@ -621,7 +622,7 @@ Chat/agent message input: a compact auto-grow composer with a lower anchored Sen
 
 ### Key-value editor
 
-`/core/components/key-value-editor` · stable
+`/components/key-value-editor` · stable
 
 A compact editable table for string key/value pairs with add and remove actions.
 
@@ -640,7 +641,7 @@ A compact editable table for string key/value pairs with add and remove actions.
 
 ### JSON code editor
 
-`/core/components/json-code-editor` · beta
+`/components/json-code-editor` · beta
 
 Controlled JSON text editor with line numbers, folding, syntax tones, and parse diagnostics.
 
@@ -659,7 +660,7 @@ Controlled JSON text editor with line numbers, folding, syntax tones, and parse 
 
 ### File dropzone
 
-`/core/components/file-dropzone` · stable
+`/components/file-dropzone` · stable
 
 A drag-and-select file input with a per-file metadata list that renders upload progress, preview thumbnails, and error/retry affordances.
 
@@ -678,7 +679,7 @@ A drag-and-select file input with a per-file metadata list that renders upload p
 
 ### File bundle editor
 
-`/core/components/file-bundle-editor` · stable
+`/components/file-bundle-editor` · stable
 
 A controlled file-bundle workspace with upload actions, a file list, and one active text editor or read-only binary view.
 
@@ -698,7 +699,7 @@ A controlled file-bundle workspace with upload actions, a file list, and one act
 
 ### Markdown editor
 
-`/core/components/markdown-editor` · stable
+`/components/markdown-editor` · stable
 
 A controlled Markdown textarea with a corner accent toggle that swaps between writing and the canonical Markdown preview.
 
@@ -717,9 +718,13 @@ A controlled Markdown textarea with a corner accent toggle that swaps between wr
 
 ## Agents
 
+Agent-oriented source and public exports are retained for direct package
+consumers. They are not registered in the active UI Portal and have no active
+routes, search, LLM inventory, or browser bundle.
+
 ### Agent activity line
 
-`/agents/components/agent-activity-line` · beta
+Retained source/export · beta · no active UI Portal route
 
 A compact agent activity row with optional agent name, action phrase, pulse animation, and explicit runtime/local activity states.
 
@@ -741,7 +746,7 @@ A compact agent activity row with optional agent name, action phrase, pulse anim
 
 ### Agent message bubble
 
-`/agents/components/agent-message-bubble` · beta
+Retained source/export · beta · no active UI Portal route
 
 A full-width transparent assistant response bubble for agent conversations, with copy and optional timestamp metadata.
 
@@ -760,7 +765,7 @@ A full-width transparent assistant response bubble for agent conversations, with
 
 ### Agent reasoning block
 
-`/agents/components/agent-reasoning-block` · beta
+Retained source/export · beta · no active UI Portal route
 
 A collapsible Thinking block for streaming and completed agent reasoning parts.
 
@@ -781,7 +786,7 @@ A collapsible Thinking block for streaming and completed agent reasoning parts.
 
 ### Agent text block
 
-`/agents/components/agent-text-block` · beta
+Retained source/export · beta · no active UI Portal route
 
 A Markdown answer block for agent text parts that can stay hidden while reasoning streams.
 
@@ -800,7 +805,7 @@ A Markdown answer block for agent text parts that can stay hidden while reasonin
 
 ### User message bubble
 
-`/agents/components/user-message-bubble` · beta
+Retained source/export · beta · no active UI Portal route
 
 A right-aligned operator message bubble for agent conversations, using the accent surface plus copy and optional timestamp metadata.
 
@@ -819,7 +824,7 @@ A right-aligned operator message bubble for agent conversations, using the accen
 
 ### Agent status badge
 
-`/agents/components/agent-status-badge` · beta
+Retained source/export · beta · no active UI Portal route
 
 A reusable status badge for agent lifecycle and execution state surfaces.
 
@@ -838,7 +843,7 @@ A reusable status badge for agent lifecycle and execution state surfaces.
 
 ### Capability chip
 
-`/agents/components/capability-chip` · beta
+Retained source/export · beta · no active UI Portal route
 
 A semantic chip for capability governance state: risk ceiling, surface drift, or policy decision.
 
@@ -858,7 +863,7 @@ A semantic chip for capability governance state: risk ceiling, surface drift, or
 
 ### Capability constraints editor
 
-`/agents/components/capability-constraints-editor` · beta
+Retained source/export · beta · no active UI Portal route
 
 A controlled editor for capability narrowing: risk ceiling, approval gates, numeric limits, and allowlists.
 
@@ -878,7 +883,7 @@ A controlled editor for capability narrowing: risk ceiling, approval gates, nume
 
 ### Principal picker
 
-`/agents/components/principal-picker` · beta
+Retained source/export · beta · no active UI Portal route
 
 A controlled principal target picker for role, team, API client, and team-member assignment surfaces.
 
@@ -898,7 +903,7 @@ A controlled principal target picker for role, team, API client, and team-member
 
 ### Approval card
 
-`/agents/components/approval-card` · beta
+Retained source/export · beta · no active UI Portal route
 
 A single pending HITL request as a decision surface: prompt, capability/integration context, risk chip, and mode-specific approve, reject, and choice actions.
 
@@ -915,7 +920,7 @@ A single pending HITL request as a decision surface: prompt, capability/integrat
 
 ### Approvals inbox
 
-`/agents/components/approvals-inbox` · beta
+Retained source/export · beta · no active UI Portal route
 
 A vertical queue of pending HITL requests rendered as approval cards with a count header, falling back to an empty state when the inbox is clear.
 
@@ -931,7 +936,7 @@ A vertical queue of pending HITL requests rendered as approval cards with a coun
 
 ### Capability matrix
 
-`/agents/components/capability-matrix` · beta
+Retained source/export · beta · no active UI Portal route
 
 A who-can-what grid of capability rows by target columns, each cell projecting a grant state, with reused risk and drift chips per capability.
 
@@ -948,7 +953,7 @@ A who-can-what grid of capability rows by target columns, each cell projecting a
 
 ### Classification matrix
 
-`/agents/components/classification-matrix` · beta
+Retained source/export · beta · no active UI Portal route
 
 A controlled editor for a capability data policy: output classification, model-context policy, a per-field classification matrix, and allowed sink refs.
 
@@ -964,7 +969,7 @@ A controlled editor for a capability data policy: output classification, model-c
 
 ### Effective surface viewer
 
-`/agents/components/effective-surface-viewer` · beta
+Retained source/export · beta · no active UI Portal route
 
 The consumption My Integrations view: a read-only surface of the effective capabilities available to the caller, grouped by integration, with risk, approval gate, quota, and drift block.
 
@@ -980,7 +985,7 @@ The consumption My Integrations view: a read-only surface of the effective capab
 
 ### Agent tool call list
 
-`/agents/components/agent-tool-call-list` · beta
+Retained source/export · beta · no active UI Portal route
 
 A collapsible group of agent tool calls; each row expands to show its input, output content blocks, and per-status evidence.
 
@@ -999,7 +1004,7 @@ A collapsible group of agent tool calls; each row expands to show its input, out
 
 ### Execution map
 
-`/agents/components/execution-map` · beta
+Retained source/export · beta · no active UI Portal route
 
 A read-only lane canvas for agent execution evidence, synchronized graph selection, inspector, timeline, and relationship filters.
 
@@ -1019,9 +1024,12 @@ A read-only lane canvas for agent execution evidence, synchronized graph selecti
 
 ## Automation
 
+Automation-oriented source and public exports follow the same inactive Portal
+policy as the Agent section above.
+
 ### Automation status badge
 
-`/agents/components/automation-status-badge` · beta
+Retained source/export · beta · no active UI Portal route
 
 A status pill for automation definition lifecycle and run state: draft, published, and archived plus queued, scheduled, running, waiting, completed, failed, and cancelled.
 
@@ -1039,7 +1047,7 @@ A status pill for automation definition lifecycle and run state: draft, publishe
 
 ### Trigger tile
 
-`/agents/components/trigger-tile` · beta
+Retained source/export · beta · no active UI Portal route
 
 A trigger kind as a bordered tile: a leading glyph, a label and optional description, and a trailing enabled/disabled/error status pill.
 
@@ -1056,7 +1064,7 @@ A trigger kind as a bordered tile: a leading glyph, a label and optional descrip
 
 ### Schedule editor
 
-`/agents/components/schedule-editor` · beta
+Retained source/export · beta · no active UI Portal route
 
 A schedule configuration block: a cron/interval/fixed kind selector, the expression, an optional timezone, and a live next/last-run summary with a status pill.
 
@@ -1073,7 +1081,7 @@ A schedule configuration block: a cron/interval/fixed kind selector, the express
 
 ### Trigger composer
 
-`/agents/components/trigger-composer` · beta
+Retained source/export · beta · no active UI Portal route
 
 The trigger authoring surface: a list of configured triggers — each a deep preset-driven schedule builder (once/hourly/daily/weekdays/weekly/custom with a per-preset input and a live human summary) or a titled card — plus a collapsible add-another-trigger picker.
 
@@ -1091,7 +1099,7 @@ The trigger authoring surface: a list of configured triggers — each a deep pre
 
 ### Automation graph
 
-`/agents/components/automation-graph` · beta
+Retained source/export · beta · no active UI Portal route
 
 A read-only automation graph: typed nodes (`GraphNode`) on an absolute canvas (`GraphCanvas`) connected by orthogonal edges and toned by execution state, with an inline state legend (`NodeStateChip`).
 
@@ -1108,7 +1116,7 @@ A read-only automation graph: typed nodes (`GraphNode`) on an absolute canvas (`
 
 ### Node inspector
 
-`/agents/components/node-inspector` · beta
+Retained source/export · beta · no active UI Portal route
 
 A selected node's detail panel — a kind pill, a config/policy/knowledge tab strip, and label/value rows — beside the authoring node palette (`NodePalette`).
 
@@ -1125,7 +1133,7 @@ A selected node's detail panel — a kind pill, a config/policy/knowledge tab st
 
 ### Run timeline
 
-`/agents/components/run-timeline` · beta
+Retained source/export · beta · no active UI Portal route
 
 The chronological evidence log for an automation run: a bordered column of tone-dotted, timestamped event rows (`EventRow`).
 
@@ -1142,7 +1150,7 @@ The chronological evidence log for an automation run: a bordered column of tone-
 
 ### Wait & retry chips
 
-`/agents/components/wait-retry-chip` · beta
+Retained source/export · beta · no active UI Portal route
 
 Compact pills for a node's wait timer (`WaitChip`) and retry budget (`RetryChip`), toned by state, for graph, scheduler, and evidence rows.
 
@@ -1158,7 +1166,7 @@ Compact pills for a node's wait timer (`WaitChip`) and retry budget (`RetryChip`
 
 ### Approval panel
 
-`/agents/components/approval-panel` · beta
+Retained source/export · beta · no active UI Portal route
 
 The decision surface for an automation human-task node: automation/run context, graph-hash and stale-approval conflicts that block approval, a comment, and Approve/Reject actions.
 
@@ -1175,7 +1183,7 @@ The decision surface for an automation human-task node: automation/run context, 
 
 ### Planner status
 
-`/agents/components/planner-status` · beta
+Retained source/export · beta · no active UI Portal route
 
 The planner runtime indicator for the planned-graph flow: a dotted status pill that pulses while the planner is planning or streaming.
 
@@ -1191,7 +1199,7 @@ The planner runtime indicator for the planned-graph flow: a dotted status pill t
 
 ### Proposal preview
 
-`/agents/components/proposal-preview` · beta
+Retained source/export · beta · no active UI Portal route
 
 The review surface for a generated automation graph: a monospace node preview, a compile-result banner, and accept/reject actions gated on a clean compile.
 
@@ -1208,7 +1216,7 @@ The review surface for a generated automation graph: a monospace node preview, a
 
 ### Node attempts table
 
-`/agents/components/node-attempts-table` · beta
+Retained source/export · beta · no active UI Portal route
 
 The per-node attempt ledger for a run — node, type, attempt, state, duration, and error — composed over the canonical DataTable.
 
@@ -1224,7 +1232,7 @@ The per-node attempt ledger for a run — node, type, attempt, state, duration, 
 
 ### Runtime refs panel
 
-`/agents/components/runtime-refs-panel` · beta
+Retained source/export · beta · no active UI Portal route
 
 The runtime integration summary for an execution node: runtime session/run refs and source context as aligned monospace lines, plus a policy/limits/safety/knowledge metric strip.
 
@@ -1243,7 +1251,7 @@ The runtime integration summary for an execution node: runtime session/run refs 
 
 ### Dialog
 
-`/core/components/dialog` · stable
+`/components/dialog` · stable
 
 A modal surface with a built-in focus trap, Escape-to-close, and focus return. `size` scales the panel width (sm 440 · md 560 · lg 720 · xl 960); mobile collapses to a full-width bottom sheet.
 
@@ -1265,7 +1273,7 @@ A modal surface with a built-in focus trap, Escape-to-close, and focus return. `
 
 ### Drawer
 
-`/core/components/drawer` · stable
+`/components/drawer` · stable
 
 A floating, rounded right-side panel layered over a scrim. It has no close button — it dismisses on click-outside or Escape — with a built-in focus trap and focus return. `width` scales the panel (sm 380 · md 460 · lg 600); mobile reflows to a floating bottom sheet. A `className` seam lets a surface skin the panel.
 
@@ -1286,7 +1294,7 @@ A floating, rounded right-side panel layered over a scrim. It has no close butto
 
 ### Markdown viewer
 
-`/core/components/markdown-viewer` · beta
+`/components/markdown-viewer` · beta
 
 A floating non-modal reading window that renders Markdown on the window layer without a scrim: the page behind stays fully interactive. The header carries a built-in find-in-document search (Enter / Shift+Enter cycle through highlighted matches) and an expand toggle that grows the window to the full viewport; every consumer inherits both. Escape clears the search first, then closes the window; pointer interaction outside does not. `width` scales the panel (sm 380 · md 460 · lg 600); mobile collapses to a bottom sheet.
 
@@ -1306,7 +1314,7 @@ A floating non-modal reading window that renders Markdown on the window layer wi
 
 ### Confirm dialog
 
-`/core/components/confirm-dialog` · stable
+`/components/confirm-dialog` · stable
 
 An alert dialog for a single decision, with default and danger variants.
 
@@ -1325,7 +1333,7 @@ An alert dialog for a single decision, with default and danger variants.
 
 ### Form dialog
 
-`/core/components/form-dialog` · beta
+`/components/form-dialog` · beta
 
 The create/edit modal. It composes [`dialog`](#dialog) (focus trap, Escape-close, sizing, mobile bottom-sheet) and adds form semantics: a scrollable `<form>` body, a pinned Cancel/Submit footer, a `submitting` state, and an optional error-summary banner. The submit button sits in the footer and associates with the body form via the `form` attribute, so Enter and the button drive the same `onSubmit`.
 
@@ -1344,7 +1352,7 @@ The create/edit modal. It composes [`dialog`](#dialog) (focus trap, Escape-close
 
 ### Menu
 
-`/core/components/menu` · stable
+`/components/menu` · stable
 
 The canonical dropdown menu: sections, dividers, checks, shortcuts, and danger items.
 
@@ -1364,7 +1372,7 @@ The canonical dropdown menu: sections, dividers, checks, shortcuts, and danger i
 
 ### Popover
 
-`/core/components/popover` · stable
+`/components/popover` · stable
 
 A non-modal floating panel anchored to a trigger on any of four sides.
 
@@ -1384,7 +1392,7 @@ A non-modal floating panel anchored to a trigger on any of four sides.
 
 ### Tooltip
 
-`/core/components/tooltip` · stable
+`/components/tooltip` · stable
 
 A hover and focus label that points back at its trigger from any of four sides.
 
@@ -1403,7 +1411,7 @@ A hover and focus label that points back at its trigger from any of four sides.
 
 ### Hint icon
 
-`/core/components/hint-icon` · stable
+`/components/hint-icon` · stable
 
 An inline glyph that reveals a toned tooltip to flag and explain a constraint.
 
@@ -1422,7 +1430,7 @@ An inline glyph that reveals a toned tooltip to flag and explain a constraint.
 
 ### Command palette
 
-`/core/components/command-palette` · stable
+`/components/command-palette` · stable
 
 A ⌘K search dialog over grouped commands, with live filtering and an empty state.
 
@@ -1443,7 +1451,7 @@ A ⌘K search dialog over grouped commands, with live filtering and an empty sta
 
 ### Sidebar
 
-`/core/components/sidebar` · stable
+`/components/sidebar` · stable
 
 The application rail in expanded, rail, and hidden collapse modes plus a drill-in variant, composing org, nav, user, and version slots. Nav items accept `children` for accessible multi-level nesting.
 
@@ -1467,7 +1475,7 @@ The application rail in expanded, rail, and hidden collapse modes plus a drill-i
 
 ### Top bar
 
-`/core/components/top-bar` · stable
+`/components/top-bar` · stable
 
 The screen header: sidebar toggle and breadcrumb, optional center tabs, and actions.
 
@@ -1489,7 +1497,7 @@ The screen header: sidebar toggle and breadcrumb, optional center tabs, and acti
 
 ### Entity toolbar
 
-`/core/components/entity-toolbar` · stable
+`/components/entity-toolbar` · stable
 
 A per-entity header with tabs, identity, and actions that collapses when all slots are empty.
 
@@ -1510,7 +1518,7 @@ A per-entity header with tabs, identity, and actions that collapses when all slo
 
 ### Breadcrumb
 
-`/core/components/breadcrumb` · stable
+`/components/breadcrumb` · stable
 
 A slash-separated navigation trail with link, button, and current-page segments.
 
@@ -1529,7 +1537,7 @@ A slash-separated navigation trail with link, button, and current-page segments.
 
 ### Tabs
 
-`/core/components/tabs` · stable
+`/components/tabs` · stable
 
 Accessible tab triggers and real associated panels with optional count badges.
 They support controlled or uncontrolled state, stable trigger/panel IDs, and
@@ -1556,7 +1564,7 @@ preserve inactive panel state unless lazy mounting is requested explicitly.
 
 ### Tab navigation
 
-`/core/components/tab-navigation` · beta
+`/components/tab-navigation` · beta
 
 Use `TabNavigation` when each peer destination has a real URL. It renders a
 semantic `nav` of links, marks the current page with `aria-current`, and scrolls
@@ -1565,7 +1573,7 @@ horizontally on narrow screens. It never renders panels and must not replace
 
 ### Stepper
 
-`/core/components/stepper` · stable
+`/components/stepper` · stable
 
 A horizontal progress indicator with completed, active, and upcoming steps.
 
@@ -1584,7 +1592,7 @@ A horizontal progress indicator with completed, active, and upcoming steps.
 
 ### Org switcher
 
-`/core/components/org-switcher` · stable
+`/components/org-switcher` · stable
 
 A menu-backed organization picker in expanded and rail variants.
 
@@ -1603,7 +1611,7 @@ A menu-backed organization picker in expanded and rail variants.
 
 ### Pagination
 
-`/core/components/pagination` · stable
+`/components/pagination` · stable
 
 Page navigation in numbered-pages and load-more variants.
 
@@ -1622,7 +1630,7 @@ Page navigation in numbered-pages and load-more variants.
 
 ### Dock panel
 
-`/core/components/dock-panel` · stable
+`/components/dock-panel` · stable
 
 The right-docked workspace panel — a tabbed header with maximize/hide controls over the active tab's body. It fills a `ScreenShell`'s `rightPanel`, and its mode, active tab, and split width live in that shell, so the panel and the content area resize as one app shell.
 
@@ -1642,7 +1650,7 @@ The right-docked workspace panel — a tabbed header with maximize/hide controls
 
 ### Area chart
 
-`/core/components/area-chart` · beta
+`/visualizations/area-chart` · beta
 
 Use an `AreaChart` to show one or more time series when the filled area helps
 communicate magnitude. Choose normal or stacked layout explicitly; use a
@@ -1650,7 +1658,7 @@ communicate magnitude. Choose normal or stacked layout explicitly; use a
 
 ### Bar chart
 
-`/core/components/bar-chart` · beta
+`/visualizations/bar-chart` · beta
 
 Use a `BarChart` to compare discrete categories, with grouped or stacked bars
 and an explicit vertical or horizontal orientation. Use a
@@ -1658,7 +1666,7 @@ and an explicit vertical or horizontal orientation. Use a
 
 ### Combo chart
 
-`/core/components/combo-chart` · beta
+`/visualizations/combo-chart` · beta
 
 Use a `ComboChart` only when bars and lines share a meaningful index and their
 different encodings clarify the comparison. Declare each series and its axis;
@@ -1666,7 +1674,7 @@ avoid combining unrelated metrics merely to save space.
 
 ### Bar list
 
-`/core/components/bar-list` · beta
+`/visualizations/bar-list` · beta
 
 Use a `BarList` for ranked category values that must remain easy to scan and
 read. Rows may be static, links, or actions. Use a [`bar-chart`](#bar-chart)
@@ -1674,7 +1682,7 @@ when axes, grouped series, or stacking carry important meaning.
 
 ### Category bar
 
-`/core/components/category-bar` · beta
+`/visualizations/category-bar` · beta
 
 Use a `CategoryBar` for one part-to-whole distribution in a compact surface.
 Its labels and segment patterns preserve meaning beyond color. Use a
@@ -1682,7 +1690,7 @@ Its labels and segment patterns preserve meaning beyond color. Use a
 
 ### Donut chart
 
-`/core/components/donut-chart` · beta
+`/visualizations/donut-chart` · beta
 
 Use a `DonutChart` for a small labelled part-to-whole dataset and optional
 center value. Avoid it for many similar slices; use a
@@ -1690,7 +1698,7 @@ center value. Avoid it for many similar slices; use a
 
 ### Line chart
 
-`/core/components/line-chart` · beta
+`/visualizations/line-chart` · beta
 
 Use a `LineChart` for one or more ordered trends. Give it an accessible name,
 declare every series, and provide stable deterministic data. Use a
@@ -1698,7 +1706,7 @@ declare every series, and provide stable deterministic data. Use a
 
 ### Heatmap chart
 
-`/core/components/heatmap-chart` · beta
+`/visualizations/heatmap-chart` · beta
 
 Use a `HeatmapChart` to compare intensity across two categorical dimensions.
 It uses its registered provider of record while consuming the same
@@ -1708,7 +1716,7 @@ an ordered trend is the primary message; use a [`line-chart`](#line-chart).
 
 ### Progress circle
 
-`/core/components/progress-circle` · beta
+`/visualizations/progress-circle` · beta
 
 Use a `ProgressCircle` for compact determinate or indeterminate task progress.
 Always supply an accessible name. Use [`progress-bar`](#progress-bar) when a
@@ -1716,7 +1724,7 @@ linear indicator makes the remaining distance easier to understand.
 
 ### Spark chart
 
-`/core/components/spark-chart` · beta
+`/visualizations/spark-chart` · beta
 
 Use a `SparkChart` for a compact interactive line, area, or bar trend with an
 optional tooltip. Use [`sparkline`](#sparkline) for a lighter non-interactive
@@ -1724,7 +1732,7 @@ trend where the surrounding text already communicates the value.
 
 ### Tracker
 
-`/core/components/tracker` · beta
+`/visualizations/tracker` · beta
 
 Use a `Tracker` for an ordered sequence of complete, active, pending, or error
 states. Each item keeps visible or assistive text so status never depends on
@@ -1736,7 +1744,7 @@ while applying only LEMN semantic tokens and accessibility hooks. Use a
 
 ### Card
 
-`/core/components/card` · stable
+`/components/card` · stable
 
 Surface container with optional title, body, and footer slots that collapse when absent.
 
@@ -1758,7 +1766,7 @@ Surface container with optional title, body, and footer slots that collapse when
 
 ### Settings row
 
-`/core/components/settings-row` · stable
+`/components/settings-row` · stable
 
 A labelled settings row: title and optional description on the left, a value or control on the right. Stack inside a Card.
 
@@ -1776,7 +1784,7 @@ A labelled settings row: title and optional description on the left, a value or 
 
 ### Description list
 
-`/core/components/description-list` · stable
+`/components/description-list` · stable
 
 Label/value detail rows with first-line baseline alignment that inline controls cannot break. For detail panels and dialogs.
 
@@ -1795,7 +1803,7 @@ Label/value detail rows with first-line baseline alignment that inline controls 
 
 ### Data table
 
-`/core/components/data-table` · stable
+`/components/data-table` · stable
 
 Prop-driven table owning tri-state sort, selection, bulk + per-row actions, row click, column visibility, density, loading, and numbered pagination. Sort, selection, pagination, column visibility and density each default to internal state and switch to controlled when the matching prop is supplied — so the same table serves an in-memory list or a server-paged/sorted dataset.
 
@@ -1817,7 +1825,7 @@ Prop-driven table owning tri-state sort, selection, bulk + per-row actions, row 
 
 ### Stat card
 
-`/core/components/stat-card` · stable
+`/components/stat-card` · stable
 
 A single metric tile: muted label, display-sized value, and an optional signed delta.
 
@@ -1835,7 +1843,7 @@ A single metric tile: muted label, display-sized value, and an optional signed d
 
 ### Stats strip
 
-`/core/components/stats-strip` · stable
+`/components/stats-strip` · stable
 
 Edge-to-edge horizontal row of stat cards separated by thin border dividers.
 
@@ -1855,7 +1863,7 @@ Edge-to-edge horizontal row of stat cards separated by thin border dividers.
 
 ### Code block
 
-`/core/components/code-block` · stable
+`/components/code-block` · stable
 
 Monospace value with a copy control; command, token, and inline variants write data-variant.
 
@@ -1873,7 +1881,7 @@ Monospace value with a copy control; command, token, and inline variants write d
 
 ### Syntax code block
 
-`/core/components/syntax-code-block` · beta
+`/components/syntax-code-block` · beta
 
 Copyable multi-line code snippet with lazy dual-theme syntax highlighting and optional wrapping.
 
@@ -1893,7 +1901,7 @@ Copyable multi-line code snippet with lazy dual-theme syntax highlighting and op
 
 ### JSON viewer
 
-`/core/components/json-viewer` · stable
+`/components/json-viewer` · stable
 
 Monospace JSON tree with per-node collapse and key/string/number/punctuation tones.
 
@@ -1913,7 +1921,7 @@ Monospace JSON tree with per-node collapse and key/string/number/punctuation ton
 
 ### Markdown
 
-`/core/components/markdown` · beta
+`/components/markdown` · beta
 
 Read-only GitHub Flavored Markdown renderer: headings, paragraphs, lists, links, tables, inline code, and fenced code with a language chip, a copy control, and dual-theme syntax highlighting (lazy-loaded per language). Raw HTML in the source is never rendered.
 
@@ -1933,7 +1941,7 @@ Read-only GitHub Flavored Markdown renderer: headings, paragraphs, lists, links,
 
 ### Sparkline
 
-`/core/components/sparkline` · stable
+`/visualizations/sparkline` · stable
 
 Compact inline bar chart: thin accent bars scaled to the series maximum.
 
@@ -1953,7 +1961,7 @@ Compact inline bar chart: thin accent bars scaled to the series maximum.
 
 ### Relative time
 
-`/core/components/relative-time` · stable
+`/components/relative-time` · stable
 
 Renders an absolute timestamp as a muted relative label, anchored by the now prop.
 
@@ -1972,7 +1980,7 @@ Renders an absolute timestamp as a muted relative label, anchored by the now pro
 
 ### List shell
 
-`/core/components/list-shell` · stable
+`/components/list-shell` · stable
 
 Outer content section giving every list or grid the same padding and vertical rhythm.
 
@@ -1993,7 +2001,7 @@ Outer content section giving every list or grid the same padding and vertical rh
 
 ### List filters bar
 
-`/core/components/list-filters-bar` · stable
+`/components/list-filters-bar` · stable
 
 Layout-only filter row: a pills slot, a per-view search input, and a trailing slot.
 
@@ -2013,7 +2021,7 @@ Layout-only filter row: a pills slot, a per-view search input, and a trailing sl
 
 ### Filter
 
-`/core/components/filter` · stable
+`/components/filter` · stable
 
 One type-driven column filter sharing a FilterPill trigger, active when a value is applied. `type` (default `enum`) selects the body: `enum` is a checkable Menu (single/multi); `text`, `number-range`, `date-range` and `boolean` open a Popover with the matching inputs.
 
@@ -2035,7 +2043,7 @@ One type-driven column filter sharing a FilterPill trigger, active when a value 
 
 ### Filter chip
 
-`/core/components/filter-chip` · stable
+`/components/filter-chip` · stable
 
 Applied-filter pill with a remove control; ActiveFiltersRow wraps a set with Clear all.
 
@@ -2054,7 +2062,7 @@ Applied-filter pill with a remove control; ActiveFiltersRow wraps a set with Cle
 
 ### Empty state
 
-`/core/components/empty-state` · stable
+`/components/empty-state` · stable
 
 Centered placeholder; first-run invites a first action, no-results is the filtered surface.
 
@@ -2076,7 +2084,7 @@ Centered placeholder; first-run invites a first action, no-results is the filter
 
 ### Recent chips
 
-`/core/components/recent-chips` · stable
+`/components/recent-chips` · stable
 
 A leading label followed by a row of muted Tag chips for recent items.
 
@@ -2095,7 +2103,7 @@ A leading label followed by a row of muted Tag chips for recent items.
 
 ### Preset selector
 
-`/core/components/preset-selector` · stable
+`/components/preset-selector` · stable
 
 Compact segmented control for picking a saved preset, plus an optional manage affordance.
 
@@ -2116,7 +2124,7 @@ Compact segmented control for picking a saved preset, plus an optional manage af
 
 ### Toast
 
-`/core/components/toast` · stable
+`/components/toast` · stable
 
 Presentational status row; tone drives the icon and accent.
 
@@ -2135,7 +2143,7 @@ Presentational status row; tone drives the icon and accent.
 
 ### Toaster
 
-`/core/components/toaster` · stable
+`/components/toaster` · stable
 
 The mounted toast stack region that owns the viewport, queue, and auto-dismiss.
 
@@ -2154,7 +2162,7 @@ The mounted toast stack region that owns the viewport, queue, and auto-dismiss.
 
 ### Info banner
 
-`/core/components/info-banner` · stable
+`/components/info-banner` · stable
 
 An in-content callout with optional title, system or custom icon, body, actions,
 dismissal, and urgency semantics independent of its visual tone.
@@ -2180,7 +2188,7 @@ dismissal, and urgency semantics independent of its visual tone.
 
 ### System bar
 
-`/core/components/system-bar` · stable
+`/components/system-bar` · stable
 
 Full-width page-level notice above the top bar, with optional action and dismiss.
 
@@ -2199,7 +2207,7 @@ Full-width page-level notice above the top bar, with optional action and dismiss
 
 ### Skeleton
 
-`/core/components/skeleton` · stable
+`/components/skeleton` · stable
 
 Loading placeholders — base shapes, text, card, and table rows — static under reduced motion.
 
@@ -2220,7 +2228,7 @@ Loading placeholders — base shapes, text, card, and table rows — static unde
 
 ### Spinner
 
-`/core/components/spinner` · stable
+`/components/spinner` · stable
 
 Indeterminate circular spinner in three sizes; static under reduced motion.
 
@@ -2239,7 +2247,7 @@ Indeterminate circular spinner in three sizes; static under reduced motion.
 
 ### Progress bar
 
-`/core/components/progress-bar` · stable
+`/visualizations/progress-bar` · stable
 
 Linear progress with determinate, indeterminate, and route loops.
 
@@ -2260,7 +2268,7 @@ Linear progress with determinate, indeterminate, and route loops.
 
 ### Screen shell
 
-`/core/components/screen-shell` · stable
+`/components/screen-shell` · stable
 
 The app frame: a fixed sidebar beside a main column with an optional top bar over scrolling content.
 
@@ -2280,7 +2288,7 @@ The app frame: a fixed sidebar beside a main column with an optional top bar ove
 
 ### Content layout
 
-`/core/components/content-layout` · stable
+`/components/content-layout` · stable
 
 The reading-width column, capped at var(--content-max) with page padding; bleed spans full width.
 
@@ -2300,7 +2308,7 @@ The reading-width column, capped at var(--content-max) with page padding; bleed 
 
 ### Page section
 
-`/core/components/page-section` · stable
+`/components/page-section` · stable
 
 A titled region with an optional title, caption, and actions header above its body.
 
@@ -2320,7 +2328,7 @@ A titled region with an optional title, caption, and actions header above its bo
 
 ### Section grid
 
-`/core/components/section-grid` · stable
+`/components/section-grid` · stable
 
 An auto-fitting card grid that reflows 4 → 3 → 2 → 1 against its own container width.
 
@@ -2342,7 +2350,7 @@ An auto-fitting card grid that reflows 4 → 3 → 2 → 1 against its own conta
 
 ### Two column
 
-`/core/components/two-column` · stable
+`/components/two-column` · stable
 
 A main-and-aside split that sits side by side at lg and up, then stacks below.
 
@@ -2362,7 +2370,7 @@ A main-and-aside split that sits side by side at lg and up, then stacks below.
 
 ### Settings shell
 
-`/core/components/settings-shell` · stable
+`/components/settings-shell` · stable
 
 A master-detail surface for settings and configuration: a grouped, searchable section nav beside an independently scrolling detail pane. Section selection, search, and optional full nav collapse are controllable, the nav is a keyboard-navigable vertical tab list, and the whole surface presents inline or as a focus-trapped modal. The caller owns the detail body, so a section can host any mix of controls.
 
@@ -2383,7 +2391,7 @@ A master-detail surface for settings and configuration: a grouped, searchable se
 
 ### Sign-in screen
 
-`/core/components/sign-in-screen` · stable
+`/components/sign-in-screen` · stable
 
 The centered single-card auth screen: a full-viewport surface holding one elevated card with an optional app mark/name identity, a title/subtitle header, and a full-width form the caller fills.
 
@@ -2403,7 +2411,7 @@ The centered single-card auth screen: a full-viewport surface holding one elevat
 
 ### Separator
 
-`/core/components/separator` · beta
+`/components/separator` · beta
 
 Use `Separator` to draw an explicit horizontal or vertical division without
 adding layout. It is decorative by default; set `decorative={false}` only when
@@ -2411,7 +2419,7 @@ the division carries document structure and should expose `role="separator"`.
 
 ### Version tag
 
-`/core/components/version-tag` · stable
+`/components/version-tag` · stable
 
 The sidebar footer build marker: a version string with an optional env badge, or a collapsed dot.
 

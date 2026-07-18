@@ -93,13 +93,13 @@
           "packages/ui/src/primitives/checkbox/tests/checkbox.spec.tsx"
         ],
         "accessibility": [
-          "apps/showcase/tests/e2e/accessibility.e2e.ts"
+          "apps/ui-portal/tests/e2e/accessibility.e2e.ts"
         ],
         "interaction": [
-          "apps/showcase/tests/e2e/checkbox-reference.e2e.ts"
+          "apps/ui-portal/tests/e2e/checkbox-reference.e2e.ts"
         ],
         "visual": [
-          "apps/showcase/tests/e2e/visual.e2e.ts"
+          "apps/ui-portal/tests/e2e/visual.e2e.ts"
         ],
         "ssr": [],
         "bundle": []
@@ -165,13 +165,13 @@
           "packages/ui/src/visualizations/line-chart/tests/line-chart.spec.tsx"
         ],
         "accessibility": [
-          "apps/showcase/tests/e2e/accessibility.e2e.ts"
+          "apps/ui-portal/tests/e2e/accessibility.e2e.ts"
         ],
         "interaction": [
-          "apps/showcase/tests/benchmark/visualization-performance.mjs"
+          "apps/ui-portal/tests/benchmark/visualization-performance.mjs"
         ],
         "visual": [
-          "apps/showcase/tests/e2e/visual.e2e.ts"
+          "apps/ui-portal/tests/e2e/visual.e2e.ts"
         ],
         "ssr": [],
         "bundle": [
@@ -253,13 +253,13 @@
         ],
         "accessibility": [
           "packages/ui/src/visualizations/heatmap-chart/tests/heatmap-chart.spec.tsx",
-          "apps/showcase/tests/e2e/accessibility.e2e.ts"
+          "apps/ui-portal/tests/e2e/accessibility.e2e.ts"
         ],
         "interaction": [
           "packages/ui/src/visualizations/heatmap-chart/tests/heatmap-chart.spec.tsx"
         ],
         "visual": [
-          "apps/showcase/tests/e2e/visual.e2e.ts"
+          "apps/ui-portal/tests/e2e/visual.e2e.ts"
         ],
         "ssr": [
           "packages/ui/src/visualizations/heatmap-chart/tests/heatmap-chart.spec.tsx"
@@ -364,14 +364,14 @@
         ],
         "accessibility": [
           "packages/ui/src/visualizations/tracker/tests/tracker.spec.tsx",
-          "apps/showcase/tests/e2e/accessibility.e2e.ts"
+          "apps/ui-portal/tests/e2e/accessibility.e2e.ts"
         ],
         "interaction": [
           "packages/ui/src/visualizations/tracker/tests/tracker.spec.tsx",
-          "apps/showcase/tests/e2e/capability-expansion.e2e.ts"
+          "apps/ui-portal/tests/e2e/capability-expansion.e2e.ts"
         ],
         "visual": [
-          "apps/showcase/tests/e2e/visual.e2e.ts"
+          "apps/ui-portal/tests/e2e/visual.e2e.ts"
         ],
         "ssr": [
           "packages/ui/src/visualizations/tracker/tests/tracker.spec.tsx"
@@ -442,13 +442,13 @@
           "packages/ui/src/forms/json-code-editor/tests/json-code-editor.spec.tsx"
         ],
         "accessibility": [
-          "apps/showcase/tests/e2e/accessibility.e2e.ts"
+          "apps/ui-portal/tests/e2e/accessibility.e2e.ts"
         ],
         "interaction": [
           "packages/ui/src/forms/json-code-editor/tests/json-code-editor.spec.tsx"
         ],
         "visual": [
-          "apps/showcase/tests/e2e/visual.e2e.ts"
+          "apps/ui-portal/tests/e2e/visual.e2e.ts"
         ],
         "ssr": [],
         "bundle": []
@@ -515,13 +515,13 @@
           "packages/ui/src/data-display/syntax-code-block/tests/syntax-code-block.spec.tsx"
         ],
         "accessibility": [
-          "apps/showcase/tests/e2e/accessibility.e2e.ts"
+          "apps/ui-portal/tests/e2e/accessibility.e2e.ts"
         ],
         "interaction": [
           "packages/ui/src/data-display/syntax-code-block/tests/syntax-code-block.spec.tsx"
         ],
         "visual": [
-          "apps/showcase/tests/e2e/visual.e2e.ts"
+          "apps/ui-portal/tests/e2e/visual.e2e.ts"
         ],
         "ssr": [],
         "bundle": []
@@ -588,13 +588,13 @@
           "packages/ui/src/data-display/markdown/tests/markdown.spec.tsx"
         ],
         "accessibility": [
-          "apps/showcase/tests/e2e/accessibility.e2e.ts"
+          "apps/ui-portal/tests/e2e/accessibility.e2e.ts"
         ],
         "interaction": [
           "packages/ui/src/data-display/markdown/tests/markdown.spec.tsx"
         ],
         "visual": [
-          "apps/showcase/tests/e2e/visual.e2e.ts"
+          "apps/ui-portal/tests/e2e/visual.e2e.ts"
         ],
         "ssr": [],
         "bundle": []
@@ -660,13 +660,13 @@
           "packages/ui/src/overlays/command-palette/tests/command-palette.spec.tsx"
         ],
         "accessibility": [
-          "apps/showcase/tests/e2e/accessibility.e2e.ts"
+          "apps/ui-portal/tests/e2e/accessibility.e2e.ts"
         ],
         "interaction": [
-          "apps/showcase/tests/e2e/command-palette.e2e.ts"
+          "apps/ui-portal/tests/e2e/command-palette.e2e.ts"
         ],
         "visual": [
-          "apps/showcase/tests/e2e/visual.e2e.ts"
+          "apps/ui-portal/tests/e2e/visual.e2e.ts"
         ],
         "ssr": [],
         "bundle": []
@@ -736,13 +736,13 @@
           "packages/ui/src/feedback/toaster/tests/toaster.spec.tsx"
         ],
         "accessibility": [
-          "apps/showcase/tests/e2e/accessibility.e2e.ts"
+          "apps/ui-portal/tests/e2e/accessibility.e2e.ts"
         ],
         "interaction": [
-          "apps/showcase/tests/e2e/toaster.e2e.ts"
+          "apps/ui-portal/tests/e2e/toaster.e2e.ts"
         ],
         "visual": [
-          "apps/showcase/tests/e2e/visual.e2e.ts"
+          "apps/ui-portal/tests/e2e/visual.e2e.ts"
         ],
         "ssr": [],
         "bundle": []
@@ -811,11 +811,11 @@
           "packages/ui/src/agents/execution-map/model/tests/execution-map-model.spec.ts"
         ],
         "accessibility": [
-          "apps/showcase/tests/e2e/accessibility.e2e.ts"
+          "apps/ui-portal/tests/e2e/accessibility.e2e.ts"
         ],
         "interaction": [],
         "visual": [
-          "apps/showcase/tests/e2e/visual.e2e.ts"
+          "apps/ui-portal/tests/e2e/visual.e2e.ts"
         ],
         "ssr": [],
         "bundle": []

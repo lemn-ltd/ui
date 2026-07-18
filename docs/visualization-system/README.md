@@ -108,7 +108,7 @@ engine; a `LineChart` import contains Recharts and no secondary engine; the
 catalog remains data-only and independently tree-shakeable. The boundary checker
 rejects Recharts imports outside the visualization family.
 
-The reproducible benchmark is `pnpm --filter @lemn-ltd/ui-showcase run
+The reproducible benchmark is `pnpm --filter @lemn-ltd/ui-portal run
 benchmark:visualizations`. It measures the production dashboard pattern with
 four charts across desktop/mobile, Light/Dark, normal/reduced motion, and
 representative/240-row stress data. It records ready time, legend interaction
@@ -137,7 +137,7 @@ adoption threshold.
 4. Reuse chart tokens and `ChartFrame`; keep provider helpers private to the
    visualization folder.
 5. Add meaningful unit and interaction tests, a bundle fixture when the import
-   boundary changes, and a live showcase page with at most three examples.
+   boundary changes, and a live Portal page with at most three examples.
 6. Verify light and dark themes at 1280x900, 768x1024, and 375x812, including
    keyboard behavior, empty/loading/error states, and console cleanliness.
 7. Update the catalog, exports, package guide, public docs, changeset, and pattern

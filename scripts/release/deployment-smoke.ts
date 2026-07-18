@@ -3,17 +3,20 @@
 import { setTimeout as delay } from "node:timers/promises";
 
 const DOCS_ORIGIN = "https://ui.le-mn.com";
-const SHOWCASE_ORIGIN = "https://showcase.ui.le-mn.com";
+const PORTAL_ORIGIN = "https://portal.ui.le-mn.com";
 const SCHEMA_ORIGIN = "https://schemas.ui.le-mn.com";
-const SHOWCASE_ADMIN_ORIGIN = "https://admin.showcase.ui.le-mn.com";
-const SHOWCASE_ADMIN_ACCESS_TENANT = "lemn-dev.cloudflareaccess.com";
+const ACCESS_TENANT = "lemn-dev.cloudflareaccess.com";
 const UI_PACKAGE_NAME = "@lemn-ltd/ui";
+const PORTAL_SERVICE = "ui-portal";
 const BRANDING_DEFINITION_SCHEMA_URL = `${SCHEMA_ORIGIN}/branding/v1.json`;
-export const PROTECTED_STATUS_PATHS = [
-	"/_status",
-	"/_status.json",
-	"/health/deep",
+
+export const PROTECTED_ADMIN_PATHS = [
+	"/admin",
+	"/admin-assets/access-boundary-probe.js",
+	"/api/admin/session",
 ] as const;
+export const SERVICE_HEALTH_PATH = "/health/deep";
+export const SERVICE_ADMIN_DENIAL_PATH = "/api/admin/session";
 
 export interface BuildIdentity {
 	version: string;
@@ -21,7 +24,7 @@ export interface BuildIdentity {
 	buildTime: string;
 }
 
-export interface ShowcaseAdminAccessCredentials {
+export interface UiPortalAccessCredentials {
 	clientId: string;
 	clientSecret: string;
 }
@@ -76,29 +79,16 @@ export function assertPackageBuildIdentity(
 	);
 }
 
-async function fetchResponse(
-	url: string,
-	fetchImplementation: FetchImplementation,
-	init: RequestInit = {},
-	signal?: AbortSignal,
-): Promise<Response> {
-	const headers = new Headers(init.headers);
-	headers.set("Accept", "application/json, text/plain, text/html");
-	const response = await fetchImplementation(url, {
-		...init,
-		headers,
-		signal: signal
-			? AbortSignal.any([signal, AbortSignal.timeout(5_000)])
-			: AbortSignal.timeout(5_000),
-	});
-	if (!response.ok) throw new Error(`${url} returned HTTP ${response.status}`);
-	return response;
+function requestSignal(signal?: AbortSignal): AbortSignal {
+	return signal
+		? AbortSignal.any([signal, AbortSignal.timeout(5_000)])
+		: AbortSignal.timeout(5_000);
 }
 
 async function retry(
 	label: string,
 	operation: () => Promise<void>,
-	options: RetryOptions = defaultRetryOptions,
+	options: RetryOptions,
 	signal?: AbortSignal,
 ): Promise<void> {
 	let lastError: unknown;
@@ -120,7 +110,7 @@ async function retry(
 	);
 }
 
-function showcaseHeaders(
+function portalHeaders(
 	versionId: string | undefined,
 	headers: HeadersInit = {},
 ): Headers {
@@ -128,25 +118,71 @@ function showcaseHeaders(
 	if (versionId) {
 		result.set(
 			"Cloudflare-Workers-Version-Overrides",
-			`lemn-ui-showcase="${versionId}"`,
+			`lemn-ui-portal="${versionId}"`,
 		);
 	}
 	return result;
 }
 
-function requestSignal(signal?: AbortSignal): AbortSignal {
-	return signal
-		? AbortSignal.any([signal, AbortSignal.timeout(5_000)])
-		: AbortSignal.timeout(5_000);
+async function responseBody(response: Response): Promise<string> {
+	return response.text();
 }
 
-function showcaseAssetPath(html: string): string {
-	const match = /(?:src|href)=["'](\/assets\/[^"']+)["']/u.exec(html);
-	assert(match?.[1], "showcase home does not reference a built asset");
-	return match[1];
+function assertNoCredentialExposure(
+	response: Response,
+	body: string,
+	credentials: UiPortalAccessCredentials,
+	endpoint: string,
+): void {
+	const serializedHeaders = JSON.stringify(
+		Object.fromEntries(response.headers),
+	);
+	for (const credential of [credentials.clientId, credentials.clientSecret]) {
+		assert(
+			!body.includes(credential),
+			`${endpoint} exposed an Access credential`,
+		);
+		assert(
+			!serializedHeaders.includes(credential),
+			`${endpoint} exposed an Access credential in response headers`,
+		);
+	}
 }
 
-function protectedStatusIdentity(
+function requiredCredential(value: string | undefined, name: string): string {
+	const normalized = value?.trim();
+	assert(normalized, `${name} is required`);
+	return normalized;
+}
+
+function assertAccessRedirect(response: Response, endpoint: string): void {
+	assert(
+		response.status === 302,
+		`${endpoint} anonymous request returned HTTP ${response.status}`,
+	);
+	const location = response.headers.get("location");
+	assert(location, `${endpoint} Access redirect has no location`);
+	const login = new URL(location, PORTAL_ORIGIN);
+	assert(
+		login.protocol === "https:" &&
+			login.hostname === ACCESS_TENANT &&
+			login.pathname.startsWith("/cdn-cgi/access/login"),
+		`${endpoint} does not redirect to the exact ${ACCESS_TENANT} tenant`,
+	);
+}
+
+function assertServiceAdminDenied(response: Response, endpoint: string): void {
+	if (response.status === 302) {
+		assertAccessRedirect(response, endpoint);
+		return;
+	}
+	assert(
+		response.status === 401 || response.status === 403,
+		`${endpoint} service request returned HTTP ${response.status}; expected an Access or origin denial`,
+	);
+}
+
+function protectedHealthIdentity(
 	payload: unknown,
 	endpoint: string,
 ): BuildIdentity {
@@ -156,6 +192,8 @@ function protectedStatusIdentity(
 	);
 	const report = payload as Record<string, unknown>;
 	assert(report.ok === true, `${endpoint} is not OK`);
+	assert(report.service === PORTAL_SERVICE, `${endpoint} has wrong service`);
+	assert(report.environment === "production", `${endpoint} is not production`);
 	assert(
 		report.validation && typeof report.validation === "object",
 		`${endpoint} has no validation result`,
@@ -170,16 +208,10 @@ function protectedStatusIdentity(
 	);
 	const build = report.build as Record<string, unknown>;
 	assert(
-		typeof build.version === "string" && build.version.length > 0,
-		`${endpoint} has no build version`,
-	);
-	assert(
-		typeof build.gitSha === "string" && build.gitSha.length > 0,
-		`${endpoint} has no build gitSha`,
-	);
-	assert(
-		typeof build.time === "string" && build.time.length > 0,
-		`${endpoint} has no build time`,
+		typeof build.version === "string" &&
+			typeof build.gitSha === "string" &&
+			typeof build.time === "string",
+		`${endpoint} has an incomplete build identity`,
 	);
 	return {
 		version: build.version,
@@ -188,466 +220,326 @@ function protectedStatusIdentity(
 	};
 }
 
-function assertResponseDoesNotExposeToken(
-	response: Response,
-	body: string,
-	token: string,
-	endpoint: string,
-): void {
-	assert(
-		!body.includes(token),
-		`${endpoint} exposed its bearer token in the body`,
-	);
-	assert(
-		!JSON.stringify(Object.fromEntries(response.headers)).includes(token),
-		`${endpoint} exposed its bearer token in response headers`,
-	);
-}
-
-function requiredCredential(value: string | undefined, name: string): string {
-	assert(value?.trim(), `${name} is required`);
-	return value.trim();
-}
-
-export async function smokeShowcaseAdminAccess(input: {
-	credentials: ShowcaseAdminAccessCredentials;
+export async function smokePortalServiceAccess(input: {
+	credentials: UiPortalAccessCredentials;
+	expected?: BuildIdentity;
 	fetchImplementation?: FetchImplementation;
 	retryOptions?: RetryOptions;
+	portalVersionId?: string;
+	signal?: AbortSignal;
+}): Promise<BuildIdentity> {
+	const fetchImplementation = input.fetchImplementation ?? fetch;
+	const retryOptions = input.retryOptions ?? defaultRetryOptions;
+	const credentials = {
+		clientId: requiredCredential(
+			input.credentials.clientId,
+			"UI Portal Access client ID",
+		),
+		clientSecret: requiredCredential(
+			input.credentials.clientSecret,
+			"UI Portal Access client secret",
+		),
+	};
+	assert(
+		credentials.clientId !== credentials.clientSecret,
+		"UI Portal Access client ID and secret must be distinct",
+	);
+	const endpoint = `${PORTAL_ORIGIN}${SERVICE_HEALTH_PATH}`;
+
+	await retry(
+		"ui-portal-service-health-anonymous-boundary",
+		async () => {
+			const response = await fetchImplementation(endpoint, {
+				headers: portalHeaders(input.portalVersionId, {
+					Accept: "application/json",
+				}),
+				redirect: "manual",
+				signal: requestSignal(input.signal),
+			});
+			assertAccessRedirect(response, endpoint);
+		},
+		retryOptions,
+		input.signal,
+	);
+
+	let identity: BuildIdentity | undefined;
+	await retry(
+		"ui-portal-service-health-authenticated",
+		async () => {
+			const response = await fetchImplementation(endpoint, {
+				headers: portalHeaders(input.portalVersionId, {
+					Accept: "application/json",
+					"CF-Access-Client-Id": credentials.clientId,
+					"CF-Access-Client-Secret": credentials.clientSecret,
+				}),
+				redirect: "manual",
+				signal: requestSignal(input.signal),
+			});
+			const body = await responseBody(response);
+			assertNoCredentialExposure(response, body, credentials, endpoint);
+			assert(
+				response.status === 200,
+				`${endpoint} service request returned HTTP ${response.status}`,
+			);
+			identity = protectedHealthIdentity(JSON.parse(body), endpoint);
+			if (input.expected) {
+				assertBuildIdentity(identity, input.expected, endpoint);
+			}
+		},
+		retryOptions,
+		input.signal,
+	);
+	assert(identity, "UI Portal protected health returned no build identity");
+
+	const adminEndpoint = `${PORTAL_ORIGIN}${SERVICE_ADMIN_DENIAL_PATH}`;
+	await retry(
+		"ui-portal-service-admin-denied",
+		async () => {
+			const response = await fetchImplementation(adminEndpoint, {
+				headers: portalHeaders(input.portalVersionId, {
+					Accept: "application/json",
+					"CF-Access-Client-Id": credentials.clientId,
+					"CF-Access-Client-Secret": credentials.clientSecret,
+				}),
+				redirect: "manual",
+				signal: requestSignal(input.signal),
+			});
+			const body = await responseBody(response);
+			assertNoCredentialExposure(response, body, credentials, adminEndpoint);
+			assertServiceAdminDenied(response, adminEndpoint);
+		},
+		retryOptions,
+		input.signal,
+	);
+	return identity;
+}
+
+export async function smokePortalAdminBoundary(input: {
+	fetchImplementation?: FetchImplementation;
+	retryOptions?: RetryOptions;
+	portalVersionId?: string;
 	signal?: AbortSignal;
 }): Promise<void> {
 	const fetchImplementation = input.fetchImplementation ?? fetch;
 	const retryOptions = input.retryOptions ?? defaultRetryOptions;
-	const clientId = requiredCredential(
-		input.credentials.clientId,
-		"Showcase Admin Access client ID",
-	);
-	const clientSecret = requiredCredential(
-		input.credentials.clientSecret,
-		"Showcase Admin Access client secret",
-	);
-	const healthUrl = `${SHOWCASE_ADMIN_ORIGIN}/health`;
-
-	await retry(
-		"showcase-admin-access-boundary",
-		async () => {
-			const response = await fetchImplementation(healthUrl, {
-				headers: { Accept: "application/json" },
-				redirect: "manual",
-				signal: requestSignal(input.signal),
-			});
-			assert(
-				response.status === 302,
-				`Showcase Admin anonymous request returned HTTP ${response.status}`,
-			);
-			const location = response.headers.get("location");
-			assert(location, "Showcase Admin Access redirect has no location");
-			const accessLogin = new URL(location, SHOWCASE_ADMIN_ORIGIN);
-			assert(
-				accessLogin.protocol === "https:" &&
-					accessLogin.hostname === SHOWCASE_ADMIN_ACCESS_TENANT &&
-					accessLogin.pathname.startsWith("/cdn-cgi/access/login"),
-				`Showcase Admin Access redirect does not target the exact ${SHOWCASE_ADMIN_ACCESS_TENANT} tenant login`,
-			);
-		},
-		retryOptions,
-		input.signal,
-	);
-
-	await retry(
-		"showcase-admin-authenticated-health",
-		async () => {
-			const response = await fetchImplementation(healthUrl, {
-				headers: {
-					Accept: "application/json",
-					"CF-Access-Client-Id": clientId,
-					"CF-Access-Client-Secret": clientSecret,
-				},
-				redirect: "manual",
-				signal: requestSignal(input.signal),
-			});
-			const body = await response.text();
-			assertResponseDoesNotExposeToken(response, body, clientSecret, healthUrl);
-			assert(
-				response.status === 200,
-				`Showcase Admin authenticated health returned HTTP ${response.status}`,
-			);
-			const payload = JSON.parse(body) as Record<string, unknown>;
-			assert(payload.ok === true, "Showcase Admin health is not OK");
-			assert(
-				payload.service === "ui-showcase-admin",
-				"Showcase Admin health has the wrong service identity",
-			);
-			assert(
-				payload.environment === "production",
-				"Showcase Admin health is not running the production environment",
-			);
-			assert(
-				payload.studioPersistence === "none",
-				"Showcase Admin must keep Studio persistence outside the UI repository",
-			);
-		},
-		retryOptions,
-		input.signal,
-	);
-}
-
-export async function smokeProtectedStatusRoutes(input: {
-	token: string;
-	expected?: BuildIdentity;
-	fetchImplementation?: FetchImplementation;
-	retryOptions?: RetryOptions;
-	showcaseVersionId?: string;
-	signal?: AbortSignal;
-}): Promise<BuildIdentity> {
-	assert(input.token.length > 0, "A protected status token is required");
-	const fetchImplementation = input.fetchImplementation ?? fetch;
-	const retryOptions = input.retryOptions ?? defaultRetryOptions;
-	let expected = input.expected;
-
-	for (const path of PROTECTED_STATUS_PATHS) {
-		const url = `${SHOWCASE_ORIGIN}${path}`;
+	for (const path of PROTECTED_ADMIN_PATHS) {
+		const endpoint = `${PORTAL_ORIGIN}${path}`;
 		await retry(
-			`showcase-protected-unauthorized:${path}`,
+			`ui-portal-admin-boundary:${path}`,
 			async () => {
-				const response = await fetchImplementation(url, {
-					headers: showcaseHeaders(input.showcaseVersionId, {
-						Accept: "application/json",
-					}),
+				const response = await fetchImplementation(endpoint, {
+					headers: portalHeaders(input.portalVersionId),
+					redirect: "manual",
 					signal: requestSignal(input.signal),
 				});
-				const body = await response.text();
-				assert(
-					response.status === 401,
-					`${url} without a token returned HTTP ${response.status}`,
-				);
-				assertResponseDoesNotExposeToken(response, body, input.token, url);
-			},
-			retryOptions,
-			input.signal,
-		);
-
-		await retry(
-			`showcase-protected-authorized:${path}`,
-			async () => {
-				const response = await fetchImplementation(url, {
-					headers: showcaseHeaders(input.showcaseVersionId, {
-						Accept: "application/json",
-						Authorization: `Bearer ${input.token}`,
-					}),
-					signal: requestSignal(input.signal),
-				});
-				const body = await response.text();
-				assert(
-					response.status === 200,
-					`${url} with a bearer token returned HTTP ${response.status}`,
-				);
-				assertResponseDoesNotExposeToken(response, body, input.token, url);
-				const actual = protectedStatusIdentity(JSON.parse(body), url);
-				if (expected) assertBuildIdentity(actual, expected, url);
-				else expected = actual;
+				assertAccessRedirect(response, endpoint);
 			},
 			retryOptions,
 			input.signal,
 		);
 	}
+}
 
-	assert(expected, "Protected status routes returned no build identity");
-	return expected;
+function portalAssetPath(html: string): string {
+	const match = /(?:src|href)=["'](\/assets\/[^"']+)["']/u.exec(html);
+	assert(match?.[1], "UI Portal home does not reference a built asset");
+	return match[1];
+}
+
+async function fetchOk(
+	url: string,
+	fetchImplementation: FetchImplementation,
+	init: RequestInit,
+): Promise<Response> {
+	const response = await fetchImplementation(url, init);
+	assert(response.ok, `${url} returned HTTP ${response.status}`);
+	return response;
 }
 
 export async function smokeProductionDeployment(input: {
 	expected: BuildIdentity;
-	statusToken: string;
-	showcaseAdminAccess?: ShowcaseAdminAccessCredentials;
+	access: UiPortalAccessCredentials;
 	fetchImplementation?: FetchImplementation;
 	retryOptions?: RetryOptions;
-	showcaseVersionId?: string;
+	portalVersionId?: string;
 	signal?: AbortSignal;
 }): Promise<void> {
 	const fetchImplementation = input.fetchImplementation ?? fetch;
-	const expected = input.expected;
 	const retryOptions = input.retryOptions ?? defaultRetryOptions;
-	const showcaseAdminAccess = input.showcaseAdminAccess ?? {
-		clientId: process.env.SHOWCASE_ADMIN_ACCESS_CLIENT_ID ?? "",
-		clientSecret: process.env.SHOWCASE_ADMIN_ACCESS_CLIENT_SECRET ?? "",
-	};
+	const expected = input.expected;
+	const publicHeaders = portalHeaders(input.portalVersionId, {
+		Accept: "application/json, text/plain, text/html",
+	});
+	const retryCheck = (label: string, operation: () => Promise<void>) =>
+		retry(label, operation, retryOptions, input.signal);
 
-	await retry(
-		"docs-home",
-		async () => {
-			const text = await (
-				await fetchResponse(
-					`${DOCS_ORIGIN}/`,
-					fetchImplementation,
-					{},
-					input.signal,
-				)
-			).text();
-			assert(
-				text.includes("Overview | UI"),
-				"docs home is missing its canonical title",
-			);
-		},
-		retryOptions,
-		input.signal,
-	);
-	await retry(
-		"docs-release",
-		async () => {
-			const payload = await (
-				await fetchResponse(
-					`${DOCS_ORIGIN}/release.json`,
-					fetchImplementation,
-					{},
-					input.signal,
-				)
-			).json();
-			assertPackageBuildIdentity(payload, expected, "docs release.json");
-		},
-		retryOptions,
-		input.signal,
-	);
-	await retry(
-		"showcase-health",
-		async () => {
-			const payload = (await (
-				await fetchResponse(
-					`${SHOWCASE_ORIGIN}/health`,
-					fetchImplementation,
-					{ headers: showcaseHeaders(input.showcaseVersionId) },
-					input.signal,
-				)
-			).json()) as Record<string, unknown>;
-			assert(payload.ok === true, "showcase health is not OK");
-			assertBuildIdentity(payload, expected, "showcase health");
-		},
-		retryOptions,
-		input.signal,
-	);
-	await retry(
-		"showcase-ready",
-		async () => {
-			const payload = (await (
-				await fetchResponse(
-					`${SHOWCASE_ORIGIN}/health/ready`,
-					fetchImplementation,
-					{ headers: showcaseHeaders(input.showcaseVersionId) },
-					input.signal,
-				)
-			).json()) as Record<string, unknown>;
-			assert(payload.ok === true, "showcase readiness is not OK");
-			assertBuildIdentity(payload, expected, "showcase readiness");
-		},
-		retryOptions,
-		input.signal,
-	);
-	await retry(
-		"showcase-home",
-		async () => {
-			const home = await fetchResponse(
-				`${SHOWCASE_ORIGIN}/`,
+	await retryCheck("docs-home", async () => {
+		const response = await fetchOk(`${DOCS_ORIGIN}/`, fetchImplementation, {
+			signal: requestSignal(input.signal),
+		});
+		assert((await response.text()).includes("UI"), "docs home is not Lemn UI");
+	});
+	await retryCheck("docs-release", async () => {
+		const response = await fetchOk(
+			`${DOCS_ORIGIN}/release.json`,
+			fetchImplementation,
+			{ signal: requestSignal(input.signal) },
+		);
+		assertPackageBuildIdentity(await response.json(), expected, "docs release");
+	});
+
+	await retryCheck("ui-portal-health", async () => {
+		const response = await fetchOk(
+			`${PORTAL_ORIGIN}/health`,
+			fetchImplementation,
+			{ headers: publicHeaders, signal: requestSignal(input.signal) },
+		);
+		const payload = (await response.json()) as Record<string, unknown>;
+		assert(payload.ok === true, "/health is not OK");
+		assert(payload.service === PORTAL_SERVICE, "/health has wrong service");
+		assert(
+			Object.keys(payload).sort().join(",") === "ok,service",
+			"/health must remain minimal",
+		);
+	});
+
+	await retryCheck("ui-portal-home-and-asset", async () => {
+		const response = await fetchOk(`${PORTAL_ORIGIN}/`, fetchImplementation, {
+			headers: publicHeaders,
+			signal: requestSignal(input.signal),
+		});
+		const html = await response.text();
+		assert(html.includes('id="root"'), "UI Portal home is not the built SPA");
+		const assetPath = portalAssetPath(html);
+		const asset = await fetchOk(
+			`${PORTAL_ORIGIN}${assetPath}`,
+			fetchImplementation,
+			{ headers: publicHeaders, signal: requestSignal(input.signal) },
+		);
+		assert(
+			(await asset.arrayBuffer()).byteLength > 0,
+			"UI Portal asset is empty",
+		);
+	});
+
+	await retryCheck("ui-portal-catalog", async () => {
+		const response = await fetchOk(
+			`${PORTAL_ORIGIN}/catalog.json`,
+			fetchImplementation,
+			{ headers: publicHeaders, signal: requestSignal(input.signal) },
+		);
+		const payload = (await response.json()) as Record<string, unknown>;
+		assert(payload.package === UI_PACKAGE_NAME, "catalog has wrong package");
+		assert(payload.version === expected.version, "catalog has stale version");
+		assert(
+			Array.isArray(payload.components) && payload.components.length > 0,
+			"catalog is empty",
+		);
+	});
+	await retryCheck("ui-portal-provider-registry", async () => {
+		const response = await fetchOk(
+			`${PORTAL_ORIGIN}/provider-registry.json`,
+			fetchImplementation,
+			{ headers: publicHeaders, signal: requestSignal(input.signal) },
+		);
+		const payload = (await response.json()) as Record<string, unknown>;
+		assert(
+			typeof payload.revision === "string" && payload.revision.length > 0,
+			"provider registry has no revision",
+		);
+		assert(
+			Array.isArray(payload.capabilities) && payload.capabilities.length > 0,
+			"provider registry has no capabilities",
+		);
+	});
+	await retryCheck("ui-portal-blocks", async () => {
+		const response = await fetchOk(
+			`${PORTAL_ORIGIN}/blocks.json`,
+			fetchImplementation,
+			{ headers: publicHeaders, signal: requestSignal(input.signal) },
+		);
+		const payload = (await response.json()) as Record<string, unknown>;
+		assert(
+			Array.isArray(payload.blocks) && payload.blocks.length > 0,
+			"blocks catalog is empty",
+		);
+	});
+
+	await retryCheck("branding-schema", async () => {
+		const response = await fetchOk(
+			BRANDING_DEFINITION_SCHEMA_URL,
+			fetchImplementation,
+			{ headers: publicHeaders, signal: requestSignal(input.signal) },
+		);
+		assert(
+			response.headers.get("content-type")?.includes("application/schema+json"),
+			"branding schema has wrong content type",
+		);
+		assert(
+			response.headers.get("access-control-allow-origin") === "*",
+			"branding schema must allow public CORS",
+		);
+		assert(
+			response.headers.get("cache-control")?.includes("immutable"),
+			"branding schema must be immutable",
+		);
+		const payload = (await response.json()) as Record<string, unknown>;
+		assert(
+			payload.$id === BRANDING_DEFINITION_SCHEMA_URL,
+			"branding schema has wrong $id",
+		);
+	});
+
+	for (const path of ["/llms.txt", "/llms-full.txt"] as const) {
+		await retryCheck(`ui-portal${path}`, async () => {
+			const response = await fetchOk(
+				`${PORTAL_ORIGIN}${path}`,
 				fetchImplementation,
-				{ headers: showcaseHeaders(input.showcaseVersionId) },
-				input.signal,
+				{ headers: publicHeaders, signal: requestSignal(input.signal) },
 			);
-			const html = await home.text();
-			assert(html.includes('id="root"'), "showcase home is not the built SPA");
-			const assetPath = showcaseAssetPath(html);
-			const asset = await fetchResponse(
-				`${SHOWCASE_ORIGIN}${assetPath}`,
-				fetchImplementation,
-				{ headers: showcaseHeaders(input.showcaseVersionId) },
-				input.signal,
-			);
-			assert(
-				(await asset.arrayBuffer()).byteLength > 0,
-				"showcase asset is empty",
-			);
-		},
-		retryOptions,
-		input.signal,
-	);
-	await retry(
-		"showcase-catalog",
-		async () => {
-			const payload = (await (
-				await fetchResponse(
-					`${SHOWCASE_ORIGIN}/catalog.json`,
-					fetchImplementation,
-					{ headers: showcaseHeaders(input.showcaseVersionId) },
-					input.signal,
-				)
-			).json()) as Record<string, unknown>;
-			assert(
-				payload.package === UI_PACKAGE_NAME,
-				"showcase catalog has the wrong package",
-			);
-			assert(
-				payload.version === expected.version,
-				"showcase catalog has a stale version",
-			);
-			assert(
-				Array.isArray(payload.components) && payload.components.length > 0,
-				"showcase catalog is empty",
-			);
-		},
-		retryOptions,
-		input.signal,
-	);
-	await retry(
-		"showcase-provider-registry",
-		async () => {
-			const response = await fetchResponse(
-				`${SHOWCASE_ORIGIN}/provider-registry.json`,
-				fetchImplementation,
-				{ headers: showcaseHeaders(input.showcaseVersionId) },
-				input.signal,
-			);
-			assert(
-				response.headers.get("content-type")?.includes("application/json"),
-				"showcase provider registry is not JSON",
-			);
-			const payload = (await response.json()) as Record<string, unknown>;
-			assert(
-				typeof payload.revision === "string" && payload.revision.length > 0,
-				"showcase provider registry has no revision",
-			);
-			assert(
-				Array.isArray(payload.capabilities) && payload.capabilities.length > 0,
-				"showcase provider registry has no active capabilities",
-			);
-		},
-		retryOptions,
-		input.signal,
-	);
-	await retry(
-		"showcase-blocks",
-		async () => {
-			const response = await fetchResponse(
-				`${SHOWCASE_ORIGIN}/blocks.json`,
-				fetchImplementation,
-				{ headers: showcaseHeaders(input.showcaseVersionId) },
-				input.signal,
-			);
-			assert(
-				response.headers.get("content-type")?.includes("application/json"),
-				"showcase blocks catalog is not JSON",
-			);
-			const payload = (await response.json()) as Record<string, unknown>;
-			assert(
-				Array.isArray(payload.blocks) && payload.blocks.length > 0,
-				"showcase blocks catalog is empty",
-			);
-		},
-		retryOptions,
-		input.signal,
-	);
-	await retry(
-		"branding-definition-schema",
-		async () => {
-			const response = await fetchResponse(
-				BRANDING_DEFINITION_SCHEMA_URL,
-				fetchImplementation,
-				{ headers: showcaseHeaders(input.showcaseVersionId) },
-				input.signal,
-			);
-			assert(
-				response.headers
-					.get("content-type")
-					?.includes("application/schema+json"),
-				"BrandingDefinition schema has the wrong content type",
-			);
-			const payload = (await response.json()) as Record<string, unknown>;
-			assert(
-				payload.$id === BRANDING_DEFINITION_SCHEMA_URL,
-				"BrandingDefinition schema has the wrong canonical ID",
-			);
-		},
-		retryOptions,
-		input.signal,
-	);
-	await smokeShowcaseAdminAccess({
-		credentials: showcaseAdminAccess,
+			const content = await response.text();
+			assert(content.includes("Lemn UI"), `${path} has wrong catalog identity`);
+		});
+	}
+
+	await smokePortalAdminBoundary({
 		fetchImplementation,
 		retryOptions,
+		portalVersionId: input.portalVersionId,
 		signal: input.signal,
 	});
-	await retry(
-		"showcase-llms",
-		async () => {
-			const text = await (
-				await fetchResponse(
-					`${SHOWCASE_ORIGIN}/llms.txt`,
-					fetchImplementation,
-					{ headers: showcaseHeaders(input.showcaseVersionId) },
-					input.signal,
-				)
-			).text();
-			assert(
-				text.includes("@lemn-ltd/ui"),
-				"llms.txt has the wrong package identity",
-			);
-		},
-		retryOptions,
-		input.signal,
-	);
-	await retry(
-		"showcase-llms-full",
-		async () => {
-			const text = await (
-				await fetchResponse(
-					`${SHOWCASE_ORIGIN}/llms-full.txt`,
-					fetchImplementation,
-					{ headers: showcaseHeaders(input.showcaseVersionId) },
-					input.signal,
-				)
-			).text();
-			assert(
-				text.includes("Lemn UI Component Catalog"),
-				"llms-full.txt has the wrong catalog title",
-			);
-		},
-		retryOptions,
-		input.signal,
-	);
-	await smokeProtectedStatusRoutes({
-		token: input.statusToken,
+	await smokePortalServiceAccess({
+		credentials: input.access,
 		expected,
 		fetchImplementation,
 		retryOptions,
-		showcaseVersionId: input.showcaseVersionId,
+		portalVersionId: input.portalVersionId,
 		signal: input.signal,
 	});
 }
 
 async function main(): Promise<void> {
-	const version = process.env.EXPECTED_RELEASE_VERSION;
-	const gitSha = process.env.EXPECTED_RELEASE_GIT_SHA;
-	const buildTime = process.env.EXPECTED_RELEASE_TIME;
-	const statusToken = process.env.PRODUCTION_STATUS_TOKEN;
-	const showcaseAdminAccessClientId =
-		process.env.SHOWCASE_ADMIN_ACCESS_CLIENT_ID;
-	const showcaseAdminAccessClientSecret =
-		process.env.SHOWCASE_ADMIN_ACCESS_CLIENT_SECRET;
-	if (
-		!version ||
-		!gitSha ||
-		!buildTime ||
-		!statusToken ||
-		!showcaseAdminAccessClientId ||
-		!showcaseAdminAccessClientSecret
-	) {
-		throw new Error(
-			"EXPECTED_RELEASE_VERSION, EXPECTED_RELEASE_GIT_SHA, EXPECTED_RELEASE_TIME, PRODUCTION_STATUS_TOKEN, SHOWCASE_ADMIN_ACCESS_CLIENT_ID, and SHOWCASE_ADMIN_ACCESS_CLIENT_SECRET are required",
-		);
+	const expected = {
+		version: process.env.EXPECTED_RELEASE_VERSION,
+		gitSha: process.env.EXPECTED_RELEASE_GIT_SHA,
+		buildTime: process.env.EXPECTED_RELEASE_TIME,
+	};
+	const access = {
+		clientId: process.env.UI_PORTAL_ACCESS_CLIENT_ID,
+		clientSecret: process.env.UI_PORTAL_ACCESS_CLIENT_SECRET,
+	};
+	for (const [name, value] of [
+		["EXPECTED_RELEASE_VERSION", expected.version],
+		["EXPECTED_RELEASE_GIT_SHA", expected.gitSha],
+		["EXPECTED_RELEASE_TIME", expected.buildTime],
+		["UI_PORTAL_ACCESS_CLIENT_ID", access.clientId],
+		["UI_PORTAL_ACCESS_CLIENT_SECRET", access.clientSecret],
+	] as const) {
+		assert(value, `${name} is required`);
 	}
 	await smokeProductionDeployment({
-		expected: { version, gitSha, buildTime },
-		statusToken,
-		showcaseAdminAccess: {
-			clientId: showcaseAdminAccessClientId,
-			clientSecret: showcaseAdminAccessClientSecret,
-		},
+		expected: expected as BuildIdentity,
+		access: access as UiPortalAccessCredentials,
 	});
 }
 

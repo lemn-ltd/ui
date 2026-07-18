@@ -7,6 +7,12 @@ import { resolve } from "node:path";
 import { promisify } from "node:util";
 import { getPackageVersionStatus } from "./check-unpublished-package-version.ts";
 import {
+	PACKAGE_PUBLISH_CHILD_ENVIRONMENT_KEYS,
+	redactSensitiveText,
+	releaseChildEnvironment,
+	sensitiveEnvironmentValues,
+} from "./child-process-security.ts";
+import {
 	type ReleasePackageDefinition,
 	readReleasePackageManifest,
 	releasePackages,
@@ -52,6 +58,30 @@ function integrityBytes(integrity: string): Buffer {
 	if (value.length !== 64)
 		throw new Error("Package integrity has invalid length");
 	return value;
+}
+
+async function runPackageCommand(
+	args: readonly string[],
+	inheritedEnvironmentKeys: readonly string[] = [],
+): Promise<void> {
+	const environment = releaseChildEnvironment(
+		process.env,
+		inheritedEnvironmentKeys,
+	);
+	try {
+		await execFileAsync("pnpm", [...args], {
+			cwd: root,
+			env: environment,
+			maxBuffer: 16 * 1024 * 1024,
+		});
+	} catch (error) {
+		throw new Error(
+			redactSensitiveText(
+				error instanceof Error ? error.message : String(error),
+				sensitiveEnvironmentValues(environment),
+			),
+		);
+	}
 }
 
 export function assertArtifactIdentity(
@@ -157,11 +187,14 @@ export async function localPackageArtifact(
 	);
 	const tarballPath = resolve(temporaryRoot, `${definition.id}-${version}.tgz`);
 	try {
-		await execFileAsync(
-			"pnpm",
-			["--filter", packageName, "pack", "--out", tarballPath, "--json"],
-			{ cwd: root, env: process.env, maxBuffer: 16 * 1024 * 1024 },
-		);
+		await runPackageCommand([
+			"--filter",
+			packageName,
+			"pack",
+			"--out",
+			tarballPath,
+			"--json",
+		]);
 		const digest = createHash("sha512")
 			.update(await readFile(tarballPath))
 			.digest("base64");
@@ -251,8 +284,7 @@ const defaultDependencies: PublishReleaseDependencies = {
 		}),
 	publishedArtifact: registryArtifact,
 	publish: async (artifact) => {
-		await execFileAsync(
-			"pnpm",
+		await runPackageCommand(
 			[
 				"--filter",
 				artifact.packageName,
@@ -260,12 +292,9 @@ const defaultDependencies: PublishReleaseDependencies = {
 				"--access",
 				"restricted",
 				"--no-git-checks",
+				"--ignore-scripts",
 			],
-			{
-				cwd: root,
-				env: process.env,
-				maxBuffer: 16 * 1024 * 1024,
-			},
+			PACKAGE_PUBLISH_CHILD_ENVIRONMENT_KEYS,
 		);
 	},
 	wait: async () => {

@@ -222,7 +222,7 @@ describe('Composer', () => {
 
   it('starts the message area at a single row and runs auto-grow on mount', () => {
     // happy-dom has no layout engine (scrollHeight is 0), so pixel growth is
-    // covered in the showcase visual lane. Here we prove the auto-grow contract:
+    // covered in the Portal visual lane. Here we prove the auto-grow contract:
     // the textarea mounts at rows={1} and the resize pass assigns the inline
     // overflow hook it manages.
     render(

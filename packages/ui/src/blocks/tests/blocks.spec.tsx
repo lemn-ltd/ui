@@ -3,12 +3,21 @@ import { describe, expect, it, vi } from 'vitest';
 import { AppointmentScheduleBlock } from '../appointment-schedule-block.js';
 import { ApprovalQueueBlock } from '../approval-queue-block.js';
 import { blockCatalog } from '../block-catalog.js';
+import { coreBlockCatalog } from '../core-block-catalog.js';
 
 describe('curated blocks', () => {
   it('has a unique, purpose-specific catalog', () => {
     expect(blockCatalog).toHaveLength(3);
     expect(new Set(blockCatalog.map((entry) => entry.slug)).size).toBe(3);
     expect(blockCatalog.every((entry) => entry.components.length > 0)).toBe(true);
+  });
+
+  it('keeps the Core-only catalog free of approval blocks', () => {
+    expect(coreBlockCatalog).toHaveLength(2);
+    expect(coreBlockCatalog.map((entry) => entry.slug)).toEqual([
+      'dashboard-overview',
+      'appointment-schedule',
+    ]);
   });
 
   it('renders the appointment empty state without inventing data', () => {

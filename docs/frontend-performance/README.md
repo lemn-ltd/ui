@@ -27,8 +27,8 @@ observability, DX, and cross-project standards, it usually falls under
 | Public docs | Astro + Workers |
 | Marketing | Astro + Workers |
 | SEO content | Astro + Workers |
-| Highly interactive showcase | React + Vite SPA |
-| Mostly editorial showcase | Astro |
+| Highly interactive component portal | React + Vite SPA |
+| Mostly editorial component catalog | Astro |
 
 ## Index
 

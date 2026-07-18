@@ -10,8 +10,8 @@ const scanRoots =
         'packages/ui/src',
         'packages/brand-contract/src',
         'packages/brand-studio/src',
-        'apps/showcase/src',
-        'apps/showcase-admin/src',
+        'apps/ui-portal/src',
+        'apps/ui-portal/src',
       ];
 
 const forbiddenPatterns = [

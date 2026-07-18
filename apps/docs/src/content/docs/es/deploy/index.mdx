@@ -11,8 +11,9 @@ sidebar:
 - Cuatro paquetes publicos se publican en GitHub Packages en orden de dependencia:
   Brand Contract, UI, Brand Runtime y Brand Studio.
 - `ui.le-mn.com` sirve Docs.
-- `showcase.ui.le-mn.com` sirve Showcase publico read-only.
-- `admin.showcase.ui.le-mn.com` sirve Admin separado con Cloudflare Access.
+- `portal.ui.le-mn.com` sirve Catalogo publico y Admin protegido por Access
+  desde el Worker `lemn-ui-portal`.
+- `schemas.ui.le-mn.com` sirve el contrato de schemas desde el mismo Worker.
 
 La identidad del paquete, commit, provenance/notices/SBOM y deploy deben referir
 al mismo release aprobado.
@@ -30,42 +31,72 @@ pnpm changeset status
 
 Ademas se prueba registry exacto, una implementacion activa por capacidad,
 installs limpios, conformance aplicable, dry-runs de Cloudflare, credenciales
-least-privilege, rutas publicas/protegidas, identidad del build y recovery. No
-se reutiliza evidencia de otro commit.
+least-privilege, rutas publicas/protegidas, assets Admin protegidos, identidad
+del build y recovery. No se reutiliza evidencia de otro commit.
 
-El GitHub Environment protegido aporta exactamente
-`PRODUCTION_CLOUDFLARE_API_TOKEN` y `PRODUCTION_STATUS_TOKEN`. El API token de
-Cloudflare pertenece a Account `Lemn DEV` y tiene solo `Workers Scripts: Edit`
-(la API lo reporta como `Workers Scripts Write`); sobre Zone `le-mn.com` tiene
-`Zone: Read` mas `Workers Routes: Edit` (la API lo reporta como `Zone Workers
-Routes Write`). No se otorga KV, R2, account settings, permisos de usuario ni
-zonas mas amplias. El guard rechaza Global API Key, modo key/email, tokens
-ausentes/expirados/deshabilitados y cuentas incorrectas.
+GitHub Actions publica paquetes con su job token. Las credenciales Cloudflare
+se resuelven solo dentro del Environment protegido de produccion, usan nombres
+`UI_PORTAL` y tienen scope exacto para Worker, dominios, Access y acciones
+requeridas. Tokens, account keys, headers y secretos nunca entran en archivos,
+args, artifacts, logs ni documentacion.
+
+Los inputs exactos del Environment protegido son
+`PRODUCTION_CLOUDFLARE_API_TOKEN`,
+`PRODUCTION_UI_PORTAL_ACCESS_CLIENT_ID` y
+`PRODUCTION_UI_PORTAL_ACCESS_CLIENT_SECRET` como secrets, mas las variables
+protegidas `PRODUCTION_CLOUDFLARE_ACCOUNT_ID`,
+`PRODUCTION_UI_PORTAL_ACCESS_AUDIENCE` y
+`PRODUCTION_UI_PORTAL_HEALTH_ACCESS_AUDIENCE`. El account ID es un valor
+hexadecimal exacto de 32 caracteres en minusculas. Cada audience es un valor
+hexadecimal exacto de 64 caracteres en minusculas, ambos valores deben ser
+distintos y el release los inyecta en la candidata sin registrarlos en logs ni
+guardarlos en Wrangler. El token Cloudflare necesita solo
+Account `Lemn DEV` / `Workers Scripts: Edit` y Zone `le-mn.com` /
+`Zone: Read` mas `Workers Routes: Edit`. El par Access pertenece a la service
+identity nueva de health y el smoke lo envia solo a `/health/deep`; nunca se
+usa para una capacidad de negocio Admin.
+
+Catalogo y `/health` minimo son publicos y read-only. Cloudflare Access protege
+`/admin`, `/admin/*`, `/api/admin/*` y assets exclusivos de Admin; el Worker
+verifica criptograficamente la assertion en origin. Una service identity
+least-privilege solo puede consultar health operacional protegido en
+`/health/deep`. Status
+profundo y diagnosticos de release nunca son publicos.
 
 ## Secuencia
 
-1. Valida y empaqueta la revision exacta.
+1. Prepara o reanuda el commit inmutable de release, verifica ese SHA exacto,
+   hace un install frozen y vuelve a ejecutar `pnpm validate`, `pnpm check`,
+   `pnpm test` y `pnpm build` sobre el.
 2. Publica Brand Contract, UI, Brand Runtime y Brand Studio; una version
    existente debe tener integridad inmutable identica.
 3. Instala paquetes exactos en consumidores externos limpios.
-4. Despliega Docs y Showcase.
-5. Despliega Admin y verifica denial sin auth mas comportamiento autenticado.
-6. Hace smoke de catalogos, System brandings/modes, schema v1, blocks, registry
-   e identidad.
+4. Sube una candidata inactiva del UI Portal y hace smoke de Catalogo,
+   endpoints publicos, denial de Admin sin auth, comportamiento autenticado,
+   assets protegidos, System branding, schema v1, blocks, registry e identidad.
+5. Activa esa candidata exacta de forma transaccional, repite smokes publicos y
+   protegidos, y ante un fallo restaura y verifica el baseline capturado.
+6. Despliega Docs al final con la misma identidad inmutable de release.
 7. Registra el receipt solo cuando pasan todos los gates.
 
-Secrets, tokens, account keys, headers y credenciales nunca entran en archivos,
-args, artifacts, logs o docs. Un fallo de identidad/integridad/concurrencia/smoke
-detiene el rollout.
+Un fallo de identidad, integridad, concurrencia o smoke detiene el rollout. Se
+captura el baseline con `wrangler deployments list --json`, se verifica health
+protegido con la service identity de Access y solo entonces se activa la version
+exacta. Un fallo posterior ejecuta `wrangler rollback
+<captured-version-id> --yes` y vuelve a verificar el baseline. Solo existe un
+Worker de produccion; no hay Worker desplegado de development o staging.
 
-Para Showcase se inspecciona el baseline con `wrangler deployments list
---json`, se sube una candidata inactiva, se prueban rutas publicas y protegidas
-con su `PRODUCTION_STATUS_TOKEN`, y solo entonces se activa esa version exacta.
-La credencial de status del baseline se conserva en el proceso de rollout hasta
-el smoke estable. Un fallo posterior ejecuta `wrangler rollback
-<captured-version-id> --yes` y vuelve a verificar el baseline. Las credenciales
-viven solo en el Environment; no queda ninguna credencial retirada key/email a
-nivel de repositorio.
+Si el deploy final de Docs falla despues de activar el Portal, se reejecuta el
+mismo workflow de `main` protegido en lugar de crear otro release. La
+preparacion reanuda el commit de release ya pusheado, se repiten el install
+frozen y todos los gates sobre su SHA exacto, los paquetes publicados solo se
+aceptan si conservan su integridad inmutable y el rollout vuelve a validar el
+release del Portal antes de desplegar Docs otra vez. La reejecucion no hace
+rollback del Portal solo porque fallo la ultima mutacion de Docs ni publica una
+version hermana para el mismo trigger SHA.
+
+Dominios y rutas retirados no reciben redirects ni tombstone Workers. La
+verificacion negativa debe demostrar que ya no sirven un deployment Lemn UI.
 
 La evidencia final incluye nombres/versiones/integridad de paquetes, commit y
 deploy IDs, dominios/Access, smokes, y respuesta SSR sin JavaScript con CSS de

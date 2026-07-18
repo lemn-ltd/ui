@@ -24,14 +24,14 @@ with:
   first-byte server resolution, and controlled authoring
 - a Git-authoritative provider registry with exact pins, source provenance,
   licenses, notices, SBOM, conformance, and update status
-- the internal `@lemn-ltd/showcase-kit` package for reusable showcase chrome
-- a public React/Vite showcase and a separately deployed, Cloudflare
-  Access-protected Showcase Admin surface
+- the private `@lemn-ltd/ui-portal` application, which serves one public
+  Catalog and one path-scoped Cloudflare Access-protected Admin surface from
+  the `lemn-ui-portal` Worker
 - an Astro/Starlight documentation site deployed through Cloudflare
 - Vitest, React Testing Library, Playwright, axe, and fidelity-capture coverage
 - brand-neutrality and package-boundary validation scripts
 - Changesets, GitHub Packages publishing, changelog synchronization, and
-  coordinated docs/showcase release automation
+  coordinated docs/Portal release automation
 
 The profile therefore targets the highest relevant rigor for reusable UI,
 public package contracts, release evidence, documentation, and the Cloudflare
@@ -46,16 +46,15 @@ requirements merely because they exist in the organization-wide catalog.
 - Treat this repository as the producer and source of truth for
   `@lemn-ltd/ui`. Apply organization-level `PAT-UI-LEMN-001` and
   `PAT-UI-SYSTEM-001` through that exact package identity across the manifest,
-  registry, workspace, catalog, docs, showcase, tests, and release automation.
+  registry, workspace, catalog, docs, Portal, tests, and release automation.
   Compatibility aliases are not part of the public package contract.
 - Treat package exports, tokens, CSS, component props, catalog metadata,
   changesets, and published versions as public contracts. HTTP-specific Hono,
   OpenAPI, Problem Details, CORS, webhook, and MCP requirements are not
   applicable unless this repository introduces those product API surfaces.
-- Apply Cloudflare patterns to `apps/showcase`, `apps/showcase-admin`, and
-  `apps/docs`, their Wrangler
+- Apply Cloudflare patterns to `apps/ui-portal` and `apps/docs`, their Wrangler
   configuration, bundled assets, runtime dependencies, deploy commands, and
-  production verification. Showcase Admin may use one typed least-privilege
+  production verification. Portal Admin may use one typed least-privilege
   server adapter to the external branding control plane. Durable Objects,
   Sandbox, Queues, and Workflows are not required inside this repository.
 - Keep components and Brand Studio controlled, presentational,
@@ -77,11 +76,11 @@ pattern_profile:
   ARCH:
     target_level: 5
     reason:
-      - "The workspace owns one shared UI kernel consumed by multiple products plus separate package, showcase, and documentation surfaces."
+      - "The workspace owns one shared UI kernel consumed by multiple products plus separate package, Portal, and documentation surfaces."
       - Public/private package boundaries, stable catalog vocabulary, and dependency direction must remain explicit across packages and apps.
-      - Component, token, style, and catalog decisions must stay identical across the published package, showcase, docs, and consumers.
-      - Provider authority, BrandingDefinition compilation, server runtime, Blocks, public Showcase, and protected Admin remain separate explicit package/deploy boundaries.
-      - Changesets, package publishing, docs deployment, and showcase deployment require a coherent compatibility-first release model.
+      - Component, token, style, and catalog decisions must stay identical across the published package, Portal, docs, and consumers.
+      - Provider authority, BrandingDefinition compilation, server runtime, Blocks, public Catalog, and protected Admin remain separate explicit module and trust boundaries.
+      - Changesets, package publishing, docs deployment, and Portal deployment require a coherent compatibility-first release model.
 
   CODE:
     target_level: 4
@@ -93,7 +92,7 @@ pattern_profile:
   CLOUDFLARE:
     target_level: 4
     reason:
-      - The showcase, protected Showcase Admin, and documentation applications are deployed through Wrangler to Cloudflare.
+      - The single Portal Worker, its protected Admin paths, and the documentation application are deployed through Wrangler to Cloudflare.
       - Worker configuration, bundled static assets, runtime dependencies, generated types, dry runs, and production deploy commands must remain reviewable and reproducible.
       - Durable Objects and Sandbox are not applicable; any Admin Service Binding remains narrow, typed, and server-only.
 
@@ -113,20 +112,20 @@ pattern_profile:
   ERROR:
     target_level: 3
     reason:
-      - Component interactions, showcase routes, docs builds, catalog generation, packaging, and release scripts have observable failure paths that must be explicit and recoverable.
+      - Component interactions, Portal routes, docs builds, catalog generation, packaging, and release scripts have observable failure paths that must be explicit and recoverable.
       - Build, validation, publish, and deploy failures must stop cleanly and report actionable diagnostics without partial success claims.
 
   SEC:
     target_level: 4
     reason:
       - Local installs, GitHub Packages publishing, Cloudflare deploys, and CI use scoped credentials that must remain outside the repository and logs.
-      - Showcase fixtures, documentation, screenshots, and component examples must remain brand-neutral and free of customer or production data.
+      - Portal fixtures, documentation, screenshots, and component examples must remain brand-neutral and free of customer or production data.
       - Release and debug output must preserve redaction and least-privilege access even though this package does not own product authorization.
 
   TEST:
     target_level: 4
     reason:
-      - The workspace uses Vitest, React Testing Library, happy-dom, Playwright, axe, deterministic showcase fixtures, and fidelity captures.
+      - The workspace uses Vitest, React Testing Library, happy-dom, Playwright, axe, deterministic Portal fixtures, and fidelity captures.
       - Reusable components require meaningful behavior, accessibility, responsive, visual, boundary, packaging, and public-export evidence.
       - Release readiness must be proven against the current worktree with type checks, tests, builds, policy validators, and Cloudflare dry runs or smokes as applicable.
 
@@ -135,14 +134,14 @@ pattern_profile:
     reason:
       - Reusable provider-backed components, BrandingDefinition compilation, server runtime contracts, design tokens, blocks, CSS, accessibility behavior, and catalog documentation are the primary product of this repository.
       - "`@lemn-ltd/ui` is the project source of truth; consumers must use public exports and the single public stylesheet instead of copying CSS or deep-importing internals."
-      - Every reusable component must be composable, responsive, accessible, brand-neutral, documented, catalogued, and demonstrated in the showcase.
+      - Every reusable component must be composable, responsive, accessible, brand-neutral, documented, catalogued, and demonstrated in the Portal.
       - Dashboard, report, chart, agent, workflow, evidence components, and blocks must expose complete loading, empty, error, permission, pending, success, and interaction states when applicable.
       - Production consumers receive verified scoped branding before first paint; browser effects never repair an unbranded render.
 
   OBS:
     target_level: 4
     reason:
-      - Operators need deployment and runtime evidence for docs/showcase health, Worker versions, catalog availability, browser failures, and release outcomes.
+      - Operators need deployment and runtime evidence for docs/Portal health, Worker versions, catalog availability, browser failures, and release outcomes.
       - Logs, production tails, smoke output, screenshots, and fidelity artifacts must be attributable to a target and current code state without leaking credentials.
       - Distributed trace propagation is required only if future changes add cross-runtime request or job flows.
 
@@ -155,7 +154,7 @@ pattern_profile:
   DOCS:
     target_level: 4
     reason:
-      - The repository owns Astro/Starlight human docs, package usage docs, component and pattern catalogs, showcase guidance, release notes, and agent discovery surfaces.
+      - The repository owns Astro/Starlight human docs, package usage docs, component and pattern catalogs, Portal guidance, release notes, and agent discovery surfaces.
       - Public component changes must update docs, catalog metadata, examples, and changesets together.
       - Pattern profile, audit state, exceptions, and architecture/release decisions must remain reproducible in repository-managed documentation rather than chat alone.
 ```
@@ -170,7 +169,7 @@ The following are not required by this profile for the current project shape:
   the external AgentOps simulator owns branding persistence and publication
 - product authentication, authorization, billing, entitlements, or tenant data
 - Queues, Workflows, Durable Objects, or long-running async orchestration
-  inside this repository; a narrow server adapter for Showcase Admin does not
+  inside this repository; a narrow server adapter for Portal Admin does not
   move control-plane ownership into UI
 - commercial LLM calls, AI Gateway, Brainstask, Flue, realtime voice, or agent
   execution runtimes

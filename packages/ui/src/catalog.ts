@@ -1,6 +1,6 @@
 /**
  * The component catalog: the single structured source of truth for what each
- * `@lemn-ltd/ui` component is. `apps/showcase` consumes it for nav titles,
+ * `@lemn-ltd/ui` component is. `apps/ui-portal` consumes it for nav titles,
  * summaries, and status, and `packages/ui/docs/components.md` is the human
  * "when to use" guide built on the same set. The drift guard in
  * `tests/catalog.spec.ts` keeps the catalog, the docs, and the component
@@ -10,13 +10,18 @@
  * bundles that import components but never the catalog.
  */
 
+import { primaryAgentComponentCatalogEntries } from "./catalog-agent-primary-entries.js";
 import { automationComponentCatalogEntries } from "./catalog-automation-entries.js";
-import { capabilityExpansionCatalogEntries } from "./catalog-capability-expansion-entries.js";
-import { primaryComponentCatalogEntries } from "./catalog-primary-entries.js";
-import { secondaryComponentCatalogEntries } from "./catalog-secondary-entries.js";
-import { visualizationComponentCatalogEntries } from "./catalog-visualization-entries.js";
+import {
+	coreComponentCatalog,
+	coreComponentExportsFromSlug,
+} from "./catalog-core.js";
 import type { ComponentCatalogEntry } from "./catalog-types.js";
 
+export {
+	coreComponentCatalog,
+	coreComponentExportsFromSlug,
+} from "./catalog-core.js";
 export type {
 	AgentComponentGroup,
 	ComponentArea,
@@ -25,31 +30,27 @@ export type {
 } from "./catalog-types.js";
 
 export const componentCatalog: readonly ComponentCatalogEntry[] = [
-	...primaryComponentCatalogEntries,
-	...secondaryComponentCatalogEntries,
+	...coreComponentCatalog,
+	...primaryAgentComponentCatalogEntries,
 	...automationComponentCatalogEntries,
-	...visualizationComponentCatalogEntries,
-	...capabilityExpansionCatalogEntries,
 ];
 
-const COMPONENT_EXPORT_EXCEPTIONS: Readonly<Record<string, readonly string[]>> =
-	{
-		"automation-graph": ["GraphCanvas"],
-		radio: ["RadioGroup", "RadioGroupItem"],
-		search: ["InputSearch"],
-		select: ["InputSelect"],
-		"wait-retry-chip": ["WaitChip", "RetryChip"],
-	};
+/**
+ * Agent-only export exceptions. Core export decisions belong exclusively to
+ * `catalog-core.ts` so the complete catalog cannot drift from the Core-only
+ * public entrypoint.
+ */
+const AGENT_COMPONENT_EXPORT_EXCEPTIONS: Readonly<
+	Record<string, readonly string[]>
+> = {
+	"automation-graph": ["GraphCanvas"],
+	"wait-retry-chip": ["WaitChip", "RetryChip"],
+};
 
 /** Public value exports consumers use for a catalogued component. */
 export function componentExportsFromSlug(slug: string): readonly string[] {
-	const exception = COMPONENT_EXPORT_EXCEPTIONS[slug];
+	const exception = AGENT_COMPONENT_EXPORT_EXCEPTIONS[slug];
 	if (exception) return exception;
 
-	return [
-		slug
-			.split("-")
-			.map((part) => `${part.charAt(0).toUpperCase()}${part.slice(1)}`)
-			.join(""),
-	];
+	return coreComponentExportsFromSlug(slug);
 }

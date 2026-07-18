@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 import { resolve4, resolve6 } from 'node:dns/promises';
 
-const releaseHosts = ['ui.le-mn.com', 'showcase.ui.le-mn.com'];
+const releaseHosts = [
+  'ui.le-mn.com',
+  'portal.ui.le-mn.com',
+  'schemas.ui.le-mn.com',
+];
 
 async function resolveHost(host) {
   const results = await Promise.allSettled([resolve4(host), resolve6(host)]);

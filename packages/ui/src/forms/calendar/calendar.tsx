@@ -51,7 +51,7 @@ interface CalendarCommonProps {
   /** Per-day predicate; return `true` to disable that day. */
   readonly shouldDisableDate?: (date: Date) => boolean;
 
-  /** Reference "today". Injectable so showcases and tests stay deterministic. */
+  /** Reference "today". Injectable so portals and tests stay deterministic. */
   readonly today?: Date;
   /** First column of the week. `0` = Sunday (default), `1` = Monday. */
   readonly weekStartsOn?: 0 | 1;

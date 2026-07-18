@@ -104,9 +104,9 @@ function proxyOptionsFromEnvironment(
 	args: string[],
 	environment: NodeJS.ProcessEnv,
 ): LoopbackProxyOptions {
-	const rawBaseUrl = environment.SHOWCASE_LINUX_SNAPSHOT_BASE_URL;
+	const rawBaseUrl = environment.PORTAL_LINUX_SNAPSHOT_BASE_URL;
 	if (!rawBaseUrl) {
-		throw new Error("SHOWCASE_LINUX_SNAPSHOT_BASE_URL is required");
+		throw new Error("PORTAL_LINUX_SNAPSHOT_BASE_URL is required");
 	}
 	const baseUrl = new URL(rawBaseUrl);
 	if (
@@ -116,7 +116,7 @@ function proxyOptionsFromEnvironment(
 		rawBaseUrl !== baseUrl.origin
 	) {
 		throw new Error(
-			"SHOWCASE_LINUX_SNAPSHOT_BASE_URL must be an exact HTTP loopback origin",
+			"PORTAL_LINUX_SNAPSHOT_BASE_URL must be an exact HTTP loopback origin",
 		);
 	}
 
@@ -124,9 +124,9 @@ function proxyOptionsFromEnvironment(
 		listenPort: parsePort(baseUrl.port, "Loopback proxy port"),
 		readyFile: parseReadyFile(args),
 		targetHost:
-			environment.SHOWCASE_LINUX_SNAPSHOT_TARGET_HOST ?? DEFAULT_TARGET_HOST,
+			environment.PORTAL_LINUX_SNAPSHOT_TARGET_HOST ?? DEFAULT_TARGET_HOST,
 		targetPort: parsePort(
-			environment.SHOWCASE_LINUX_SNAPSHOT_TARGET_PORT ?? baseUrl.port,
+			environment.PORTAL_LINUX_SNAPSHOT_TARGET_PORT ?? baseUrl.port,
 			"Snapshot target port",
 		),
 	};

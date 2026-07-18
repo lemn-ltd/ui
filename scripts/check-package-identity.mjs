@@ -8,8 +8,8 @@ const canonicalPackageName = "@lemn-ltd/ui";
 const canonicalRegistry = "https://npm.pkg.github.com";
 const canonicalRepositoryUrl = "https://github.com/lemn-ltd/ui";
 const canonicalDocsHost = "ui.le-mn.com";
-const canonicalShowcaseHost = "showcase.ui.le-mn.com";
-const canonicalCatalogTitle = "Lemn UI Component Catalog";
+const canonicalPortalHost = "portal.ui.le-mn.com";
+const canonicalCatalogTitle = "Lemn UI";
 const exactPublishedVersion =
 	/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?$/u;
 const legacyOrganization = ["app", "ranks"].join("");
@@ -105,9 +105,7 @@ const brandRuntimePackage = await readJson(
 	"packages/brand-runtime/package.json",
 );
 const brandStudioPackage = await readJson("packages/brand-studio/package.json");
-const showcasePackage = await readJson("apps/showcase/package.json");
-const showcaseAdminPackage = await readJson("apps/showcase-admin/package.json");
-const showcaseKitPackage = await readJson("packages/showcase-kit/package.json");
+const portalPackage = await readJson("apps/ui-portal/package.json");
 const changesetConfig = await readJson(".changeset/config.json");
 const npmrc = await readFile(join(root, ".npmrc"), "utf8");
 const workflow = await readFile(
@@ -123,12 +121,12 @@ const docsWrangler = await readFile(
 	join(root, "apps/docs/wrangler.jsonc"),
 	"utf8",
 );
-const showcaseWrangler = await readFile(
-	join(root, "apps/showcase/wrangler.jsonc"),
+const portalWrangler = await readFile(
+	join(root, "apps/ui-portal/wrangler.jsonc"),
 	"utf8",
 );
-const showcaseWorker = await readFile(
-	join(root, "apps/showcase/src/worker/index.ts"),
+const portalMachineRoutes = await readFile(
+	join(root, "apps/ui-portal/src/worker/public/machine-routes.ts"),
 	"utf8",
 );
 const deploymentSmoke = await readFile(
@@ -228,26 +226,28 @@ assert(
 	`Docs Wrangler route must use ${canonicalDocsHost}`,
 );
 assert(
-	showcaseWrangler.includes(`"pattern": "${canonicalShowcaseHost}"`),
-	`Showcase Wrangler route must use ${canonicalShowcaseHost}`,
+	portalWrangler.includes(`"pattern": "${canonicalPortalHost}"`),
+	`Portal Wrangler route must use ${canonicalPortalHost}`,
 );
 assert(
-	showcaseWorker.includes(`# ${canonicalCatalogTitle}`),
-	`Showcase agent catalog must use the title ${canonicalCatalogTitle}`,
+	portalMachineRoutes.includes(`# ${canonicalCatalogTitle}`),
+	`Portal machine-readable catalog must use the title ${canonicalCatalogTitle}`,
 );
 assert(
 	deploymentSmoke.includes(`https://${canonicalDocsHost}`) &&
-		deploymentSmoke.includes(`https://${canonicalShowcaseHost}`) &&
+		deploymentSmoke.includes(`https://${canonicalPortalHost}`) &&
 		deploymentSmoke.includes(canonicalCatalogTitle),
 	"Release smoke checks must use the canonical LEMN hosts and catalog title",
 );
 assert(
-	showcasePackage.dependencies?.[canonicalPackageName] === "workspace:*",
-	`apps/showcase must resolve ${canonicalPackageName} through workspace:*`,
+	portalPackage.dependencies?.[canonicalPackageName] ===
+		`workspace:${uiPackage.version}`,
+	`apps/ui-portal must pin ${canonicalPackageName} to workspace:${uiPackage.version}`,
 );
 assert(
-	showcaseKitPackage.dependencies?.[canonicalPackageName] === "workspace:*",
-	`packages/showcase-kit must resolve ${canonicalPackageName} through workspace:*`,
+	portalPackage.name === "@lemn-ltd/ui-portal" &&
+		portalPackage.private === true,
+	"apps/ui-portal must be the private canonical Portal package",
 );
 for (const [, packageName] of releasePackages) {
 	assert(
@@ -255,15 +255,11 @@ for (const [, packageName] of releasePackages) {
 		`${packageName} must remain versioned by Changesets`,
 	);
 }
-for (const [application, manifest] of [
-	["apps/showcase", showcasePackage],
-	["apps/showcase-admin", showcaseAdminPackage],
-]) {
-	assert(
-		manifest.dependencies?.["@lemn-ltd/brand-studio"] === "workspace:*",
-		`${application} must follow the current workspace Brand Studio release`,
-	);
-}
+assert(
+	portalPackage.dependencies?.["@lemn-ltd/brand-studio"] ===
+		`workspace:${brandStudioPackage.version}`,
+	`apps/ui-portal must pin @lemn-ltd/brand-studio to workspace:${brandStudioPackage.version}`,
+);
 
 for (const relativePath of canonicalRepositoryFiles) {
 	const content = await readFile(join(root, relativePath), "utf8");

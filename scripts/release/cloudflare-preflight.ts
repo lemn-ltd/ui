@@ -27,7 +27,7 @@ interface WranglerConfig extends WranglerEnvironment {
 }
 
 export interface CloudflareReleaseTarget {
-	id: "docs" | "schema" | "showcase" | "showcase-admin";
+	id: "docs" | "schema" | "portal";
 	accountId: string;
 	workerName: string;
 	hostname: string;
@@ -95,18 +95,23 @@ async function readWranglerConfig(path: string): Promise<WranglerConfig> {
 function targetFromConfig(
 	id: CloudflareReleaseTarget["id"],
 	config: WranglerConfig,
-	environment?: string,
+	processEnvironment: NodeJS.ProcessEnv,
+	wranglerEnvironment?: string,
 ): CloudflareReleaseTarget {
-	const selected = environment ? config.env?.[environment] : undefined;
-	if (environment && !selected)
-		throw new Error(`Missing Wrangler environment ${environment} for ${id}`);
+	const selected = wranglerEnvironment
+		? config.env?.[wranglerEnvironment]
+		: undefined;
+	if (wranglerEnvironment && !selected) {
+		throw new Error(
+			`Missing Wrangler environment ${wranglerEnvironment} for ${id}`,
+		);
+	}
 
 	const routes = selected?.routes ?? config.routes ?? [];
 	const expectedHostname = {
 		docs: "ui.le-mn.com",
 		schema: "schemas.ui.le-mn.com",
-		showcase: "showcase.ui.le-mn.com",
-		"showcase-admin": "admin.showcase.ui.le-mn.com",
+		portal: "portal.ui.le-mn.com",
 	}[id];
 	const customDomains = routes.filter(
 		(route) =>
@@ -121,8 +126,10 @@ function targetFromConfig(
 	return {
 		id,
 		accountId: requireValue(
-			selected?.account_id ?? config.account_id,
-			`${id} account_id`,
+			selected?.account_id ??
+				config.account_id ??
+				processEnvironment.CLOUDFLARE_ACCOUNT_ID,
+			`${id} Cloudflare account ID (account_id or CLOUDFLARE_ACCOUNT_ID)`,
 		),
 		workerName: requireValue(
 			selected?.name ?? config.name,
@@ -134,26 +141,18 @@ function targetFromConfig(
 
 export async function loadCloudflareReleaseTargets(
 	root = resolve(import.meta.dirname, "../.."),
+	environment: NodeJS.ProcessEnv = process.env,
 ): Promise<CloudflareReleaseTarget[]> {
-	const [docs, showcase, showcaseAdmin] = await Promise.all([
+	const [docs, portal] = await Promise.all([
 		readWranglerConfig(resolve(root, "apps/docs/wrangler.jsonc")),
-		readWranglerConfig(resolve(root, "apps/showcase/wrangler.jsonc")),
-		readWranglerConfig(resolve(root, "apps/showcase-admin/wrangler.jsonc")),
+		readWranglerConfig(resolve(root, "apps/ui-portal/wrangler.jsonc")),
 	]);
 
-	const docsTarget = targetFromConfig("docs", docs);
+	const docsTarget = targetFromConfig("docs", docs, environment);
 	return [
 		docsTarget,
-		targetFromConfig("showcase", showcase, "production"),
-		targetFromConfig("schema", showcase, "production"),
-		targetFromConfig(
-			"showcase-admin",
-			{
-				...showcaseAdmin,
-				account_id: showcaseAdmin.account_id ?? docsTarget.accountId,
-			},
-			"production",
-		),
+		targetFromConfig("portal", portal, environment),
+		targetFromConfig("schema", portal, environment),
 	];
 }
 
@@ -270,7 +269,7 @@ export async function verifyCloudflareReleaseAccess(input: {
 	const accounts = new Set(input.targets.map((target) => target.accountId));
 	if (accounts.size !== 1) {
 		throw new Error(
-			"Docs, showcase, and Showcase Admin must deploy through the same configured Cloudflare account",
+			"Docs and UI Portal must deploy through the same configured Cloudflare account",
 		);
 	}
 	const accountId = requireValue([...accounts][0], "release account id");
@@ -340,10 +339,22 @@ export async function verifyCloudflareReleaseAccess(input: {
 		const hostnameMappings = domains.filter(
 			(domain) => domain.hostname === target.hostname,
 		);
+		if (hostnameMappings.length > 1) {
+			throw new Error(
+				`Cloudflare hostname ${target.hostname} has duplicate custom-domain mappings`,
+			);
+		}
 		const exactMapping = hostnameMappings.some(
 			(domain) => domain.service === target.workerName,
 		);
-		if (hostnameMappings.length > 0 && !exactMapping) {
+		const portalHandoffIsDeferredToTransactionalRollout =
+			input.requireResources !== true &&
+			(target.id === "portal" || target.id === "schema");
+		if (
+			hostnameMappings.length > 0 &&
+			!exactMapping &&
+			!portalHandoffIsDeferredToTransactionalRollout
+		) {
 			throw new Error(
 				`Cloudflare hostname ${target.hostname} is already mapped to another Worker`,
 			);

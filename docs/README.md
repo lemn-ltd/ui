@@ -1,14 +1,13 @@
 # Lemn UI Docs
 
 This folder contains architecture notes, frontend decisions, and cross-project
-patterns for `@lemn-ltd/ui`, the showcase, and applications that consume the
-system.
+patterns for `@lemn-ltd/ui`, the Lemn UI Portal, and applications that consume
+the system.
 
 ## Documents
 
 - [Component capability expansion](./component-capability-expansion/README.md)
 - [Visualization system](./visualization-system/README.md)
-- [Showcase component documentation migration spec](./showcase-component-documentation-migration/SPEC.md)
 - [Frontend Performance On Cloudflare Workers](./frontend-performance/README.md)
 
 ## Structure
@@ -20,8 +19,6 @@ docs/
     README.md
   visualization-system/
     README.md
-  showcase-component-documentation-migration/
-    SPEC.md
   frontend-performance/
     README.md
     common-patterns.md

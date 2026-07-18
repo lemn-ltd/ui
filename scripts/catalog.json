@@ -1,0 +1,877 @@
+{
+	"formatVersion": 1,
+	"pattern": "PAT-CODE-SCRIPT-GOVERNANCE-001",
+	"idFormat": "<manifest-id>:<package-script-name>",
+	"categories": [
+		"local",
+		"check",
+		"codegen",
+		"test",
+		"smoke",
+		"db",
+		"release",
+		"ops",
+		"bootstrap"
+	],
+	"manifests": [
+		{
+			"id": "workspace",
+			"path": "package.json",
+			"owner": "ui-platform",
+			"scope": { "kind": "workspace", "name": "lemn-ui-workspace" },
+			"lifecycle": {
+				"status": "permanent",
+				"replacement": null,
+				"removalCondition": null
+			},
+			"defaults": {
+				"environments": ["local", "ci"],
+				"mutation": "none",
+				"executionIntent": "not-applicable",
+				"requiredSecrets": [],
+				"requiredVariables": [],
+				"ciUsage": []
+			},
+			"scripts": {
+				"build": {
+					"command": "turbo run build",
+					"category": "check",
+					"mutation": "generated-output",
+					"executionIntent": "explicit-command",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"check": {
+					"command": "turbo run check",
+					"category": "check",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"test": {
+					"command": "turbo run test",
+					"category": "test",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"visual:update:linux": {
+					"command": "node scripts/test/update-linux-visual-snapshots.mjs",
+					"category": "test",
+					"mutation": "source",
+					"executionIntent": "explicit-command",
+					"ciUsage": [".github/workflows/refresh-linux-visual-baselines.yml"]
+				},
+				"validate": {
+					"command": "pnpm validate:agentops && pnpm validate:script-catalog && pnpm validate:identity && pnpm validate:domains && pnpm validate:package-identity && pnpm validate:brand-neutrality && pnpm validate:branding-vnext && pnpm validate:boundaries && pnpm validate:bundles && pnpm validate:ui-portal-zero-legacy && pnpm validate:release && pnpm validate:release-contracts",
+					"category": "check",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"validate:agentops": {
+					"command": "node scripts/check-agentops-managed-files.mjs",
+					"category": "check",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"validate:script-catalog": {
+					"command": "node --test tests/contract/script-catalog.test.ts",
+					"category": "check",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"validate:identity": {
+					"command": "node scripts/check-repository-identity.mjs",
+					"category": "check",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"validate:domains": {
+					"command": "node scripts/check-public-domains.mjs",
+					"category": "check",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"validate:package-identity": {
+					"command": "node scripts/check-package-identity.mjs",
+					"category": "check",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"validate:release": {
+					"command": "node scripts/sync-docs-changelog.mjs --check",
+					"category": "check",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"validate:release-contracts": {
+					"command": "node --test tests/contract/*.test.ts",
+					"category": "test",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"validate:release-hosts": {
+					"command": "node scripts/check-release-hosts.mjs",
+					"category": "check"
+				},
+				"validate:release-preconditions": {
+					"command": "pnpm validate",
+					"category": "release",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"validate:bundles": {
+					"command": "node scripts/check-ui-bundles.mjs",
+					"category": "check",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"validate:brand-neutrality": {
+					"command": "node scripts/check-brand-neutrality.mjs",
+					"category": "check",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"validate:branding-vnext": {
+					"command": "node scripts/check-branding-vnext.mjs",
+					"category": "check",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"validate:boundaries": {
+					"command": "node scripts/check-ui-boundaries.mjs && pnpm --dir packages/ui run validate:boundaries",
+					"category": "check",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"validate:ui-portal-zero-legacy": {
+					"command": "node scripts/check-ui-portal-zero-legacy.mjs && pnpm --filter @lemn-ltd/ui-portal run test && pnpm --filter @lemn-ltd/ui-portal run build",
+					"category": "check",
+					"mutation": "generated-output",
+					"executionIntent": "explicit-command",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"sync:docs-changelog": {
+					"command": "node scripts/sync-docs-changelog.mjs",
+					"category": "codegen",
+					"mutation": "source",
+					"executionIntent": "explicit-command"
+				},
+				"dev:portal": {
+					"command": "pnpm --filter @lemn-ltd/ui-portal run dev",
+					"category": "local",
+					"environments": ["local"],
+					"mutation": "process",
+					"executionIntent": "explicit-command"
+				},
+				"dev:docs": {
+					"command": "pnpm --filter @lemn-ltd/ui-docs run dev",
+					"category": "local",
+					"environments": ["local"],
+					"mutation": "process",
+					"executionIntent": "explicit-command"
+				},
+				"kill:portal": {
+					"command": "pnpm --filter @lemn-ltd/ui-portal run kill",
+					"category": "local",
+					"environments": ["local"],
+					"mutation": "process",
+					"executionIntent": "explicit-command"
+				},
+				"build:docs": {
+					"command": "pnpm --filter @lemn-ltd/ui-docs run build",
+					"category": "check",
+					"mutation": "generated-output",
+					"executionIntent": "explicit-command"
+				},
+				"check:docs": {
+					"command": "pnpm --filter @lemn-ltd/ui-docs run check",
+					"category": "check"
+				},
+				"deploy:docs": {
+					"command": "pnpm deploy:docs:prod",
+					"category": "release",
+					"environments": ["production"],
+					"mutation": "remote",
+					"executionIntent": "guarded",
+					"guardScript": "workspace:guard:release:mutation",
+					"requiredSecrets": ["CLOUDFLARE_API_TOKEN"],
+					"requiredVariables": [
+						"CLOUDFLARE_ACCOUNT_ID",
+						"PUBLIC_BUILD_VERSION",
+						"PUBLIC_BUILD_GIT_SHA",
+						"PUBLIC_BUILD_TIME"
+					]
+				},
+				"deploy:portal": {
+					"command": "pnpm deploy:portal:prod",
+					"category": "release",
+					"environments": ["production"],
+					"mutation": "remote",
+					"executionIntent": "guarded",
+					"guardScript": "workspace:guard:release:mutation",
+					"requiredSecrets": [
+						"CLOUDFLARE_API_TOKEN",
+						"UI_PORTAL_ACCESS_CLIENT_ID",
+						"UI_PORTAL_ACCESS_CLIENT_SECRET"
+					],
+					"requiredVariables": [
+						"CLOUDFLARE_ACCOUNT_ID",
+						"EXPECTED_RELEASE_ID",
+						"EXPECTED_RELEASE_VERSION",
+						"EXPECTED_RELEASE_GIT_SHA",
+						"EXPECTED_RELEASE_TIME",
+						"PRODUCTION_UI_PORTAL_ACCESS_AUDIENCE",
+						"PRODUCTION_UI_PORTAL_HEALTH_ACCESS_AUDIENCE"
+					]
+				},
+				"deploy:docs:prod": {
+					"command": "pnpm guard:release:mutation && test -n \"$PUBLIC_BUILD_VERSION\" && test -n \"$PUBLIC_BUILD_GIT_SHA\" && test -n \"$PUBLIC_BUILD_TIME\" && pnpm --filter @lemn-ltd/ui-docs run build && pnpm --dir apps/docs exec wrangler deploy --config wrangler.jsonc",
+					"category": "release",
+					"environments": ["production"],
+					"mutation": "remote",
+					"executionIntent": "guarded",
+					"guardScript": "workspace:guard:release:mutation",
+					"requiredSecrets": ["CLOUDFLARE_API_TOKEN"],
+					"requiredVariables": [
+						"CLOUDFLARE_ACCOUNT_ID",
+						"PUBLIC_BUILD_VERSION",
+						"PUBLIC_BUILD_GIT_SHA",
+						"PUBLIC_BUILD_TIME"
+					],
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"deploy:portal:prod": {
+					"command": "pnpm guard:release:mutation && node scripts/release/ui-portal-production-rollout.ts",
+					"category": "release",
+					"environments": ["production"],
+					"mutation": "remote",
+					"executionIntent": "guarded",
+					"guardScript": "workspace:guard:release:mutation",
+					"requiredSecrets": [
+						"CLOUDFLARE_API_TOKEN",
+						"UI_PORTAL_ACCESS_CLIENT_ID",
+						"UI_PORTAL_ACCESS_CLIENT_SECRET"
+					],
+					"requiredVariables": [
+						"CLOUDFLARE_ACCOUNT_ID",
+						"EXPECTED_RELEASE_ID",
+						"EXPECTED_RELEASE_VERSION",
+						"EXPECTED_RELEASE_GIT_SHA",
+						"EXPECTED_RELEASE_TIME",
+						"PRODUCTION_UI_PORTAL_ACCESS_AUDIENCE",
+						"PRODUCTION_UI_PORTAL_HEALTH_ACCESS_AUDIENCE"
+					]
+				},
+				"rollout:portal:prod": {
+					"command": "pnpm guard:release:mutation && node scripts/release/ui-portal-production-rollout.ts",
+					"category": "release",
+					"environments": ["production"],
+					"mutation": "remote",
+					"executionIntent": "guarded",
+					"guardScript": "workspace:guard:release:mutation",
+					"requiredSecrets": [
+						"CLOUDFLARE_API_TOKEN",
+						"UI_PORTAL_ACCESS_CLIENT_ID",
+						"UI_PORTAL_ACCESS_CLIENT_SECRET"
+					],
+					"requiredVariables": [
+						"CLOUDFLARE_ACCOUNT_ID",
+						"EXPECTED_RELEASE_ID",
+						"EXPECTED_RELEASE_VERSION",
+						"EXPECTED_RELEASE_GIT_SHA",
+						"EXPECTED_RELEASE_TIME",
+						"PRODUCTION_UI_PORTAL_ACCESS_AUDIENCE",
+						"PRODUCTION_UI_PORTAL_HEALTH_ACCESS_AUDIENCE"
+					],
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"build:packages:release": {
+					"command": "pnpm --filter @lemn-ltd/brand-contract run build && pnpm --filter @lemn-ltd/ui run build && pnpm --filter @lemn-ltd/brand-runtime run build && pnpm --filter @lemn-ltd/brand-studio run build",
+					"category": "release",
+					"mutation": "generated-output",
+					"executionIntent": "explicit-command",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"pack:packages": {
+					"command": "pnpm validate:package-identity && node scripts/smoke-package-set-tarballs.mjs",
+					"category": "smoke",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"preflight:cloudflare:release": {
+					"command": "node scripts/release/cloudflare-preflight.ts",
+					"category": "release",
+					"environments": ["production"],
+					"requiredSecrets": ["CLOUDFLARE_API_TOKEN"],
+					"requiredVariables": ["CLOUDFLARE_ACCOUNT_ID"],
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"guard:release:mutation": {
+					"command": "node scripts/release/release-mutation-guard.ts",
+					"category": "release",
+					"environments": ["production"]
+				},
+				"release:preflight": {
+					"command": "pnpm guard:release:mutation && pnpm validate:release-preconditions",
+					"category": "release",
+					"environments": ["production"],
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"publish:packages:verify": {
+					"command": "pnpm guard:release:mutation && node scripts/release/verify-package-dists.ts && pnpm pack:packages",
+					"category": "release",
+					"environments": ["production"]
+				},
+				"publish:packages:release": {
+					"command": "pnpm guard:release:mutation && node scripts/release/publish-package-release.ts",
+					"category": "release",
+					"environments": ["production"],
+					"mutation": "remote",
+					"executionIntent": "guarded",
+					"guardScript": "workspace:guard:release:mutation",
+					"requiredSecrets": ["GITHUB_TOKEN", "NODE_AUTH_TOKEN"],
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"prepare:packages:release": {
+					"command": "pnpm guard:release:mutation && node scripts/release/prepare-package-release.ts",
+					"category": "release",
+					"environments": ["production"],
+					"mutation": "remote",
+					"executionIntent": "guarded",
+					"guardScript": "workspace:guard:release:mutation",
+					"requiredVariables": ["GITHUB_SHA"],
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"smoke:packages:github-packages": {
+					"command": "node scripts/release/verify-published-package-consumer.ts",
+					"category": "smoke",
+					"environments": ["ci", "production"],
+					"requiredSecrets": ["NODE_AUTH_TOKEN"],
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"smoke:portal:local": {
+					"command": "pnpm --filter @lemn-ltd/ui-portal run cf:build && node scripts/release/ui-portal-assets-smoke.ts",
+					"category": "smoke",
+					"environments": ["local", "ci"],
+					"mutation": "generated-output",
+					"executionIntent": "explicit-command",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"smoke:cloudflare:release": {
+					"command": "node scripts/release/cloudflare-preflight.ts --require-resources",
+					"category": "smoke",
+					"environments": ["production"],
+					"requiredSecrets": ["CLOUDFLARE_API_TOKEN"],
+					"requiredVariables": ["CLOUDFLARE_ACCOUNT_ID"]
+				},
+				"smoke:release:production": {
+					"command": "node scripts/release/deployment-smoke.ts",
+					"category": "smoke",
+					"environments": ["production"],
+					"requiredSecrets": [
+						"UI_PORTAL_ACCESS_CLIENT_ID",
+						"UI_PORTAL_ACCESS_CLIENT_SECRET"
+					],
+					"requiredVariables": [
+						"EXPECTED_RELEASE_VERSION",
+						"EXPECTED_RELEASE_GIT_SHA",
+						"EXPECTED_RELEASE_TIME"
+					]
+				},
+				"changeset": {
+					"command": "node scripts/release/changeset-command.ts",
+					"category": "release",
+					"mutation": "source",
+					"executionIntent": "explicit-command"
+				},
+				"changeset:add": {
+					"command": "pnpm changeset add",
+					"category": "release",
+					"mutation": "source",
+					"executionIntent": "explicit-command"
+				},
+				"changeset:status": {
+					"command": "pnpm changeset status",
+					"category": "release",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"version:packages": {
+					"command": "pnpm changeset version && pnpm sync:docs-changelog",
+					"category": "release",
+					"environments": ["production"],
+					"mutation": "source",
+					"executionIntent": "guarded",
+					"guardScript": "workspace:guard:release:mutation"
+				},
+				"release": {
+					"command": "pnpm release:preflight && pnpm check && pnpm test && pnpm build:packages:release && pnpm publish:packages:release",
+					"category": "release",
+					"environments": ["production"],
+					"mutation": "remote",
+					"executionIntent": "guarded",
+					"guardScript": "workspace:guard:release:mutation",
+					"requiredSecrets": ["GITHUB_TOKEN", "NODE_AUTH_TOKEN"]
+				}
+			}
+		},
+		{
+			"id": "docs",
+			"path": "apps/docs/package.json",
+			"owner": "ui-docs",
+			"scope": { "kind": "app", "name": "@lemn-ltd/ui-docs" },
+			"lifecycle": {
+				"status": "permanent",
+				"replacement": null,
+				"removalCondition": null
+			},
+			"defaults": {
+				"environments": ["local", "ci"],
+				"mutation": "none",
+				"executionIntent": "not-applicable",
+				"requiredSecrets": [],
+				"requiredVariables": [],
+				"ciUsage": []
+			},
+			"scripts": {
+				"build": {
+					"command": "node ../../scripts/sync-docs-changelog.mjs && astro build",
+					"category": "check",
+					"mutation": "generated-output",
+					"executionIntent": "explicit-command",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"cf:dry-run": {
+					"command": "pnpm run build && wrangler deploy --dry-run --outdir dist/cloudflare",
+					"category": "check",
+					"mutation": "generated-output",
+					"executionIntent": "dry-run",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"check": {
+					"command": "node ../../scripts/sync-docs-changelog.mjs --check && astro check",
+					"category": "check",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"deploy:production": {
+					"command": "pnpm --dir ../.. deploy:docs:prod",
+					"category": "release",
+					"environments": ["production"],
+					"mutation": "remote",
+					"executionIntent": "guarded",
+					"guardScript": "workspace:guard:release:mutation",
+					"requiredSecrets": ["CLOUDFLARE_API_TOKEN"],
+					"requiredVariables": [
+						"CLOUDFLARE_ACCOUNT_ID",
+						"PUBLIC_BUILD_VERSION",
+						"PUBLIC_BUILD_GIT_SHA",
+						"PUBLIC_BUILD_TIME"
+					]
+				},
+				"dev": {
+					"command": "node ../../scripts/sync-docs-changelog.mjs && astro dev --host 0.0.0.0 --port 6600",
+					"category": "local",
+					"environments": ["local"],
+					"mutation": "process",
+					"executionIntent": "explicit-command"
+				},
+				"preview": {
+					"command": "astro preview --host 0.0.0.0 --port 6601",
+					"category": "local",
+					"environments": ["local"],
+					"mutation": "process",
+					"executionIntent": "explicit-command"
+				}
+			}
+		},
+		{
+			"id": "portal",
+			"path": "apps/ui-portal/package.json",
+			"owner": "ui-portal",
+			"scope": { "kind": "app", "name": "@lemn-ltd/ui-portal" },
+			"lifecycle": {
+				"status": "permanent",
+				"replacement": null,
+				"removalCondition": null
+			},
+			"defaults": {
+				"environments": ["local", "ci"],
+				"mutation": "none",
+				"executionIntent": "not-applicable",
+				"requiredSecrets": [],
+				"requiredVariables": [],
+				"ciUsage": []
+			},
+			"scripts": {
+				"build": {
+					"command": "vite build && pnpm run test:dist-boundaries",
+					"category": "check",
+					"mutation": "generated-output",
+					"executionIntent": "explicit-command",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"benchmark:visualizations": {
+					"command": "node tests/benchmark/visualization-performance.mjs",
+					"category": "test"
+				},
+				"cf:build": {
+					"command": "pnpm run build",
+					"category": "check",
+					"mutation": "generated-output",
+					"executionIntent": "explicit-command",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"cf:dry-run": {
+					"command": "pnpm run cf:build && wrangler deploy --dry-run --outdir dist/cloudflare",
+					"category": "check",
+					"mutation": "generated-output",
+					"executionIntent": "dry-run",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"cf:types": {
+					"command": "wrangler types worker-configuration.d.ts --include-runtime false",
+					"category": "codegen",
+					"mutation": "source",
+					"executionIntent": "explicit-command"
+				},
+				"cf:whoami": {
+					"command": "wrangler whoami",
+					"category": "ops",
+					"environments": ["local", "production"],
+					"requiredSecrets": ["CLOUDFLARE_API_TOKEN"]
+				},
+				"check": {
+					"command": "tsc --noEmit",
+					"category": "check",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"dev": {
+					"command": "vite dev --host 0.0.0.0 --port 6500 --strictPort",
+					"category": "local",
+					"environments": ["local"],
+					"mutation": "process",
+					"executionIntent": "explicit-command"
+				},
+				"fidelity:capture-masters": {
+					"command": "node tests/fidelity/capture-masters.ts",
+					"category": "test",
+					"environments": ["local"],
+					"mutation": "source",
+					"executionIntent": "explicit-command"
+				},
+				"fidelity:contact-sheets": {
+					"command": "node tests/fidelity/build-contact-sheets.ts",
+					"category": "test",
+					"environments": ["local"],
+					"mutation": "generated-output",
+					"executionIntent": "explicit-command"
+				},
+				"kill": {
+					"command": "lsof -ti :6500 | xargs kill -9 2>/dev/null || true; pkill -9 -f 'vite.*apps/ui-portal' 2>/dev/null || true",
+					"category": "local",
+					"environments": ["local"],
+					"mutation": "process",
+					"executionIntent": "explicit-command"
+				},
+				"observe:local:explorer-api": {
+					"command": "curl -fsS http://localhost:6500/cdn-cgi/explorer/api",
+					"category": "ops",
+					"environments": ["local"]
+				},
+				"observe:production:tail": {
+					"command": "wrangler tail --format json",
+					"category": "ops",
+					"environments": ["production"],
+					"requiredSecrets": ["CLOUDFLARE_API_TOKEN"]
+				},
+				"test": {
+					"command": "vitest run",
+					"category": "test",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"test:dist-boundaries": {
+					"command": "node --test tests/contract/*.test.ts",
+					"category": "test",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"test:e2e": {
+					"command": "playwright test",
+					"category": "test"
+				},
+				"deploy:production": {
+					"command": "pnpm --dir ../.. deploy:portal:prod",
+					"category": "release",
+					"environments": ["production"],
+					"mutation": "remote",
+					"executionIntent": "guarded",
+					"guardScript": "workspace:guard:release:mutation",
+					"requiredSecrets": [
+						"CLOUDFLARE_API_TOKEN",
+						"UI_PORTAL_ACCESS_CLIENT_ID",
+						"UI_PORTAL_ACCESS_CLIENT_SECRET"
+					],
+					"requiredVariables": [
+						"CLOUDFLARE_ACCOUNT_ID",
+						"EXPECTED_RELEASE_ID",
+						"EXPECTED_RELEASE_VERSION",
+						"EXPECTED_RELEASE_GIT_SHA",
+						"EXPECTED_RELEASE_TIME",
+						"PRODUCTION_UI_PORTAL_ACCESS_AUDIENCE",
+						"PRODUCTION_UI_PORTAL_HEALTH_ACCESS_AUDIENCE"
+					]
+				}
+			}
+		},
+		{
+			"id": "brand-contract",
+			"path": "packages/brand-contract/package.json",
+			"owner": "branding-contract",
+			"scope": { "kind": "package", "name": "@lemn-ltd/brand-contract" },
+			"lifecycle": {
+				"status": "permanent",
+				"replacement": null,
+				"removalCondition": null
+			},
+			"defaults": {
+				"environments": ["local", "ci"],
+				"mutation": "none",
+				"executionIntent": "not-applicable",
+				"requiredSecrets": [],
+				"requiredVariables": [],
+				"ciUsage": []
+			},
+			"scripts": {
+				"build": {
+					"command": "rm -rf dist && tsc",
+					"category": "check",
+					"mutation": "generated-output",
+					"executionIntent": "explicit-command",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"check": {
+					"command": "tsc --noEmit",
+					"category": "check",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"test": {
+					"command": "vitest run",
+					"category": "test",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"prepublishOnly": {
+					"command": "pnpm --dir ../.. publish:packages:verify",
+					"category": "release",
+					"environments": ["production"],
+					"requiredSecrets": ["CLOUDFLARE_API_TOKEN"],
+					"requiredVariables": ["CLOUDFLARE_ACCOUNT_ID"],
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				}
+			}
+		},
+		{
+			"id": "brand-runtime",
+			"path": "packages/brand-runtime/package.json",
+			"owner": "branding-runtime",
+			"scope": { "kind": "package", "name": "@lemn-ltd/brand-runtime" },
+			"lifecycle": {
+				"status": "permanent",
+				"replacement": null,
+				"removalCondition": null
+			},
+			"defaults": {
+				"environments": ["local", "ci"],
+				"mutation": "none",
+				"executionIntent": "not-applicable",
+				"requiredSecrets": [],
+				"requiredVariables": [],
+				"ciUsage": []
+			},
+			"scripts": {
+				"build": {
+					"command": "rm -rf dist && tsc",
+					"category": "check",
+					"mutation": "generated-output",
+					"executionIntent": "explicit-command",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"check": {
+					"command": "tsc --noEmit",
+					"category": "check",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"test": {
+					"command": "vitest run",
+					"category": "test",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"prepublishOnly": {
+					"command": "pnpm --dir ../.. publish:packages:verify",
+					"category": "release",
+					"environments": ["production"],
+					"requiredSecrets": ["CLOUDFLARE_API_TOKEN"],
+					"requiredVariables": ["CLOUDFLARE_ACCOUNT_ID"],
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				}
+			}
+		},
+		{
+			"id": "brand-studio",
+			"path": "packages/brand-studio/package.json",
+			"owner": "branding-studio",
+			"scope": { "kind": "package", "name": "@lemn-ltd/brand-studio" },
+			"lifecycle": {
+				"status": "permanent",
+				"replacement": null,
+				"removalCondition": null
+			},
+			"defaults": {
+				"environments": ["local", "ci"],
+				"mutation": "none",
+				"executionIntent": "not-applicable",
+				"requiredSecrets": [],
+				"requiredVariables": [],
+				"ciUsage": []
+			},
+			"scripts": {
+				"build": {
+					"command": "rm -rf dist && tsc && cp src/styles.css dist/styles.css",
+					"category": "check",
+					"mutation": "generated-output",
+					"executionIntent": "explicit-command",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"check": {
+					"command": "tsc --noEmit",
+					"category": "check",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"test": {
+					"command": "vitest run",
+					"category": "test",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"prepublishOnly": {
+					"command": "pnpm --dir ../.. publish:packages:verify",
+					"category": "release",
+					"environments": ["production"],
+					"requiredSecrets": ["CLOUDFLARE_API_TOKEN"],
+					"requiredVariables": ["CLOUDFLARE_ACCOUNT_ID"],
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				}
+			}
+		},
+		{
+			"id": "provider-registry",
+			"path": "packages/provider-registry/package.json",
+			"owner": "provider-registry",
+			"scope": {
+				"kind": "package",
+				"name": "@lemn-ltd/provider-registry"
+			},
+			"lifecycle": {
+				"status": "permanent",
+				"replacement": null,
+				"removalCondition": null
+			},
+			"defaults": {
+				"environments": ["local", "ci"],
+				"mutation": "none",
+				"executionIntent": "not-applicable",
+				"requiredSecrets": [],
+				"requiredVariables": [],
+				"ciUsage": []
+			},
+			"scripts": {
+				"build": {
+					"command": "rm -rf dist && tsc",
+					"category": "check",
+					"mutation": "generated-output",
+					"executionIntent": "explicit-command",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"check": {
+					"command": "tsc --noEmit && pnpm run check:matrix && pnpm run check:snapshots",
+					"category": "check",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"check:matrix": {
+					"command": "node scripts/generate-capability-migration-matrix.mjs --check",
+					"category": "check",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"check:snapshots": {
+					"command": "node scripts/sync-source-snapshots.ts --check",
+					"category": "check",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"generate:matrix": {
+					"command": "node scripts/generate-capability-migration-matrix.mjs",
+					"category": "codegen",
+					"mutation": "source",
+					"executionIntent": "explicit-command"
+				},
+				"sync:snapshots": {
+					"command": "node scripts/sync-source-snapshots.ts --write",
+					"category": "codegen",
+					"mutation": "source",
+					"executionIntent": "explicit-command"
+				},
+				"test": {
+					"command": "vitest run",
+					"category": "test",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				}
+			}
+		},
+		{
+			"id": "ui",
+			"path": "packages/ui/package.json",
+			"owner": "ui-package",
+			"scope": { "kind": "package", "name": "@lemn-ltd/ui" },
+			"lifecycle": {
+				"status": "permanent",
+				"replacement": null,
+				"removalCondition": null
+			},
+			"defaults": {
+				"environments": ["local", "ci"],
+				"mutation": "none",
+				"executionIntent": "not-applicable",
+				"requiredSecrets": [],
+				"requiredVariables": [],
+				"ciUsage": []
+			},
+			"scripts": {
+				"build": {
+					"command": "rm -rf dist && tsc && node scripts/copy-css.mjs && node scripts/copy-provider-release-artifacts.mjs",
+					"category": "check",
+					"mutation": "generated-output",
+					"executionIntent": "explicit-command",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"dev": {
+					"command": "tsc --watch",
+					"category": "local",
+					"environments": ["local"],
+					"mutation": "process",
+					"executionIntent": "explicit-command"
+				},
+				"check": {
+					"command": "tsc --noEmit",
+					"category": "check",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"test": {
+					"command": "vitest run",
+					"category": "test",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"validate:brand-neutrality": {
+					"command": "node ../../scripts/check-brand-neutrality.mjs src",
+					"category": "check",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"validate:boundaries": {
+					"command": "node ../../scripts/check-ui-boundaries.mjs",
+					"category": "check",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"test:coverage": {
+					"command": "vitest run --coverage",
+					"category": "test",
+					"mutation": "generated-output",
+					"executionIntent": "explicit-command"
+				},
+				"prepublishOnly": {
+					"command": "pnpm --dir ../.. publish:packages:verify",
+					"category": "release",
+					"environments": ["production"],
+					"requiredSecrets": ["CLOUDFLARE_API_TOKEN"],
+					"requiredVariables": ["CLOUDFLARE_ACCOUNT_ID"],
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				}
+			}
+		}
+	]
+}

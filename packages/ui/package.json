@@ -26,9 +26,21 @@
       "types": "./dist/catalog.d.ts",
       "default": "./dist/catalog.js"
     },
+    "./catalog/core": {
+      "types": "./dist/catalog-core.d.ts",
+      "default": "./dist/catalog-core.js"
+    },
     "./blocks": {
       "types": "./dist/blocks/index.d.ts",
       "default": "./dist/blocks/index.js"
+    },
+    "./blocks/core": {
+      "types": "./dist/blocks/core.d.ts",
+      "default": "./dist/blocks/core.js"
+    },
+    "./blocks/core/catalog": {
+      "types": "./dist/blocks/core-block-catalog.d.ts",
+      "default": "./dist/blocks/core-block-catalog.js"
     },
     "./styles.css": "./dist/styles.css"
   },

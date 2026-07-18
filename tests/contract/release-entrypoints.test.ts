@@ -35,8 +35,8 @@ const brandStudioPackage = JSON.parse(
 const docsPackage = JSON.parse(
 	await readFile(resolve(root, "apps/docs/package.json"), "utf8"),
 ) as UnknownRecord;
-const showcasePackage = JSON.parse(
-	await readFile(resolve(root, "apps/showcase/package.json"), "utf8"),
+const portalPackage = JSON.parse(
+	await readFile(resolve(root, "apps/ui-portal/package.json"), "utf8"),
 ) as UnknownRecord;
 const contributing = await readFile(resolve(root, "CONTRIBUTING.md"), "utf8");
 
@@ -89,13 +89,12 @@ test("all production mutation entrypoints share the guarded release path", () =>
 		"node scripts/release/release-mutation-guard.ts",
 	);
 	for (const name of [
-		"deploy:showcase:prod",
+		"deploy:portal:prod",
 		"deploy:docs:prod",
-		"deploy:showcase-admin:prod",
 		"prepare:packages:release",
 		"publish:packages:release",
 		"publish:packages:verify",
-		"rollout:showcase:prod",
+		"rollout:portal:prod",
 	]) {
 		assert.match(String(scripts[name]), /^pnpm guard:release:mutation && /u);
 	}
@@ -103,18 +102,19 @@ test("all production mutation entrypoints share the guarded release path", () =>
 		String(scripts["version:packages"]),
 		/^pnpm changeset version && /u,
 	);
-	assert.equal(scripts["deploy:showcase"], "pnpm deploy:showcase:prod");
+	assert.equal(scripts["deploy:portal"], "pnpm deploy:portal:prod");
+	assert.equal(scripts["deploy:portal-admin:prod"], undefined);
 	assert.equal(scripts["deploy:docs"], "pnpm deploy:docs:prod");
 	assert.equal(
-		record(showcasePackage.scripts, "showcase scripts")["deploy:production"],
-		"pnpm --dir ../.. deploy:showcase:prod",
+		record(portalPackage.scripts, "portal scripts")["deploy:production"],
+		"pnpm --dir ../.. deploy:portal:prod",
 	);
 	assert.equal(
 		record(docsPackage.scripts, "docs scripts")["deploy:production"],
 		"pnpm --dir ../.. deploy:docs:prod",
 	);
 	assert.doesNotMatch(
-		String(record(showcasePackage.scripts, "showcase scripts")["cf:dry-run"]),
+		String(record(portalPackage.scripts, "portal scripts")["cf:dry-run"]),
 		/guard:release:mutation/u,
 	);
 	assert.doesNotMatch(

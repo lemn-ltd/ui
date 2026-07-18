@@ -22,9 +22,9 @@ the provider governance in `PAT-UI-PROVIDER-FIRST-001` and
 
 ## Consumers and exclusions
 
-The UI catalog, public Showcase read model, and protected Admin review surface consume the same
-released manifest. The package owns only the shared, deterministic mapping policy those consumers
-need; provider discovery, proposal review, and Git mutation remain host responsibilities.
+The UI catalog, public UI Portal read model, and protected UI Portal Admin review area consume the
+same released manifest. The package owns only the shared, deterministic mapping policy those
+consumers need; provider discovery, proposal review, and Git mutation remain host responsibilities.
 
 It must not contain:
 

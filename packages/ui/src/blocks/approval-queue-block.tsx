@@ -4,6 +4,7 @@ import { EmptyState } from '../data-display/empty-state/empty-state.js';
 import { Alert } from '../feedback/alert/alert.js';
 import { Skeleton } from '../feedback/skeleton/skeleton.js';
 import './blocks.css';
+import './approval-queue-block.css';
 
 export interface ApprovalQueueBlockProps {
   readonly busyIds?: ReadonlySet<string>;

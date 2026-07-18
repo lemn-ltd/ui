@@ -8,11 +8,13 @@ sidebar:
 
 `componentCatalog` es el inventario data-only actual de componentes publicos.
 Cada entrada declara slug, area, familia, madurez, titulo e intent. El export,
-Showcase y los drift tests son autoridad; las docs no congelan un total.
+UI Portal y los drift tests son autoridad; las docs no congelan un total.
 
 Core cubre primitives, inputs, forms, visualizations, data display, feedback,
-overlays, navigation y layout. Agents cubre conversation, governance,
-approvals, automation y runtime/evidence.
+overlays, navigation y layout. El registry activo del UI Portal incluye solo
+Core. Source, tests y exports de Agents se conservan para maintainers, pero no
+entran en rutas, navegacion, busqueda, guias machine-readable ni bundles del
+Portal.
 
 `blockCatalog` es independiente. Un block es una composicion con proposito, no
 otra implementacion de un primitive. Ve [Blocks](/es/blocks/).
@@ -24,11 +26,11 @@ solo importa el export LEMN.
 
 ## Discovery
 
-- [Catalogo JSON](https://showcase.ui.le-mn.com/catalog.json)
-- [Resumen para agentes](https://showcase.ui.le-mn.com/llms.txt)
-- [Guia expandida](https://showcase.ui.le-mn.com/llms-full.txt)
-- [Showcase interactivo](https://showcase.ui.le-mn.com)
+- [Catalogo JSON](https://portal.ui.le-mn.com/catalog.json)
+- [Resumen para agentes](https://portal.ui.le-mn.com/llms.txt)
+- [Guia expandida](https://portal.ui.le-mn.com/llms-full.txt)
+- [Lemn UI interactivo](https://portal.ui.le-mn.com)
 
 Agregar una capacidad exige alinear registry/provenance, adaptador, exports,
-catalogos, docs, Showcase, conformance, release y licencias. Cada pagina de
+catalogos, docs, UI Portal, conformance, release y licencias. Cada pagina de
 componente usa el componente real y como maximo tres ejemplos.

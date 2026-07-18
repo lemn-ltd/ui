@@ -1,0 +1,11 @@
+.ui-approval-queue-block__list {
+  display: grid;
+  gap: var(--lemn-space-3);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.ui-approval-queue-block__list > .ui-skeleton {
+  min-height: 104px;
+}

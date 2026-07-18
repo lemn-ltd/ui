@@ -11,10 +11,14 @@ import {
 } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { PORTAL_VISUAL_SNAPSHOT_COUNT_PER_PLATFORM } from "../../apps/ui-portal/tests/fixtures/visual-baselines.ts";
 
 const defaultRoot = resolve(fileURLToPath(new URL("../..", import.meta.url)));
 const image = "mcr.microsoft.com/playwright:v1.60.0-noble";
-const expectedSnapshotCount = 96;
+const expectedSnapshotCount = PORTAL_VISUAL_SNAPSHOT_COUNT_PER_PLATFORM;
+const testAdminAudience = "a".repeat(64);
+const testHealthAudience = "b".repeat(64);
+const testBuildSha = "d".repeat(40);
 
 function commandLabel(command, args) {
 	return [command, ...args].join(" ");
@@ -90,7 +94,7 @@ async function waitForServer(url, server) {
 	while (Date.now() < deadline) {
 		if (server.exitCode !== null) {
 			throw new Error(
-				`Canonical showcase server exited with code ${server.exitCode}`,
+				`Canonical portal server exited with code ${server.exitCode}`,
 			);
 		}
 		try {
@@ -103,7 +107,7 @@ async function waitForServer(url, server) {
 		}
 		await new Promise((resolvePromise) => setTimeout(resolvePromise, 500));
 	}
-	throw new Error(`Canonical showcase server did not become ready at ${url}`);
+	throw new Error(`Canonical portal server did not become ready at ${url}`);
 }
 
 async function stopServer(server) {
@@ -195,7 +199,7 @@ async function main(args = []) {
 	const repositoryRoot = repositoryRootFromArgs(args);
 	const snapshotDirectory = resolve(
 		repositoryRoot,
-		"apps/showcase/tests/e2e/visual.e2e.ts-snapshots",
+		"apps/ui-portal/tests/e2e/visual.e2e.ts-snapshots",
 	);
 	const temporaryRoot = await mkdtemp(
 		resolve(dirname(repositoryRoot), ".lemn-linux-snapshots-"),
@@ -218,19 +222,40 @@ async function main(args = []) {
 			stdio: "inherit",
 		});
 
+		runChecked("pnpm", ["--filter", "@lemn-ltd/ui-portal", "run", "build"], {
+			cwd: sourceRoot,
+			stdio: "inherit",
+		});
 		server = spawn(
 			"pnpm",
 			[
 				"--filter",
-				"@lemn-ltd/ui-showcase",
+				"@lemn-ltd/ui-portal",
 				"exec",
-				"vite",
+				"wrangler",
 				"dev",
-				"--host",
+				"--local",
+				"--ip",
 				"0.0.0.0",
 				"--port",
 				String(port),
-				"--strictPort",
+				"--log-level",
+				"warn",
+				"--show-interactive-dev-session=false",
+				"--var",
+				"DEPLOYMENT_ENVIRONMENT:test",
+				"--var",
+				"ACCESS_ISSUER:https://lemn-dev.cloudflareaccess.com",
+				"--var",
+				`ACCESS_AUDIENCE:${testAdminAudience}`,
+				"--var",
+				`ACCESS_HEALTH_AUDIENCE:${testHealthAudience}`,
+				"--var",
+				"BUILD_VERSION:0.0.0-linux-snapshots",
+				"--var",
+				`BUILD_GIT_SHA:${testBuildSha}`,
+				"--var",
+				"BUILD_TIME:2026-07-18T00:00:00Z",
 			],
 			{ cwd: sourceRoot, stdio: "inherit" },
 		);
@@ -247,7 +272,7 @@ async function main(args = []) {
 			"export PATH=/tmp/home/bin:$PATH",
 			"corepack prepare pnpm@11.8.0 --activate",
 			"pnpm install --frozen-lockfile --child-concurrency=1 --network-concurrency=4",
-			"proxy_ready=/tmp/showcase-linux-snapshot-proxy.ready",
+			"proxy_ready=/tmp/portal-linux-snapshot-proxy.ready",
 			'rm -f "$proxy_ready"',
 			'node scripts/test/linux-snapshot-loopback-proxy.ts --ready-file "$proxy_ready" &',
 			"proxy_pid=$!",
@@ -262,8 +287,8 @@ async function main(args = []) {
 			"  sleep 0.1",
 			"done",
 			'test -f "$proxy_ready"',
-			"pnpm --filter @lemn-ltd/ui-showcase exec playwright test --config playwright.linux-snapshots.config.ts --grep 'visual: ' --update-snapshots",
-			"find apps/showcase/tests/e2e/visual.e2e.ts-snapshots -type f -name '*-linux.png' -exec cp {} /output/ \\;",
+			"pnpm --filter @lemn-ltd/ui-portal exec playwright test --config playwright.linux-snapshots.config.ts --grep 'visual: ' --update-snapshots",
+			"find apps/ui-portal/tests/e2e/visual.e2e.ts-snapshots -type f -name '*-linux.png' -exec cp {} /output/ \\;",
 		].join("\n");
 
 		runChecked(
@@ -278,9 +303,9 @@ async function main(args = []) {
 				"--env",
 				"HOME=/tmp/home",
 				"--env",
-				`SHOWCASE_LINUX_SNAPSHOT_BASE_URL=http://127.0.0.1:${port}`,
+				`PORTAL_LINUX_SNAPSHOT_BASE_URL=http://127.0.0.1:${port}`,
 				"--env",
-				`SHOWCASE_LINUX_SNAPSHOT_TARGET_PORT=${port}`,
+				`PORTAL_LINUX_SNAPSHOT_TARGET_PORT=${port}`,
 				"--volume",
 				`${archivePath}:/source.tar:ro`,
 				"--volume",

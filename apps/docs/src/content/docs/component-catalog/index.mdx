@@ -8,14 +8,16 @@ sidebar:
 
 `componentCatalog` is the current data-only inventory of public components.
 Every entry declares a stable slug, area, capability family, maturity, title,
-and intent. The exported catalog, Showcase, and drift tests are authoritative;
+and intent. The exported catalog, UI Portal, and drift tests are authoritative;
 documentation intentionally does not freeze a component total.
 
 ## Areas and families
 
 Core covers primitives, inputs, forms, visualizations, data display, feedback,
-overlays, navigation, and layout. Agents covers conversation, governance,
-approvals, automation, and runtime/evidence UI.
+overlays, navigation, and layout. The active UI Portal registry is Core-only.
+Agents source, tests, and package exports are retained for maintainers but are
+not registered in Portal routes, navigation, search, machine guidance, or
+client bundles.
 
 `blockCatalog` is separate. A block is a purpose-specific composition, not a
 second implementation of a primitive. See [Blocks](/blocks/).
@@ -34,10 +36,10 @@ status—belongs to the provider registry. See
 
 ## Runtime discovery
 
-- [Catalog JSON](https://showcase.ui.le-mn.com/catalog.json)
-- [Agent summary](https://showcase.ui.le-mn.com/llms.txt)
-- [Expanded agent guide](https://showcase.ui.le-mn.com/llms-full.txt)
-- [Interactive Showcase](https://showcase.ui.le-mn.com)
+- [Catalog JSON](https://portal.ui.le-mn.com/catalog.json)
+- [Agent summary](https://portal.ui.le-mn.com/llms.txt)
+- [Expanded agent guide](https://portal.ui.le-mn.com/llms-full.txt)
+- [Interactive Lemn UI](https://portal.ui.le-mn.com)
 
 ## Source and guidance
 
@@ -48,6 +50,6 @@ status—belongs to the provider registry. See
 - Registry: `packages/provider-registry`
 
 Adding or changing a public capability requires one aligned change across
-registry/provenance, adapter, exports, catalogs, package guidance, Showcase,
-conformance, release metadata, and license evidence. A Showcase component page
+registry/provenance, adapter, exports, catalogs, package guidance, UI Portal,
+conformance, release metadata, and license evidence. A Portal component page
 uses real interactive components and no more than three examples.

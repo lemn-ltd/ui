@@ -34,7 +34,7 @@ silenciosos.
 2. `@lemn-ltd/ui`
 3. `@lemn-ltd/brand-runtime`
 4. `@lemn-ltd/brand-studio`
-5. Docs, Showcase y Showcase Admin del mismo release
+5. Docs y UI Portal del mismo release
 
 Despues se prueban installs limpios desde GitHub Packages y consumidores reales
 con versiones exactas, nunca links de workspace.
@@ -54,3 +54,9 @@ scope Account `Lemn DEV` / `Workers Scripts: Edit` (`Workers Scripts Write` en
 la API) y Zone `le-mn.com` / `Zone: Read` mas `Workers Routes: Edit` (`Zone
 Workers Routes Write` en la API). Credenciales o modos de autenticacion mas
 amplios fallan cerrado.
+
+Ese release despliega el unico Worker `lemn-ui-portal` en
+`portal.ui.le-mn.com`, dentro de Account `Lemn DEV` / Zone `le-mn.com`. El
+workflow captura `wrangler deployments list --json`, verifica la candidata y
+mantiene la version previa exacta disponible para `wrangler rollback` antes de
+mover trafico.

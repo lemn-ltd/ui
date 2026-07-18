@@ -133,13 +133,18 @@ See the [SSR branding runbook](../../apps/docs/src/content/docs/ssr-branding/ind
 
 Blocks are named, curated compositions with a specific repeatable purpose,
 controlled data/action contracts, complete applicable states, deterministic
-Showcase fixtures, and at least one real consumer before stable promotion.
+UI Portal fixtures, and at least one real consumer before stable promotion.
 
 Current public block exports are:
 
 - `DashboardOverviewBlock`
 - `AppointmentScheduleBlock`
 - `ApprovalQueueBlock`
+
+Node-only catalog tooling can import `coreBlockCatalog` from the React- and
+CSS-free `@lemn-ltd/ui/blocks/core/catalog` entrypoint. Browser consumers that
+render Core block components continue to import them from
+`@lemn-ltd/ui/blocks/core`.
 
 Blocks compose only public LEMN capabilities. They never hide product fetching,
 persistence, authorization, routing, workflow policy, or a second provider
@@ -151,12 +156,12 @@ for a repeatable multi-component workflow or report surface.
 `componentCatalog` is the structured source of truth for component area,
 family, slug, status, and intent. `blockCatalog` is the corresponding index for
 curated compositions. Do not document a hard-coded total: the exported
-catalogs, Showcase, and drift tests are authoritative as capabilities evolve.
+catalogs, UI Portal, and drift tests are authoritative as capabilities evolve.
 
 - [Agent usage guide](docs/README.md)
 - [Component selection guide](docs/components.md)
 - [Composition patterns](docs/patterns.md)
-- [Public Showcase](https://showcase.ui.le-mn.com)
+- [Lemn UI](https://portal.ui.le-mn.com)
 
 ## Brand Studio is separate
 
@@ -166,9 +171,10 @@ intents. It does not belong inside this package and has no persistence,
 credentials, Workspace authorization, publication, activation, or audit
 authority.
 
-Showcase Admin is a separate protected host for experimentation and provider or
-branding proposals. It consumes Studio and registry read models; it does not
-write the active provider manifest directly.
+UI Portal Admin is the Access-protected area of the same Portal deployment. It
+hosts persistence-free experiments and provider or branding proposals, consumes
+Studio and registry read models, and never writes the active provider manifest
+directly.
 
 ## Test and release commands
 
@@ -181,5 +187,5 @@ pnpm validate:boundaries
 ```
 
 Any public contract change requires aligned catalog metadata, agent guidance,
-Showcase coverage, conformance evidence, and a changeset. Provider updates are
+UI Portal coverage, conformance evidence, and a changeset. Provider updates are
 reviewed registry proposals; they never silently alter production consumers.
