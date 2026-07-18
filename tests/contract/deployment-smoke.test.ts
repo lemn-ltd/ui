@@ -3,6 +3,8 @@ import test from "node:test";
 import {
 	assertBuildIdentity,
 	assertPackageBuildIdentity,
+	smokeDocsDeployment,
+	smokePortalProductionDeployment,
 	smokePortalServiceAccess,
 	smokeProductionDeployment,
 } from "../../scripts/release/deployment-smoke.ts";
@@ -43,7 +45,11 @@ test("build identity rejects stale release fields and wrong packages", () => {
 });
 
 function fixture(
-	options: { staleDeepIdentity?: boolean; exposeSecret?: boolean } = {},
+	options: {
+		staleDeepIdentity?: boolean;
+		staleDocsIdentity?: boolean;
+		exposeSecret?: boolean;
+	} = {},
 ) {
 	const requests: Array<{
 		url: string;
@@ -67,7 +73,11 @@ function fixture(
 			return new Response("<title>UI</title>");
 		}
 		if (url === "https://ui.le-mn.com/release.json") {
-			return Response.json({ package: "@lemn-ltd/ui", ...expected });
+			return Response.json({
+				package: "@lemn-ltd/ui",
+				...expected,
+				...(options.staleDocsIdentity ? { version: "0.1.1" } : {}),
+			});
 		}
 		if (url === "https://portal.ui.le-mn.com/health") {
 			return Response.json({ ok: true, service: "ui-portal" });
@@ -249,6 +259,31 @@ test("service smoke fails closed for stale identity and credential disclosure", 
 			retryOptions: { attempts: 1, delayMs: 0 },
 		}),
 		/exposed an Access credential/u,
+	);
+});
+
+test("candidate Portal smoke is independent from Docs until the final cross-surface smoke", async () => {
+	const candidate = fixture({ staleDocsIdentity: true });
+	await smokePortalProductionDeployment({
+		expected,
+		access,
+		fetchImplementation: candidate.fetchImplementation,
+		portalVersionId: candidateVersionId,
+		retryOptions: { attempts: 1, delayMs: 0 },
+	});
+	assert.equal(
+		candidate.requests.some(({ url }) => url.startsWith("https://ui.le-mn.com")),
+		false,
+	);
+
+	await assert.rejects(
+		smokeDocsDeployment({
+			expected,
+			fetchImplementation: fixture({ staleDocsIdentity: true })
+				.fetchImplementation,
+			retryOptions: { attempts: 1, delayMs: 0 },
+		}),
+		/stale version/u,
 	);
 });
 

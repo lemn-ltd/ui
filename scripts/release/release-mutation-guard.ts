@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-import { execFileSync } from "node:child_process";
 import { appendFile } from "node:fs/promises";
 import {
 	cloudflareAuthFromEnvironment,
@@ -7,29 +6,11 @@ import {
 	loadCloudflareReleaseTargets,
 	verifyCloudflareReleaseAccess,
 } from "./cloudflare-preflight.ts";
-
-export interface ReleaseRefInput {
-	githubActions: boolean;
-	githubRef?: string;
-	localBranch?: string;
-}
-
-export function assertMainReleaseRef(input: ReleaseRefInput): void {
-	if (input.githubActions) {
-		if (input.githubRef !== "refs/heads/main") {
-			throw new Error(
-				`Release mutations require GITHUB_REF=refs/heads/main; received ${input.githubRef || "unset"}`,
-			);
-		}
-		return;
-	}
-
-	if (input.localBranch !== "main") {
-		throw new Error(
-			`Release mutations require local branch main; received ${input.localBranch || "detached HEAD"}`,
-		);
-	}
-}
+import {
+	assertMainReleaseRef,
+	releaseRefFromEnvironment,
+	type ReleaseRefInput,
+} from "./release-ref-guard.ts";
 
 export async function runReleaseMutationGuard(input: {
 	ref: ReleaseRefInput;
@@ -39,16 +20,6 @@ export async function runReleaseMutationGuard(input: {
 	await input.preflight();
 }
 
-function localBranch(): string | undefined {
-	try {
-		return execFileSync("git", ["symbolic-ref", "--quiet", "--short", "HEAD"], {
-			encoding: "utf8",
-		}).trim();
-	} catch {
-		return undefined;
-	}
-}
-
 async function main(): Promise<void> {
 	await guardReleaseMutationFromEnvironment();
 }
@@ -56,12 +27,7 @@ async function main(): Promise<void> {
 export async function guardReleaseMutationFromEnvironment(
 	environment: NodeJS.ProcessEnv = process.env,
 ): Promise<void> {
-	const githubActions = environment.GITHUB_ACTIONS === "true";
-	const ref = {
-		githubActions,
-		githubRef: environment.GITHUB_REF,
-		localBranch: githubActions ? undefined : localBranch(),
-	};
+	const ref = releaseRefFromEnvironment(environment);
 	assertMainReleaseRef(ref);
 
 	const targets = await loadCloudflareReleaseTargets();

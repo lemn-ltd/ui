@@ -59,9 +59,9 @@
       },
       {
         "targetPath": "patterns/pattern-audit.md",
-        "checksum": "sha256:7ac52830a759f8c1fd77cfeb39c44244bfdf451fa606cc82d63430a12c0f6300",
+        "checksum": "sha256:a070a07d08b223a5931b3eb28e816fa37e3ed188f7e6e85b1a3022e5204d6337",
         "revisions": {
-          "project": 12
+          "project": 13
         },
         "strategy": "combine",
         "gitIgnored": false,

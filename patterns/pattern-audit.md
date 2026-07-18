@@ -104,7 +104,7 @@ pattern_audit:
 ### Phase 1 repository/build evidence
 
 The validated staged implementation-tree capture is
-`672bdfd5321eef5703364cf69897c0045efb360a`. The requirement-level receipt at
+`6604af18b8c35df988e4ef611c265d8165619bde`. The requirement-level receipt at
 `docs/evidence/ui-portal-unification/phase-1-repository.md` records:
 
 - frozen installation and credential-free rebuild pass;
@@ -117,8 +117,8 @@ The validated staged implementation-tree capture is
   and `90` visual/responsive tests, with zero failures, retries, or skips;
 - the deterministic visual inventory is `180` PNGs: `90` Darwin and `90`
   Linux;
-- release contracts pass `169/169`, Portal dist boundaries pass `7/7`, and
-  zero legacy passes over `1257` active tracked files and `210` reachable
+- release contracts pass `170/170`, Portal dist boundaries pass `7/7`, and
+  zero legacy passes over `1258` active tracked files and `210` reachable
   Portal modules;
 - package smoke verifies four archives, `918` entries, `154` CSS files, zero
   `src` leaks, eight UI public entrypoints, and strict TypeScript consumption;
@@ -129,9 +129,16 @@ The validated staged implementation-tree capture is
 - docs production dry run passes with `24` pages, `110` assets, and Worker
   upload `0.38 KiB` / `0.27 KiB gzip`;
 - local Portal smoke returns HTTP `200` for health, home, and a built asset;
-- final `pnpm validate` passes after the only observed concurrent shared-dist
-  race was resolved by an isolated Portal rebuild and a successful complete
-  rerun.
+- final clean-dist `pnpm validate` passes with release contracts `170/170`
+  after the UI package contract dependency is built explicitly;
+- package preparation/publication use a main-only ref guard without receiving
+  Cloudflare credentials, while actual Cloudflare mutations retain the scoped
+  Cloudflare preflight;
+- transactional Portal smoke no longer depends on the not-yet-deployed Docs
+  identity; the workflow deploys Portal, then Docs, then runs the integrated
+  production smoke;
+- the only observed concurrent shared-dist race was resolved by an isolated
+  Portal rebuild and a successful complete rerun.
 
 Material UI applicability includes `PAT-UI-LEMN-001`,
 `PAT-UI-SYSTEM-001`, and `PAT-UI-BLOCKS-001`. The Blocks dependency chain was

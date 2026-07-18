@@ -190,7 +190,7 @@ assert(
 );
 assert(
 	rootPackage.scripts?.["publish:packages:verify"] ===
-		"pnpm guard:release:mutation && node scripts/release/verify-package-dists.ts && pnpm pack:packages",
+		"pnpm guard:release:ref && node scripts/release/verify-package-dists.ts && pnpm pack:packages",
 	"publish:packages:verify must guard main and smoke the complete built package set",
 );
 assert(

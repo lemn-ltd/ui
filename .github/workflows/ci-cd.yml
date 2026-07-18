@@ -405,3 +405,12 @@ jobs:
           PUBLIC_BUILD_VERSION: ${{ steps.release.outputs.version }}
           PUBLIC_BUILD_GIT_SHA: ${{ steps.release.outputs.sha }}
           PUBLIC_BUILD_TIME: ${{ steps.release.outputs.time }}
+
+      - name: Smoke released production identity
+        run: pnpm smoke:release:production
+        env:
+          EXPECTED_RELEASE_VERSION: ${{ steps.release.outputs.version }}
+          EXPECTED_RELEASE_GIT_SHA: ${{ steps.release.outputs.sha }}
+          EXPECTED_RELEASE_TIME: ${{ steps.release.outputs.time }}
+          UI_PORTAL_ACCESS_CLIENT_ID: ${{ secrets.PRODUCTION_UI_PORTAL_ACCESS_CLIENT_ID }}
+          UI_PORTAL_ACCESS_CLIENT_SECRET: ${{ secrets.PRODUCTION_UI_PORTAL_ACCESS_CLIENT_SECRET }}

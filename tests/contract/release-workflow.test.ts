@@ -201,6 +201,11 @@ test("preflight precedes the single stateful release preparation and package gat
 });
 
 test("the exact prepared release SHA receives a frozen install and the full repository gate", () => {
+	const scripts = record(rootPackage.scripts, "root scripts");
+	assert.equal(
+		scripts["validate:release-contracts"],
+		"pnpm --filter @lemn-ltd/ui run build && node --test tests/contract/*.test.ts",
+	);
 	const install = step("Install exact prepared release revision");
 	const installRun = String(install.run);
 	const installEnv = record(install.env, "exact release install env");
@@ -441,13 +446,19 @@ test("package and release entrypoints share main-only guarded implementations", 
 	const scripts = record(rootPackage.scripts, "root scripts");
 	assert.equal(
 		scripts["release:preflight"],
-		"pnpm guard:release:mutation && pnpm validate:release-preconditions",
+		"pnpm guard:release:ref && pnpm validate:release-preconditions",
 	);
 	for (const name of [
-		"deploy:portal:prod",
 		"prepare:packages:release",
 		"publish:packages:release",
 		"publish:packages:verify",
+	]) {
+		assert.match(String(scripts[name]), /^pnpm guard:release:ref && /u);
+		assert.doesNotMatch(String(scripts[name]), /guard:release:mutation/u);
+	}
+	for (const name of [
+		"deploy:portal:prod",
+		"deploy:docs:prod",
 		"rollout:portal:prod",
 	]) {
 		assert.match(String(scripts[name]), /^pnpm guard:release:mutation && /u);
@@ -549,7 +560,41 @@ test("all production deploys receive only the scoped Environment API token", () 
 		stepIndex("Roll out UI Portal with protected rollback") <
 			stepIndex("Deploy docs"),
 	);
-	assert.equal(stepIndex("Deploy docs"), steps.length - 1);
+	assert.ok(
+		stepIndex("Deploy docs") < stepIndex("Smoke released production identity"),
+	);
+	assert.equal(
+		stepIndex("Smoke released production identity"),
+		steps.length - 1,
+	);
+	const productionSmoke = step("Smoke released production identity");
+	assert.equal(productionSmoke.run, "pnpm smoke:release:production");
+	const productionSmokeEnv = record(
+		productionSmoke.env,
+		"production smoke env",
+	);
+	assert.equal(
+		productionSmokeEnv.EXPECTED_RELEASE_VERSION,
+		expression("steps.release.outputs.version"),
+	);
+	assert.equal(
+		productionSmokeEnv.EXPECTED_RELEASE_GIT_SHA,
+		expression("steps.release.outputs.sha"),
+	);
+	assert.equal(
+		productionSmokeEnv.EXPECTED_RELEASE_TIME,
+		expression("steps.release.outputs.time"),
+	);
+	assert.equal(
+		productionSmokeEnv.UI_PORTAL_ACCESS_CLIENT_ID,
+		productionSecret("UI_PORTAL_ACCESS_CLIENT_ID"),
+	);
+	assert.equal(
+		productionSmokeEnv.UI_PORTAL_ACCESS_CLIENT_SECRET,
+		productionSecret("UI_PORTAL_ACCESS_CLIENT_SECRET"),
+	);
+	assert.equal(productionSmokeEnv.CLOUDFLARE_API_TOKEN, undefined);
+	assert.equal(productionSmokeEnv.CLOUDFLARE_ACCOUNT_ID, undefined);
 });
 
 test("workflow never invokes direct publisher, secret mutation, or Worker deploy commands", () => {

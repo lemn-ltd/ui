@@ -82,8 +82,12 @@ test("release mutation guard rejects feature refs before Cloudflare preflight", 
 	assert.equal(preflightCalls, 1);
 });
 
-test("all production mutation entrypoints share the guarded release path", () => {
+test("release entrypoints use the least-privilege ref or Cloudflare guard", () => {
 	const scripts = record(rootPackage.scripts, "root scripts");
+	assert.equal(
+		scripts["guard:release:ref"],
+		"node scripts/release/release-ref-guard.ts",
+	);
 	assert.equal(
 		scripts["guard:release:mutation"],
 		"node scripts/release/release-mutation-guard.ts",
@@ -91,12 +95,18 @@ test("all production mutation entrypoints share the guarded release path", () =>
 	for (const name of [
 		"deploy:portal:prod",
 		"deploy:docs:prod",
-		"prepare:packages:release",
-		"publish:packages:release",
-		"publish:packages:verify",
 		"rollout:portal:prod",
 	]) {
 		assert.match(String(scripts[name]), /^pnpm guard:release:mutation && /u);
+	}
+	for (const name of [
+		"release:preflight",
+		"prepare:packages:release",
+		"publish:packages:release",
+		"publish:packages:verify",
+	]) {
+		assert.match(String(scripts[name]), /^pnpm guard:release:ref && /u);
+		assert.doesNotMatch(String(scripts[name]), /guard:release:mutation/u);
 	}
 	assert.match(
 		String(scripts["version:packages"]),

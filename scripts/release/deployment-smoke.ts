@@ -364,12 +364,19 @@ export async function smokeProductionDeployment(input: {
 	portalVersionId?: string;
 	signal?: AbortSignal;
 }): Promise<void> {
+	await smokeDocsDeployment(input);
+	await smokePortalProductionDeployment(input);
+}
+
+export async function smokeDocsDeployment(input: {
+	expected: BuildIdentity;
+	fetchImplementation?: FetchImplementation;
+	retryOptions?: RetryOptions;
+	signal?: AbortSignal;
+}): Promise<void> {
 	const fetchImplementation = input.fetchImplementation ?? fetch;
 	const retryOptions = input.retryOptions ?? defaultRetryOptions;
 	const expected = input.expected;
-	const publicHeaders = portalHeaders(input.portalVersionId, {
-		Accept: "application/json, text/plain, text/html",
-	});
 	const retryCheck = (label: string, operation: () => Promise<void>) =>
 		retry(label, operation, retryOptions, input.signal);
 
@@ -387,6 +394,24 @@ export async function smokeProductionDeployment(input: {
 		);
 		assertPackageBuildIdentity(await response.json(), expected, "docs release");
 	});
+}
+
+export async function smokePortalProductionDeployment(input: {
+	expected: BuildIdentity;
+	access: UiPortalAccessCredentials;
+	fetchImplementation?: FetchImplementation;
+	retryOptions?: RetryOptions;
+	portalVersionId?: string;
+	signal?: AbortSignal;
+}): Promise<void> {
+	const fetchImplementation = input.fetchImplementation ?? fetch;
+	const retryOptions = input.retryOptions ?? defaultRetryOptions;
+	const expected = input.expected;
+	const publicHeaders = portalHeaders(input.portalVersionId, {
+		Accept: "application/json, text/plain, text/html",
+	});
+	const retryCheck = (label: string, operation: () => Promise<void>) =>
+		retry(label, operation, retryOptions, input.signal);
 
 	await retryCheck("ui-portal-health", async () => {
 		const response = await fetchOk(

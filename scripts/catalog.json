@@ -93,8 +93,10 @@
 					"ciUsage": [".github/workflows/ci-cd.yml"]
 				},
 				"validate:release-contracts": {
-					"command": "node --test tests/contract/*.test.ts",
+					"command": "pnpm --filter @lemn-ltd/ui run build && node --test tests/contract/*.test.ts",
 					"category": "test",
+					"mutation": "generated-output",
+					"executionIntent": "explicit-command",
 					"ciUsage": [".github/workflows/ci-cd.yml"]
 				},
 				"validate:release-hosts": {
@@ -293,34 +295,39 @@
 					"category": "release",
 					"environments": ["production"]
 				},
+				"guard:release:ref": {
+					"command": "node scripts/release/release-ref-guard.ts",
+					"category": "release",
+					"environments": ["local", "ci", "production"]
+				},
 				"release:preflight": {
-					"command": "pnpm guard:release:mutation && pnpm validate:release-preconditions",
+					"command": "pnpm guard:release:ref && pnpm validate:release-preconditions",
 					"category": "release",
 					"environments": ["production"],
 					"ciUsage": [".github/workflows/ci-cd.yml"]
 				},
 				"publish:packages:verify": {
-					"command": "pnpm guard:release:mutation && node scripts/release/verify-package-dists.ts && pnpm pack:packages",
+					"command": "pnpm guard:release:ref && node scripts/release/verify-package-dists.ts && pnpm pack:packages",
 					"category": "release",
 					"environments": ["production"]
 				},
 				"publish:packages:release": {
-					"command": "pnpm guard:release:mutation && node scripts/release/publish-package-release.ts",
+					"command": "pnpm guard:release:ref && node scripts/release/publish-package-release.ts",
 					"category": "release",
 					"environments": ["production"],
 					"mutation": "remote",
 					"executionIntent": "guarded",
-					"guardScript": "workspace:guard:release:mutation",
+					"guardScript": "workspace:guard:release:ref",
 					"requiredSecrets": ["GITHUB_TOKEN", "NODE_AUTH_TOKEN"],
 					"ciUsage": [".github/workflows/ci-cd.yml"]
 				},
 				"prepare:packages:release": {
-					"command": "pnpm guard:release:mutation && node scripts/release/prepare-package-release.ts",
+					"command": "pnpm guard:release:ref && node scripts/release/prepare-package-release.ts",
 					"category": "release",
 					"environments": ["production"],
 					"mutation": "remote",
 					"executionIntent": "guarded",
-					"guardScript": "workspace:guard:release:mutation",
+					"guardScript": "workspace:guard:release:ref",
 					"requiredVariables": ["GITHUB_SHA"],
 					"ciUsage": [".github/workflows/ci-cd.yml"]
 				},
@@ -358,7 +365,8 @@
 						"EXPECTED_RELEASE_VERSION",
 						"EXPECTED_RELEASE_GIT_SHA",
 						"EXPECTED_RELEASE_TIME"
-					]
+					],
+					"ciUsage": [".github/workflows/ci-cd.yml"]
 				},
 				"changeset": {
 					"command": "node scripts/release/changeset-command.ts",
@@ -383,7 +391,7 @@
 					"environments": ["production"],
 					"mutation": "source",
 					"executionIntent": "guarded",
-					"guardScript": "workspace:guard:release:mutation"
+					"guardScript": "workspace:guard:release:ref"
 				},
 				"release": {
 					"command": "pnpm release:preflight && pnpm check && pnpm test && pnpm build:packages:release && pnpm publish:packages:release",
@@ -391,7 +399,7 @@
 					"environments": ["production"],
 					"mutation": "remote",
 					"executionIntent": "guarded",
-					"guardScript": "workspace:guard:release:mutation",
+					"guardScript": "workspace:guard:release:ref",
 					"requiredSecrets": ["GITHUB_TOKEN", "NODE_AUTH_TOKEN"]
 				}
 			}

@@ -21,8 +21,8 @@ import {
 } from "./child-process-security.ts";
 import {
 	type BuildIdentity,
+	smokePortalProductionDeployment,
 	smokePortalServiceAccess,
-	smokeProductionDeployment,
 	type UiPortalAccessCredentials,
 } from "./deployment-smoke.ts";
 
@@ -163,7 +163,7 @@ export interface DeploymentSnapshot {
 
 interface RolloutDependencies {
 	readonly runCommand: (spec: CommandSpec) => Promise<string>;
-	readonly smokeProduction: typeof smokeProductionDeployment;
+	readonly smokeProduction: typeof smokePortalProductionDeployment;
 	readonly smokeProtected: typeof smokePortalServiceAccess;
 	readonly writeSummary: (expected: BuildIdentity) => Promise<void>;
 	readonly removeTriggerTemporaryRoot?: (
@@ -2038,7 +2038,7 @@ async function writeGitHubSummary(expected: BuildIdentity): Promise<void> {
 function defaultDependencies(signal?: AbortSignal): RolloutDependencies {
 	return {
 		runCommand: createCommandRunner(signal),
-		smokeProduction: smokeProductionDeployment,
+		smokeProduction: smokePortalProductionDeployment,
 		smokeProtected: smokePortalServiceAccess,
 		writeSummary: writeGitHubSummary,
 		removeTriggerTemporaryRoot,

@@ -2,7 +2,7 @@
 import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
-import { guardReleaseMutationFromEnvironment } from "./release-mutation-guard.ts";
+import { guardReleaseRefFromEnvironment } from "./release-ref-guard.ts";
 
 const supportedCommands = new Set(["add", "status", "version"]);
 
@@ -18,7 +18,7 @@ const defaultDependencies: ChangesetCommandDependencies = {
 	root,
 	cli: resolve(root, "node_modules/@changesets/cli/bin.js"),
 	environment: process.env,
-	guardVersion: () => guardReleaseMutationFromEnvironment(),
+	guardVersion: () => guardReleaseRefFromEnvironment(),
 };
 
 export async function runChangesetCommand(
