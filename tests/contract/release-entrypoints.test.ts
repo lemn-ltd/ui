@@ -11,7 +11,9 @@ import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import test from "node:test";
 import { runChangesetCommand } from "../../scripts/release/changeset-command.ts";
+import { releaseVersionChildEnvironment } from "../../scripts/release/prepare-package-release.ts";
 import { runReleaseMutationGuard } from "../../scripts/release/release-mutation-guard.ts";
+import { guardReleaseRefFromEnvironment } from "../../scripts/release/release-ref-guard.ts";
 import { verifyPackageDists } from "../../scripts/release/verify-package-dists.ts";
 
 type UnknownRecord = Record<string, unknown>;
@@ -187,6 +189,23 @@ test("changeset version rejects CI feature refs before an isolated CLI can run",
 	} finally {
 		await rm(temporaryRoot, { recursive: true, force: true });
 	}
+});
+
+test("nested release versioning preserves only the CI ref required by its main guard", async () => {
+	const childEnvironment = releaseVersionChildEnvironment({
+		CI: "true",
+		GITHUB_ACTIONS: "true",
+		GITHUB_REF: "refs/heads/main",
+		GITHUB_SHA: "1".repeat(40),
+		NODE_AUTH_TOKEN: "must-not-reach-versioning",
+		PATH: process.env.PATH,
+	});
+
+	assert.equal(childEnvironment.GITHUB_ACTIONS, "true");
+	assert.equal(childEnvironment.GITHUB_REF, "refs/heads/main");
+	assert.equal(childEnvironment.GITHUB_SHA, undefined);
+	assert.equal(childEnvironment.NODE_AUTH_TOKEN, undefined);
+	await guardReleaseRefFromEnvironment(childEnvironment);
 });
 
 test("package-set lifecycle builds in order then requires dist and a strict consumer smoke", () => {

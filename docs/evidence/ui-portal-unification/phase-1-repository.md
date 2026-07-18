@@ -4,7 +4,7 @@ Status: **PASS — repository and build reconciliation complete**
 Evidence date: 2026-07-18
 Authority: [`UI_PORTAL_UNIFICATION_HANDOFF.md`](../../../UI_PORTAL_UNIFICATION_HANDOFF.md)
 Target branch: `main`
-Validated implementation-tree capture: `6604af18b8c35df988e4ef611c265d8165619bde`
+Validated implementation-tree capture: `b2ec2f42871bae2a6beaf8086c3a022ac04750e7`
 Base commit: `ca24a1482e4b4f09c98d081d6541572d3128268f`
 
 ## Evidence boundary
@@ -18,13 +18,16 @@ managed-file lock revision were applied after that capture; they are evidence
 metadata only and do not change the validated application, package, build,
 test, or release paths.
 
-The capture includes the corrective clean-run release gate added after the first
-hosted validation exposed two assumptions hidden by local generated output: a
+The capture includes the corrective clean-run release gates added after hosted
+validation exposed assumptions hidden by local generated output and nested
+process isolation: a
 contract imported UI package output before it was built, and the original
 release workflow conflated its main-ref guard with Cloudflare authorization.
 It also separates candidate Portal smoke from Docs and adds the integrated
-post-Docs production smoke. Generated `dist` directories were removed before
-the final root validation to prove the correction without residual artifacts.
+post-Docs production smoke. The release-version child now receives only the
+non-secret `GITHUB_REF` required to repeat the main-only guard; GitHub SHA and
+package credentials remain excluded. Generated `dist` directories were removed
+before the final root validation to prove the correction without residual artifacts.
 
 Phase 1 does not claim a GitHub publication, hosted deployment, Cloudflare DNS
 or Access mutation, production HTTP/browser behavior, or deletion of old live
@@ -78,8 +81,8 @@ place after managed-file reconciliation.
 | `pnpm changeset:status` | `PASS` | UI minor and Brand Studio major; no patch release; `1.11s`. |
 | Direct validators | `PASS` | Script catalog `4/4`; identity, domains, package identity, brand neutrality, Branding vNext, release, boundaries, and bundles all pass. |
 | Zero-legacy validator | `PASS` | `1258` active tracked repository files, `210` reachable Portal modules, Portal `74/74`, dist boundaries `7/7`. |
-| Release contracts | `PASS` | `170/170`, including clean package-output ordering, least-privilege release guards, candidate-versus-Docs smoke separation, and final cross-surface smoke. |
-| Final clean-dist `pnpm validate` | `PASS` | `packages/ui/dist` and `apps/ui-portal/dist` were removed first; five AgentOps files, script catalog `4/4`, Portal `74/74`, dist `7/7`, release contracts `170/170`, zero legacy `1258/210`. |
+| Release contracts | `PASS` | `171/171`, including clean package-output ordering, nested main-ref propagation without registry credentials, least-privilege release guards, candidate-versus-Docs smoke separation, and final cross-surface smoke. |
+| Final clean-dist `pnpm validate` | `PASS` | `packages/ui/dist` and `apps/ui-portal/dist` were removed first; five AgentOps files, script catalog `4/4`, Portal `74/74`, dist `7/7`, release contracts `171/171`, zero legacy `1258/210`. |
 | Portal `cf:types` | `PASS` | Generated types unchanged; `1.44s`. |
 | Portal production Wrangler dry run | `PASS` | `618` assets; Worker upload `323.87 KiB` / `72.08 KiB gzip`; `3.45s`. |
 | Docs production Wrangler dry run | `PASS` | `24` pages, `110` assets; Worker upload `0.38 KiB` / `0.27 KiB gzip`; `3.71s`. |
@@ -175,8 +178,8 @@ accessibility, and the anonymous/Admin bundle boundary.
 | Core catalog and block changes are versioned through the material public packages only. | `PASS` | Changeset status records UI minor and Brand Studio major; Portal remains private/unpublished. |
 | Dependencies are exact or pinned catalog references; no `latest` contract is active. | `PASS` | Lockfile, provider, package, release, and dependency validators pass. |
 | Docs remain separately deployable at `ui.le-mn.com`. | `PASS` | Docs check/build/dry-run pass with `24` pages and `110` assets. |
-| Scripts, Make targets, workflows, artifacts, caches, types, smoke, rollback, metadata, and docs use Portal vocabulary. | `PASS` | Script catalog, release contracts `170/170`, identity, domains, docs, and zero-legacy checks pass. |
-| Release workflow rebuilds and validates the exact release SHA, deploys Portal transactionally before docs, and verifies exact published packages in a clean consumer. | `PASS` | Package operations use a main-only ref guard without Cloudflare credentials; Cloudflare mutations retain the scoped Cloudflare guard. Candidate Portal/schema/Access smoke precedes activation, Docs deploys after Portal, and an integrated production smoke follows Docs. Static workflow/security/release contracts are part of `170/170`; the token-backed execution belongs to Phase 2. |
+| Scripts, Make targets, workflows, artifacts, caches, types, smoke, rollback, metadata, and docs use Portal vocabulary. | `PASS` | Script catalog, release contracts `171/171`, identity, domains, docs, and zero-legacy checks pass. |
+| Release workflow rebuilds and validates the exact release SHA, deploys Portal transactionally before docs, and verifies exact published packages in a clean consumer. | `PASS` | Package operations use a main-only ref guard without Cloudflare credentials; Cloudflare mutations retain the scoped Cloudflare guard. Candidate Portal/schema/Access smoke precedes activation, Docs deploys after Portal, and an integrated production smoke follows Docs. Static workflow/security/release contracts are part of `171/171`; the token-backed execution belongs to Phase 2. |
 
 ## AgentOps managed-file reconciliation
 
@@ -205,7 +208,8 @@ rename without breaking managed-file identity/history.
 | Warning | Owner | Risk | Disposition / follow-up |
 | --- | --- | --- | --- |
 | First full validation overlapped a concurrent Portal build and transiently missed `accordion.page-*.js.map` in shared `apps/ui-portal/dist`. | UI tooling | Concurrent writers can invalidate shared generated output. | Isolated Portal rebuild passed `7/7`, then the complete validation rerun passed. Keep build/validation jobs serialized when sharing `dist`. |
-| The first hosted validation of commit `cf5bf3d` found that a release contract relied on pre-existing UI `dist`, and review found the package guard and smoke sequence defects before production approval. | Release tooling | A clean runner would fail before E2E, while an approved release could fail before deployment. | The failed run performed no production mutation. Capture `6604af18b8c35df988e4ef611c265d8165619bde` builds the UI contract dependency from a clean `dist`, splits ref and Cloudflare guards, keeps Portal-before-Docs, and adds the final integrated smoke; all `170/170` contracts and the complete clean-dist gate pass. |
+| The first hosted validation of commit `cf5bf3d` found that a release contract relied on pre-existing UI `dist`, and review found the package guard and smoke sequence defects before production approval. | Release tooling | A clean runner would fail before E2E, while an approved release could fail before deployment. | The failed run performed no production mutation. The corrected tree builds the UI contract dependency from a clean `dist`, splits ref and Cloudflare guards, keeps Portal-before-Docs, and adds the final integrated smoke. |
+| The first production-approved run of commit `b6e19e3` passed all eight upstream jobs and Cloudflare preflight, then stopped before versioning because the sanitized nested Changesets environment omitted `GITHUB_REF`. | Release tooling | The outer main guard passed, but the deliberately repeated child guard could not prove the same ref. | Run `29654120028` performed no package or production mutation. Capture `b2ec2f42871bae2a6beaf8086c3a022ac04750e7` explicitly forwards only `GITHUB_REF` to release versioning, keeps `GITHUB_SHA` and `NODE_AUTH_TOKEN` excluded, and adds the exact nested guard regression contract; all `171/171` release contracts pass. |
 | Provider-registry Vitest reports `esbuild` deprecated in favor of `oxc`. | UI tooling | Future Vitest removal of the option. | Tests pass `31/31`; migrate with a dedicated toolchain update rather than suppressing the warning. |
 | Brand Studio Recharts reports width/height `0` in four tests. | Brand Studio | Test-environment layout lacks real dimensions. | All assertions pass; retain visibility and use explicit measured containers when revising those fixtures. |
 | Lightning CSS emits two warnings for the valid CSS Custom Highlight API `::highlight`. | UI CSS | Parser/minifier support warning only. | Build output is valid; re-evaluate on Lightning CSS upgrade. |
@@ -221,7 +225,7 @@ rename without breaking managed-file identity/history.
 | Create/deploy `lemn-ui-portal` and attach Portal/schema domains. | `N/A-PHASE-1` | Requires live Cloudflare mutation and deployed-version receipt. |
 | Create path-scoped human Access and isolated service-health identity. | `N/A-PHASE-1` | Requires live policies, audiences, credentials, anonymous denial, human browser, and service-only deep-health proof. |
 | Populate canonical production GitHub environment inputs. | `N/A-PHASE-1` | Requires production environment mutation and secret/variable inventory evidence. |
-| Publish packages and run the clean registry consumer smoke. | `N/A-PHASE-1` | Requires the exact versions to exist in GitHub Packages and a scoped token. Static lifecycle/security contracts pass within `170/170`. |
+| Publish packages and run the clean registry consumer smoke. | `N/A-PHASE-1` | Requires the exact versions to exist in GitHub Packages and a scoped token. Static lifecycle/security contracts pass within `171/171`. |
 | Deploy docs and Portal through the governed workflow. | `N/A-PHASE-1` | Requires commit/push, hosted run, environment review, deployment receipts, and HTTP/browser proof. |
 | Delete exclusive old Workers, domains, DNS, Access resources, service credentials, GitHub inputs, workflows, and artifacts. | `N/A-PHASE-1` | Deletion may occur only after canonical production proof and ownership confirmation; no redirect or tombstone is allowed. |
 | Negative proof that legacy live hosts/resources are unavailable. | `N/A-PHASE-1` | Must be captured after ordered deletion in `phase-2-production.md`. |

@@ -148,7 +148,7 @@ const defaultDependencies: PrepareReleaseDependencies = {
 	git: defaultGit,
 	hasPendingChangesets: defaultHasPendingChangesets,
 	versionPackages: async () => {
-		const childEnvironment = releaseChildEnvironment(process.env);
+		const childEnvironment = releaseVersionChildEnvironment(process.env);
 		execFileSync("pnpm", ["version:packages"], {
 			cwd: root,
 			stdio: "inherit",
@@ -179,6 +179,12 @@ const defaultDependencies: PrepareReleaseDependencies = {
 	},
 	writeOutputs: defaultWriteOutputs,
 };
+
+export function releaseVersionChildEnvironment(
+	source: NodeJS.ProcessEnv,
+): NodeJS.ProcessEnv {
+	return releaseChildEnvironment(source, ["GITHUB_REF"]);
+}
 
 function isAncestor(
 	ancestor: string,
