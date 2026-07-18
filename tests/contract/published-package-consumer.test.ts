@@ -16,6 +16,8 @@ import { promisify } from "node:util";
 import {
 	type ConsumerCommandInvocation,
 	githubPackagesUserConfig,
+	publishedConsumerInstallArgs,
+	publishedConsumerVersions,
 	publishedEntrypointVerifierSource,
 	verifyPublishedPackageConsumer,
 } from "../../scripts/release/verify-published-package-consumer.ts";
@@ -239,12 +241,63 @@ test("a clean consumer installs exact published packages, resolves every export,
 		await assert.rejects(access(consumerRoot));
 		assert.equal(invocations.length, 4);
 		assert.deepEqual(
+			invocations[0]?.args,
+			publishedConsumerInstallArgs(consumerRoot),
+		);
+		assert.deepEqual(
 			invocations.slice(2).map(({ args }) => args.slice(0, 2)),
 			[
 				["exec", "tsc"],
 				["exec", "vite"],
 			],
 		);
+	} finally {
+		await rm(sandbox, { recursive: true, force: true });
+	}
+});
+
+test("the published-consumer install argv is accepted by the pinned pnpm CLI", async () => {
+	const sandbox = await mkdtemp(
+		resolve(tmpdir(), "lemn-published-consumer-pnpm-cli-"),
+	);
+	try {
+		await writeFile(
+			resolve(sandbox, "package.json"),
+			`${JSON.stringify(
+				{
+					private: true,
+					packageManager: `pnpm@${publishedConsumerVersions.packageManager}`,
+				},
+				null,
+				2,
+			)}\n`,
+		);
+		await writeFile(resolve(sandbox, ".npmrc"), "update-notifier=false\n");
+		const pnpmCommand = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
+		const environment = {
+			PATH: process.env.PATH,
+			HOME: sandbox,
+			CI: "true",
+			COREPACK_ENABLE_DOWNLOAD_PROMPT: "0",
+			NPM_CONFIG_OFFLINE: "true",
+			NPM_CONFIG_UPDATE_NOTIFIER: "false",
+		};
+		const version = await execFileAsync(pnpmCommand, ["--version"], {
+			cwd: sandbox,
+			env: environment,
+			timeout: 30_000,
+		});
+		assert.equal(
+			version.stdout.trim(),
+			publishedConsumerVersions.packageManager,
+		);
+		const args = publishedConsumerInstallArgs(sandbox);
+		assert.doesNotMatch(args.join(" "), /--prefer-online/u);
+		await execFileAsync(pnpmCommand, [...args], {
+			cwd: sandbox,
+			env: environment,
+			timeout: 30_000,
+		});
 	} finally {
 		await rm(sandbox, { recursive: true, force: true });
 	}

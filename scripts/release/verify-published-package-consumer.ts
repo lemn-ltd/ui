@@ -85,6 +85,19 @@ export interface PublishedConsumerResult {
 	readonly cssAssets: number;
 }
 
+export function publishedConsumerInstallArgs(
+	temporaryRoot: string,
+): readonly string[] {
+	return [
+		"install",
+		"--ignore-scripts",
+		"--strict-peer-dependencies",
+		"--no-frozen-lockfile",
+		"--store-dir",
+		resolve(temporaryRoot, "store"),
+	];
+}
+
 interface EntrypointReport {
 	readonly entrypoints?: number;
 	readonly cssEntrypoints?: number;
@@ -529,15 +542,7 @@ export async function verifyPublishedPackageConsumer(
 			dependencies,
 			{
 				command: pnpmCommand,
-				args: [
-					"install",
-					"--ignore-scripts",
-					"--strict-peer-dependencies",
-					"--no-frozen-lockfile",
-					"--prefer-online",
-					"--store-dir",
-					resolve(temporaryRoot, "store"),
-				],
+				args: publishedConsumerInstallArgs(temporaryRoot),
 				cwd: temporaryRoot,
 				environment: installEnvironment,
 			},

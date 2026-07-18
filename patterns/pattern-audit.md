@@ -104,7 +104,7 @@ pattern_audit:
 ### Phase 1 repository/build evidence
 
 The validated staged implementation-tree capture is
-`3daee44c95eaf9c182ab83f1f506f461c290faea`. The requirement-level receipt at
+`fba0d072d8e50e542ca2f571b89711d7397b51c6`. The requirement-level receipt at
 `docs/evidence/ui-portal-unification/phase-1-repository.md` records:
 
 - frozen installation and credential-free rebuild pass;
@@ -117,9 +117,10 @@ The validated staged implementation-tree capture is
   and `90` visual/responsive tests, with zero failures, retries, or skips;
 - the deterministic visual inventory is `180` PNGs: `90` Darwin and `90`
   Linux;
-- release contracts pass `174/174`, including nested main-ref propagation
+- release contracts pass `175/175`, including nested main-ref propagation
   without registry credentials, exhaustive private-consumer governance, and
-  pre-commit rejection of omitted generated output; Portal dist boundaries pass
+  pre-commit rejection of omitted generated output plus a network-free execution
+  of the exact install argv against pinned pnpm `11.8.0`; Portal dist boundaries pass
   `7/7`, and zero legacy passes over `1257` active tracked files and `210`
   reachable Portal modules;
 - package smoke verifies four archives, `918` entries, `154` CSS files, zero
@@ -131,7 +132,7 @@ The validated staged implementation-tree capture is
 - docs production dry run passes with `24` pages, `110` assets, and Worker
   upload `0.38 KiB` / `0.27 KiB gzip`;
 - local Portal smoke returns HTTP `200` for health, home, and a built asset;
-- final clean-dist `pnpm validate` passes with release contracts `174/174`
+- final clean-dist `pnpm validate` passes with release contracts `175/175`
   after the UI package contract dependency is built explicitly;
 - package preparation/publication use a main-only ref guard without receiving
   Cloudflare credentials, while actual Cloudflare mutations retain the scoped
@@ -145,6 +146,11 @@ The validated staged implementation-tree capture is
   initially outside the governed metadata set; the capture governs all current
   and future private internal consumers and rejects omitted output before
   commit/push;
+- hosted run `29656712010` completed the immutable four-package registry set,
+  then stopped before Portal/Docs deployment because pnpm `11.8.0` rejected the
+  removed `--prefer-online` option in the clean-consumer smoke; capture
+  `fba0d072d8e50e542ca2f571b89711d7397b51c6` removes that option and validates
+  the production argv with the real pinned CLI;
 - the only observed concurrent shared-dist race was resolved by an isolated
   Portal rebuild and a successful complete rerun.
 
