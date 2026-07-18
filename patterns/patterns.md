@@ -5627,7 +5627,7 @@ await outboxRepo.insert({
 id: PAT-API-MCP-001
 domain: API
 category: MCP
-version: 1
+version: 2
 description: Use this pattern when exposing product capabilities to agents through MCP.
 precedence_level: 5
 depends_on:
@@ -5671,15 +5671,19 @@ MCP tools are product APIs. They must be curated, typed, permissioned, auditable
 ## Example
 
 ```ts
-const CreateProjectToolInput = z.object({
-  organizationId: z.string().uuid(),
-  name: z.string().min(1).max(120),
+const CreateBrandingDraftToolInput = z.object({
+  title: z.string().min(1).max(120),
 })
 
-async function createProjectTool(rawInput: unknown, ctx: ToolContext) {
-  const input = CreateProjectToolInput.parse(rawInput)
-  await rbac.assert(ctx.actorId, input.organizationId, 'project:create')
-  return projectsService.create({ ...input, actorId: ctx.actorId })
+async function createBrandingDraftTool(rawInput: unknown, ctx: WorkspaceToolContext) {
+  const input = CreateBrandingDraftToolInput.parse(rawInput)
+  await rbac.assert(ctx.actorId, ctx.organizationId, 'branding:draft:create')
+  return brandingService.createDraft({
+    ...input,
+    actorId: ctx.actorId,
+    organizationId: ctx.organizationId,
+    workspaceId: ctx.workspaceId,
+  })
 }
 ```
 
@@ -8331,7 +8335,7 @@ applies_when:
 
 ## Strategy
 
-Audit patterns from the project profile, not from a flat checklist. The audit starts with `docs/patterns/pattern-profile.md`, expands every required domain up to its `target_level`, evaluates dependencies, and records current state in `docs/patterns/pattern-audit.md`.
+Audit patterns from the project profile, not from a flat checklist. The audit starts with `patterns/pattern-profile.md`, expands every required domain up to its `target_level`, evaluates dependencies, and records current state in `patterns/pattern-audit.md`.
 
 The precedence chain is domain-first. `category` is the assignment unit for audit work; it does not define the implementation order. Implementation order is domain -> `precedence_level` -> `depends_on`.
 
@@ -8345,7 +8349,7 @@ The precedence chain is domain-first. `category` is the assignment unit for audi
 - Evaluate lower `precedence_level` patterns before higher-level patterns in the same domain.
 - Treat missing lower-level requirements as blockers or required predecessor work for higher-level patterns.
 - Record status, evidence, gaps, blockers, and exceptions in `pattern-audit.md`.
-- Keep audit evidence minimal and actionable; use `docs/patterns/audits/<audit-id>.md` only when the evidence is too large for `pattern-audit.md`.
+- Keep audit evidence minimal and actionable; use `patterns/audits/<audit-id>.md` only when the evidence is too large for `pattern-audit.md`.
 - When subagents are available, audit one domain at a time and split each domain by category.
 
 ### Must not

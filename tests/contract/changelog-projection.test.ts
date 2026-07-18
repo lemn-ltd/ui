@@ -33,8 +33,14 @@ const nextReleaseChangeset = `---
 "@lemn-ltd/ui": patch
 ---
 
-Exercise the post-0.3.0 changelog projection contract.
+Exercise the next-patch changelog projection contract.
 `;
+
+function nextPatchVersion(version: string): string {
+	const match = version.match(/^(\d+)\.(\d+)\.(\d+)$/u);
+	assert.ok(match, `Expected an exact stable package version, received ${version}`);
+	return `${match[1]}.${match[2]}.${Number(match[3]) + 1}`;
+}
 
 async function createProjectionFixture(): Promise<string> {
 	const fixtureRoot = await mkdtemp(resolve(tmpdir(), "lemn-ui-changelog-"));
@@ -84,7 +90,7 @@ test("the source changelog is version-true and has one section per release", () 
 	const firstPass = validateVersionedChangelog(changelog, packageJson.version);
 	const secondPass = validateVersionedChangelog(changelog, packageJson.version);
 	assert.deepEqual(firstPass, secondPass);
-	assert.equal(firstPass[0], "0.3.0");
+	assert.equal(firstPass[0], packageJson.version);
 	assert.equal(new Set(firstPass).size, firstPass.length);
 	assert.doesNotMatch(changelog, /^##\s+Unreleased\s*$/mu);
 });
@@ -111,9 +117,10 @@ test("release projection rejects duplicate release sections", () => {
 	);
 });
 
-test("real post-0.3.0 projection and docs sync are idempotent", async () => {
+test("real next-patch projection and docs sync are idempotent", async () => {
 	const fixtureRoot = await createProjectionFixture();
 	try {
+		const nextVersion = nextPatchVersion(packageJson.version);
 		projectChangesets(fixtureRoot);
 		const projectedManifest = JSON.parse(
 			await readFile(resolve(fixtureRoot, "packages/ui/package.json"), "utf8"),
@@ -126,8 +133,11 @@ test("real post-0.3.0 projection and docs sync are idempotent", async () => {
 			projectedChangelog,
 			projectedManifest.version,
 		);
-		assert.equal(projectedManifest.version, "0.3.1");
-		assert.deepEqual(projectedHeadings.slice(0, 2), ["0.3.1", "0.3.0"]);
+		assert.equal(projectedManifest.version, nextVersion);
+		assert.deepEqual(projectedHeadings.slice(0, 2), [
+			nextVersion,
+			packageJson.version,
+		]);
 		assert.equal(
 			projectedHeadings.filter((heading) => heading === "0.2.0").length,
 			1,

@@ -97,18 +97,20 @@ pnpm dev:showcase
   `pnpm version:packages`. `pnpm exec changeset version` calls the dependency
   binary directly, bypasses package scripts, and is therefore an unsupported
   and prohibited release path for contributors and automation.
-- Let CI generate the release metadata commit that updates
-  `packages/ui/package.json` and `packages/ui/CHANGELOG.md`; do not hand-edit
+- Let CI generate the release metadata commit for the changed publishable
+  package set: `@lemn-ltd/brand-contract`, `@lemn-ltd/ui`,
+  `@lemn-ltd/brand-runtime`, and `@lemn-ltd/brand-studio`. Do not hand-edit
   package versions in feature PRs.
 - Treat published GitHub Package versions as immutable. Do not reuse an existing
   version to fix packaging or CSS output.
 - Commit and push only reviewed source changes. Avoid mixing unrelated worktree
   changes into the release commit.
-- The CI workflow publishes `@lemn-ltd/ui` only after it verifies the pushed
-  version, registry owner/token, a complete built tarball in a clean consumer,
-  and Cloudflare release access. A scope, owner, authentication, version,
-  package-content, or Cloudflare mismatch fails closed before package
-  publication or docs/showcase deployment.
+- The CI workflow publishes only the governed four-package release set after it
+  verifies every pushed exact version, dependency edge, registry owner/token,
+  complete built tarballs in a clean consumer, and Cloudflare release access.
+  A scope, owner, authentication, version, package-content, dependency, or
+  Cloudflare mismatch fails closed before package publication or
+  docs/showcase deployment.
 - `pnpm version:packages`, `pnpm publish:packages:release`, `pnpm deploy:docs:prod`,
   `pnpm deploy:showcase:prod`, and `pnpm release` are production mutation
   entrypoints. They require branch `main` and the non-mutating Cloudflare

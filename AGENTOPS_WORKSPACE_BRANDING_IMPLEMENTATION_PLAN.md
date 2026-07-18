@@ -89,6 +89,32 @@ model in this document before that pattern can be claimed as current evidence.
     internationalization are frontend-platform responsibilities and must not
     be added to `@lemn-ltd/ui`.
 
+### 3.1 Alignment with the AgentOps/Brainscode Cloudflare trust model
+
+Only the branding decisions from the broader AgentOps/Brainscode architecture
+apply to this delivery:
+
+- AgentOps remains the trusted source of truth; Postgres owns transactional
+  branding state, R2 owns immutable compiled objects, and KV may only be a
+  disposable resolution cache.
+- A trusted first-party SSR consumer in the same Cloudflare account uses a
+  private Service Binding with explicit capability props. It never receives a
+  database, R2, queue, MCP, or control-plane binding.
+- A future generated or cross-account workload must not receive any Core
+  credential or binding. It resolves branding through a narrow authenticated
+  HTTPS workload gateway using short-lived, audience-bound workload identity
+  and an explicit operation grant.
+- Preview origins are isolated from Core sessions and credentials. Preview
+  handoff is short-lived, one-use, target-bound, revocable, and leaves no Core
+  token in browser storage or the clean URL.
+- Runtime identity is derived by trusted infrastructure, never accepted from a
+  consumer-supplied organization or Workspace field.
+
+Workers for Platforms, dynamic dispatch, outbound egress control, customer
+domains, and workload resource provisioning remain Brainscode/platform scope.
+They are intentionally not implemented in `@lemn-ltd/ui`, the branding
+simulator, the branding MCP, or Lunaria by this plan.
+
 ## 4. Canonical vocabulary
 
 | Term | Meaning |
@@ -197,7 +223,7 @@ not become an application build system.
 
 ## 6. Core data model
 
-The persistent branding core consists of two tables in addition to the
+The persistent branding core consists of three tables in addition to the
 existing Organization and Workspace primitives.
 
 ```text
@@ -308,11 +334,66 @@ Publishing   version = null
 Published    version = 1, 2, 3...
 ```
 
-The final publication transaction locks the Branding row, calculates
-`max(version) + 1` for published versions in that Workspace, and writes the
-number under the partial unique index. Concurrent successful publications are
-serialized by that row lock. Archived drafts and failed publications create no
-version-number gaps.
+The signed runtime projections include the public numeric version, so a
+publication reserves that number durably before signing without exposing it on
+the `branding_versions` row. A `branding.publication_slots` table has exactly
+one row per Workspace and records the owning BrandingVersion, reserved version,
+definition hash, compiled hash, and reservation timestamps.
+
+```sql
+create table branding.publication_slots (
+  reservation_id uuid not null,
+  organization_id uuid not null,
+  workspace_id uuid not null,
+  branding_version_id uuid not null,
+  reserved_version integer not null check (reserved_version > 0),
+  definition_hash text not null check (definition_hash ~ '^[a-f0-9]{64}$'),
+  compiled_hash text not null check (compiled_hash ~ '^[a-f0-9]{64}$'),
+  compiled_object_key text not null,
+  reserved_at timestamptz not null,
+  updated_at timestamptz not null,
+  primary key (organization_id, workspace_id),
+  unique (reservation_id),
+  unique (compiled_object_key),
+  unique (organization_id, workspace_id, branding_version_id),
+  unique (organization_id, workspace_id, reserved_version),
+  foreign key (organization_id, workspace_id)
+    references branding.branding (organization_id, workspace_id)
+    on delete cascade,
+  foreign key (organization_id, workspace_id, branding_version_id)
+    references branding.branding_versions
+      (organization_id, workspace_id, id)
+    on delete cascade,
+  check (updated_at >= reserved_at)
+);
+
+create index publication_slots_stale_idx
+  on branding.publication_slots (updated_at);
+```
+
+The migration also installs a `publication_slots_guard` trigger. It makes the
+reservation identity and object key immutable, requires the exact
+content-addressed R2 key derived from Organization, Workspace,
+BrandingVersion, reserved version, reservation, and compiled hash, and rejects
+any slot that no longer points to its exact unarchived `publishing` source and
+definition hash.
+
+The reservation transaction locks the Branding aggregate, reuses an identical
+slot and `reservation_id` owned by the same publication, rejects a different contender with a
+retryable conflict, and calculates `max(published version) + 1`. The
+BrandingVersion remains `publishing` with `version = null`. Compilation,
+signing, and R2 I/O then happen outside the database transaction using the
+reserved number. The final short transaction locks the same aggregate and
+slot, verifies every identity and hash, promotes the row to `published` with
+the reserved number, and consumes the slot atomically.
+
+Terminal failure or stale-publication reconciliation deletes only the exact
+unreferenced immutable object, releases the matching slot, and returns the
+version to `draft`. Until the slot is finalized or safely released, no other
+draft in the Workspace can reserve a number. This serializes concurrent
+successful publications while ensuring archived drafts and failed publications
+create no version-number gaps and keeping all network I/O outside database
+transactions.
 
 ### 6.5 Optimistic concurrency
 
@@ -455,13 +536,13 @@ currently needs development only.
 Published artifacts:
 
 ```text
-v1/organizations/{organizationId}/workspaces/{workspaceId}/versions/{brandingVersionId}/{compiledHash}.json
+v1/organizations/{organizationId}/workspaces/{workspaceId}/versions/{brandingVersionId}/{reservedVersion}/{reservationId}/{compiledHash}.json
 ```
 
 Preview artifacts:
 
 ```text
-v1/organizations/{organizationId}/workspaces/{workspaceId}/preview-artifacts/{definitionHash}.json
+v1/organizations/{organizationId}/workspaces/{workspaceId}/preview-artifacts/{brandingVersionId}/{previewSessionId}/{definitionHash}.json
 ```
 
 Custom workspace assets:
@@ -478,6 +559,12 @@ Rules:
 - services derive the key from authorized Postgres records and never accept an
   arbitrary client-supplied R2 key;
 - object keys are immutable and content-addressed;
+- a published-object key binds both the durable publication slot number and an
+  immutable reservation ID, so a released slot can never recreate or race an
+  earlier orphan key;
+- a preview-object key binds the exact draft and preview session as well as its
+  definition hash, preventing two equal definitions owned by different drafts
+  or sessions from sharing mutable lifecycle state;
 - writes use compare-and-create/conditional PUT;
 - Postgres stores object key, hash, ownership, lifecycle, and permissions;
 - the private publication object includes the complete compiled artifact, byte
@@ -531,15 +618,18 @@ The consumer:
 2. verifies `definitionHash` and publishing state;
 3. compiles deterministically;
 4. fails if diagnostics contain blocking errors;
-5. creates and signs one minimal mode projection for every allowed mode;
-6. conditionally writes the immutable private R2 publication object containing
+5. reserves or resumes the Workspace publication slot and its next numeric
+   version in a short Postgres transaction;
+6. creates and signs one minimal mode projection for every allowed mode using
+   that reserved version;
+7. conditionally writes the immutable private R2 publication object containing
    the full artifact and signed mode projections;
-7. verifies stored bytes, compiled hash, every projection hash/signature, and
+8. verifies stored bytes, compiled hash, every projection hash/signature, and
    cross-mode publication identity;
-8. locks the Branding row;
-9. allocates the next published version number;
-10. transitions the row to `published` with its R2 key/hash; and
-11. appends audit evidence.
+9. locks the Branding row and matching publication slot;
+10. transitions the row to `published` with the reserved version and its R2
+    key/hash while consuming the slot; and
+11. appends audit evidence in that same final transaction.
 
 Queue delivery is at-least-once. Event ID, source hash, immutable R2 key, state
 checks, idempotency records, and unique constraints must make duplicate
@@ -705,6 +795,13 @@ order is:
 2. Embedded signed mode-object map
 3. Never an unbranded/provider-default render
 ```
+
+Fallback export prefers the exact active published BrandingVersion. For the
+first consumer bootstrap only, when `activeVersionId` is still null, it exports
+the highest numbered published BrandingVersion in the same Organization and
+Workspace. It never selects a draft or `publishing` row and never changes the
+active pointer. This bootstrap rule is confined to the release/export
+capability; normal SSR resolution remains strictly active-only.
 
 Runtime timeout, unavailable R2, invalid signature/hash, or incompatible
 schema/compiler selects the embedded fallback and emits sanitized operational
@@ -1449,15 +1546,20 @@ The final implementation must record evidence for this sequence:
 6. Archive one draft and prove it is hidden; restore it without content loss.
 7. Attempt a stale-hash patch and prove it fails safely.
 8. Generate a Workspace MCP token, copy it once, and exercise all MCP tools.
-9. Create a hosted application preview for the preferred draft.
-10. Prove the real application renders that exact snapshot during SSR while a
-    normal session still sees the active/fallback branding.
-11. Modify the draft and prove the existing preview remains pinned/stale.
-12. Publish the preferred draft through the async pipeline.
-13. Prove duplicate Queue delivery creates only version 1 and one R2 object.
-14. Activate version 1 from the human dashboard.
+9. Create a long-enough hosted application preview for the preferred draft.
+10. Modify the draft, prove the existing preview is pinned/stale, and create a
+    second preview for the updated exact hash.
+11. Publish the preferred draft through the async pipeline.
+12. Prove duplicate Queue delivery creates only version 1 and one R2 object.
+13. While the active pointer is still null, export the signed version 1
+    fallback through the export-only runtime capability, import it with its
+    exact public JWK, and perform Lunaria's one initial vNext deployment.
+14. Prove the real application renders both exact preview snapshots during SSR,
+    while a normal session renders the signed embedded fallback; then activate
+    version 1 from the human dashboard.
 15. Reload the consumer without rebuilding and prove SSR now uses version 1.
-16. Publish version 2, activate it, and prove the next reload uses version 2.
+16. Create and publish version 2, activate it, and prove the next reload uses
+    version 2 without another consumer deployment.
 17. Activate version 1 again as rollback from the dashboard.
 18. Disable runtime access and prove the consumer uses its embedded branded
     fallback without an unbranded frame.

@@ -69,9 +69,9 @@
       },
       {
         "targetPath": "patterns/pattern-profile.md",
-        "checksum": "sha256:e90d91eef7580db785b9f1063028debcd759819c94f8dd252176c4f0d35a0e7d",
+        "checksum": "sha256:1c8045c658796a10fd2dcfa2020baa0a89f1428b9fa76bc72280ac840aa59dcc",
         "revisions": {
-          "project": 6
+          "project": 7
         },
         "strategy": "combine",
         "gitIgnored": false,
@@ -79,9 +79,10 @@
       },
       {
         "targetPath": "patterns/pattern-system.md",
-        "checksum": "sha256:f6ee17f1cef7b9316e215d58ccc5653ca9ef7f96ab85154b869a0e66a4d09dae",
+        "checksum": "sha256:9e9b238a3cd1ea40ff787a905d9159ffa11df389219ee6ad1875fe75f2c72052",
         "revisions": {
-          "organization": 2
+          "organization": 2,
+          "project": 1
         },
         "strategy": "combine",
         "gitIgnored": false,
@@ -89,10 +90,10 @@
       },
       {
         "targetPath": "patterns/patterns.md",
-        "checksum": "sha256:cbc9cd28e2ea6f866bf5a4edd5a750fc27b29885894f3940aaec05556be3dc1c",
+        "checksum": "sha256:2574f010a87ffa22d092fd1c5b8a3e45c96724407270d147c1875666dff2a7c8",
         "revisions": {
           "organization": 13,
-          "project": 6
+          "project": 7
         },
         "strategy": "combine",
         "gitIgnored": false,

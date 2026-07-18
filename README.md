@@ -178,8 +178,9 @@ pnpm audit --prod
 
 Provider updates are reviewed changes against immutable registry entries; they
 are never automatic production upgrades. Publish order for the compatible
-release set is Brand Contract, UI, then Brand Studio, followed by clean
-consumer installs from GitHub Packages and deployed smoke evidence.
+release set is Brand Contract, UI and Brand Runtime after their shared
+contract, then Brand Studio after its Contract and UI dependencies, followed
+by clean consumer installs from GitHub Packages and deployed smoke evidence.
 
 Production Cloudflare mutation is main-only and uses the protected Environment
 secret `PRODUCTION_CLOUDFLARE_API_TOKEN`. It is scoped to Account `Lemn DEV`

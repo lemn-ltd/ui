@@ -9,7 +9,7 @@ Derived audit-state projection: `patterns/pattern-audit.md`
 ## Inventory Basis
 
 This profile is based on the Lemn UI repository inventory as of
-2026-07-15.
+2026-07-18.
 
 Lemn UI is not a product backend or the full AgentOps control plane. It is
 the shared graphical UI system and release workspace for LEMN products,
@@ -100,7 +100,7 @@ pattern_profile:
   INFRA:
     target_level: 4
     reason:
-      - The repository owns three published packages, Cloudflare Worker deploys, public/protected custom domains, CI release permissions, and package registry configuration.
+      - The repository owns four published packages, Cloudflare Worker deploys, public/protected custom domains, CI release permissions, and package registry configuration.
       - Resource names, ownership, bindings, lifecycle, failure behavior, and verification commands must be documented for every release surface.
 
   API:

@@ -24,7 +24,7 @@
 - Updated dependencies [27cee3a]
   - @lemn-ltd/brand-contract@1.0.0
 
-## 0.1.0
+### Additional details
 
 - Add verified active and preview branding resolution for SSR consumers.
 - Add capability-scoped RPC Service Binding and authenticated HTTPS adapters.

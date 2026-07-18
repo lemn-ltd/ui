@@ -1,12 +1,12 @@
 # Pattern System
 
-This file defines how agents apply the pattern catalog in `docs/patterns/patterns.md`.
+This file defines how agents apply the pattern catalog in `patterns/patterns.md`.
 
 ## Concepts
 
 ### Pattern
 
-A `PAT-*` rule in `docs/patterns/patterns.md`.
+A `PAT-*` rule in `patterns/patterns.md`.
 
 ### Domain
 
@@ -56,7 +56,7 @@ A pattern is applicable when:
 
 ### Pattern Profile
 
-`pattern_profile` lives in `docs/patterns/pattern-profile.md` and declares which domains the project must satisfy and up to what `target_level`.
+`pattern_profile` lives in `patterns/pattern-profile.md` and declares which domains the project must satisfy and up to what `target_level`.
 
 If a domain is absent from `pattern_profile`, it is out of scope unless pulled in by an applicable dependency.
 
@@ -86,7 +86,7 @@ An intentional non-compliance with owner, reason, risk, and deletion or review c
 
 ## Physical Order
 
-The physical order of `docs/patterns/patterns.md` must be:
+The physical order of `patterns/patterns.md` must be:
 
 1. domain
 2. `precedence_level`
@@ -106,18 +106,18 @@ When a project requires a domain at a `target_level`, agents must evaluate every
 
 Agents must use:
 
-- `docs/patterns/pattern-profile.md` for required domains and target levels.
-- `docs/patterns/pattern-audit.md` for current audit state, statuses, gaps, blockers, exceptions, and audit run index.
+- `patterns/pattern-profile.md` for required domains and target levels.
+- `patterns/pattern-audit.md` for current audit state, statuses, gaps, blockers, exceptions, and audit run index.
 
 When auditing a project:
 
 1. Build or refresh the project inventory.
-2. Confirm which domains appear in `docs/patterns/pattern-profile.md`.
+2. Confirm which domains appear in `patterns/pattern-profile.md`.
 3. Evaluate patterns up to each domain `target_level`.
 4. Use `applies_when` to filter irrelevant patterns.
 5. Evaluate every `depends_on` relationship before marking a pattern complete.
 6. Calculate each domain `current_level` from evidence.
-7. Record gaps, blockers, and exceptions in `docs/patterns/pattern-audit.md`.
+7. Record gaps, blockers, and exceptions in `patterns/pattern-audit.md`.
 
 ## Audit Waves
 

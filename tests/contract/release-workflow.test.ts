@@ -473,7 +473,7 @@ test("the validation gate isolates complete E2E and accessibility shard matrices
 test("contributor release guidance remains fail closed", () => {
 	assert.match(
 		contributing,
-		/A scope, owner, authentication, version,\s+package-content, or Cloudflare mismatch fails closed/u,
+		/A scope, owner, authentication, version,\s+package-content, dependency, or\s+Cloudflare mismatch fails closed/u,
 	);
 	assert.doesNotMatch(contributing, /records a warning and\s+continues/u);
 });
