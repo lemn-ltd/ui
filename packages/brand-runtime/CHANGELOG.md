@@ -1,5 +1,13 @@
 # @lemn-ltd/brand-runtime changelog
 
+## 0.1.1
+
+### Patch Changes
+
+- d517b3e: Publish the corrected versioned changelog metadata in a new immutable package
+  tarball. The runtime API and behavior are unchanged; this patch prevents the
+  post-`0.1.0` documentation cleanup from reusing the published `0.1.0` identity.
+
 ## 0.1.0
 
 ### Minor Changes
