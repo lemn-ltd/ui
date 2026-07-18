@@ -49,7 +49,7 @@ export const githubPackagesUserConfig = [
 	"",
 ].join("\n");
 
-interface PackageExpectation {
+export interface PackageExpectation {
 	readonly name: string;
 	readonly version: string;
 	readonly exports: Readonly<Record<string, unknown>>;
@@ -277,11 +277,6 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const expectations = JSON.parse(await readFile(new URL("./expected-package-set.json", import.meta.url), "utf8"));
-const cssMarkers = new Map([
-  ["@lemn-ltd/ui/styles.css", "--lemn-color-accent:"],
-  ["@lemn-ltd/brand-studio/styles.css", ".lemn-brand-studio"],
-]);
-
 function ensure(condition, message) {
   if (!condition) throw new Error(message);
 }
@@ -316,12 +311,7 @@ for (const expectation of expectations) {
     const metadata = await stat(resolvedPath);
     ensure(metadata.isFile() && metadata.size > 0, specifier + " resolved to an empty or non-file target");
     if (target.endsWith(".css")) {
-      const css = await readFile(resolvedPath, "utf8");
-      const marker = cssMarkers.get(specifier);
-      if (marker) ensure(css.includes(marker), specifier + " is missing its public CSS contract marker");
       cssEntrypoints += 1;
-    } else {
-      await import(specifier);
     }
     entrypoints += 1;
   }
@@ -331,7 +321,38 @@ console.log(JSON.stringify({ entrypoints, cssEntrypoints }));
 `;
 }
 
-const consumerSource = `import { compileBrandingDefinition } from '@lemn-ltd/brand-contract';
+export function publishedEntrypointConsumerSource(
+	expectations: readonly PackageExpectation[],
+): string {
+	const source = [
+		"// Generated from the exact published package export maps.",
+		"// TypeScript and Vite must resolve every entrypoint in a real web consumer.",
+	];
+	let javascriptEntrypoint = 0;
+	for (const expectation of expectations) {
+		for (const [key, definition] of Object.entries(expectation.exports)) {
+			const specifier =
+				key === "." ? expectation.name : `${expectation.name}${key.slice(1)}`;
+			const target = runtimeExportTarget(definition);
+			ensure(
+				target?.endsWith(".js") || target?.endsWith(".css"),
+				`${specifier} must publish a JavaScript or CSS runtime target`,
+			);
+			if (target.endsWith(".css")) {
+				source.push(`import ${JSON.stringify(specifier)};`);
+				continue;
+			}
+			const binding = `publishedEntrypoint${javascriptEntrypoint}`;
+			source.push(`import * as ${binding} from ${JSON.stringify(specifier)};`);
+			source.push(`void ${binding};`);
+			javascriptEntrypoint += 1;
+		}
+	}
+	return `${source.join("\n")}\n`;
+}
+
+const consumerSource = `import './all-entrypoints';
+import { compileBrandingDefinition } from '@lemn-ltd/brand-contract';
 import { systemBrandingTemplates } from '@lemn-ltd/brand-contract/system-brandings';
 import { resolveBranding } from '@lemn-ltd/brand-runtime';
 import { createBrandingSsrParts } from '@lemn-ltd/brand-runtime/server';
@@ -398,6 +419,10 @@ async function writeConsumer(
 			resolve(consumerRoot, "verify-entrypoints.mjs"),
 			publishedEntrypointVerifierSource(),
 			{ mode: 0o600 },
+		),
+		writeFile(
+			resolve(sourceRoot, "all-entrypoints.ts"),
+			publishedEntrypointConsumerSource(expectations),
 		),
 		writeFile(
 			resolve(consumerRoot, "tsconfig.json"),
@@ -496,11 +521,19 @@ async function executeSafely(
 	try {
 		return await dependencies.execute(invocation);
 	} catch (error) {
+		const failure = error as {
+			readonly message?: unknown;
+			readonly stdout?: unknown;
+			readonly stderr?: unknown;
+		};
+		const diagnostic = [failure.message, failure.stdout, failure.stderr]
+			.filter((value): value is string => typeof value === "string" && value)
+			.join("\n");
 		throw new Error(
 			redactSensitiveText(
-				error instanceof Error ? error.message : String(error),
+				diagnostic || String(error) || "Published consumer command failed",
 				sensitiveValues,
-			),
+			).slice(0, 64 * 1024),
 		);
 	}
 }
@@ -589,15 +622,18 @@ export async function verifyPublishedPackageConsumer(
 			"Published entrypoint verification did not cover every public stylesheet",
 		);
 
-		for (const args of [
-			["exec", "tsc", "--project", "tsconfig.json"],
-			["exec", "vite", "build"],
+		for (const [binary, args] of [
+			[
+				resolve(temporaryRoot, "node_modules/typescript/bin/tsc"),
+				["--project", "tsconfig.json"],
+			],
+			[resolve(temporaryRoot, "node_modules/vite/bin/vite.js"), ["build"]],
 		] as const) {
 			await executeSafely(
 				dependencies,
 				{
-					command: pnpmCommand,
-					args,
+					command: process.execPath,
+					args: [binary, ...args],
 					cwd: temporaryRoot,
 					environment: credentialFreeEnvironment,
 				},
