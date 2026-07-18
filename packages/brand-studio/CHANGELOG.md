@@ -1,5 +1,18 @@
 # @lemn-ltd/brand-studio
 
+## 2.0.0
+
+### Major Changes
+
+- cf5bf3d: Expose Core-only component and React-free block metadata catalog projections so Node and browser catalog consumers can exclude disabled Agent metadata and component CSS without duplicating the package authority.
+
+  Update Brand Studio's exact `@lemn-ltd/ui` peer to the new minor. Because the Studio contract intentionally pins that peer, this compatibility boundary is an explicit major release rather than an implicit dependent bump.
+
+### Patch Changes
+
+- Updated dependencies [cf5bf3d]
+  - @lemn-ltd/ui@0.4.0
+
 ## 1.0.0
 
 ### Major Changes
