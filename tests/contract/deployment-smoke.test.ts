@@ -46,6 +46,7 @@ test("build identity rejects stale release fields and wrong packages", () => {
 
 function fixture(
 	options: {
+		anonymousHealthStatus?: 200 | 302 | 401 | 403;
 		staleDeepIdentity?: boolean;
 		staleDocsIdentity?: boolean;
 		exposeSecret?: boolean;
@@ -158,9 +159,10 @@ function fixture(
 				headers.get("cf-access-client-id") !== access.clientId ||
 				headers.get("cf-access-client-secret") !== access.clientSecret
 			) {
+				const status = options.anonymousHealthStatus ?? 401;
 				return new Response(null, {
-					status: 302,
-					headers: { location: accessLogin },
+					status,
+					headers: status === 302 ? { location: accessLogin } : undefined,
 				});
 			}
 			return Response.json({
@@ -262,6 +264,28 @@ test("service smoke fails closed for stale identity and credential disclosure", 
 	);
 });
 
+test("service smoke accepts Access redirect or service-auth denial but never anonymous success", async () => {
+	for (const anonymousHealthStatus of [302, 401, 403] as const) {
+		await smokePortalServiceAccess({
+			credentials: access,
+			expected,
+			fetchImplementation: fixture({ anonymousHealthStatus })
+				.fetchImplementation,
+			retryOptions: { attempts: 1, delayMs: 0 },
+		});
+	}
+	await assert.rejects(
+		smokePortalServiceAccess({
+			credentials: access,
+			expected,
+			fetchImplementation: fixture({ anonymousHealthStatus: 200 })
+				.fetchImplementation,
+			retryOptions: { attempts: 1, delayMs: 0 },
+		}),
+		/expected an Access redirect or service-auth denial/u,
+	);
+});
+
 test("candidate Portal smoke is independent from Docs until the final cross-surface smoke", async () => {
 	const candidate = fixture({ staleDocsIdentity: true });
 	await smokePortalProductionDeployment({
@@ -272,7 +296,9 @@ test("candidate Portal smoke is independent from Docs until the final cross-surf
 		retryOptions: { attempts: 1, delayMs: 0 },
 	});
 	assert.equal(
-		candidate.requests.some(({ url }) => url.startsWith("https://ui.le-mn.com")),
+		candidate.requests.some(({ url }) =>
+			url.startsWith("https://ui.le-mn.com"),
+		),
 		false,
 	);
 

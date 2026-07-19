@@ -171,6 +171,20 @@ function assertAccessRedirect(response: Response, endpoint: string): void {
 	);
 }
 
+function assertServiceAccessBoundary(
+	response: Response,
+	endpoint: string,
+): void {
+	if (response.status === 302) {
+		assertAccessRedirect(response, endpoint);
+		return;
+	}
+	assert(
+		response.status === 401 || response.status === 403,
+		`${endpoint} anonymous request returned HTTP ${response.status}; expected an Access redirect or service-auth denial`,
+	);
+}
+
 function assertServiceAdminDenied(response: Response, endpoint: string): void {
 	if (response.status === 302) {
 		assertAccessRedirect(response, endpoint);
@@ -256,7 +270,7 @@ export async function smokePortalServiceAccess(input: {
 				redirect: "manual",
 				signal: requestSignal(input.signal),
 			});
-			assertAccessRedirect(response, endpoint);
+			assertServiceAccessBoundary(response, endpoint);
 		},
 		retryOptions,
 		input.signal,
