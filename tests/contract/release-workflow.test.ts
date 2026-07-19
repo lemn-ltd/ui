@@ -84,6 +84,16 @@ test("manual production release is main-only and workflow concurrency never canc
 	assert.ok(Number(releaseJob["timeout-minutes"]) >= 60);
 });
 
+test("production release checkout preserves full Git history for cross-SHA recovery", () => {
+	const checkouts = steps.filter(
+		(candidate) => candidate.uses === "actions/checkout@v4",
+	);
+	assert.equal(checkouts.length, 1);
+	const checkout = record(checkouts[0], "production checkout");
+	const checkoutWith = record(checkout.with, "production checkout inputs");
+	assert.equal(checkoutWith["fetch-depth"], 0);
+});
+
 test("production Access credentials and audiences remain exclusive to the protected environment job", () => {
 	assert.equal(releaseJob.environment, "production");
 	const productionInputPattern =

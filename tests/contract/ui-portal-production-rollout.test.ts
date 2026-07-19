@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, resolve } from "node:path";
@@ -9,7 +10,9 @@ import {
 	activateCandidateCommand,
 	activeDeploymentFromJson,
 	attachCloudflareCustomDomain,
+	type BootstrapCandidateRecoveryState,
 	baselinePortalConfigCommand,
+	bootstrapCandidateCommand,
 	buildPortalCommand,
 	CommandAbortedError,
 	type CommandSpec,
@@ -25,6 +28,7 @@ import {
 	detachCloudflareCustomDomain,
 	encodeCandidateState,
 	getCloudflareWorkerSubdomain,
+	gitAncestorCommand,
 	listCloudflareCustomDomains,
 	RolloutRollbackFailure,
 	removeTriggerTemporaryRoot,
@@ -106,6 +110,45 @@ const triggerHashes = triggerRecoveryHashes(
 	desiredWranglerSource,
 	cloudflareEnvironment,
 );
+
+function bootstrapTriggerHash(
+	domains: readonly { hostname: string; service: string }[],
+): string {
+	return createHash("sha256")
+		.update(
+			JSON.stringify({
+				accountId: "account-id",
+				workerName: "lemn-ui-portal",
+				domains: [...domains].sort((left, right) =>
+					`${left.hostname}\u0000${left.service}`.localeCompare(
+						`${right.hostname}\u0000${right.service}`,
+					),
+				),
+				workersDev: false,
+				previewsEnabled: false,
+			}),
+		)
+		.digest("hex");
+}
+
+const priorBootstrapState: BootstrapCandidateRecoveryState = {
+	schema: 6,
+	mode: "bootstrap",
+	releaseId: `@lemn-ltd/ui@${previousIdentity.version}#${previousIdentity.gitSha}`,
+	expected: previousIdentity,
+	baselineDomains: [
+		{ hostname: "portal.ui.le-mn.com", service: null },
+		{ hostname: "schemas.ui.le-mn.com", service: "legacy-schema-worker" },
+	],
+	baselineTriggersHash: bootstrapTriggerHash([
+		{ hostname: "schemas.ui.le-mn.com", service: "legacy-schema-worker" },
+	]),
+	desiredTriggersHash: bootstrapTriggerHash([
+		{ hostname: "portal.ui.le-mn.com", service: "lemn-ui-portal" },
+		{ hostname: "schemas.ui.le-mn.com", service: "lemn-ui-portal" },
+	]),
+	accessAudiencesHash: accessAudienceBindingsHash(accessAudiences),
+};
 const state: UpgradeCandidateRecoveryState = {
 	schema: 6,
 	mode: "upgrade",
@@ -192,6 +235,7 @@ function deploymentJson(phase: PlatformPhase): string {
 function candidateVersionsJson(
 	present: boolean,
 	message = encodeCandidateState(state),
+	identity = expected,
 ) {
 	return JSON.stringify(
 		present
@@ -199,7 +243,7 @@ function candidateVersionsJson(
 					{
 						id: candidateVersionId,
 						annotations: {
-							"workers/tag": candidateTag(expected),
+							"workers/tag": candidateTag(identity),
 							"workers/message": message,
 						},
 					},
@@ -467,31 +511,72 @@ function fakePlatform(
 function fakeBootstrapPlatform(
 	options: {
 		activeSmokeFailure?: Error;
+		additionalVersion?: boolean;
+		ancestorFailure?: Error;
+		ancestorOperationalFailure?: Error;
+		attachTargetFailureAfterMutation?: Error;
+		concurrentDeploymentBeforeDelete?: boolean;
 		concurrentSchemaTakeover?: boolean;
+		concurrentSchemaTakeoverAfterDetach?: boolean;
 		deleteFailure?: Error;
+		detachBaselineFailureAfterMutation?: Error;
+		detachTargetFailureAfterMutation?: Error;
+		initialBootstrapState?: BootstrapCandidateRecoveryState;
+		initialDeploymentPresent?: boolean;
+		initialDomains?: readonly {
+			readonly hostname: string;
+			readonly id: string;
+			readonly service: string;
+		}[];
+		initialVersionTag?: string;
+		replacementBootstrapDeploymentBeforeDelete?: boolean;
+		stopAfterRecovery?: Error;
 		timeoutAfterUpload?: boolean;
 	} = {},
 ) {
-	let workerPresent = false;
-	let candidatePresent = false;
-	let candidateMessage = "";
-	let deploymentMessage = "";
-	let deploymentPresent = false;
+	const initialBootstrapState = options.initialBootstrapState;
+	let workerPresent = Boolean(initialBootstrapState);
+	let candidatePresent = Boolean(initialBootstrapState);
+	let candidateMessage = initialBootstrapState
+		? encodeCandidateState(initialBootstrapState)
+		: "";
+	let deploymentMessage = initialBootstrapState
+		? (bootstrapCandidateCommand(initialBootstrapState, candidateVersionId)
+				.args[
+				bootstrapCandidateCommand(
+					initialBootstrapState,
+					candidateVersionId,
+				).args.indexOf("--message") + 1
+			] ?? "")
+		: "";
+	let deploymentPresent =
+		options.initialDeploymentPresent ?? Boolean(initialBootstrapState);
+	let deploymentConcurrent = false;
+	let deploymentIdChanged = false;
 	let timeoutAfterUpload = options.timeoutAfterUpload ?? false;
-	const domains = new Map([
-		[
-			"schemas.ui.le-mn.com",
-			{ id: "schemas-domain-id", service: "legacy-schema-worker" },
-		],
-		[
-			"unrelated.le-mn.com",
-			{ id: "unrelated-domain-id", service: "unrelated-worker" },
-		],
-	]);
+	const domains = new Map(
+		(
+			options.initialDomains ?? [
+				{
+					hostname: "schemas.ui.le-mn.com",
+					id: "schemas-domain-id",
+					service: "legacy-schema-worker",
+				},
+				{
+					hostname: "unrelated.le-mn.com",
+					id: "unrelated-domain-id",
+					service: "unrelated-worker",
+				},
+			]
+		).map(({ hostname, id, service }) => [hostname, { id, service }] as const),
+	);
 	const events: string[] = [];
 	let deleteCount = 0;
 	let buildCount = 0;
 	let uploadCount = 0;
+	let attachTargetFailure = options.attachTargetFailureAfterMutation;
+	let detachBaselineFailure = options.detachBaselineFailureAfterMutation;
+	let detachTargetFailure = options.detachTargetFailureAfterMutation;
 
 	const currentDomains = () =>
 		[...domains.entries()].map(([hostname, value]) => ({
@@ -524,10 +609,36 @@ function fakeBootstrapPlatform(
 		) {
 			const previous = domains.get(hostname)?.service ?? "absent";
 			events.push(`attach:${hostname}:${previous}->${workerName}`);
+			if (domains.has(hostname)) {
+				throw new Error(`custom-domain conflict for ${hostname}`);
+			}
 			domains.set(hostname, {
 				id: `${hostname}-domain-id`,
 				service: workerName,
 			});
+			if (
+				options.concurrentDeploymentBeforeDelete &&
+				hostname === "schemas.ui.le-mn.com" &&
+				workerName === "legacy-schema-worker"
+			) {
+				deploymentConcurrent = true;
+			}
+			if (
+				options.replacementBootstrapDeploymentBeforeDelete &&
+				hostname === "schemas.ui.le-mn.com" &&
+				workerName === "legacy-schema-worker"
+			) {
+				deploymentIdChanged = true;
+			}
+			if (
+				attachTargetFailure &&
+				hostname === "schemas.ui.le-mn.com" &&
+				workerName === "lemn-ui-portal"
+			) {
+				const failure = attachTargetFailure;
+				attachTargetFailure = undefined;
+				throw failure;
+			}
 			if (
 				options.concurrentSchemaTakeover &&
 				hostname === "portal.ui.le-mn.com"
@@ -545,6 +656,33 @@ function fakeBootstrapPlatform(
 			assert.ok(match);
 			events.push(`detach:${match[0]}`);
 			domains.delete(match[0]);
+			if (
+				detachTargetFailure &&
+				match[0] === "schemas.ui.le-mn.com" &&
+				match[1].service === "lemn-ui-portal"
+			) {
+				const failure = detachTargetFailure;
+				detachTargetFailure = undefined;
+				throw failure;
+			}
+			if (
+				detachBaselineFailure &&
+				match[0] === "schemas.ui.le-mn.com" &&
+				match[1].service === "legacy-schema-worker"
+			) {
+				const failure = detachBaselineFailure;
+				detachBaselineFailure = undefined;
+				throw failure;
+			}
+			if (
+				options.concurrentSchemaTakeoverAfterDetach &&
+				match[0] === "schemas.ui.le-mn.com"
+			) {
+				domains.set(match[0], {
+					id: "concurrent-schema-domain-id",
+					service: "concurrent-schema-worker",
+				});
+			}
 		},
 		async deleteWorker() {
 			events.push("worker:delete");
@@ -553,16 +691,76 @@ function fakeBootstrapPlatform(
 			workerPresent = false;
 			candidatePresent = false;
 			deploymentPresent = false;
+			deploymentConcurrent = false;
+			deploymentIdChanged = false;
 			candidateMessage = "";
 			deploymentMessage = "";
 		},
 		async waitForDomainPropagation() {},
+		async isGitAncestor(ancestorGitSha: string, descendantGitSha: string) {
+			events.push(`ancestor:${ancestorGitSha}->${descendantGitSha}`);
+			if (options.ancestorOperationalFailure) {
+				throw options.ancestorOperationalFailure;
+			}
+			return !options.ancestorFailure;
+		},
 		async runCommand(spec: CommandSpec) {
 			events.push(commandLabel(spec));
+			if (
+				initialBootstrapState &&
+				spec.args.join(" ") ===
+					baselinePortalConfigCommand(
+						initialBootstrapState.expected.gitSha,
+					).args.join(" ")
+			) {
+				return desiredWranglerSource;
+			}
 			if (spec.args.join(" ") === versionListCommand.args.join(" ")) {
-				return candidateVersionsJson(candidatePresent, candidateMessage);
+				const versions = candidatePresent
+					? (JSON.parse(
+							candidateVersionsJson(
+								true,
+								candidateMessage,
+								decodeCandidateState(candidateMessage).expected,
+							),
+						) as Array<{
+							annotations: Record<string, string>;
+							id: string;
+						}>)
+					: [];
+				if (options.additionalVersion) {
+					versions.push({
+						id: concurrentVersionId,
+						annotations: {
+							"workers/message": "unrelated Worker version",
+							"workers/tag": "unrelated-version",
+						},
+					});
+				}
+				if (options.initialVersionTag && uploadCount === 0) {
+					const version = versions[0];
+					assert.ok(version);
+					version.annotations["workers/tag"] = options.initialVersionTag;
+				}
+				return JSON.stringify(versions);
 			}
 			if (spec.args.join(" ") === deploymentListCommand.args.join(" ")) {
+				if (deploymentConcurrent) return deploymentJson("concurrent");
+				if (deploymentIdChanged) {
+					return JSON.stringify([
+						{
+							id: deploymentIds.concurrent,
+							created_on: "2026-07-14T00:01:00Z",
+							annotations: { "workers/message": deploymentMessage },
+							versions: [
+								{
+									version_id: candidateVersionId,
+									percentage: 100,
+								},
+							],
+						},
+					]);
+				}
 				return deploymentPresent
 					? JSON.stringify([
 							{
@@ -605,6 +803,7 @@ function fakeBootstrapPlatform(
 			throw new Error(`Unexpected bootstrap command: ${commandLabel(spec)}`);
 		},
 		async smokeProtected() {
+			if (options.stopAfterRecovery) throw options.stopAfterRecovery;
 			throw new Error(
 				"Bootstrap must not capture a nonexistent protected baseline",
 			);
@@ -937,6 +1136,12 @@ test("Cloudflare bootstrap adapters use scoped endpoints and never expose creden
 				{ status: 200 },
 			);
 		}
+		if (
+			(init?.method ?? "GET") === "DELETE" &&
+			String(input).includes("/workers/domains/")
+		) {
+			return new Response("deleted", { status: 200 });
+		}
 		return new Response(JSON.stringify({ success: true, result: null }), {
 			status: 200,
 		});
@@ -1014,6 +1219,44 @@ test("Cloudflare bootstrap adapters use scoped endpoints and never expose creden
 			return true;
 		},
 	);
+
+	await detachCloudflareCustomDomain(
+		"account-id",
+		"domain-empty",
+		token,
+		(async () => new Response(null, { status: 204 })) as typeof fetch,
+	);
+	await assert.rejects(
+		detachCloudflareCustomDomain(
+			"account-id",
+			"domain-rejected",
+			token,
+			(async () =>
+				new Response(JSON.stringify({ success: false }), {
+					status: 200,
+				})) as typeof fetch,
+		),
+		/HTTP 200/u,
+	);
+	await assert.rejects(
+		attachCloudflareCustomDomain(
+			"account-id",
+			"portal.ui.le-mn.com",
+			"lemn-ui-portal",
+			token,
+			(async () => new Response("attached", { status: 200 })) as typeof fetch,
+		),
+		/non-JSON HTTP 200/u,
+	);
+	await assert.rejects(
+		deleteCloudflareWorker(
+			"account-id",
+			"lemn-ui-portal",
+			token,
+			(async () => new Response("deleted", { status: 200 })) as typeof fetch,
+		),
+		/non-JSON HTTP 200/u,
+	);
 });
 
 test("first rollout bootstraps only after candidate upload and preserves unrelated domains", async () => {
@@ -1043,6 +1286,16 @@ test("first rollout bootstraps only after candidate upload and preserves unrelat
 		event.startsWith("attach:"),
 	);
 	assert.ok(deployIndex >= 0 && deployIndex < firstAttachIndex);
+	const schemaDetachIndex = platform.events.indexOf(
+		"detach:schemas.ui.le-mn.com",
+	);
+	const schemaAttachIndex = platform.events.findIndex((event) =>
+		event.startsWith("attach:schemas.ui.le-mn.com:absent->lemn-ui-portal"),
+	);
+	assert.ok(
+		schemaDetachIndex >= 0 && schemaDetachIndex < schemaAttachIndex,
+		"an exact legacy mapping must be detached before the target is attached",
+	);
 	assert.ok(
 		platform.events.indexOf("smoke:candidate") <
 			platform.events.indexOf("smoke:active"),
@@ -1063,6 +1316,400 @@ test("bootstrap upload timeout resumes the persisted candidate without rebuildin
 	assert.equal(platform.deploymentPresent, true);
 	assert.equal(platform.buildCount, 1);
 	assert.equal(platform.uploadCount, 1);
+});
+
+test("a new release settles its exact ancestor bootstrap before starting the current upgrade", async () => {
+	const stopAfterRecovery = new Error(
+		"current upgrade baseline capture reached",
+	);
+	const platform = fakeBootstrapPlatform({
+		initialBootstrapState: priorBootstrapState,
+		stopAfterRecovery,
+	});
+	await assert.rejects(
+		runProductionRollout(input, platform.dependencies),
+		(error) => error === stopAfterRecovery,
+	);
+	assert.equal(platform.workerPresent, true);
+	assert.equal(platform.deleteCount, 0);
+	assert.equal(platform.buildCount, 0);
+	assert.equal(platform.uploadCount, 0);
+	assert.equal(
+		platform.domains.get("portal.ui.le-mn.com")?.service,
+		"lemn-ui-portal",
+	);
+	assert.equal(
+		platform.domains.get("schemas.ui.le-mn.com")?.service,
+		"lemn-ui-portal",
+	);
+	assert.ok(
+		platform.events.includes(
+			`ancestor:${previousIdentity.gitSha}->${expected.gitSha}`,
+		),
+	);
+	assert.deepEqual(
+		platform.events.filter((event) => event.startsWith("smoke:")),
+		["smoke:candidate", "smoke:active"],
+	);
+	assert.ok(platform.events.includes("summary"));
+});
+
+test("a completed historical bootstrap is re-smoked under its exact lease before the current upgrade", async () => {
+	const stopAfterRecovery = new Error(
+		"current upgrade baseline capture reached",
+	);
+	const platform = fakeBootstrapPlatform({
+		initialBootstrapState: priorBootstrapState,
+		initialDomains: [
+			{
+				hostname: "portal.ui.le-mn.com",
+				id: "portal-domain-id",
+				service: "lemn-ui-portal",
+			},
+			{
+				hostname: "schemas.ui.le-mn.com",
+				id: "schemas-domain-id",
+				service: "lemn-ui-portal",
+			},
+			{
+				hostname: "unrelated.le-mn.com",
+				id: "unrelated-domain-id",
+				service: "unrelated-worker",
+			},
+		],
+		stopAfterRecovery,
+	});
+	await assert.rejects(
+		runProductionRollout(input, platform.dependencies),
+		(error) => error === stopAfterRecovery,
+	);
+	assert.deepEqual(
+		platform.events.filter((event) => event.startsWith("smoke:")),
+		["smoke:candidate", "smoke:active"],
+	);
+	const candidateSmokeIndex = platform.events.indexOf("smoke:candidate");
+	const activeSmokeIndex = platform.events.indexOf("smoke:active");
+	assert.ok(
+		platform.events.some(
+			(event, index) =>
+				index > candidateSmokeIndex &&
+				index < activeSmokeIndex &&
+				event === commandLabel(deploymentListCommand),
+		),
+		"the historical candidate lease must be re-read between candidate and active smokes",
+	);
+	assert.equal(
+		platform.events.some((event) => /^(?:attach|detach):/u.test(event)),
+		false,
+	);
+	assert.equal(platform.events.includes("summary"), true);
+	assert.equal(platform.deleteCount, 0);
+	assert.equal(platform.workerPresent, true);
+});
+
+test("cross-release recovery resumes an exact mixed baseline and target transition", async () => {
+	const stopAfterRecovery = new Error(
+		"current upgrade baseline capture reached",
+	);
+	const platform = fakeBootstrapPlatform({
+		initialBootstrapState: priorBootstrapState,
+		initialDomains: [
+			{
+				hostname: "portal.ui.le-mn.com",
+				id: "portal-domain-id",
+				service: "lemn-ui-portal",
+			},
+			{
+				hostname: "schemas.ui.le-mn.com",
+				id: "schemas-domain-id",
+				service: "legacy-schema-worker",
+			},
+		],
+		stopAfterRecovery,
+	});
+	await assert.rejects(
+		runProductionRollout(input, platform.dependencies),
+		(error) => error === stopAfterRecovery,
+	);
+	assert.equal(
+		platform.domains.get("portal.ui.le-mn.com")?.service,
+		"lemn-ui-portal",
+	);
+	assert.equal(
+		platform.domains.get("schemas.ui.le-mn.com")?.service,
+		"lemn-ui-portal",
+	);
+	assert.deepEqual(
+		platform.events.filter((event) =>
+			/(?:attach|detach):schemas\.ui\.le-mn\.com/u.test(event),
+		),
+		[
+			"detach:schemas.ui.le-mn.com",
+			"attach:schemas.ui.le-mn.com:absent->lemn-ui-portal",
+		],
+	);
+	assert.equal(
+		platform.events.some((event) =>
+			/(?:attach|detach):portal\.ui\.le-mn\.com/u.test(event),
+		),
+		false,
+	);
+	assert.deepEqual(
+		platform.events.filter((event) => event.startsWith("smoke:")),
+		["smoke:candidate", "smoke:active"],
+	);
+});
+
+test("cross-release recovery acquires a lease for one exact orphan bootstrap candidate", async () => {
+	const stopAfterRecovery = new Error(
+		"current upgrade baseline capture reached",
+	);
+	const platform = fakeBootstrapPlatform({
+		initialBootstrapState: priorBootstrapState,
+		initialDeploymentPresent: false,
+		stopAfterRecovery,
+	});
+	await assert.rejects(
+		runProductionRollout(input, platform.dependencies),
+		(error) => error === stopAfterRecovery,
+	);
+	assert.equal(platform.deploymentPresent, true);
+	assert.equal(platform.buildCount, 0);
+	assert.equal(platform.uploadCount, 0);
+	assert.equal(platform.deleteCount, 0);
+	assert.equal(
+		platform.domains.get("portal.ui.le-mn.com")?.service,
+		"lemn-ui-portal",
+	);
+	assert.equal(
+		platform.domains.get("schemas.ui.le-mn.com")?.service,
+		"lemn-ui-portal",
+	);
+	assert.deepEqual(
+		platform.events.filter((event) => event.startsWith("smoke:")),
+		["smoke:candidate", "smoke:active"],
+	);
+});
+
+test("cross-release recovery resumes an orphan bootstrap whose exact domains are already desired", async () => {
+	const stopAfterRecovery = new Error(
+		"current upgrade baseline capture reached",
+	);
+	const platform = fakeBootstrapPlatform({
+		initialBootstrapState: priorBootstrapState,
+		initialDeploymentPresent: false,
+		initialDomains: [
+			{
+				hostname: "portal.ui.le-mn.com",
+				id: "portal-domain-id",
+				service: "lemn-ui-portal",
+			},
+			{
+				hostname: "schemas.ui.le-mn.com",
+				id: "schemas-domain-id",
+				service: "lemn-ui-portal",
+			},
+		],
+		stopAfterRecovery,
+	});
+	await assert.rejects(
+		runProductionRollout(input, platform.dependencies),
+		(error) => error === stopAfterRecovery,
+	);
+	assert.equal(platform.deploymentPresent, true);
+	assert.equal(platform.buildCount, 0);
+	assert.equal(platform.uploadCount, 0);
+	assert.equal(platform.deleteCount, 0);
+	assert.deepEqual(
+		platform.events.filter((event) => event.startsWith("smoke:")),
+		["smoke:candidate", "smoke:active"],
+	);
+	assert.equal(
+		platform.events.some((event) => /^(?:attach|detach):/u.test(event)),
+		false,
+	);
+});
+
+test("cross-release recovery resumes an orphan bootstrap from an exact transitional mix", async () => {
+	const stopAfterRecovery = new Error(
+		"current upgrade baseline capture reached",
+	);
+	const platform = fakeBootstrapPlatform({
+		initialBootstrapState: priorBootstrapState,
+		initialDeploymentPresent: false,
+		initialDomains: [
+			{
+				hostname: "portal.ui.le-mn.com",
+				id: "portal-domain-id",
+				service: "lemn-ui-portal",
+			},
+			{
+				hostname: "schemas.ui.le-mn.com",
+				id: "schemas-domain-id",
+				service: "legacy-schema-worker",
+			},
+		],
+		stopAfterRecovery,
+	});
+	await assert.rejects(
+		runProductionRollout(input, platform.dependencies),
+		(error) => error === stopAfterRecovery,
+	);
+	assert.equal(platform.deploymentPresent, true);
+	assert.equal(platform.buildCount, 0);
+	assert.equal(platform.uploadCount, 0);
+	assert.equal(platform.deleteCount, 0);
+	assert.equal(
+		platform.domains.get("portal.ui.le-mn.com")?.service,
+		"lemn-ui-portal",
+	);
+	assert.equal(
+		platform.domains.get("schemas.ui.le-mn.com")?.service,
+		"lemn-ui-portal",
+	);
+	assert.deepEqual(
+		platform.events.filter((event) => event.startsWith("smoke:")),
+		["smoke:candidate", "smoke:active"],
+	);
+});
+
+test("cross-release bootstrap recovery rejects every additional Worker version", async () => {
+	for (const deploymentPresent of [true, false]) {
+		const platform = fakeBootstrapPlatform({
+			additionalVersion: true,
+			initialBootstrapState: priorBootstrapState,
+			initialDeploymentPresent: deploymentPresent,
+		});
+		await assert.rejects(
+			runProductionRollout(input, platform.dependencies),
+			(error) => error instanceof ConcurrentDeploymentError,
+			deploymentPresent ? "active bootstrap" : "orphan bootstrap",
+		);
+		assert.equal(platform.deleteCount, 0);
+		assert.equal(platform.workerPresent, true);
+		assert.equal(
+			platform.events.some((event) => /^(?:attach|detach):/u.test(event)),
+			false,
+		);
+		assert.equal(platform.events.includes("summary"), false);
+	}
+});
+
+test("cross-release recovery rejects an ambiguous absent baseline owner without mutation", async () => {
+	const platform = fakeBootstrapPlatform({
+		initialBootstrapState: priorBootstrapState,
+		initialDomains: [
+			{
+				hostname: "unrelated.le-mn.com",
+				id: "unrelated-domain-id",
+				service: "unrelated-worker",
+			},
+		],
+	});
+	await assert.rejects(
+		runProductionRollout(input, platform.dependencies),
+		/ambiguous or concurrent trigger drift/u,
+	);
+	assert.equal(
+		platform.events.some((event) => /^(?:attach|detach):/u.test(event)),
+		false,
+	);
+	assert.equal(platform.events.includes("summary"), false);
+	assert.equal(platform.deleteCount, 0);
+	assert.equal(platform.workerPresent, true);
+	assert.equal(platform.domains.has("schemas.ui.le-mn.com"), false);
+});
+
+test("cross-release bootstrap recovery rejects a non-ancestor before domain mutation", async () => {
+	const platform = fakeBootstrapPlatform({
+		ancestorFailure: new Error("not an ancestor"),
+		initialBootstrapState: priorBootstrapState,
+	});
+	await assert.rejects(
+		runProductionRollout(input, platform.dependencies),
+		/not an ancestor of the current release/u,
+	);
+	assert.equal(platform.buildCount, 0);
+	assert.equal(platform.uploadCount, 0);
+	assert.equal(platform.domains.has("portal.ui.le-mn.com"), false);
+	assert.equal(
+		platform.domains.get("schemas.ui.le-mn.com")?.service,
+		"legacy-schema-worker",
+	);
+	assert.equal(
+		platform.events.some((event) => /^(?:attach|detach):/u.test(event)),
+		false,
+	);
+	assert.equal(platform.events.includes("summary"), false);
+});
+
+test("cross-release bootstrap recovery preserves an operational Git ancestry failure", async () => {
+	const operationalFailure = new Error("git ancestry transport failed");
+	const platform = fakeBootstrapPlatform({
+		ancestorOperationalFailure: operationalFailure,
+		initialBootstrapState: priorBootstrapState,
+	});
+	await assert.rejects(
+		runProductionRollout(input, platform.dependencies),
+		(error) => error === operationalFailure,
+	);
+	assert.equal(platform.buildCount, 0);
+	assert.equal(platform.uploadCount, 0);
+	assert.equal(
+		platform.events.some((event) => /^(?:attach|detach):/u.test(event)),
+		false,
+	);
+	assert.equal(platform.deleteCount, 0);
+});
+
+test("cross-release bootstrap recovery is bound to tag, release, audiences, and Wrangler hashes", async () => {
+	const cases = [
+		{
+			name: "tag",
+			options: { initialVersionTag: "not-the-immutable-bootstrap-tag" },
+			expectedError: /tag or release ID is not self-consistent/u,
+		},
+		{
+			name: "release ID",
+			state: { ...priorBootstrapState, releaseId: "wrong-release-id" },
+			expectedError: /tag or release ID is not self-consistent/u,
+		},
+		{
+			name: "Access audiences",
+			state: { ...priorBootstrapState, accessAudiencesHash: "c".repeat(64) },
+			expectedError: /Access audience does not match/u,
+		},
+		{
+			name: "Wrangler hash",
+			state: { ...priorBootstrapState, desiredTriggersHash: "d".repeat(64) },
+			expectedError: /no longer matches Git-authoritative Wrangler configs/u,
+		},
+	] as const;
+	for (const testCase of cases) {
+		const platform = fakeBootstrapPlatform({
+			initialBootstrapState:
+				"state" in testCase ? testCase.state : priorBootstrapState,
+			...("options" in testCase ? testCase.options : {}),
+		});
+		await assert.rejects(
+			runProductionRollout(input, platform.dependencies),
+			testCase.expectedError,
+			testCase.name,
+		);
+		assert.equal(platform.buildCount, 0, testCase.name);
+		assert.equal(platform.uploadCount, 0, testCase.name);
+		assert.equal(platform.domains.has("portal.ui.le-mn.com"), false);
+		assert.equal(
+			platform.domains.get("schemas.ui.le-mn.com")?.service,
+			"legacy-schema-worker",
+			testCase.name,
+		);
+		assert.equal(
+			platform.events.some((event) => /^(?:attach|detach):/u.test(event)),
+			false,
+			testCase.name,
+		);
+	}
 });
 
 test("failed bootstrap restores every prior hostname owner before deleting its Worker", async () => {
@@ -1097,6 +1744,118 @@ test("failed bootstrap restores every prior hostname owner before deleting its W
 	assert.ok(platform.events.indexOf("worker:delete") > lastRestoreIndex);
 });
 
+test("bootstrap rollback rechecks its deployment lease immediately before Worker deletion", async () => {
+	const platform = fakeBootstrapPlatform({
+		activeSmokeFailure: new Error("bootstrap smoke failed"),
+		concurrentDeploymentBeforeDelete: true,
+	});
+	await assert.rejects(
+		runProductionRollout(input, platform.dependencies),
+		(error) => {
+			assert(error instanceof RolloutRollbackFailure);
+			assert.match(
+				safeErrorMessage(error, []),
+				/changed the bootstrap lease during domain restoration/u,
+			);
+			return true;
+		},
+	);
+	assert.equal(platform.deleteCount, 0);
+	assert.equal(platform.workerPresent, true);
+	assert.equal(
+		platform.domains.get("schemas.ui.le-mn.com")?.service,
+		"legacy-schema-worker",
+	);
+	assert.equal(platform.domains.has("portal.ui.le-mn.com"), false);
+	assert.equal(platform.events.includes("worker:delete"), false);
+});
+
+test("bootstrap rollback binds pre-delete verification to the immutable deployment ID", async () => {
+	const platform = fakeBootstrapPlatform({
+		activeSmokeFailure: new Error("bootstrap smoke failed"),
+		replacementBootstrapDeploymentBeforeDelete: true,
+	});
+	await assert.rejects(
+		runProductionRollout(input, platform.dependencies),
+		(error) => error instanceof RolloutRollbackFailure,
+	);
+	assert.equal(platform.deleteCount, 0);
+	assert.equal(platform.workerPresent, true);
+	assert.equal(
+		platform.domains.get("schemas.ui.le-mn.com")?.service,
+		"legacy-schema-worker",
+	);
+	assert.equal(platform.domains.has("portal.ui.le-mn.com"), false);
+	assert.equal(platform.events.includes("worker:delete"), false);
+});
+
+test("an ambiguous target attach failure restores the detached exact baseline before global rollback", async () => {
+	const attachFailure = new Error("target attach returned an invalid response");
+	const platform = fakeBootstrapPlatform({
+		attachTargetFailureAfterMutation: attachFailure,
+	});
+	await assert.rejects(
+		runProductionRollout(input, platform.dependencies),
+		(error) => error === attachFailure,
+	);
+	assert.equal(platform.workerPresent, false);
+	assert.equal(platform.deleteCount, 1);
+	assert.equal(platform.domains.has("portal.ui.le-mn.com"), false);
+	assert.equal(
+		platform.domains.get("schemas.ui.le-mn.com")?.service,
+		"legacy-schema-worker",
+	);
+	const schemaEvents = platform.events.filter((event) =>
+		/(?:attach|detach):schemas\.ui\.le-mn\.com/u.test(event),
+	);
+	assert.deepEqual(schemaEvents, [
+		"detach:schemas.ui.le-mn.com",
+		"attach:schemas.ui.le-mn.com:absent->lemn-ui-portal",
+		"detach:schemas.ui.le-mn.com",
+		"attach:schemas.ui.le-mn.com:absent->legacy-schema-worker",
+	]);
+});
+
+test("an ambiguous baseline detach failure restores the exact owner before global rollback", async () => {
+	const detachFailure = new Error(
+		"baseline detach returned an invalid response",
+	);
+	const platform = fakeBootstrapPlatform({
+		detachBaselineFailureAfterMutation: detachFailure,
+	});
+	await assert.rejects(
+		runProductionRollout(input, platform.dependencies),
+		(error) => error === detachFailure,
+	);
+	assert.equal(platform.workerPresent, false);
+	assert.equal(platform.deleteCount, 1);
+	assert.equal(platform.domains.has("portal.ui.le-mn.com"), false);
+	assert.equal(
+		platform.domains.get("schemas.ui.le-mn.com")?.service,
+		"legacy-schema-worker",
+	);
+});
+
+test("an ambiguous target detach during rollback is re-read and restores the exact baseline", async () => {
+	const platform = fakeBootstrapPlatform({
+		activeSmokeFailure: new Error("bootstrap smoke failed"),
+		detachTargetFailureAfterMutation: new Error(
+			"target detach returned an invalid response",
+		),
+	});
+	await assert.rejects(
+		runProductionRollout(input, platform.dependencies),
+		/bootstrap smoke failed/u,
+	);
+	assert.equal(platform.workerPresent, false);
+	assert.equal(platform.deleteCount, 1);
+	assert.equal(platform.domains.has("portal.ui.le-mn.com"), false);
+	assert.equal(
+		platform.domains.get("schemas.ui.le-mn.com")?.service,
+		"legacy-schema-worker",
+	);
+});
+
 test("bootstrap rollback never overwrites a concurrently reassigned hostname", async () => {
 	const platform = fakeBootstrapPlatform({ concurrentSchemaTakeover: true });
 	await assert.rejects(
@@ -1113,12 +1872,45 @@ test("bootstrap rollback never overwrites a concurrently reassigned hostname", a
 	assert.equal(platform.deleteCount, 0);
 	assert.equal(platform.workerPresent, true);
 	assert.equal(
+		platform.domains.has("portal.ui.le-mn.com"),
+		false,
+		"global rollback must restore independent domains after a local rollback failure",
+	);
+	assert.equal(
 		platform.domains.get("schemas.ui.le-mn.com")?.service,
 		"concurrent-schema-worker",
 	);
 	assert.equal(
+		platform.domains.has("portal.ui.le-mn.com"),
+		false,
+		"rollback must still restore independent release-owned hostnames after drift",
+	);
+	assert.equal(
 		platform.domains.get("unrelated.le-mn.com")?.service,
 		"unrelated-worker",
+	);
+});
+
+test("bootstrap transfer verifies the detach result and never overwrites a concurrent reassignment", async () => {
+	const platform = fakeBootstrapPlatform({
+		concurrentSchemaTakeoverAfterDetach: true,
+	});
+	await assert.rejects(
+		runProductionRollout(input, platform.dependencies),
+		(error) => {
+			assert(error instanceof RolloutRollbackFailure);
+			assert.match(
+				safeErrorMessage(error, []),
+				/changed concurrently during bootstrap transfer/u,
+			);
+			return true;
+		},
+	);
+	assert.equal(platform.deleteCount, 0);
+	assert.equal(platform.workerPresent, true);
+	assert.equal(
+		platform.domains.get("schemas.ui.le-mn.com")?.service,
+		"concurrent-schema-worker",
 	);
 });
 
@@ -1575,6 +2367,20 @@ test("only Cloudflare command specs request the scoped Cloudflare environment", 
 		baselinePortalConfigCommand(previousIdentity.gitSha)
 			.inheritedEnvironmentKeys,
 		undefined,
+	);
+	assert.deepEqual(
+		gitAncestorCommand(previousIdentity.gitSha, expected.gitSha),
+		{
+			command: "git",
+			args: [
+				"merge-base",
+				"--is-ancestor",
+				previousIdentity.gitSha,
+				expected.gitSha,
+			],
+			captureOutput: true,
+			timeoutMs: 60_000,
+		},
 	);
 });
 

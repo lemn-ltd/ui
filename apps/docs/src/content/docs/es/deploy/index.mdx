@@ -95,6 +95,18 @@ release del Portal antes de desplegar Docs otra vez. La reejecucion no hace
 rollback del Portal solo porque fallo la ultima mutacion de Docs ni publica una
 version hermana para el mismo trigger SHA.
 
+Si un primer bootstrap interrumpido deja una candidata predecesora en el Worker
+objetivo, el siguiente release protegido de `main` la termina antes de iniciar
+su propio upgrade. La recuperacion automatica acepta un unico predecesor
+autoconsistente: una version activa exacta al 100% o una candidata huerfana
+mientras el Worker no tiene deployment. Deben coincidir su mensaje de deployment
+cuando existe, metadata, tag, release ID, hash de audiences Access, fingerprints
+del Wrangler historico y ancestro Git. Reutiliza las credenciales del Environment
+protegido, no reconstruye ni vuelve a subir el predecesor, reanuda una transicion
+exacta por hostname propiedad del release y rechaza ausencias ambiguas o drift
+concurrente. Cuando el predecesor pasa los smokes de candidata y activa, la misma
+ejecucion continua con el release actual.
+
 Dominios y rutas retirados no reciben redirects ni tombstone Workers. La
 verificacion negativa debe demostrar que ya no sirven un deployment Lemn UI.
 

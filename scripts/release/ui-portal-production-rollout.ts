@@ -195,6 +195,10 @@ interface RolloutDependencies {
 		domainId: string,
 	) => Promise<void>;
 	readonly waitForDomainPropagation?: (delayMs: number) => Promise<void>;
+	readonly isGitAncestor?: (
+		ancestorGitSha: string,
+		descendantGitSha: string,
+	) => Promise<boolean>;
 	readonly environment?: NodeJS.ProcessEnv;
 	readonly signal?: AbortSignal;
 }
@@ -206,6 +210,16 @@ export class CommandAbortedError extends Error {
 		super(message);
 		this.name = "CommandAbortedError";
 		this.interrupted = interrupted;
+	}
+}
+
+export class CommandExitError extends Error {
+	readonly exitCode: number;
+
+	constructor(message: string, exitCode: number) {
+		super(message);
+		this.name = "CommandExitError";
+		this.exitCode = exitCode;
 	}
 }
 
@@ -295,6 +309,26 @@ export function baselinePortalConfigCommand(gitSha: string): CommandSpec {
 	return {
 		command: "git",
 		args: ["show", `${gitSha}:${portalConfigRelativePath}`],
+		captureOutput: true,
+		timeoutMs: 60_000,
+	};
+}
+
+export function gitAncestorCommand(
+	ancestorGitSha: string,
+	descendantGitSha: string,
+): CommandSpec {
+	for (const [description, gitSha] of [
+		["Ancestor", ancestorGitSha],
+		["Descendant", descendantGitSha],
+	] as const) {
+		if (!releaseShaPattern.test(gitSha)) {
+			throw new Error(`${description} Git SHA must be a full 40-character SHA`);
+		}
+	}
+	return {
+		command: "git",
+		args: ["merge-base", "--is-ancestor", ancestorGitSha, descendantGitSha],
 		captureOutput: true,
 		timeoutMs: 60_000,
 	};
@@ -632,6 +666,11 @@ export function candidateTag(expected: BuildIdentity): string {
 	assertBuildIdentity(expected, "Candidate");
 	const version = expected.version.replace(/[^0-9A-Za-z-]/gu, "-");
 	return `lemn-ui-${version}-${expected.gitSha.slice(0, 16)}`;
+}
+
+function releaseIdForIdentity(expected: BuildIdentity): string {
+	assertBuildIdentity(expected, "Release");
+	return `@lemn-ltd/ui@${expected.version}#${expected.gitSha}`;
 }
 
 export function encodeCandidateState(state: CandidateRecoveryState): string {
@@ -1079,15 +1118,23 @@ export async function detachCloudflareCustomDomain(
 			signal: AbortSignal.timeout(30_000),
 		},
 	);
-	let envelope: CloudflareEnvelope<unknown>;
-	try {
-		envelope = (await response.json()) as CloudflareEnvelope<unknown>;
-	} catch {
+	const responseBody = await response.text();
+	if (!response.ok) {
 		throw new Error(
-			`Cloudflare custom-domain detach returned non-JSON HTTP ${String(response.status)}`,
+			`Cloudflare custom-domain detach failed with HTTP ${String(response.status)}`,
 		);
 	}
-	if (!response.ok || envelope.success !== true) {
+	if (!responseBody.trim()) return;
+	let envelope: CloudflareEnvelope<unknown>;
+	try {
+		envelope = JSON.parse(responseBody) as CloudflareEnvelope<unknown>;
+	} catch {
+		// This is the documented custom-domain DELETE endpoint, and its live API may
+		// return an empty or non-JSON 2xx body. Only this adapter accepts that shape;
+		// reads and PUT mutations continue to require a success envelope.
+		return;
+	}
+	if (envelope.success !== true) {
 		throw new Error(
 			`Cloudflare custom-domain detach failed with HTTP ${String(response.status)}`,
 		);
@@ -1190,6 +1237,32 @@ async function loadBootstrapTriggerRecovery(
 		state.baselineDomains,
 		dependencies.environment ?? process.env,
 	);
+}
+
+async function loadHistoricalBootstrapTriggerRecovery(
+	state: BootstrapCandidateRecoveryState,
+	dependencies: RolloutDependencies,
+): Promise<TriggerRecovery> {
+	const source = await dependencies.runCommand(
+		baselinePortalConfigCommand(state.expected.gitSha),
+	);
+	const desired = triggerPlanFromSource(
+		source,
+		"Historical bootstrap portal config",
+		dependencies.environment ?? process.env,
+	);
+	if (desired.workersDev || desired.previewsEnabled) {
+		throw new Error(
+			"Historical bootstrap portal config must disable workers_dev and preview_urls",
+		);
+	}
+	const recovery = bootstrapTriggerRecovery(
+		desired,
+		state.baselineDomains,
+		dependencies.environment ?? process.env,
+	);
+	assertRecoveryHashes(state, recovery);
+	return recovery;
 }
 
 function captureBootstrapDomainBaseline(
@@ -1323,6 +1396,64 @@ async function inspectTriggerState(
 	return isSafeTransition ? "transitional" : "drift";
 }
 
+async function inspectBootstrapTriggerState(
+	state: BootstrapCandidateRecoveryState,
+	recovery: TriggerRecovery,
+	dependencies: RolloutDependencies,
+): Promise<TriggerState> {
+	const [domains, subdomain] = await Promise.all([
+		(dependencies.listCustomDomains ?? listCloudflareCustomDomains)(
+			recovery.desired.accountId,
+		),
+		(dependencies.getWorkerSubdomain ?? getCloudflareWorkerSubdomain)(
+			recovery.desired.accountId,
+			recovery.desired.workerName,
+		),
+	]);
+	const hash = liveTriggersHash(recovery, domains, subdomain);
+	if (hash === recovery.baseline.hash) return "baseline";
+	if (hash === recovery.desired.hash) return "desired";
+	const subdomainIsReleaseOwned =
+		(subdomain.enabled === recovery.baseline.workersDev ||
+			subdomain.enabled === recovery.desired.workersDev) &&
+		(subdomain.previewsEnabled === recovery.baseline.previewsEnabled ||
+			subdomain.previewsEnabled === recovery.desired.previewsEnabled);
+	if (!subdomainIsReleaseOwned) return "drift";
+
+	const targetService = recovery.desired.workerName;
+	const desiredHostnames = new Set(recovery.desired.hostnames);
+	if (
+		domains.some(
+			(domain) =>
+				domain.service.trim() === targetService &&
+				!desiredHostnames.has(domain.hostname.trim().toLowerCase()),
+		)
+	) {
+		return "drift";
+	}
+	const baselineByHostname = new Map(
+		state.baselineDomains.map((domain) => [domain.hostname, domain.service]),
+	);
+	if (
+		baselineByHostname.size !== desiredHostnames.size ||
+		[...desiredHostnames].some((hostname) => !baselineByHostname.has(hostname))
+	) {
+		return "drift";
+	}
+	for (const hostname of desiredHostnames) {
+		const currentService =
+			exactDomainMapping(domains, hostname)?.service.trim() ?? null;
+		const baselineService = baselineByHostname.get(hostname) ?? null;
+		if (
+			currentService !== targetService &&
+			currentService !== baselineService
+		) {
+			return "drift";
+		}
+	}
+	return "transitional";
+}
+
 async function assertKnownTriggerState(
 	recovery: TriggerRecovery,
 	dependencies: RolloutDependencies,
@@ -1428,33 +1559,248 @@ function exactDomainMapping(
 	return matches[0];
 }
 
+async function currentExactDomainMapping(
+	accountId: string,
+	hostname: string,
+	dependencies: RolloutDependencies,
+): Promise<CloudflareCustomDomain | undefined> {
+	return exactDomainMapping(
+		await (dependencies.listCustomDomains ?? listCloudflareCustomDomains)(
+			accountId,
+		),
+		hostname,
+	);
+}
+
+async function waitForExactDomainService(
+	accountId: string,
+	hostname: string,
+	expectedService: string | null,
+	transitionalService: string | null,
+	description: string,
+	dependencies: RolloutDependencies,
+): Promise<CloudflareCustomDomain | undefined> {
+	for (let attempt = 1; attempt <= 5; attempt += 1) {
+		const current = await currentExactDomainMapping(
+			accountId,
+			hostname,
+			dependencies,
+		);
+		const currentService = current?.service.trim() ?? null;
+		if (currentService === expectedService) return current;
+		if (currentService !== transitionalService) {
+			throw new ConcurrentDeploymentError(
+				`Custom domain ${hostname} changed concurrently during ${description}`,
+			);
+		}
+		if (attempt < 5) {
+			await (
+				dependencies.waitForDomainPropagation ??
+				((delayMs) =>
+					new Promise<void>((resolveDelay) =>
+						setTimeout(resolveDelay, delayMs),
+					))
+			)(1_000);
+		}
+	}
+	throw new Error(
+		`Custom domain ${hostname} did not reach its exact owner after ${description}`,
+	);
+}
+
+function requiredDomainId(
+	domain: CloudflareCustomDomain,
+	hostname: string,
+	description: string,
+): string {
+	const domainId = domain.id?.trim();
+	if (!domainId) {
+		throw new Error(
+			`Custom domain ${hostname} has no immutable ID for ${description}`,
+		);
+	}
+	return domainId;
+}
+
+async function detachExactDomainMapping(
+	accountId: string,
+	hostname: string,
+	domain: CloudflareCustomDomain,
+	expectedService: string,
+	description: string,
+	dependencies: RolloutDependencies,
+): Promise<void> {
+	if (domain.service.trim() !== expectedService) {
+		throw new ConcurrentDeploymentError(
+			`Custom domain ${hostname} changed before ${description}; refusing detach`,
+		);
+	}
+	await (dependencies.detachDomain ?? detachCloudflareCustomDomain)(
+		accountId,
+		requiredDomainId(domain, hostname, description),
+	);
+	await waitForExactDomainService(
+		accountId,
+		hostname,
+		null,
+		expectedService,
+		description,
+		dependencies,
+	);
+}
+
+async function attachAndVerifyExactDomainMapping(
+	accountId: string,
+	hostname: string,
+	service: string,
+	description: string,
+	dependencies: RolloutDependencies,
+): Promise<void> {
+	await (dependencies.attachDomain ?? attachCloudflareCustomDomain)(
+		accountId,
+		hostname,
+		service,
+	);
+	await waitForExactDomainService(
+		accountId,
+		hostname,
+		service,
+		null,
+		description,
+		dependencies,
+	);
+}
+
+async function restoreBootstrapDomain(
+	baseline: BootstrapDomainBaseline,
+	recovery: TriggerRecovery,
+	dependencies: RolloutDependencies,
+	allowOwnedAbsence: boolean,
+): Promise<void> {
+	const accountId = recovery.desired.accountId;
+	const targetService = recovery.desired.workerName;
+	const current = await currentExactDomainMapping(
+		accountId,
+		baseline.hostname,
+		dependencies,
+	);
+	let currentService = current?.service.trim() ?? null;
+	let ownedAbsence = false;
+	if (currentService === baseline.service) return;
+	if (currentService === targetService && current) {
+		try {
+			await detachExactDomainMapping(
+				accountId,
+				baseline.hostname,
+				current,
+				targetService,
+				"bootstrap rollback",
+				dependencies,
+			);
+			currentService = null;
+			ownedAbsence = true;
+		} catch (detachError) {
+			const observed = await currentExactDomainMapping(
+				accountId,
+				baseline.hostname,
+				dependencies,
+			);
+			currentService = observed?.service.trim() ?? null;
+			if (currentService === baseline.service) return;
+			if (currentService === null) {
+				ownedAbsence = true;
+			} else if (currentService === targetService) {
+				throw detachError;
+			} else {
+				throw new ConcurrentDeploymentError(
+					`Custom domain ${baseline.hostname} changed concurrently during bootstrap rollback`,
+				);
+			}
+		}
+	}
+	if (currentService !== null) {
+		throw new ConcurrentDeploymentError(
+			`Custom domain ${baseline.hostname} changed concurrently during bootstrap rollback`,
+		);
+	}
+	if (!baseline.service) return;
+	if (!allowOwnedAbsence && !ownedAbsence) {
+		throw new ConcurrentDeploymentError(
+			`Custom domain ${baseline.hostname} became absent before bootstrap rollback; refusing to recreate an unowned transition`,
+		);
+	}
+	await attachAndVerifyExactDomainMapping(
+		accountId,
+		baseline.hostname,
+		baseline.service,
+		"bootstrap rollback",
+		dependencies,
+	);
+}
+
+async function transferBootstrapDomain(
+	baseline: BootstrapDomainBaseline,
+	recovery: TriggerRecovery,
+	dependencies: RolloutDependencies,
+): Promise<void> {
+	const accountId = recovery.desired.accountId;
+	const targetService = recovery.desired.workerName;
+	const current = await currentExactDomainMapping(
+		accountId,
+		baseline.hostname,
+		dependencies,
+	);
+	const currentService = current?.service.trim() ?? null;
+	if (currentService === targetService) return;
+	if (currentService !== baseline.service) {
+		throw new ConcurrentDeploymentError(
+			`Custom domain ${baseline.hostname} changed after bootstrap capture; refusing takeover`,
+		);
+	}
+	try {
+		if (current) {
+			await detachExactDomainMapping(
+				accountId,
+				baseline.hostname,
+				current,
+				current.service.trim(),
+				"bootstrap transfer",
+				dependencies,
+			);
+		}
+		await attachAndVerifyExactDomainMapping(
+			accountId,
+			baseline.hostname,
+			targetService,
+			"bootstrap transfer",
+			dependencies,
+		);
+	} catch (rolloutError) {
+		try {
+			await restoreBootstrapDomain(baseline, recovery, dependencies, true);
+		} catch (rollbackError) {
+			throw new RolloutRollbackFailure(rolloutError, rollbackError);
+		}
+		throw rolloutError;
+	}
+}
+
 async function reconcileBootstrapDesiredDomains(
 	state: BootstrapCandidateRecoveryState,
 	recovery: TriggerRecovery,
 	dependencies: RolloutDependencies,
 ): Promise<void> {
-	const attach = dependencies.attachDomain ?? attachCloudflareCustomDomain;
 	const baselineByHostname = new Map(
-		state.baselineDomains.map((domain) => [domain.hostname, domain.service]),
+		state.baselineDomains.map((domain) => [domain.hostname, domain]),
 	);
 	for (const hostname of recovery.desired.hostnames) {
-		const domains = await (
-			dependencies.listCustomDomains ?? listCloudflareCustomDomains
-		)(recovery.desired.accountId);
-		const current = exactDomainMapping(domains, hostname);
-		if (current?.service.trim() === recovery.desired.workerName) continue;
-		const baselineService = baselineByHostname.get(hostname);
-		const currentService = current?.service.trim() ?? null;
-		if (baselineService === undefined || currentService !== baselineService) {
-			throw new ConcurrentDeploymentError(
-				`Custom domain ${hostname} changed after bootstrap capture; refusing takeover`,
+		const baseline = baselineByHostname.get(hostname);
+		if (!baseline) {
+			throw new Error(
+				`Custom domain ${hostname} has no captured bootstrap baseline`,
 			);
 		}
-		await attach(
-			recovery.desired.accountId,
-			hostname,
-			recovery.desired.workerName,
-		);
+		await transferBootstrapDomain(baseline, recovery, dependencies);
 	}
 	await pollForTriggerHash(
 		recovery,
@@ -1469,34 +1815,19 @@ async function restoreBootstrapDomainBaseline(
 	recovery: TriggerRecovery,
 	dependencies: RolloutDependencies,
 ): Promise<void> {
-	const attach = dependencies.attachDomain ?? attachCloudflareCustomDomain;
-	const detach = dependencies.detachDomain ?? detachCloudflareCustomDomain;
+	const failures: unknown[] = [];
 	for (const baseline of [...state.baselineDomains].reverse()) {
-		const domains = await (
-			dependencies.listCustomDomains ?? listCloudflareCustomDomains
-		)(recovery.desired.accountId);
-		const current = exactDomainMapping(domains, baseline.hostname);
-		const currentService = current?.service.trim() ?? null;
-		if (currentService === baseline.service) continue;
-		if (currentService !== recovery.desired.workerName) {
-			throw new ConcurrentDeploymentError(
-				`Custom domain ${baseline.hostname} changed concurrently during bootstrap rollback`,
-			);
+		try {
+			await restoreBootstrapDomain(baseline, recovery, dependencies, false);
+		} catch (error) {
+			failures.push(error);
 		}
-		if (baseline.service) {
-			await attach(
-				recovery.desired.accountId,
-				baseline.hostname,
-				baseline.service,
-			);
-			continue;
-		}
-		if (!current?.id) {
-			throw new Error(
-				`Custom domain ${baseline.hostname} has no immutable ID for bootstrap rollback`,
-			);
-		}
-		await detach(recovery.desired.accountId, current.id);
+	}
+	if (failures.length > 0) {
+		throw new AggregateError(
+			failures,
+			"Bootstrap custom-domain rollback could not restore every independent hostname",
+		);
 	}
 	await pollForTriggerHash(
 		recovery,
@@ -1702,6 +2033,22 @@ export function versionsFromJson(source: string): VersionSummary[] {
 					: "",
 		};
 	});
+}
+
+export function versionByIdFromJson(
+	source: string,
+	versionId: string,
+): VersionSummary | undefined {
+	assertVersionId(versionId);
+	const matches = versionsFromJson(source).filter(
+		(version) => version.id === versionId,
+	);
+	if (matches.length > 1) {
+		throw new Error(
+			`Cloudflare returned duplicate Worker version ${versionId}`,
+		);
+	}
+	return matches[0];
 }
 
 export function candidateFromVersions(
@@ -2005,10 +2352,11 @@ export function createCommandRunner(
 					);
 					return;
 				}
+				const description = `${commandDescription(spec, protectedValues)} failed with ${childSignal ? `signal ${childSignal}` : `exit ${String(code)}`}`;
 				rejectCommand(
-					new Error(
-						`${commandDescription(spec, protectedValues)} failed with ${childSignal ? `signal ${childSignal}` : `exit ${String(code)}`}`,
-					),
+					typeof code === "number"
+						? new CommandExitError(description, code)
+						: new Error(description),
 				);
 			});
 			if (spec.stdin !== undefined) child.stdin?.end(spec.stdin);
@@ -2088,6 +2436,20 @@ async function candidate(
 		await dependencies.runCommand(versionListCommand),
 		candidateTag(expected),
 	);
+}
+
+async function assertExclusiveBootstrapVersionInventory(
+	candidateVersionId: string,
+	dependencies: RolloutDependencies,
+): Promise<void> {
+	const versions = versionsFromJson(
+		await dependencies.runCommand(versionListCommand),
+	);
+	if (versions.length !== 1 || versions[0]?.id !== candidateVersionId) {
+		throw new ConcurrentDeploymentError(
+			"Bootstrap recovery requires an exact Worker version inventory containing only its release candidate",
+		);
+	}
 }
 
 async function captureBaseline(
@@ -2331,6 +2693,27 @@ async function rollbackBootstrapAndVerify(
 	}
 	if (failures.length === 0) {
 		try {
+			const beforeDelete = await optionalDeployment(dependencies, true);
+			const deploymentLeaseUnchanged = current
+				? Boolean(
+						beforeDelete &&
+							beforeDelete.id === current.id &&
+							activeBootstrapDeployment(
+								beforeDelete,
+								state,
+								candidateVersionId,
+							),
+					)
+				: beforeDelete === undefined;
+			if (!deploymentLeaseUnchanged) {
+				throw new ConcurrentDeploymentError(
+					"A concurrent Worker deployment changed the bootstrap lease during domain restoration; Worker deletion refused",
+				);
+			}
+			await assertExclusiveBootstrapVersionInventory(
+				candidateVersionId,
+				dependencies,
+			);
 			const exists = await (
 				dependencies.workerExists ?? cloudflareWorkerExists
 			)(triggers.desired.accountId, triggers.desired.workerName);
@@ -2371,8 +2754,10 @@ async function executeBootstrapCandidate(
 	version: VersionSummary,
 	state: BootstrapCandidateRecoveryState,
 	dependencies: RolloutDependencies,
+	knownTriggers?: TriggerRecovery,
 ): Promise<void> {
-	const triggers = await loadBootstrapTriggerRecovery(state, dependencies);
+	const triggers =
+		knownTriggers ?? (await loadBootstrapTriggerRecovery(state, dependencies));
 	assertRecoveryHashes(state, triggers);
 	try {
 		if (
@@ -2385,6 +2770,7 @@ async function executeBootstrapCandidate(
 				"Bootstrap candidate metadata exists but its Worker is absent",
 			);
 		}
+		await assertExclusiveBootstrapVersionInventory(version.id, dependencies);
 		let current = await optionalDeployment(dependencies);
 		if (current && !activeBootstrapDeployment(current, state, version.id)) {
 			throw new ConcurrentDeploymentError(
@@ -2392,13 +2778,14 @@ async function executeBootstrapCandidate(
 			);
 		}
 		if (!current) {
-			const triggerState = await assertKnownTriggerState(
+			const triggerState = await inspectBootstrapTriggerState(
+				state,
 				triggers,
 				dependencies,
 			);
-			if (triggerState !== "baseline") {
+			if (triggerState === "drift") {
 				throw new ConcurrentDeploymentError(
-					"Bootstrap requires the exact captured custom-domain baseline before activation",
+					"Bootstrap recovery found ambiguous or concurrent custom-domain drift before acquiring its deployment lease",
 				);
 			}
 			await dependencies.runCommand(
@@ -2443,6 +2830,178 @@ async function executeBootstrapCandidate(
 	}
 }
 
+async function isPriorBootstrapAncestor(
+	ancestorGitSha: string,
+	descendantGitSha: string,
+	dependencies: RolloutDependencies,
+): Promise<boolean> {
+	if (ancestorGitSha === descendantGitSha) return false;
+	try {
+		if (dependencies.isGitAncestor) {
+			return await dependencies.isGitAncestor(ancestorGitSha, descendantGitSha);
+		}
+		await dependencies.runCommand(
+			gitAncestorCommand(ancestorGitSha, descendantGitSha),
+		);
+		return true;
+	} catch (error) {
+		if (error instanceof CommandExitError && error.exitCode === 1) return false;
+		throw error;
+	}
+}
+
+function bootstrapStateForPriorVersion(
+	version: VersionSummary,
+	input: ProductionRolloutInput,
+): BootstrapCandidateRecoveryState | undefined {
+	if (!version.message.startsWith(candidateMessagePrefix)) return undefined;
+	const state = decodeCandidateState(version.message);
+	if (state.mode !== "bootstrap") return undefined;
+	if (
+		version.tag !== candidateTag(state.expected) ||
+		state.releaseId !== releaseIdForIdentity(state.expected)
+	) {
+		throw new ConcurrentDeploymentError(
+			"A predecessor bootstrap tag or release ID is not self-consistent with its immutable build identity",
+		);
+	}
+	if (
+		state.accessAudiencesHash !==
+		accessAudienceBindingsHash(input.accessAudiences)
+	) {
+		throw new ConcurrentDeploymentError(
+			"A predecessor bootstrap Access audience does not match the current protected environment",
+		);
+	}
+	return state;
+}
+
+async function settlePriorBootstrapIfRequired(
+	input: ProductionRolloutInput,
+	dependencies: RolloutDependencies,
+): Promise<"completed" | "none" | "recovered"> {
+	const current = await optionalDeployment(dependencies);
+	const claimsBootstrap =
+		current?.message.startsWith("lemn-ui-rollout/v1 phase=bootstrap ") ?? false;
+	if (
+		current &&
+		(current.versions.length !== 1 || current.versions[0]?.percentage !== 100)
+	) {
+		if (claimsBootstrap) {
+			throw new ConcurrentDeploymentError(
+				"The active bootstrap does not hold one exact 100% Worker deployment lease",
+			);
+		}
+		return "none";
+	}
+	const versionsSource = await dependencies.runCommand(versionListCommand);
+	const versions = versionsFromJson(versionsSource);
+	let priorVersion: VersionSummary | undefined;
+	let priorState: BootstrapCandidateRecoveryState | undefined;
+	if (current) {
+		const activeVersionId = current.versions[0]?.versionId;
+		if (!activeVersionId) return "none";
+		priorVersion = versionByIdFromJson(versionsSource, activeVersionId);
+		if (!priorVersion) {
+			if (claimsBootstrap) {
+				throw new ConcurrentDeploymentError(
+					"The active bootstrap Worker version is absent from the exact version inventory",
+				);
+			}
+			return "none";
+		}
+		priorState = bootstrapStateForPriorVersion(priorVersion, input);
+		if (!priorState) {
+			if (claimsBootstrap) {
+				throw new ConcurrentDeploymentError(
+					"The active bootstrap deployment has no matching bootstrap recovery metadata",
+				);
+			}
+			return "none";
+		}
+		if (!activeBootstrapDeployment(current, priorState, priorVersion.id)) {
+			throw new ConcurrentDeploymentError(
+				"The active bootstrap deployment message, version, or traffic no longer matches its recovery metadata",
+			);
+		}
+		if (versions.length !== 1) {
+			throw new ConcurrentDeploymentError(
+				"The active bootstrap Worker contains versions outside its exclusive release candidate inventory",
+			);
+		}
+	} else {
+		const eligible: Array<{
+			readonly state: BootstrapCandidateRecoveryState;
+			readonly version: VersionSummary;
+		}> = [];
+		for (const version of versions) {
+			const state = bootstrapStateForPriorVersion(version, input);
+			if (
+				state &&
+				(await isPriorBootstrapAncestor(
+					state.expected.gitSha,
+					input.expected.gitSha,
+					dependencies,
+				))
+			) {
+				eligible.push({ state, version });
+			}
+		}
+		if (eligible.length === 0) return "none";
+		if (eligible.length > 1) {
+			throw new ConcurrentDeploymentError(
+				"Multiple predecessor bootstrap candidates are eligible while the Worker has no deployment; automatic recovery refused",
+			);
+		}
+		if (versions.length !== 1) {
+			throw new ConcurrentDeploymentError(
+				"The orphan bootstrap Worker contains versions outside its exclusive release candidate inventory",
+			);
+		}
+		priorVersion = eligible[0]?.version;
+		priorState = eligible[0]?.state;
+	}
+	if (!priorVersion || !priorState) return "none";
+	if (
+		!(await isPriorBootstrapAncestor(
+			priorState.expected.gitSha,
+			input.expected.gitSha,
+			dependencies,
+		))
+	) {
+		throw new ConcurrentDeploymentError(
+			"The active bootstrap Git SHA is not an ancestor of the current release; automatic recovery refused",
+		);
+	}
+	const triggers = await loadHistoricalBootstrapTriggerRecovery(
+		priorState,
+		dependencies,
+	);
+	const triggerState = await inspectBootstrapTriggerState(
+		priorState,
+		triggers,
+		dependencies,
+	);
+	if (triggerState === "drift") {
+		throw new ConcurrentDeploymentError(
+			"The predecessor bootstrap has ambiguous or concurrent trigger drift; cross-release recovery refused",
+		);
+	}
+	await executeBootstrapCandidate(
+		{
+			releaseId: priorState.releaseId,
+			expected: priorState.expected,
+			access: input.access,
+			accessAudiences: input.accessAudiences,
+		},
+		priorVersion,
+		priorState,
+		dependencies,
+		triggers,
+	);
+	return triggerState === "desired" ? "completed" : "recovered";
+}
+
 async function executeCandidate(
 	input: ProductionRolloutInput,
 	version: VersionSummary,
@@ -2471,10 +3030,7 @@ export async function runProductionRollout(
 		);
 	}
 	assertBuildIdentity(input.expected, "Release");
-	if (
-		input.releaseId !==
-		`@lemn-ltd/ui@${input.expected.version}#${input.expected.gitSha}`
-	) {
+	if (input.releaseId !== releaseIdForIdentity(input.expected)) {
 		throw new Error("Release ID does not match the immutable build identity");
 	}
 
@@ -2493,6 +3049,9 @@ export async function runProductionRollout(
 			dependencies,
 		);
 		return;
+	}
+	if (targetWorkerExists) {
+		await settlePriorBootstrapIfRequired(input, dependencies);
 	}
 	if (!targetWorkerExists) {
 		const liveDomains = await (

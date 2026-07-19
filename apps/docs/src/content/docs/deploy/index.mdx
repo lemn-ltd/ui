@@ -118,6 +118,18 @@ already-owned release before Docs is deployed again. Re-running never rolls the
 Portal back merely because the final Docs mutation failed, and it never
 publishes a sibling version for the same trigger SHA.
 
+If an interrupted first bootstrap leaves a predecessor candidate on the target
+Worker, the next protected-main release settles it before starting its own
+upgrade. Automatic recovery accepts only one self-consistent predecessor: an
+exact active version at 100% traffic, or one orphan candidate while the Worker
+has no deployment. Its deployment message when present, candidate metadata,
+tag, release ID, Access-audience hash, historical Wrangler fingerprints, and Git
+ancestry must agree. It reuses the protected Environment credentials, does not
+rebuild or upload the predecessor, resumes an exact release-owned per-hostname
+transition, and refuses ambiguous absence or concurrent domain drift. After the
+predecessor passes candidate and active smokes, the same invocation continues
+with the current release.
+
 Retired domains and route families receive no redirects or tombstone Workers.
 Negative verification must prove they no longer resolve to an active Lemn UI
 deployment.
