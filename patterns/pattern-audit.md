@@ -67,16 +67,32 @@ pattern_audit:
     blockers: []
     exceptions:
       - pattern: PAT-AUTH-LEMN-001
-        scope: Portal Admin and protected deep-health operational identity only
+        scope: Portal Admin and protected deep-health target operational identity
         owner: UI Platform Security
-        reason: "Cloudflare Access is the zero-trust operational perimeter for this internal Portal; it is not a parallel commercial auth, organization, tenant, billing, or entitlement authority."
+        reason: "Cloudflare Access is the target zero-trust operational perimeter for this internal Portal; it is not a parallel commercial auth, organization, tenant, billing, or entitlement authority. The exact live verification version is covered by the separate versioned exception below."
         risk: "The boundary would become a parallel product identity system if it gained Workspace data, product mutations, tenant policy, or reusable application sessions."
         follow_up: "Reassess and integrate the approved LEMN identity boundary before adding product data, AgentOps mutations, tenant RBAC, billing, or entitlements."
+      - pattern: PAT-AUTH-LEMN-001
+        status: EXCEPTION_VERSIONED
+        scope: "Portal Worker version 6517ab4e-72ef-463d-84be-589eec8ea4f2 and deployment a5858b09-deee-46e4-9e7f-5956fe5bab6f"
+        owner: UI Platform Security
+        reason: "At explicit owner request, Cloudflare Access is disabled for the 2026-07-20 live verification window and the Portal runs with DEPLOYMENT_ENVIRONMENT=test and its explicit test-origin gate."
+        risk: "The source-visible test marker is not an actor identity or credential; anyone able to reach the origin and reproduce it can receive the current non-authoritative portal-admin capability, including non-persistent proposal-bundle generation."
+        follow_up: "Keep Admin free of private data and mutation authority; recreate path-scoped human and isolated health Access, deploy production mode, prove the anonymous/human/service denial matrix and test-marker rejection, then remove this exception."
+        evidence: docs/evidence/ui-portal-unification/phase-2-production.md
   SEC:
     current_level: unassessed
     gaps: []
     blockers: []
-    exceptions: []
+    exceptions:
+      - pattern: PAT-SEC-AUTHORIZATION-001
+        status: EXCEPTION_VERSIONED
+        scope: "Portal Worker version 6517ab4e-72ef-463d-84be-589eec8ea4f2 and deployment a5858b09-deee-46e4-9e7f-5956fe5bab6f"
+        owner: UI Platform Security
+        reason: "The authorized live-verification deployment uses a server-side test-origin marker instead of a cryptographically verified Cloudflare Access actor."
+        risk: "The marker is intentionally non-secret and replayable, so the current gate cannot protect private data or sensitive operations."
+        follow_up: "Do not add private or mutable authority; restore Access, distinct audiences, origin JWT verification, and the complete positive/negative identity matrix before production readiness."
+        evidence: docs/evidence/ui-portal-unification/phase-2-production.md
   ASYNC:
     current_level: unassessed
     gaps:
@@ -111,7 +127,15 @@ pattern_audit:
     current_level: unassessed
     gaps: []
     blockers: []
-    exceptions: []
+    exceptions:
+      - pattern: PAT-OPS-LEAST-PRIVILEGE-001
+        status: EXCEPTION_VERSIONED
+        scope: 2026-07-20 UI-exclusive Cloudflare clean-room controller
+        owner: UI Platform Release Operations
+        reason: "The required Worker, custom-domain, DNS, Access, service-token, and R2 cleanup used the existing Cloudflare Global API Key through an ephemeral mode-0700 controller after account verification and with an exact UI-only resource allowlist."
+        risk: "The credential has broader account authority than the clean-room operation required if the secret or process is compromised."
+        follow_up: "Rotate or revoke the credential after the cutover and use an Account Owned API token with the minimum required scopes for future releases."
+        evidence: docs/evidence/ui-portal-unification/phase-2-production.md
   DOCS:
     current_level: unassessed
     gaps: []
@@ -123,6 +147,7 @@ pattern_audit:
 
 | Audit ID | Date | Scope | Result |
 |---|---|---|---|
+| UI-PORTAL-CLEANROOM-2026-07-20 | 2026-07-20 | UI-exclusive Cloudflare destructive inventory, empty checkpoint, font R2 reconstruction, canonical Docs/Portal deployment, live smoke, negative legacy proof, and temporary Access-off verification | **CLEAN-ROOM RECONSTRUCTION PASS; ACCESS EXCEPTION ACTIVE** — exact live receipt: `docs/evidence/ui-portal-unification/phase-2-production.md`; canonical surfaces are rebuilt and legacy resources are absent, but production readiness requires closure of the versioned AUTH and SEC exceptions |
 | PATTERN-PROFILE-REASSESSMENT-2026-07-20 | 2026-07-20 | Current package, Portal, runtime transport, Cloudflare Access, public API, and font R2 ownership inventory | **PROFILE UPDATED; FULL PRECEDENCE AUDIT PENDING** — target domains now include operational identity, controlled cross-runtime effects, public-static R2 ownership, and the existing Service Binding contract without claiming domain completion |
 | UI-PORTAL-UNIFICATION-2026-07-18 | 2026-07-18 | Single Portal Worker, public Catalog, protected Admin, schema/docs, package release boundaries, and zero-legacy policy | **PHASE 1 PASS; PHASE 2 PENDING** — repository/build receipt: `docs/evidence/ui-portal-unification/phase-1-repository.md`; production cutover requires its separate receipt |
 
@@ -243,13 +268,23 @@ package name, route, Worker, domain, redirect, or visible product vocabulary.
 Review and remove it when AgentOps supports rename while preserving managed-file
 identity and history.
 
-### Phase 2 boundary
+### Phase 2 live result
 
-Production DNS, Cloudflare Access, service credentials, GitHub environment
-inputs, package publication, governed deploy, authenticated/anonymous/service
-HTTP and browser proof, and ordered deletion of exclusive legacy resources are
-not repository/build assertions. `pnpm validate:release-hosts` honestly reports
-`ENOTFOUND` for the intentionally unprovisioned `portal.ui.le-mn.com`; it is a
-Phase 2 pre-provision gate, not a Phase 1 failure. Phase 2 must retain the
-`PENDING` status above until `phase-2-production.md` contains exact live
-inventory, deployment, access, deletion, and negative-legacy evidence.
+The exact live receipt at
+`docs/evidence/ui-portal-unification/phase-2-production.md` records the
+UI-exclusive destructive inventory, empty checkpoint, immutable font R2
+reconstruction, final canonical Worker versions and deployments, exact domain
+and binding topology, `25/25` HTTP smoke, scoped zero-error tail, browser
+evidence, and negative legacy proof.
+
+The clean-room reconstruction passes with a versioned authorization exception.
+Cloudflare Access intentionally remains disabled for the owner-authorized test
+window, the Portal runs in `test` mode, and no production-readiness or
+zero-trust-completion claim is made. The exact affected Worker version,
+deployment, risk boundary, and closure matrix are recorded in the receipt and
+the AUTH/SEC exceptions above.
+
+The temporary Global API Key use is separately recorded under
+`PAT-OPS-LEAST-PRIVILEGE-001`. This focused result does not calculate or change
+any domain `current_level`; all remain `unassessed` until a full precedence
+audit.

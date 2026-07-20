@@ -8,6 +8,31 @@ the target resources already exist. Exact deployed identifiers, versions, and
 verification results belong in the release evidence for the delivered
 revision.
 
+## Temporary live-verification exception
+
+The live deployment recorded on 2026-07-20 in the
+[Phase 2 clean-room receipt](../../../../docs/evidence/ui-portal-unification/phase-2-production.md)
+is an explicit non-production exception to this target-state contract.
+
+At the owner's request, Cloudflare Access applications, policies, audiences,
+and service token remain absent while the rebuilt surfaces are tested. The
+Portal is deployed with `DEPLOYMENT_ENVIRONMENT=test`, reports
+`test-origin-gate`, and accepts the source-visible, non-secret test-origin
+marker. Anyone able to reproduce that marker can receive the current
+non-authoritative Admin capability: Git-backed read models plus deterministic,
+in-memory proposal-bundle generation that does not persist or mutate the active
+Registry. The Admin surface must therefore contain no private data and must
+gain no persistence, publication, activation, secret, billing, or control-plane
+authority while this exception is active.
+
+The target contract below remains unchanged: production requires path-scoped
+Cloudflare Access, origin JWT verification, separate human and health
+audiences, and a health-only service identity. Closing the exception requires
+redeployment with `DEPLOYMENT_ENVIRONMENT=production`, rejection of the test
+marker, and positive and negative proof for anonymous, human, and service
+identities. Exact affected Worker and deployment ids and the complete closure
+checklist live in the Phase 2 receipt.
+
 ## Service boundary
 
 | Field | Contract |
