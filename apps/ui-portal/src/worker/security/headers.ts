@@ -27,7 +27,7 @@ export function publicResponse(response: Response): Response {
 
 export function adminResponse(response: Response): Response {
 	return withHeaders(response, {
-		"cache-control": "no-store",
+		"cache-control": "no-store, no-transform",
 		"content-security-policy":
 			"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
 		"permissions-policy": "camera=(), microphone=(), geolocation=()",

@@ -327,7 +327,9 @@ describe("Lemn UI Portal Worker protected contracts", () => {
 		);
 		expect(response.status).toBe(401);
 		expect(await response.json()).toMatchObject({ code: "access-required" });
-		expect(response.headers.get("cache-control")).toBe("no-store");
+		expect(response.headers.get("cache-control")).toBe(
+			"no-store, no-transform",
+		);
 	});
 
 	it("does not leak whether an Admin API route exists before authorization", async () => {
@@ -470,7 +472,9 @@ describe("Lemn UI Portal Worker protected contracts", () => {
 		]) {
 			expect(forwardedRequest.headers.has(credentialHeader)).toBe(false);
 		}
-		expect(response.headers.get("cache-control")).toBe("no-store");
+		expect(response.headers.get("cache-control")).toBe(
+			"no-store, no-transform",
+		);
 		expect(response.headers.get("content-security-policy")).toContain(
 			"frame-ancestors 'none'",
 		);
