@@ -93,6 +93,10 @@ test("the Worker authenticates normalized local identity across all six Admin ro
 			};
 		});
 		expect(session.body).toMatchObject({
+			operationalAccess: {
+				label: "Access disabled · test origin gate",
+				state: "test-origin-gate",
+			},
 			identity: {
 				kind: "human",
 				email: "local-development@ui.le-mn.com",
@@ -110,6 +114,12 @@ test("the Worker authenticates normalized local identity across all six Admin ro
 		).toBeVisible();
 		await expect(
 			page.getByText("https://••••.cloudflareaccess.com", { exact: true }),
+		).toBeVisible();
+		await expect(
+			page.getByText("Access disabled · test origin gate", { exact: true }),
+		).toBeVisible();
+		await expect(
+			page.getByText("test-origin-gate", { exact: true }),
 		).toBeVisible();
 		await expect(
 			page.getByText("••••aaaaaa · 1", { exact: true }),

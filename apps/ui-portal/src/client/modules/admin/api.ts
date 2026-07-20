@@ -2,6 +2,19 @@ import type { AdminRegistryReadModel } from "../../../catalog/admin-registry";
 
 export interface AdminSession {
 	readonly requestId: string;
+	readonly operationalAccess:
+		| {
+				readonly state: "cloudflare-access";
+				readonly label: "Cloudflare Access protected";
+		  }
+		| {
+				readonly state: "test-origin-gate";
+				readonly label: "Access disabled · test origin gate";
+		  }
+		| {
+				readonly state: "local-development";
+				readonly label: "Local development gate";
+		  };
 	readonly identity: {
 		readonly kind: "human";
 		readonly email: string;
@@ -63,7 +76,10 @@ export interface PortalSettingsReadModel {
 	readonly environment: string;
 	readonly enabledAreas: readonly string[];
 	readonly security: {
-		readonly adminOriginAuthorization: "cloudflare-access-jwt";
+		readonly adminOriginAuthorization:
+			| "cloudflare-access-jwt"
+			| "test-origin-gate"
+			| "local-development";
 		readonly adminRole: "portal-admin";
 		readonly serviceCapability: "health-only";
 	};

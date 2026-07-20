@@ -62,6 +62,12 @@
 	font-size: 12px;
 	padding: 5px 10px;
 }
+.admin-protected[data-mode="test-origin-gate"],
+.admin-protected[data-mode="local-development"] {
+	background: var(--lemn-color-warning-surface);
+	border-color: var(--lemn-color-warning-foreground);
+	color: var(--lemn-color-warning-foreground);
+}
 
 .admin-shell {
 	display: grid;

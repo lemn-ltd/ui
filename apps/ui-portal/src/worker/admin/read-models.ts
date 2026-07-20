@@ -172,12 +172,18 @@ function maskedAudiences(value: string): string {
 export function settingsReadModel(env: UiPortalEnv) {
 	const adminAudiences = audienceValues(env.ACCESS_AUDIENCE);
 	const healthAudiences = audienceValues(env.ACCESS_HEALTH_AUDIENCE);
+	const adminOriginAuthorization =
+		env.DEPLOYMENT_ENVIRONMENT === "test"
+			? "test-origin-gate"
+			: env.DEPLOYMENT_ENVIRONMENT === "local"
+				? "local-development"
+				: "cloudflare-access-jwt";
 	return {
 		displayName: "Lemn UI" as const,
 		environment: env.DEPLOYMENT_ENVIRONMENT ?? "local",
 		enabledAreas: ENABLED_CATALOG_AREAS,
 		security: {
-			adminOriginAuthorization: "cloudflare-access-jwt" as const,
+			adminOriginAuthorization,
 			adminRole: "portal-admin" as const,
 			serviceCapability: "health-only" as const,
 		},

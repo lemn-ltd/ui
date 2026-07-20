@@ -120,7 +120,7 @@ export default function AdminPortal(): ReactElement {
 	if (session.state === "loading") {
 		return (
 			<main className="admin-access-state" role="status">
-				Verifying Cloudflare Access identity…
+				Verifying Admin identity…
 			</main>
 		);
 	}
@@ -154,7 +154,12 @@ export default function AdminPortal(): ReactElement {
 					<span>Admin</span>
 				</Link>
 				<div>
-					<span className="admin-protected">Cloudflare Access protected</span>
+					<span
+						className="admin-protected"
+						data-mode={session.data.operationalAccess.state}
+					>
+						{session.data.operationalAccess.label}
+					</span>
 					<Link to="/">Public catalog</Link>
 					<span>{session.data.identity.email}</span>
 				</div>

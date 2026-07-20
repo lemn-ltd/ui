@@ -371,6 +371,7 @@ describe("Lemn UI Portal Worker protected contracts", () => {
 		const body = await response.json<{
 			capabilities: readonly string[];
 			identity: { email: string; kind: string; role: string };
+			operationalAccess: { label: string; state: string };
 			requestId: string;
 		}>();
 
@@ -382,6 +383,10 @@ describe("Lemn UI Portal Worker protected contracts", () => {
 				role: "portal-admin",
 			},
 			capabilities: ["portal-admin"],
+			operationalAccess: {
+				label: "Cloudflare Access protected",
+				state: "cloudflare-access",
+			},
 		});
 		expect(body.requestId).toMatch(/^[0-9a-f-]{36}$/u);
 		expect(response.headers.get("x-request-id")).toBe(body.requestId);
@@ -666,6 +671,10 @@ describe("Lemn UI Portal Worker protected contracts", () => {
 			request("/api/admin/session", { headers }),
 			{ ASSETS: assetsFetcher(), DEPLOYMENT_ENVIRONMENT: "test" },
 		);
+		const localSettings = await handleUiPortalRequest(
+			request("/api/admin/settings", { headers }),
+			{ ASSETS: assetsFetcher(), DEPLOYMENT_ENVIRONMENT: "test" },
+		);
 		const unmarked = await handleUiPortalRequest(
 			request("/api/admin/session"),
 			{ ASSETS: assetsFetcher(), DEPLOYMENT_ENVIRONMENT: "test" },
@@ -681,9 +690,17 @@ describe("Lemn UI Portal Worker protected contracts", () => {
 				email: "local-development@ui.le-mn.com",
 				role: "portal-admin",
 			},
+			operationalAccess: {
+				label: "Access disabled · test origin gate",
+				state: "test-origin-gate",
+			},
 		});
 		expect(unmarked.status).toBe(401);
 		expect(production.status).toBe(401);
+		expect(localSettings.status).toBe(200);
+		expect(await localSettings.json()).toMatchObject({
+			security: { adminOriginAuthorization: "test-origin-gate" },
+		});
 	});
 
 	it("allows only the service identity on protected deep health and denies it on Admin", async () => {

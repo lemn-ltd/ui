@@ -34,6 +34,25 @@ import {
 
 const MAX_BODY_BYTES = 1_000_000;
 
+function operationalAccessMode(env: UiPortalEnv) {
+	if (env.DEPLOYMENT_ENVIRONMENT === "test") {
+		return {
+			state: "test-origin-gate" as const,
+			label: "Access disabled · test origin gate" as const,
+		};
+	}
+	if (env.DEPLOYMENT_ENVIRONMENT === "local") {
+		return {
+			state: "local-development" as const,
+			label: "Local development gate" as const,
+		};
+	}
+	return {
+		state: "cloudflare-access" as const,
+		label: "Cloudflare Access protected" as const,
+	};
+}
+
 async function readJsonBody(request: Request): Promise<unknown> {
 	const contentType = request.headers.get("content-type")?.toLowerCase();
 	if (!contentType?.includes("application/json")) {
@@ -157,6 +176,7 @@ async function handleAdminApi(
 	const pathname = new URL(request.url).pathname;
 	if (pathname === "/api/admin/session" && request.method === "GET") {
 		return Response.json({
+			operationalAccess: operationalAccessMode(env),
 			identity: {
 				kind: "human",
 				email: identity.email,
