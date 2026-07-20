@@ -8,14 +8,12 @@ import {
 	type FontCatalogRecord,
 	type FontCatalogRef,
 	fontCatalog,
-	getCompiledMode,
 	getFontCatalogRecord,
 	safeParseBrandingDefinition,
 } from "@lemn-ltd/brand-contract";
 import type { SystemBrandingTemplate } from "@lemn-ltd/brand-contract/system-brandings";
 import {
 	Alert,
-	AreaChart,
 	Badge,
 	Button,
 	Card,
@@ -32,6 +30,7 @@ import {
 	useId,
 	useState,
 } from "react";
+import { CompiledBrandStudioPreview } from "./brand-studio-preview.js";
 import { brandStudioSteps } from "./catalog.js";
 import type {
 	BrandStudioIntent,
@@ -39,14 +38,6 @@ import type {
 	BrandStudioStepId,
 } from "./types.js";
 import "./styles.css";
-
-const PREVIEW_DATA = [
-	{ month: "Jan", bookings: 38, completed: 31 },
-	{ month: "Feb", bookings: 52, completed: 44 },
-	{ month: "Mar", bookings: 48, completed: 43 },
-	{ month: "Apr", bookings: 66, completed: 59 },
-	{ month: "May", bookings: 72, completed: 64 },
-] as const;
 
 export function BrandStudio({
 	value,
@@ -58,15 +49,25 @@ export function BrandStudio({
 	hostAdapter,
 	systemBrandings = [],
 	previewTargets = [],
+	step: controlledStep,
+	onStepChange,
+	modeId: controlledModeId,
+	onModeIdChange,
 	initialStep = "identity",
 	initialModeId,
+	previewPlacement = "inline",
 	readOnly = false,
 	className,
 }: BrandStudioProps): ReactElement {
 	const resolvedHostStatus = hostAdapter?.status ?? hostStatus;
 	const dispatchIntent = hostAdapter?.dispatch ?? onIntent;
-	const [step, setStep] = useState<BrandStudioStepId>(initialStep);
-	const [modeId, setModeId] = useState(initialModeId ?? value.defaultModeId);
+	const [uncontrolledStep, setUncontrolledStep] =
+		useState<BrandStudioStepId>(initialStep);
+	const [uncontrolledModeId, setUncontrolledModeId] = useState(
+		initialModeId ?? value.defaultModeId,
+	);
+	const step = controlledStep ?? uncontrolledStep;
+	const requestedModeId = controlledModeId ?? uncontrolledModeId;
 	const [previewTargetId, setPreviewTargetId] = useState(
 		previewTargets.find((target) => target.status === "active")?.id ?? "",
 	);
@@ -102,9 +103,11 @@ export function BrandStudio({
 	}, [value]);
 
 	useEffect(() => {
-		if (value.modes[modeId]) return;
-		setModeId(value.defaultModeId);
-	}, [modeId, value.defaultModeId, value.modes]);
+		if (value.modes[requestedModeId]) return;
+		if (controlledModeId === undefined) {
+			setUncontrolledModeId(value.defaultModeId);
+		}
+	}, [controlledModeId, requestedModeId, value.defaultModeId, value.modes]);
 
 	useEffect(() => {
 		const activeTargets = previewTargets.filter(
@@ -119,11 +122,10 @@ export function BrandStudio({
 
 	const effectiveReadOnly =
 		readOnly || draft.archived || draft.state !== "draft";
-	const resolvedModeId = value.modes[modeId] ? modeId : value.defaultModeId;
+	const resolvedModeId = value.modes[requestedModeId]
+		? requestedModeId
+		: value.defaultModeId;
 	const mode = value.modes[resolvedModeId];
-	const compiledMode = artifact
-		? safeCompiledMode(artifact, resolvedModeId)
-		: undefined;
 	const currentStep =
 		brandStudioSteps.find((entry) => entry.id === step) ?? brandStudioSteps[0];
 	const modeOptions = Object.keys(value.modes)
@@ -172,6 +174,14 @@ export function BrandStudio({
 	const emit = (intent: BrandStudioIntent): void => {
 		void dispatchIntent?.(intent);
 	};
+	const selectStep = (next: BrandStudioStepId): void => {
+		if (controlledStep === undefined) setUncontrolledStep(next);
+		onStepChange?.(next);
+	};
+	const selectMode = (next: string): void => {
+		if (controlledModeId === undefined) setUncontrolledModeId(next);
+		onModeIdChange?.(next);
+	};
 
 	const applyJson = (): void => {
 		if (effectiveReadOnly) return;
@@ -199,7 +209,7 @@ export function BrandStudio({
 			className={["lemn-brand-studio", className].filter(Boolean).join(" ")}
 			aria-label="Brand Studio"
 		>
-			{artifact ? (
+			{artifact && previewPlacement === "inline" ? (
 				<style data-lemn-brand-critical="true">{artifact.fullCss}</style>
 			) : null}
 			<header className="lemn-brand-studio__header">
@@ -217,7 +227,7 @@ export function BrandStudio({
 							aria-label="Mode"
 							options={modeOptions}
 							value={resolvedModeId}
-							onValueChange={setModeId}
+							onValueChange={selectMode}
 						/>
 					</Labeled>
 					<Badge
@@ -234,7 +244,16 @@ export function BrandStudio({
 				</div>
 			</header>
 
-			<div className="lemn-brand-studio__layout">
+			<div
+				className={[
+					"lemn-brand-studio__layout",
+					previewPlacement === "external"
+						? "lemn-brand-studio__layout--external-preview"
+						: undefined,
+				]
+					.filter(Boolean)
+					.join(" ")}
+			>
 				<nav
 					aria-label="Brand configuration steps"
 					className="lemn-brand-studio__steps"
@@ -243,7 +262,7 @@ export function BrandStudio({
 						<button
 							aria-current={entry.id === step ? "step" : undefined}
 							key={entry.id}
-							onClick={() => setStep(entry.id)}
+							onClick={() => selectStep(entry.id)}
 							type="button"
 						>
 							<span>{String(index + 1).padStart(2, "0")}</span>
@@ -295,7 +314,7 @@ export function BrandStudio({
 							replaceDefinition,
 							onDraftTitleChange,
 							emit,
-							setModeId,
+							setModeId: selectMode,
 						})
 					) : (
 						<Alert
@@ -463,78 +482,13 @@ export function BrandStudio({
 					</footer>
 				</main>
 
-				<aside
-					className="lemn-brand-studio__preview"
-					aria-label="Live branding preview"
-				>
-					<div className="lemn-brand-studio__preview-sticky">
-						<p className="lemn-brand-studio__eyebrow">Live compiled preview</p>
-						{compiledMode ? (
-							<div
-								className="lemn-brand-studio__preview-scope"
-								{...compiledMode.attributes}
-							>
-								<Card
-									elevated
-									title={
-										<>
-											<span>Appointment overview</span>{" "}
-											<Badge tone="success">Live</Badge>
-										</>
-									}
-								>
-									<fieldset
-										aria-label="Typography specimen"
-										className="lemn-brand-studio__type-specimen"
-									>
-										<span>Heading specimen</span>
-										<h2>Care that feels unmistakably yours.</h2>
-										<p>
-											Body text stays readable across product surfaces and
-											complete visual modes.
-										</p>
-										<code>appointment.status = &quot;confirmed&quot;</code>
-									</fieldset>
-									<div className="lemn-brand-studio__preview-actions">
-										<Button>Book appointment</Button>
-										<Button variant="secondary">View schedule</Button>
-									</div>
-									<div className="lemn-brand-studio__check">
-										<Checkbox defaultChecked id="brand-studio-send-reminder" />
-										<label htmlFor="brand-studio-send-reminder">
-											Send appointment reminder
-										</label>
-									</div>
-									<AreaChart
-										aria-label="Bookings and completed visits"
-										animation="none"
-										data={PREVIEW_DATA}
-										height={220}
-										index="month"
-										series={[
-											{
-												dataKey: "bookings",
-												name: "Bookings",
-												color: "var(--lemn-chart-series-1)",
-											},
-											{
-												dataKey: "completed",
-												name: "Completed",
-												color: "var(--lemn-chart-series-2)",
-											},
-										]}
-									/>
-								</Card>
-							</div>
-						) : (
-							<Alert
-								variant="error"
-								title="Preview unavailable"
-								message="Resolve blocking diagnostics to compile this mode."
-							/>
-						)}
-					</div>
-				</aside>
+				{previewPlacement === "inline" ? (
+					<CompiledBrandStudioPreview
+						artifact={artifact}
+						compiling={compiling}
+						modeId={resolvedModeId}
+					/>
+				) : null}
 			</div>
 		</section>
 	);
@@ -1575,14 +1529,6 @@ function selectedFontBytes(
 
 function formatBytes(bytes: number): string {
 	return bytes < 1024 ? `${bytes} B` : `${Math.round(bytes / 1024)} KB`;
-}
-
-function safeCompiledMode(artifact: CompiledBrandingArtifact, modeId: string) {
-	try {
-		return getCompiledMode(artifact, modeId);
-	} catch {
-		return undefined;
-	}
 }
 
 function ColorField({

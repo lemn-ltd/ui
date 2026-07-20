@@ -109,9 +109,32 @@ export type BrandStudioProps = {
 	readonly hostAdapter?: BrandStudioHostAdapter;
 	readonly systemBrandings?: readonly SystemBrandingTemplate[];
 	readonly previewTargets?: readonly BrandStudioPreviewTarget[];
+	/** Controlled active wizard step. */
+	readonly step?: BrandStudioStepId;
+	/** Called whenever the user selects a wizard step. */
+	readonly onStepChange?: (step: BrandStudioStepId) => void;
+	/** Controlled active visual mode. */
+	readonly modeId?: string;
+	/** Called whenever the user selects a visual mode. */
+	readonly onModeIdChange?: (modeId: string) => void;
+	/** Initial step for uncontrolled usage. Ignored when `step` is provided. */
 	readonly initialStep?: BrandStudioStepId;
+	/** Initial mode for uncontrolled usage. Ignored when `modeId` is provided. */
 	readonly initialModeId?: string;
+	/**
+	 * Keeps the live preview inside Studio by default. Use `external` when the
+	 * host renders `BrandStudioPreview` in its own surface, such as a DockPanel.
+	 */
+	readonly previewPlacement?: "inline" | "external";
 	readonly readOnly?: boolean;
+	readonly className?: string;
+};
+
+export type BrandStudioPreviewProps = {
+	/** Controlled BrandingDefinition compiled locally for the visual preview. */
+	readonly value: BrandingDefinition;
+	/** Controlled mode to render. Falls back to the definition default mode. */
+	readonly modeId?: string;
 	readonly className?: string;
 };
 

@@ -12,11 +12,11 @@ import {
 } from "@testing-library/react";
 import { useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { BrandStudio } from "../../src/brand-studio.js";
 import type {
 	BrandStudioDraftContext,
 	BrandStudioIntent,
-} from "../../src/types.js";
+} from "../../src/index.js";
+import { BrandStudio, BrandStudioPreview } from "../../src/index.js";
 
 afterEach(() => {
 	cleanup();
@@ -58,6 +58,88 @@ describe("BrandStudio", () => {
 				?.textContent,
 		).toContain("appointment.status");
 		expect(fetchSpy).not.toHaveBeenCalled();
+	});
+
+	it("supports controlled wizard step and visual mode selection", async () => {
+		const onStepChange = vi.fn();
+		const onModeIdChange = vi.fn();
+		const definition = initialDefinition();
+		const view = render(
+			<BrandStudio
+				draft={draft}
+				modeId="dark"
+				onChange={() => undefined}
+				onModeIdChange={onModeIdChange}
+				onStepChange={onStepChange}
+				step="colors"
+				value={definition}
+			/>,
+		);
+
+		const modeSelect = screen.getByLabelText("Mode") as HTMLSelectElement;
+		expect(modeSelect.value).toBe("dark");
+		expect(screen.getByLabelText("Accent color")).toBeTruthy();
+
+		fireEvent.click(screen.getByRole("button", { name: /Typography/ }));
+		expect(onStepChange).toHaveBeenCalledWith("typography");
+		expect(screen.getByLabelText("Accent color")).toBeTruthy();
+
+		fireEvent.change(modeSelect, { target: { value: "light" } });
+		expect(onModeIdChange).toHaveBeenCalledWith("light");
+		expect(modeSelect.value).toBe("dark");
+
+		view.rerender(
+			<BrandStudio
+				draft={draft}
+				modeId="light"
+				onChange={() => undefined}
+				onModeIdChange={onModeIdChange}
+				onStepChange={onStepChange}
+				step="typography"
+				value={definition}
+			/>,
+		);
+
+		expect(modeSelect.value).toBe("light");
+		expect(screen.getByLabelText("Body font")).toBeTruthy();
+		expect(
+			screen
+				.getByRole("button", { name: /Typography/ })
+				.getAttribute("aria-current"),
+		).toBe("step");
+	});
+
+	it("lets hosts move the package preview into an external layout surface", async () => {
+		const definition = initialDefinition();
+		const view = render(
+			<BrandStudio
+				draft={draft}
+				onChange={() => undefined}
+				previewPlacement="external"
+				value={definition}
+			/>,
+		);
+
+		expect(screen.queryByLabelText("Live branding preview")).toBeNull();
+		expect(
+			view.container.querySelector(
+				".lemn-brand-studio__layout--external-preview",
+			),
+		).not.toBeNull();
+
+		view.rerender(<BrandStudioPreview modeId="dark" value={definition} />);
+		await waitFor(() =>
+			expect(
+				view.container.querySelector(
+					"[data-lemn-brand-scope][data-lemn-mode='dark']",
+				),
+			).not.toBeNull(),
+		);
+		expect(screen.getByLabelText("Live branding preview")).toBeTruthy();
+		expect(screen.getByLabelText("Typography specimen")).toBeTruthy();
+		expect(
+			view.container.querySelector("style[data-lemn-brand-critical='true']"),
+		).not.toBeNull();
 	});
 
 	it("edits branding-level governed typography shared by every mode", async () => {
@@ -337,9 +419,7 @@ describe("BrandStudio", () => {
 			/>,
 		);
 
-		await waitFor(() =>
-			expect(targetSelect.value).toBe("lunaria-preview"),
-		);
+		await waitFor(() => expect(targetSelect.value).toBe("lunaria-preview"));
 	});
 
 	it("renders archived and publishing drafts read-only", async () => {
