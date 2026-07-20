@@ -8,8 +8,8 @@ Derived audit-state projection: `patterns/pattern-audit.md`
 
 ## Inventory Basis
 
-This profile is based on the Lemn UI repository inventory as of
-2026-07-18.
+This profile is based on the Lemn UI repository inventory reassessed on
+2026-07-20 from baseline commit `2d70c48e658b1e44962432f439b52dfc7e261ba9`.
 
 Lemn UI is not a product backend or the full AgentOps control plane. It is
 the shared graphical UI system and release workspace for LEMN products,
@@ -21,13 +21,17 @@ with:
   package docs, and public exports
 - published `@lemn-ltd/brand-contract`, `@lemn-ltd/brand-runtime`, and
   `@lemn-ltd/brand-studio` packages for deterministic complete-mode branding,
-  first-byte server resolution, and controlled authoring
+  first-byte server resolution, typed Service Binding and authenticated HTTPS
+  transports, and controlled authoring
 - a Git-authoritative provider registry with exact pins, source provenance,
   licenses, notices, SBOM, conformance, and update status
 - the private `@lemn-ltd/ui-portal` application, which serves one public
   Catalog and one path-scoped Cloudflare Access-protected Admin surface from
-  the `lemn-ui-portal` Worker
+  the `lemn-ui-portal` Worker, including protected Admin API routes and
+  origin-side Access assertion verification
 - an Astro/Starlight documentation site deployed through Cloudflare
+- a dedicated public R2 font CDN at `fonts.ui.le-mn.com`, governed by a
+  Git-authoritative manifest of immutable WOFF2 and license objects
 - Vitest, React Testing Library, Playwright, axe, and fidelity-capture coverage
 - brand-neutrality and package-boundary validation scripts
 - Changesets, GitHub Packages publishing, changelog synchronization, and
@@ -49,21 +53,28 @@ requirements merely because they exist in the organization-wide catalog.
   registry, workspace, catalog, docs, Portal, tests, and release automation.
   Compatibility aliases are not part of the public package contract.
 - Treat package exports, tokens, CSS, component props, catalog metadata,
-  changesets, and published versions as public contracts. HTTP-specific Hono,
-  OpenAPI, Problem Details, CORS, webhook, and MCP requirements are not
-  applicable unless this repository introduces those product API surfaces.
+  changesets, published versions, public machine endpoints, and protected Admin
+  endpoints as contracts. Hono, webhook, and MCP requirements remain
+  inapplicable until those capabilities exist; OpenAPI must be evaluated for
+  the shipped HTTP endpoints rather than excluded categorically.
 - Apply Cloudflare patterns to `apps/ui-portal` and `apps/docs`, their Wrangler
   configuration, bundled assets, runtime dependencies, deploy commands, and
-  production verification. Portal Admin may use one typed least-privilege
-  server adapter to the external branding control plane. Durable Objects,
-  Sandbox, Queues, and Workflows are not required inside this repository.
+  production verification; to the public font R2 resource and custom domain;
+  and to the Service Binding transport published by `@lemn-ltd/brand-runtime`.
+  Durable Objects, Sandbox, Queues, and Workflows are not required inside this
+  repository.
 - Keep components and Brand Studio controlled, presentational,
   provider-neutral, and persistence-free. Consuming applications own product
   data fetching, authorization, persistence, routing, telemetry, and workflow
-  policy.
+  policy. `@lemn-ltd/brand-runtime` may own typed server-only transport,
+  verification, timeout, fallback, and SSR projection contracts without owning
+  the external branding control plane.
 - Do not import AgentOps assumptions about Neon, Kysely, product data,
   multi-tenant auth, billing, durable agent runs, or LLM infrastructure unless
   a concrete future change adds those responsibilities to this workspace.
+- Treat Cloudflare Access as operational identity for the Portal Admin and deep
+  health boundaries only. It is not LEMN commercial identity, product RBAC, or
+  permission to introduce tenant data into this repository.
 
 ## Pattern Profile
 
@@ -89,12 +100,20 @@ pattern_profile:
       - pnpm, Turborepo, TypeScript, Vite, Vitest, Playwright, Wrangler, and Biome are repository contracts and must remain pinned and reproducible.
       - Components, catalogs, build scripts, validation scripts, and test helpers require file-scope, readability, type, placeholder, suppression, and dependency discipline.
 
+  DATA:
+    target_level: 5
+    reason:
+      - The repository owns one dedicated R2 bucket and custom domain for immutable public WOFF2 and license artifacts.
+      - The font manifest, hashes, content-addressed keys, licenses, CORS, cache policy, and remote parity checks form a governed public-static-asset contract.
+      - Postgres, KV authority, private branding artifacts, uploads, tenant files, and queryable product metadata remain outside this repository.
+
   CLOUDFLARE:
-    target_level: 4
+    target_level: 5
     reason:
       - The single Portal Worker, its protected Admin paths, and the documentation application are deployed through Wrangler to Cloudflare.
       - Worker configuration, bundled static assets, runtime dependencies, generated types, dry runs, and production deploy commands must remain reviewable and reproducible.
-      - Durable Objects and Sandbox are not applicable; any Admin Service Binding remains narrow, typed, and server-only.
+      - The repository owns the public font R2 resource and publishes a typed Service Binding client for synchronous Branding Runtime resolution.
+      - Service Binding payloads, capability scope, timeouts, error mapping, and request correlation are public runtime obligations; Durable Objects and Sandbox remain inapplicable.
 
   INFRA:
     target_level: 4
@@ -107,7 +126,8 @@ pattern_profile:
     reason:
       - "The UI, BrandingDefinition, compiled artifact envelope, runtime projection, Studio host adapter, blocks, token exports, provider read model, and catalog endpoints are stable public contracts."
       - Public changes must remain additive or carry a changeset, migration guidance, and versioned compatibility decision.
-      - Hono, OpenAPI-generated clients, backend DTO mappers, webhooks, and MCP server tools are not part of the current repository inventory.
+      - The Portal ships public machine endpoints and a protected Admin API; their request, response, error, authorization, and compatibility behavior must be explicitly governed.
+      - Hono, backend persistence mappers, webhooks, and MCP server tools are not part of the current repository inventory. OpenAPI remains a required evaluation for shipped endpoints.
 
   ERROR:
     target_level: 3
@@ -115,12 +135,26 @@ pattern_profile:
       - Component interactions, Portal routes, docs builds, catalog generation, packaging, and release scripts have observable failure paths that must be explicit and recoverable.
       - Build, validation, publish, and deploy failures must stop cleanly and report actionable diagnostics without partial success claims.
 
+  AUTH:
+    target_level: 1
+    reason:
+      - Portal Admin and protected deep health use origin-verified Cloudflare Access human and service identities.
+      - This operational identity boundary must remain server-enforced, least-privilege, and explicitly separated from LEMN commercial auth, tenant RBAC, billing, and entitlements.
+      - Any future product data, Workspace mutation, or AgentOps control-plane capability requires profile reassessment before implementation.
+
   SEC:
     target_level: 4
     reason:
       - Local installs, GitHub Packages publishing, Cloudflare deploys, and CI use scoped credentials that must remain outside the repository and logs.
       - Portal fixtures, documentation, screenshots, and component examples must remain brand-neutral and free of customer or production data.
-      - Release and debug output must preserve redaction and least-privilege access even though this package does not own product authorization.
+      - Release and debug output must preserve redaction and least-privilege access; Portal operational authorization is owned here even though product authorization is not.
+
+  ASYNC:
+    target_level: 3
+    reason:
+      - The server runtime package chooses between direct execution, Service Binding, and authenticated HTTPS transports and exposes abort, deadline, fallback, and error-mapping behavior.
+      - Runtime resolution, preview exchange, provider snapshot synchronization, and font CDN operations perform controlled network or write effects that must be awaited and bounded.
+      - Queue, Workflow, outbox, and durable process ownership remain external to this repository.
 
   TEST:
     target_level: 4
@@ -143,7 +177,7 @@ pattern_profile:
     reason:
       - Operators need deployment and runtime evidence for docs/Portal health, Worker versions, catalog availability, browser failures, and release outcomes.
       - Logs, production tails, smoke output, screenshots, and fidelity artifacts must be attributable to a target and current code state without leaking credentials.
-      - Distributed trace propagation is required only if future changes add cross-runtime request or job flows.
+      - Branding Runtime already crosses HTTPS or Service Binding boundaries, so requestId/traceId propagation is a current transport-contract obligation rather than a future trigger.
 
   OPS:
     target_level: 1
@@ -165,12 +199,15 @@ The following are not required by this profile for the current project shape:
 
 - product backend services, Hono routes, or OpenAPI-generated clients
 - transactional product databases, migrations, Kysely, Hyperdrive, KV
-  authority, R2, ClickHouse, or Cloudflare Artifacts inside this repository;
-  the external AgentOps simulator owns branding persistence and publication
-- product authentication, authorization, billing, entitlements, or tenant data
+  authority, private branding-artifact R2, ClickHouse, or Cloudflare Artifacts
+  inside this repository; AgentOps owns branding persistence and publication,
+  while this repository owns only the governed public immutable font R2 origin
+- product authentication, product authorization, billing, entitlements, or
+  tenant data; the path-scoped Cloudflare Access boundary for Portal operations
+  remains explicitly owned here without becoming product identity
 - Queues, Workflows, Durable Objects, or long-running async orchestration
-  inside this repository; a narrow server adapter for Portal Admin does not
-  move control-plane ownership into UI
+  inside this repository; typed Service Binding and HTTPS runtime clients do
+  not move control-plane ownership into UI
 - commercial LLM calls, AI Gateway, Brainstask, Flue, realtime voice, or agent
   execution runtimes
 - product-specific data fetching, routing, telemetry, or business-policy
@@ -179,3 +216,19 @@ The following are not required by this profile for the current project shape:
 
 If future work introduces one of these capabilities, update this profile first
 or record a scoped exception in `patterns/pattern-audit.md`.
+
+## Reassessment Triggers
+
+Reassess this profile before merging a change that introduces any of the
+following:
+
+- product or tenant persistence, private uploads, mutable asset metadata, KV
+  authority, Hyperdrive, or Postgres in this repository;
+- Portal mutations against AgentOps, Workspace data, product RBAC, billing, or
+  entitlements;
+- Queues, Workflows, outbox, Durable Objects, Sandbox, or long-running jobs;
+- new public or cross-consumer HTTP endpoints, webhooks, MCP tools, or LLM
+  runtime calls;
+- a new Service Binding, transport consumer, runtime credential class, or
+  cross-runtime hop that changes authorization or trace propagation;
+- private or tenant-scoped use of the font R2 bucket or any new R2 resource.

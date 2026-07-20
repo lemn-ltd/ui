@@ -24,9 +24,23 @@ pattern_audit:
     gaps: []
     blockers: []
     exceptions: []
-  CLOUDFLARE:
+  DATA:
     current_level: unassessed
     gaps: []
+    blockers: []
+    exceptions:
+      - pattern: PAT-DATA-R2-001
+        scope: scripts/fonts/** and the public fonts.ui.le-mn.com R2 origin
+        owner: UI Platform
+        reason: "Immutable public WOFF2 and license release artifacts use a Git-authoritative content-addressed manifest rather than Postgres metadata."
+        risk: "The exception would be unsafe if the bucket acquired private, mutable, tenant-scoped, user-uploaded, searchable, or transactional objects."
+        follow_up: "Reassess before adding any non-public-static object class; use an authoritative product store and authorized delivery whenever asset ownership or policy becomes mutable."
+  CLOUDFLARE:
+    current_level: unassessed
+    gaps:
+      - pattern: PAT-CLOUDFLARE-SERVICE-BINDINGS-001
+        scope: packages/brand-runtime Service Binding transport
+        detail: "The published BrandingRuntimeRpcBinding contract does not yet carry requestId/traceId across the binding."
     blockers: []
     exceptions: []
   INFRA:
@@ -36,7 +50,10 @@ pattern_audit:
     exceptions: []
   API:
     current_level: unassessed
-    gaps: []
+    gaps:
+      - pattern: PAT-API-OPENAPI-001
+        scope: apps/ui-portal protected Admin API and stable machine-readable HTTP surfaces
+        detail: "The shipped endpoints have behavior and contract tests but no governed OpenAPI contract or recorded temporary exception."
     blockers: []
     exceptions: []
   ERROR:
@@ -44,9 +61,28 @@ pattern_audit:
     gaps: []
     blockers: []
     exceptions: []
+  AUTH:
+    current_level: unassessed
+    gaps: []
+    blockers: []
+    exceptions:
+      - pattern: PAT-AUTH-LEMN-001
+        scope: Portal Admin and protected deep-health operational identity only
+        owner: UI Platform Security
+        reason: "Cloudflare Access is the zero-trust operational perimeter for this internal Portal; it is not a parallel commercial auth, organization, tenant, billing, or entitlement authority."
+        risk: "The boundary would become a parallel product identity system if it gained Workspace data, product mutations, tenant policy, or reusable application sessions."
+        follow_up: "Reassess and integrate the approved LEMN identity boundary before adding product data, AgentOps mutations, tenant RBAC, billing, or entitlements."
   SEC:
     current_level: unassessed
     gaps: []
+    blockers: []
+    exceptions: []
+  ASYNC:
+    current_level: unassessed
+    gaps:
+      - pattern: PAT-ASYNC-IDEMPOTENCY-001
+        scope: Branding Runtime HTTPS resolution and preview exchange transports
+        detail: "The audit must distinguish retry-safe active resolution from one-time preview exchange and record the allowed retry/idempotency policy for each operation."
     blockers: []
     exceptions: []
   TEST:
@@ -65,7 +101,10 @@ pattern_audit:
     exceptions: []
   OBS:
     current_level: unassessed
-    gaps: []
+    gaps:
+      - pattern: PAT-OBS-TRACE-CONTEXT-001
+        scope: Branding Runtime HTTPS and Service Binding transports
+        detail: "Portal requests have correlation IDs, but the published cross-runtime contract does not yet propagate requestId/traceId."
     blockers: []
     exceptions: []
   OPS:
@@ -84,6 +123,7 @@ pattern_audit:
 
 | Audit ID | Date | Scope | Result |
 |---|---|---|---|
+| PATTERN-PROFILE-REASSESSMENT-2026-07-20 | 2026-07-20 | Current package, Portal, runtime transport, Cloudflare Access, public API, and font R2 ownership inventory | **PROFILE UPDATED; FULL PRECEDENCE AUDIT PENDING** — target domains now include operational identity, controlled cross-runtime effects, public-static R2 ownership, and the existing Service Binding contract without claiming domain completion |
 | UI-PORTAL-UNIFICATION-2026-07-18 | 2026-07-18 | Single Portal Worker, public Catalog, protected Admin, schema/docs, package release boundaries, and zero-legacy policy | **PHASE 1 PASS; PHASE 2 PENDING** — repository/build receipt: `docs/evidence/ui-portal-unification/phase-1-repository.md`; production cutover requires its separate receipt |
 
 ### Intended repository boundary
@@ -93,10 +133,14 @@ pattern_audit:
   signed compiled-object contract.
 - `@lemn-ltd/brand-runtime` owns server-only runtime adapters, verification,
   selected-mode projection, SSR helpers, preview selection contracts, and one
-  embedded branded fallback.
+  embedded branded fallback, including typed Service Binding and authenticated
+  HTTPS transport clients.
 - `@lemn-ltd/brand-studio` remains controlled and persistence-free; the host
   supplies catalog/preview data and executes typed intents.
 - `@lemn-ltd/ui` consumes semantic variables and provider adapters only.
+- This repository owns the public immutable font R2 origin and its
+  Git-authoritative artifact manifest; it does not own AgentOps private branding
+  publication storage.
 - AgentOps owns Workspace state, BrandingVersions, Postgres, private R2,
   publication, human activation, preview sessions, MCP, authorization, and
   audit. Those responsibilities do not move into this repository.
@@ -158,8 +202,11 @@ Material UI applicability includes `PAT-UI-LEMN-001`,
 `PAT-UI-SYSTEM-001`, and `PAT-UI-BLOCKS-001`. The Blocks dependency chain was
 evaluated through `PAT-UI-PROVIDER-FIRST-001`, `PAT-CODE-DEPENDENCIES-001`,
 `PAT-CODE-FRAMEWORK-API-VALIDITY-001`, `PAT-UI-STATES-001`, and
-`PAT-UI-FRONTEND-001`. `PAT-API-OPENAPI-001` is not applicable because this
-workspace introduces no product OpenAPI surface, consistent with the profile.
+`PAT-UI-FRONTEND-001`. At that Phase 1 gate,
+`PAT-API-OPENAPI-001` was treated as not applicable because the review scoped
+only product API surfaces. The 2026-07-20 profile reassessment supersedes that
+classification for the shipped Portal endpoints and records the unresolved
+contract gap above without rewriting the historical gate result.
 
 AgentOps status was checked before mutation for organization `lemn`, the
 workspace declared in `.agentops/project.json`, and environment `development`.
