@@ -77,7 +77,7 @@ Keep the credential outside repositories in the user's `~/.npmrc`:
 Install the compatible release set with exact versions:
 
 ```bash
-pnpm add @lemn-ltd/brand-contract@1.0.0 @lemn-ltd/brand-runtime@0.1.0 @lemn-ltd/ui@0.3.1
+pnpm add @lemn-ltd/brand-contract@1.0.0 @lemn-ltd/brand-runtime@0.1.1 @lemn-ltd/ui@0.4.0
 ```
 
 Load styles once and import only public LEMN exports:

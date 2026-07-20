@@ -1,4 +1,0 @@
-interface:
-  display_name: "Component Capture Migration"
-  short_description: "Migrate captured UI into the design system"
-  default_prompt: "Use $component-capture-migration to turn this screenshot or source URL into a responsive @lemn-ltd/ui component with a Lemn UI Portal page, docs, and tests."

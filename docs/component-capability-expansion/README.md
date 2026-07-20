@@ -1,12 +1,12 @@
 # Component capability expansion
 
-This document records the `@lemn-ltd/ui` 0.2.0 component expansion and the
-contract that keeps package exports, the catalog, the Portal, and written
-guidance aligned.
+This document records the component-expansion lineage and the current contract
+that keeps package exports, the catalog, the Portal, and written guidance
+aligned.
 
 ## Result
 
-The public catalog contains exactly 130 components: 101 in Core and 29 in
+The public catalog contains exactly 131 components: 102 in Core and 29 in
 Agents. Every entry declares its `area` and `group`; area is never inferred from
 the family name.
 
@@ -15,7 +15,7 @@ the family name.
 | Core | Primitives | 9 |
 | Core | Inputs | 17 |
 | Core | Forms | 9 |
-| Core | Visualizations | 13 |
+| Core | Visualizations | 14 |
 | Core | Data display | 18 |
 | Core | Feedback | 6 |
 | Core | Overlays | 10 |
@@ -27,7 +27,7 @@ the family name.
 | Agents | Automation | 6 |
 | Agents | Runtime & evidence | 8 |
 
-The 18 new catalog components are:
+The initial 0.2.0 expansion added 18 catalog components:
 
 - Visualizations: `AreaChart`, `BarChart`, `ComboChart`, `BarList`,
   `CategoryBar`, `DonutChart`, `LineChart`, `ProgressCircle`, `SparkChart`, and
@@ -37,6 +37,9 @@ The 18 new catalog components are:
 - Navigation: `TabNavigation`.
 - Layout: `Separator`.
 
+The later provider cutover added `HeatmapChart` as the 131st capability. It is
+the single ECharts-backed visualization and retains a provider-neutral LEMN API.
+
 `Calendar`, `Tabs`, and `InfoBanner` were extended rather than duplicated.
 Calendar supports single and range selection, one or two months, locale and
 week-start options, disabled constraints, deterministic today, and controlled
@@ -45,7 +48,7 @@ lazy mounting. InfoBanner now supports titles, optional or custom icons,
 actions, dismissal, and urgency semantics.
 
 `AccentColorPicker` is a public theme companion rather than a catalog entry, so
-the catalog remains exactly 130 components. Consumers can expose it next to
+the catalog remains exactly 131 components. Consumers can expose it next to
 `ThemeToggle`, control its value, or let it persist a selected accent and apply
 the derived semantic tokens to the document root.
 

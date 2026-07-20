@@ -1,0 +1,101 @@
+{
+	"chat.useAgentsMdFile": true,
+	"chat.useNestedAgentsMdFiles": true,
+	"chat.includeApplyingInstructions": true,
+	"chat.includeReferencedInstructions": true,
+	"editor.tabSize": 2,
+	"editor.insertSpaces": true,
+	"editor.detectIndentation": true,
+	"editor.formatOnSave": false,
+	"files.encoding": "utf8",
+	"files.eol": "\n",
+	"files.trimTrailingWhitespace": true,
+	"files.insertFinalNewline": true,
+	"files.trimFinalNewlines": true,
+	"files.associations": {
+		"wrangler.jsonc": "jsonc",
+		"worker-configuration.d.ts": "typescript"
+	},
+	"files.exclude": {
+		"**/node_modules": true,
+		"**/.pnpm-store": true,
+		"**/.turbo": true,
+		"**/.astro": true,
+		"**/.wrangler": true,
+		"**/dist": true,
+		"**/coverage": true,
+		"**/playwright-report": true,
+		"**/test-results": true,
+		"**/.playwright-cli": true,
+		"**/.DS_Store": true,
+		"**/codedb.*": true,
+		"**/.codedb": true
+	},
+	"search.exclude": {
+		"**/node_modules": true,
+		"**/.pnpm-store": true,
+		"**/.turbo": true,
+		"**/.astro": true,
+		"**/.wrangler": true,
+		"**/dist": true,
+		"**/coverage": true,
+		"**/playwright-report": true,
+		"**/test-results": true,
+		"**/.playwright-cli": true,
+		"**/codedb.*": true,
+		"**/.codedb": true
+	},
+	"files.watcherExclude": {
+		"**/node_modules/**": true,
+		"**/.pnpm-store/**": true,
+		"**/.turbo/**": true,
+		"**/.astro/**": true,
+		"**/.wrangler/**": true,
+		"**/dist/**": true,
+		"**/coverage/**": true,
+		"**/playwright-report/**": true,
+		"**/test-results/**": true
+	},
+	"explorer.fileNesting.enabled": true,
+	"explorer.fileNesting.expand": false,
+	"explorer.fileNesting.patterns": {
+		"package.json": "pnpm-lock.yaml, pnpm-workspace.yaml, turbo.json, tsconfig*.json, .npmrc",
+		"wrangler.jsonc": "worker-configuration.d.ts, .dev.vars, .dev.vars.*",
+		"tsconfig.json": "tsconfig.*.json",
+		"vite.config.ts": "vitest.config.ts, playwright.config.ts, playwright.*.config.ts"
+	},
+	"json.validate.enable": true,
+	"json.schemas": [
+		{
+			"fileMatch": ["**/wrangler.jsonc"],
+			"url": "https://json.schemastore.org/wrangler.json"
+		},
+		{
+			"fileMatch": ["**/tsconfig.json", "**/tsconfig.*.json"],
+			"url": "https://json.schemastore.org/tsconfig"
+		},
+		{
+			"fileMatch": ["package.json", "**/package.json"],
+			"url": "https://json.schemastore.org/package"
+		}
+	],
+	"npm.packageManager": "pnpm",
+	"[markdown]": {
+		"editor.wordWrap": "on",
+		"editor.wordWrapColumn": 100,
+		"files.trimTrailingWhitespace": false
+	},
+	"[mdx]": {
+		"editor.wordWrap": "on",
+		"editor.wordWrapColumn": 100,
+		"files.trimTrailingWhitespace": false
+	},
+	"[yaml]": {
+		"editor.tabSize": 2,
+		"editor.insertSpaces": true
+	},
+	"[astro]": {
+		"editor.tabSize": 2,
+		"editor.insertSpaces": true
+	}
+}

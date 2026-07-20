@@ -43,7 +43,6 @@ const generatedDirectoryNames = new Set([
 ]);
 
 const exactExcludedFiles = new Set([
-	"UI_PORTAL_UNIFICATION_HANDOFF.md",
 	"docs/evidence/ui-portal-unification/phase-1-repository.md",
 	"docs/evidence/ui-portal-unification/phase-2-production.md",
 	"scripts/check-ui-portal-zero-legacy.mjs",

@@ -1,39 +1,13 @@
-# Lemn UI Docs
+# Engineering documentation
 
-This folder contains architecture notes, frontend decisions, and cross-project
-patterns for `@lemn-ltd/ui`, the Lemn UI Portal, and applications that consume
-the system.
+Living engineering notes and reproducible evidence for Lemn UI. Product-facing
+guides live in [`apps/docs`](../apps/docs/src/content/docs/); package usage lives
+beside each package.
 
-## Documents
+- [Component capability contract](component-capability-expansion/README.md)
+- [Visualization system](visualization-system/README.md)
+- [Cloudflare frontend performance](frontend-performance/README.md)
+- [Verification evidence](evidence/)
 
-- [Component capability expansion](./component-capability-expansion/README.md)
-- [Visualization system](./visualization-system/README.md)
-- [Frontend Performance On Cloudflare Workers](./frontend-performance/README.md)
-
-## Structure
-
-```text
-docs/
-  README.md
-  component-capability-expansion/
-    README.md
-  visualization-system/
-    README.md
-  frontend-performance/
-    README.md
-    common-patterns.md
-    react-vite-spa-worker-bff.md
-    react-router-v7-fullstack.md
-    astro-workers.md
-    shared-packages.md
-    sources.md
-```
-
-## General Rule
-
-- Use **React + Vite SPA + Worker BFF** for dashboards, internal tools, and
-  authenticated applications with high interaction.
-- Use **React Router v7 full-stack** when routes need loaders, actions,
-  server-aware mutations, and route-owned data control.
-- Use **Astro + Workers** for documentation, marketing, public content, and sites
-  where SEO and low JavaScript matter more than continuous interaction.
+Plans and handoffs are not documentation authority. Once implemented, their
+decisions must be reflected in code, tests, these guides, or the pattern audit.

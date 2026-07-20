@@ -2,7 +2,7 @@
 
 Status: **PASS — repository and build reconciliation complete**
 Evidence date: 2026-07-18
-Authority: [`UI_PORTAL_UNIFICATION_HANDOFF.md`](../../../UI_PORTAL_UNIFICATION_HANDOFF.md)
+Current authority: [UI Portal infrastructure contract](../../../apps/ui-portal/docs/infrastructure/README.md)
 Target branch: `main`
 Validated implementation-tree capture: `fba0d072d8e50e542ca2f571b89711d7397b51c6`
 Base commit: `ca24a1482e4b4f09c98d081d6541572d3128268f`

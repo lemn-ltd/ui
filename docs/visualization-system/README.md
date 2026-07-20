@@ -11,13 +11,13 @@ It is an exact direct dependency of `@lemn-ltd/ui` and is confined to
 `packages/ui/src/visualizations/`. `react-is` is pinned to the compatible React
 version required by that renderer.
 
-Apache ECharts 6.1.0 is the evaluated future secondary renderer. It is not
-installed, exported, bundled, or represented in public types. It may only be
-adopted when an approved component needs high-density canvas rendering, a
-specialized chart form, geospatial behavior, or an advanced interaction that
-Recharts cannot provide cleanly, and an empirical benchmark demonstrates a
-material benefit. A future adoption must use a small internal lifecycle wrapper;
-it must not introduce a public `engine` prop or a generic renderer adapter.
+Apache ECharts 6.1.0 is the approved secondary renderer for `HeatmapChart`. It
+is an exact direct dependency, loaded dynamically by that component, and stays
+behind a small internal lifecycle wrapper. ECharts types, configuration, and
+instances are not public API; there is no public `engine` prop or generic
+renderer adapter. Additional ECharts capabilities still require an approved
+provider-registry change and evidence that native React or Recharts cannot meet
+the interaction or density requirement cleanly.
 
 Direct D3 use and additional chart engines are outside the current contract.
 
@@ -26,14 +26,17 @@ Direct D3 use and additional chart engines are outside the current contract.
 | Renderer | Components |
 | --- | --- |
 | Recharts | `LineChart`, `AreaChart`, `BarChart`, `ComboChart`, `DonutChart`, `SparkChart` |
+| Apache ECharts | `HeatmapChart` |
 | Tremor source snapshot (`ca4d588f47820ff3d514d37fa4ee08a4222dec11`) | `Tracker` |
 | Native React and CSS/SVG | `BarList`, `CategoryBar`, `ProgressCircle`, `ProgressBar`, `Sparkline`, `Meter` |
 | Renderer-independent frame | `ChartFrame` |
 
-Native components must not import Recharts. Tracker preserves Tremor's Radix HoverCard lifecycle
-through a deterministic source-snapshot transform, without importing a chart engine. Importing
-`Button`, `ChartFrame`, Tracker, or a native visualization must not pull a chart engine into the
-consumer bundle.
+Native components must not import Recharts or ECharts. Tracker preserves
+Tremor's Radix HoverCard lifecycle through a deterministic source-snapshot
+transform, without importing a chart engine. Importing `Button`, `ChartFrame`,
+Tracker, a catalog entrypoint, or a native visualization must not pull a chart
+engine into the consumer bundle. `HeatmapChart` loads ECharts only after the
+interactive component mounts with renderable data.
 
 ## Public API boundary
 
@@ -103,10 +106,12 @@ themes use the same token names and are verified independently.
 
 ## Performance and bundles
 
-Bundle fixtures prove three boundaries: a button-only import contains no chart
-engine; a `LineChart` import contains Recharts and no secondary engine; the
-catalog remains data-only and independently tree-shakeable. The boundary checker
-rejects Recharts imports outside the visualization family.
+Bundle fixtures prove that a button-only import contains no chart engine, a
+`LineChart` import contains Recharts but not ECharts, the Tracker fixture does
+not include either engine, and catalog entrypoints remain data-only and
+independently tree-shakeable. The boundary checker rejects both Recharts and
+ECharts imports outside the visualization family. `HeatmapChart` uses a dynamic
+ECharts import so its renderer stays outside unrelated entrypoint bundles.
 
 The reproducible benchmark is `pnpm --filter @lemn-ltd/ui-portal run
 benchmark:visualizations`. It measures the production dashboard pattern with
