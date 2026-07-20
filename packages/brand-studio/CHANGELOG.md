@@ -1,5 +1,16 @@
 # @lemn-ltd/brand-studio
 
+## 2.1.0
+
+### Minor Changes
+
+- b5b70d4: Add controlled wizard-step and visual-mode props, make the Brand Studio step rail horizontally scrollable, and expose the package-owned live preview for host-managed surfaces such as `DockPanel` while preserving inline preview as the default.
+
+### Patch Changes
+
+- Updated dependencies [fc0a8b9]
+  - @lemn-ltd/ui@0.4.1
+
 ## 2.0.0
 
 ### Major Changes

@@ -1,5 +1,11 @@
 # @lemn-ltd/ui
 
+## 0.4.1
+
+### Patch Changes
+
+- fc0a8b9: Refresh the packaged installation guidance for the current compatible release set.
+
 ## 0.4.0
 
 ### Minor Changes
