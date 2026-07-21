@@ -338,6 +338,14 @@ test("Linux baselines use the pinned official Playwright runtime", async () => {
 		/node scripts\/test\/linux-snapshot-loopback-proxy\.ts/u,
 	);
 	assert.match(generator, /"wrangler",\s*"dev"/u);
+	assert.match(
+		generator,
+		/"--filter",\s*"@lemn-ltd\/ui-portal",\s*"exec",\s*"vite",\s*"build"/u,
+	);
+	assert.doesNotMatch(
+		generator,
+		/"--filter",\s*"@lemn-ltd\/ui-portal",\s*"run",\s*"build"/u,
+	);
 	assert.match(generator, /"DEPLOYMENT_ENVIRONMENT:test"/u);
 	assert.doesNotMatch(generator, /"vite",\s*"dev"/u);
 	assert.match(

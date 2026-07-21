@@ -222,10 +222,17 @@ async function main(args = []) {
 			stdio: "inherit",
 		});
 
-		runChecked("pnpm", ["--filter", "@lemn-ltd/ui-portal", "run", "build"], {
-			cwd: sourceRoot,
-			stdio: "inherit",
-		});
+		// Build the Worker input without running the snapshot-parity contract that
+		// this command is responsible for repairing. The complete Portal build and
+		// contract suite still runs after the generated baselines are committed.
+		runChecked(
+			"pnpm",
+			["--filter", "@lemn-ltd/ui-portal", "exec", "vite", "build"],
+			{
+				cwd: sourceRoot,
+				stdio: "inherit",
+			},
+		);
 		server = spawn(
 			"pnpm",
 			[

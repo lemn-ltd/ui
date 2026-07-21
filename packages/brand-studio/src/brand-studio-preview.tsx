@@ -95,7 +95,7 @@ const APPOINTMENTS: readonly AppointmentRow[] = [
 		time: "10:30",
 		patient: "Noah Williams",
 		initials: "NW",
-		avatarColor: "blue",
+		avatarColor: "teal",
 		service: "Follow-up visit",
 		clinician: "Dr. Elias Moore",
 		status: "Confirmed",
@@ -105,7 +105,7 @@ const APPOINTMENTS: readonly AppointmentRow[] = [
 		time: "12:15",
 		patient: "Sofia Patel",
 		initials: "SP",
-		avatarColor: "purple",
+		avatarColor: "teal",
 		service: "Initial consultation",
 		clinician: "Dr. Maya Chen",
 		status: "Pending",
@@ -115,7 +115,7 @@ const APPOINTMENTS: readonly AppointmentRow[] = [
 		time: "14:00",
 		patient: "Leo Martin",
 		initials: "LM",
-		avatarColor: "amber",
+		avatarColor: "teal",
 		service: "Therapy session",
 		clinician: "Dr. Hana Lee",
 		status: "Waitlist",
@@ -474,13 +474,13 @@ export function CompiledBrandStudioPreview({
 														<Avatar color="teal" size={24}>
 															MC
 														</Avatar>
-														<Avatar color="blue" size={24}>
+														<Avatar color="teal" size={24}>
 															EM
 														</Avatar>
-														<Avatar color="purple" size={24}>
+														<Avatar color="teal" size={24}>
 															HL
 														</Avatar>
-														<Avatar color="pink" size={24}>
+														<Avatar color="teal" size={24}>
 															+2
 														</Avatar>
 													</AvatarGroup>
@@ -529,7 +529,7 @@ export function CompiledBrandStudioPreview({
 														content: (
 															<div className="lemn-brand-preview__waitlist">
 																<span>
-																	<Avatar color="amber" size={32}>
+																	<Avatar color="teal" size={32}>
 																		LM
 																	</Avatar>
 																	<span>
@@ -634,7 +634,9 @@ export function CompiledBrandStudioPreview({
 													Average response time is down 18% this month.
 												</small>
 											</span>
-											<Badge tone="success">Healthy</Badge>
+											<Badge tone="success" variant="soft">
+												Healthy
+											</Badge>
 										</div>
 										<Sparkline
 											aria-label="Patient experience trend"

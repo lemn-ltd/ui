@@ -37,8 +37,8 @@ test("visual baselines exactly match the active Portal screenshots and Darwin/Li
 	);
 	assert.equal(
 		PORTAL_VISUAL_SNAPSHOT_COUNT_PER_PLATFORM,
-		90,
-		"The active Portal visual suite must retain 90 screenshots per baseline platform",
+		96,
+		"The active Portal visual suite must retain 96 screenshots per baseline platform",
 	);
 
 	const actual = (await readdir(snapshotRoot))

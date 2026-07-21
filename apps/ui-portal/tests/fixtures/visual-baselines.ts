@@ -18,6 +18,7 @@ export const PORTAL_VISUAL_SCREENSHOT_NAMES = [
 	...PORTAL_VISUAL_PAGE_CASES.map(([name]) => name),
 	"overview-bento",
 	"overview-bento-compact",
+	"brand-studio-preview",
 ] as const;
 
 export const PORTAL_VISUAL_PROJECT_NAMES = [

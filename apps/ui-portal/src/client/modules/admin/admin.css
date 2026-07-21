@@ -389,7 +389,7 @@
 		display: none;
 	}
 	.admin-shell {
-		grid-template-columns: 1fr;
+		grid-template-columns: minmax(0, 1fr);
 	}
 	.admin-shell > aside {
 		border-bottom: 1px solid var(--lemn-color-border);

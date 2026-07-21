@@ -1,10 +1,16 @@
 import type { Locator } from "@playwright/test";
 import { PORTAL_VISUAL_PAGE_CASES } from "../fixtures/visual-baselines.ts";
+import {
+	authorizeLocalAdminPage,
+	gotoReadyAdminBrandStudio,
+	selectPreviewMode,
+} from "../helpers/admin";
 import { componentRoutesFromCatalog } from "../helpers/component-catalog";
 import {
 	expect,
 	gotoStable,
 	newDeterministicPage,
+	type Theme,
 	test,
 } from "../helpers/deterministic";
 
@@ -125,6 +131,78 @@ async function expectCompleteSidebarTarget(target: Locator): Promise<void> {
 	);
 }
 
+function themeForProject(projectName: string): Theme {
+	return projectName.includes("dark") ? "dark" : "light";
+}
+
+async function expectResponsiveBrandStudioPreview(
+	preview: Locator,
+): Promise<void> {
+	const geometry = await preview.evaluate((element) => {
+		if (!(element instanceof HTMLElement)) {
+			throw new Error("Brand Studio preview target must be an HTML element.");
+		}
+		const rect = element.getBoundingClientRect();
+		const clinicNavigation = element.querySelector<HTMLElement>(
+			'[aria-label="Clinic navigation"]',
+		);
+		const mobileBrand = element.querySelector<HTMLElement>(
+			".lemn-brand-preview__mobile-brand",
+		);
+		const isVisible = (candidate: HTMLElement | null): boolean =>
+			Boolean(candidate && getComputedStyle(candidate).display !== "none");
+
+		return {
+			documentHorizontalOverflow: Math.max(
+				0,
+				document.documentElement.scrollWidth - window.innerWidth,
+			),
+			previewHorizontalOverflow: Math.max(
+				0,
+				element.scrollWidth - element.clientWidth,
+			),
+			previewWidth: rect.width,
+			staysInsideViewport:
+				rect.left >= -1 && rect.right <= window.innerWidth + 1,
+			clinicNavigationVisible: isVisible(clinicNavigation),
+			mobileBrandVisible: isVisible(mobileBrand),
+			overflowingElements: [...document.querySelectorAll<HTMLElement>("body *")]
+				.map((candidate) => {
+					const candidateRect = candidate.getBoundingClientRect();
+					return {
+						tag: candidate.tagName.toLowerCase(),
+						className: candidate.className,
+						right: Math.round(candidateRect.right),
+						scrollWidth: candidate.scrollWidth,
+						clientWidth: candidate.clientWidth,
+					};
+				})
+				.filter(
+					(candidate) =>
+						candidate.right > window.innerWidth + 1 ||
+						candidate.scrollWidth > candidate.clientWidth + 1,
+				)
+				.slice(0, 12),
+		};
+	});
+
+	expect(
+		geometry.documentHorizontalOverflow,
+		JSON.stringify(geometry.overflowingElements),
+	).toBeLessThanOrEqual(1);
+	expect(geometry.previewHorizontalOverflow).toBeLessThanOrEqual(1);
+	expect(geometry.staysInsideViewport).toBe(true);
+	expect(geometry.previewWidth).toBeGreaterThan(280);
+
+	if (geometry.previewWidth <= 680) {
+		expect(geometry.clinicNavigationVisible).toBe(false);
+		expect(geometry.mobileBrandVisible).toBe(true);
+	} else {
+		expect(geometry.clinicNavigationVisible).toBe(true);
+		expect(geometry.mobileBrandVisible).toBe(false);
+	}
+}
+
 for (const [name, route] of PAGES) {
 	test(`visual: ${name}`, async ({ page }, testInfo) => {
 		const stableRoute =
@@ -172,6 +250,27 @@ test("visual: overview bento", async ({ page }, testInfo) => {
 		.locator('[data-home-feature="data-display"]')
 		.scrollIntoViewIfNeeded();
 	await expect(page).toHaveScreenshot("overview-bento-compact.png");
+});
+
+test("visual: brand studio preview", async ({ page }, testInfo) => {
+	const theme = themeForProject(testInfo.project.name);
+	await test.step("authorize the protected Admin route", async () => {
+		await authorizeLocalAdminPage(page);
+	});
+	const preview =
+		await test.step("open the compiled Studio preview", async () =>
+			gotoReadyAdminBrandStudio(page));
+	await test.step("stabilize the selected branding mode", async () => {
+		await selectPreviewMode(page, preview, theme);
+		await preview.getByRole("radio", { name: "Month", exact: true }).click();
+		await expectResponsiveBrandStudioPreview(preview);
+	});
+	await test.step("capture the full-bleed application specimen", async () => {
+		await expect(preview).toHaveScreenshot("brand-studio-preview.png", {
+			animations: "disabled",
+			caret: "hide",
+		});
+	});
 });
 
 test("visual contract: every component is responsive in the active viewport and theme", async ({
