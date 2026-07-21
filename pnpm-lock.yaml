@@ -158,7 +158,7 @@ importers:
         specifier: workspace:1.0.0
         version: link:../../packages/brand-contract
       '@lemn-ltd/brand-studio':
-        specifier: workspace:2.2.0
+        specifier: workspace:2.2.1
         version: link:../../packages/brand-studio
       '@lemn-ltd/provider-registry':
         specifier: workspace:0.1.0

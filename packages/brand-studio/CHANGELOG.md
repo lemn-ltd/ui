@@ -1,5 +1,12 @@
 # @lemn-ltd/brand-studio
 
+## 2.2.1
+
+### Patch Changes
+
+- e6e1e5c: Keep the full application preview visually brand-driven by using the semantic
+  accent treatment consistently across avatars and the operational health badge.
+
 ## 2.2.0
 
 ### Minor Changes
