@@ -95,6 +95,24 @@ describe("Lemn UI Portal Worker public contracts", () => {
 		expect(response.headers.get("cache-control")).toBe("no-store");
 	});
 
+	it("publishes a non-cacheable immutable release receipt", async () => {
+		const worker = createWorker({
+			BUILD_GIT_SHA: "a".repeat(40),
+			BUILD_TIME: "2026-07-21T00:00:00Z",
+			BUILD_VERSION: "1.2.3",
+		});
+		const response = await worker.fetch(request("/release.json"));
+
+		expect(response.status).toBe(200);
+		expect(await response.json()).toEqual({
+			package: "@lemn-ltd/ui",
+			version: "1.2.3",
+			gitSha: "a".repeat(40),
+			buildTime: "2026-07-21T00:00:00Z",
+		});
+		expect(response.headers.get("cache-control")).toBe("no-store");
+	});
+
 	it("publishes the exact Core-only catalog authority and no Agent surface", async () => {
 		const worker = createWorker({ BUILD_VERSION: "1.2.3" });
 		const response = await worker.fetch(request("/catalog.json"));

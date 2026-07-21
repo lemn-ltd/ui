@@ -25,6 +25,7 @@ import {
 	smokePortalServiceAccess,
 	type UiPortalAccessCredentials,
 } from "./deployment-smoke.ts";
+import { productionPortalEdgeAccessEnabled } from "./zero-trust-posture.ts";
 
 const root = resolve(import.meta.dirname, "../..");
 const versionIdPattern =
@@ -55,6 +56,7 @@ export interface ProductionRolloutInput {
 	readonly expected: BuildIdentity;
 	readonly access: UiPortalAccessCredentials;
 	readonly accessAudiences: UiPortalAccessAudienceBindings;
+	readonly edgeAccessEnabled: boolean;
 }
 
 export interface UiPortalAccessAudienceBindings {
@@ -2458,6 +2460,7 @@ async function captureBaseline(
 ): Promise<BuildIdentity> {
 	return dependencies.smokeProtected({
 		credentials: input.access,
+		edgeAccessEnabled: input.edgeAccessEnabled,
 		retryOptions: { attempts: 1, delayMs: 0 },
 		signal: dependencies.signal,
 	});
@@ -2549,6 +2552,7 @@ async function rollbackAndVerify(
 	try {
 		await dependencies.smokeProtected({
 			credentials: input.access,
+			edgeAccessEnabled: input.edgeAccessEnabled,
 			expected: state.baselineIdentity,
 			retryOptions: { attempts: 3, delayMs: 1_000 },
 		});
@@ -2597,6 +2601,7 @@ async function executeUpgradeCandidate(
 		if (baselineDeployment(current, state)) {
 			await dependencies.smokeProtected({
 				credentials: input.access,
+				edgeAccessEnabled: input.edgeAccessEnabled,
 				expected: state.baselineIdentity,
 				retryOptions: { attempts: 1, delayMs: 0 },
 				signal: dependencies.signal,
@@ -2617,6 +2622,7 @@ async function executeUpgradeCandidate(
 			await dependencies.smokeProduction({
 				expected: input.expected,
 				access: input.access,
+				edgeAccessEnabled: input.edgeAccessEnabled,
 				portalVersionId: version.id,
 				signal: dependencies.signal,
 			});
@@ -2645,6 +2651,7 @@ async function executeUpgradeCandidate(
 		await dependencies.smokeProduction({
 			expected: input.expected,
 			access: input.access,
+			edgeAccessEnabled: input.edgeAccessEnabled,
 			signal: dependencies.signal,
 		});
 		await dependencies.writeSummary(input.expected);
@@ -2804,6 +2811,7 @@ async function executeBootstrapCandidate(
 		await dependencies.smokeProduction({
 			expected: input.expected,
 			access: input.access,
+			edgeAccessEnabled: input.edgeAccessEnabled,
 			portalVersionId: version.id,
 			signal: dependencies.signal,
 		});
@@ -2816,6 +2824,7 @@ async function executeBootstrapCandidate(
 		await dependencies.smokeProduction({
 			expected: input.expected,
 			access: input.access,
+			edgeAccessEnabled: input.edgeAccessEnabled,
 			signal: dependencies.signal,
 		});
 		await dependencies.writeSummary(input.expected);
@@ -3231,6 +3240,7 @@ async function main(): Promise<void> {
 				},
 				access,
 				accessAudiences,
+				edgeAccessEnabled: await productionPortalEdgeAccessEnabled(),
 			},
 			defaultDependencies(abortController.signal),
 		);

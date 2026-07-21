@@ -76,6 +76,7 @@ const input = {
 		clientSecret: "ui-portal-release-secret",
 	},
 	accessAudiences,
+	edgeAccessEnabled: true,
 };
 
 function wranglerSource(

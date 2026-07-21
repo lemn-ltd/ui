@@ -71,12 +71,20 @@ Account `Lemn DEV` / `Workers Scripts: Edit` and Zone `le-mn.com` /
 health-only service identity and is sent only to `/health/deep` by the release
 smoke; it is never used for an Admin business capability.
 
-The Catalog and minimal `/health` response are anonymous and read-only. The
-edge protects `/admin`, `/admin/*`, `/api/admin/*`, and Admin-only assets with
-Cloudflare Access. The Worker cryptographically verifies the Access assertion
-at origin. Service identity is least privilege and may call only the protected
-operational health capability at `/health/deep` used by release verification; deeper status and
-release diagnostics are never public.
+The Catalog, minimal `/health`, and non-cacheable `/release.json` receipt are
+anonymous and read-only. The receipt exposes only the public package name and
+immutable build identity required to verify a candidate; it contains no
+operational diagnostics. The edge protects `/admin`, `/admin/*`, `/api/admin/*`,
+and Admin-only assets with Cloudflare Access. The Worker cryptographically
+verifies the Access assertion at origin. Service identity is least privilege
+and may call only `/health/deep`.
+
+Release smoke reads the project Zero Trust manifest as its posture authority.
+When Access is enabled it requires the health service assertion and a 200 from
+`/health/deep`. When Access is disabled by that manifest it instead requires
+origin 401/403 for both Admin and deep health—even when service-token headers
+are present—and verifies the exact candidate through `/release.json`. It never
+opens a protected origin route merely to complete a deployment.
 
 ## Deployment sequence
 

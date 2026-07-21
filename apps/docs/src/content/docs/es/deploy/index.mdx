@@ -56,12 +56,20 @@ Account `Lemn DEV` / `Workers Scripts: Edit` y Zone `le-mn.com` /
 identity nueva de health y el smoke lo envia solo a `/health/deep`; nunca se
 usa para una capacidad de negocio Admin.
 
-Catalogo y `/health` minimo son publicos y read-only. Cloudflare Access protege
-`/admin`, `/admin/*`, `/api/admin/*` y assets exclusivos de Admin; el Worker
-verifica criptograficamente la assertion en origin. Una service identity
-least-privilege solo puede consultar health operacional protegido en
-`/health/deep`. Status
-profundo y diagnosticos de release nunca son publicos.
+Catalogo, `/health` minimo y el recibo no-cacheable `/release.json` son publicos
+y read-only. El recibo expone solo el package publico y la identidad inmutable
+del build necesaria para verificar una candidata; no contiene diagnosticos
+operacionales. Cloudflare Access protege `/admin`, `/admin/*`, `/api/admin/*` y
+assets exclusivos de Admin; el Worker verifica criptograficamente la assertion
+en origin. Una service identity least-privilege solo puede consultar
+`/health/deep`.
+
+El smoke de release lee el manifest Zero Trust del proyecto como autoridad de
+postura. Con Access activo exige la assertion de health y un 200 de
+`/health/deep`. Con Access desactivado por ese manifest exige origin 401/403 en
+Admin y deep health, incluso con headers de service token, y verifica la
+candidata exacta mediante `/release.json`. Nunca abre una ruta protegida solo
+para completar un deploy.
 
 ## Secuencia
 

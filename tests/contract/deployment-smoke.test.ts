@@ -47,8 +47,10 @@ test("build identity rejects stale release fields and wrong packages", () => {
 function fixture(
 	options: {
 		anonymousHealthStatus?: 200 | 302 | 401 | 403;
+		edgeAccessEnabled?: boolean;
 		staleDeepIdentity?: boolean;
 		staleDocsIdentity?: boolean;
+		staleReleaseIdentity?: boolean;
 		exposeSecret?: boolean;
 	} = {},
 ) {
@@ -82,6 +84,13 @@ function fixture(
 		}
 		if (url === "https://portal.ui.le-mn.com/health") {
 			return Response.json({ ok: true, service: "ui-portal" });
+		}
+		if (url === "https://portal.ui.le-mn.com/release.json") {
+			return Response.json({
+				package: "@lemn-ltd/ui",
+				...expected,
+				...(options.staleReleaseIdentity ? { version: "0.1.1" } : {}),
+			});
 		}
 		if (url === "https://portal.ui.le-mn.com/") {
 			return new Response(
@@ -130,12 +139,18 @@ function fixture(
 			url ===
 				"https://portal.ui.le-mn.com/admin-assets/access-boundary-probe.js"
 		) {
+			if (options.edgeAccessEnabled === false) {
+				return new Response(null, { status: 401 });
+			}
 			return new Response(null, {
 				status: 302,
 				headers: { location: accessLogin },
 			});
 		}
 		if (url === "https://portal.ui.le-mn.com/api/admin/session") {
+			if (options.edgeAccessEnabled === false) {
+				return new Response(null, { status: 401 });
+			}
 			if (
 				headers.get("cf-access-client-id") === access.clientId &&
 				headers.get("cf-access-client-secret") === access.clientSecret
@@ -155,6 +170,9 @@ function fixture(
 			});
 		}
 		if (url === "https://portal.ui.le-mn.com/health/deep") {
+			if (options.edgeAccessEnabled === false) {
+				return new Response(null, { status: 401 });
+			}
 			if (
 				headers.get("cf-access-client-id") !== access.clientId ||
 				headers.get("cf-access-client-secret") !== access.clientSecret
@@ -188,6 +206,7 @@ test("production smoke verifies public Portal, immutable schema, Access boundari
 	await smokeProductionDeployment({
 		expected,
 		access,
+		edgeAccessEnabled: true,
 		fetchImplementation,
 		portalVersionId: candidateVersionId,
 		retryOptions: { attempts: 1, delayMs: 0 },
@@ -242,10 +261,45 @@ test("production smoke verifies public Portal, immutable schema, Access boundari
 	]);
 });
 
+test("disabled edge Access preserves origin denial and verifies the public immutable release", async () => {
+	const disabled = fixture({ edgeAccessEnabled: false });
+	await smokePortalProductionDeployment({
+		expected,
+		access,
+		edgeAccessEnabled: false,
+		fetchImplementation: disabled.fetchImplementation,
+		portalVersionId: candidateVersionId,
+		retryOptions: { attempts: 1, delayMs: 0 },
+	});
+	assert.equal(
+		disabled.requests.filter(({ url }) => url.endsWith("/release.json")).length,
+		1,
+	);
+	assert.equal(
+		disabled.requests.filter(({ url }) => url.endsWith("/health/deep")).length,
+		2,
+	);
+
+	await assert.rejects(
+		smokePortalServiceAccess({
+			credentials: access,
+			edgeAccessEnabled: false,
+			expected,
+			fetchImplementation: fixture({
+				edgeAccessEnabled: false,
+				staleReleaseIdentity: true,
+			}).fetchImplementation,
+			retryOptions: { attempts: 1, delayMs: 0 },
+		}),
+		/stale version/u,
+	);
+});
+
 test("service smoke fails closed for stale identity and credential disclosure", async () => {
 	await assert.rejects(
 		smokePortalServiceAccess({
 			credentials: access,
+			edgeAccessEnabled: true,
 			expected,
 			fetchImplementation: fixture({ staleDeepIdentity: true })
 				.fetchImplementation,
@@ -256,6 +310,7 @@ test("service smoke fails closed for stale identity and credential disclosure", 
 	await assert.rejects(
 		smokePortalServiceAccess({
 			credentials: access,
+			edgeAccessEnabled: true,
 			expected,
 			fetchImplementation: fixture({ exposeSecret: true }).fetchImplementation,
 			retryOptions: { attempts: 1, delayMs: 0 },
@@ -268,6 +323,7 @@ test("service smoke accepts Access redirect or service-auth denial but never ano
 	for (const anonymousHealthStatus of [302, 401, 403] as const) {
 		await smokePortalServiceAccess({
 			credentials: access,
+			edgeAccessEnabled: true,
 			expected,
 			fetchImplementation: fixture({ anonymousHealthStatus })
 				.fetchImplementation,
@@ -277,6 +333,7 @@ test("service smoke accepts Access redirect or service-auth denial but never ano
 	await assert.rejects(
 		smokePortalServiceAccess({
 			credentials: access,
+			edgeAccessEnabled: true,
 			expected,
 			fetchImplementation: fixture({ anonymousHealthStatus: 200 })
 				.fetchImplementation,
@@ -291,6 +348,7 @@ test("candidate Portal smoke is independent from Docs until the final cross-surf
 	await smokePortalProductionDeployment({
 		expected,
 		access,
+		edgeAccessEnabled: true,
 		fetchImplementation: candidate.fetchImplementation,
 		portalVersionId: candidateVersionId,
 		retryOptions: { attempts: 1, delayMs: 0 },
@@ -321,6 +379,7 @@ test("service Access credentials are required and must be distinct", async () =>
 		await assert.rejects(
 			smokePortalServiceAccess({
 				credentials,
+				edgeAccessEnabled: true,
 				fetchImplementation: fixture().fetchImplementation,
 				retryOptions: { attempts: 1, delayMs: 0 },
 			}),

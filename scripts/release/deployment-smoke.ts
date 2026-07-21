@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { setTimeout as delay } from "node:timers/promises";
+import { productionPortalEdgeAccessEnabled } from "./zero-trust-posture.ts";
 
 const DOCS_ORIGIN = "https://ui.le-mn.com";
 const PORTAL_ORIGIN = "https://portal.ui.le-mn.com";
@@ -236,6 +237,7 @@ function protectedHealthIdentity(
 
 export async function smokePortalServiceAccess(input: {
 	credentials: UiPortalAccessCredentials;
+	edgeAccessEnabled: boolean;
 	expected?: BuildIdentity;
 	fetchImplementation?: FetchImplementation;
 	retryOptions?: RetryOptions;
@@ -277,33 +279,83 @@ export async function smokePortalServiceAccess(input: {
 	);
 
 	let identity: BuildIdentity | undefined;
-	await retry(
-		"ui-portal-service-health-authenticated",
-		async () => {
-			const response = await fetchImplementation(endpoint, {
-				headers: portalHeaders(input.portalVersionId, {
-					Accept: "application/json",
-					"CF-Access-Client-Id": credentials.clientId,
-					"CF-Access-Client-Secret": credentials.clientSecret,
-				}),
-				redirect: "manual",
-				signal: requestSignal(input.signal),
-			});
-			const body = await responseBody(response);
-			assertNoCredentialExposure(response, body, credentials, endpoint);
-			assert(
-				response.status === 200,
-				`${endpoint} service request returned HTTP ${response.status}`,
-			);
-			identity = protectedHealthIdentity(JSON.parse(body), endpoint);
-			if (input.expected) {
-				assertBuildIdentity(identity, input.expected, endpoint);
-			}
-		},
-		retryOptions,
-		input.signal,
-	);
-	assert(identity, "UI Portal protected health returned no build identity");
+	if (input.edgeAccessEnabled) {
+		await retry(
+			"ui-portal-service-health-authenticated",
+			async () => {
+				const response = await fetchImplementation(endpoint, {
+					headers: portalHeaders(input.portalVersionId, {
+						Accept: "application/json",
+						"CF-Access-Client-Id": credentials.clientId,
+						"CF-Access-Client-Secret": credentials.clientSecret,
+					}),
+					redirect: "manual",
+					signal: requestSignal(input.signal),
+				});
+				const body = await responseBody(response);
+				assertNoCredentialExposure(response, body, credentials, endpoint);
+				assert(
+					response.status === 200,
+					`${endpoint} service request returned HTTP ${response.status}`,
+				);
+				identity = protectedHealthIdentity(JSON.parse(body), endpoint);
+				if (input.expected) {
+					assertBuildIdentity(identity, input.expected, endpoint);
+				}
+			},
+			retryOptions,
+			input.signal,
+		);
+	} else {
+		await retry(
+			"ui-portal-service-health-disabled-boundary",
+			async () => {
+				const response = await fetchImplementation(endpoint, {
+					headers: portalHeaders(input.portalVersionId, {
+						Accept: "application/json",
+						"CF-Access-Client-Id": credentials.clientId,
+						"CF-Access-Client-Secret": credentials.clientSecret,
+					}),
+					redirect: "manual",
+					signal: requestSignal(input.signal),
+				});
+				const body = await responseBody(response);
+				assertNoCredentialExposure(response, body, credentials, endpoint);
+				assertServiceAccessBoundary(response, endpoint);
+			},
+			retryOptions,
+			input.signal,
+		);
+		const releaseEndpoint = `${PORTAL_ORIGIN}/release.json`;
+		await retry(
+			"ui-portal-public-release-identity",
+			async () => {
+				const response = await fetchImplementation(releaseEndpoint, {
+					headers: portalHeaders(input.portalVersionId, {
+						Accept: "application/json",
+					}),
+					signal: requestSignal(input.signal),
+				});
+				assert(
+					response.ok,
+					`${releaseEndpoint} returned HTTP ${response.status}`,
+				);
+				const payload = (await response.json()) as Record<string, unknown>;
+				identity = {
+					version: String(payload.version ?? ""),
+					gitSha: String(payload.gitSha ?? ""),
+					buildTime: String(payload.buildTime ?? ""),
+				};
+				assertPackageBuildIdentity(payload, identity, releaseEndpoint);
+				if (input.expected) {
+					assertBuildIdentity(identity, input.expected, releaseEndpoint);
+				}
+			},
+			retryOptions,
+			input.signal,
+		);
+	}
+	assert(identity, "UI Portal release smoke returned no build identity");
 
 	const adminEndpoint = `${PORTAL_ORIGIN}${SERVICE_ADMIN_DENIAL_PATH}`;
 	await retry(
@@ -329,6 +381,7 @@ export async function smokePortalServiceAccess(input: {
 }
 
 export async function smokePortalAdminBoundary(input: {
+	edgeAccessEnabled: boolean;
 	fetchImplementation?: FetchImplementation;
 	retryOptions?: RetryOptions;
 	portalVersionId?: string;
@@ -346,7 +399,11 @@ export async function smokePortalAdminBoundary(input: {
 					redirect: "manual",
 					signal: requestSignal(input.signal),
 				});
-				assertAccessRedirect(response, endpoint);
+				if (input.edgeAccessEnabled) {
+					assertAccessRedirect(response, endpoint);
+				} else {
+					assertServiceAccessBoundary(response, endpoint);
+				}
 			},
 			retryOptions,
 			input.signal,
@@ -373,6 +430,7 @@ async function fetchOk(
 export async function smokeProductionDeployment(input: {
 	expected: BuildIdentity;
 	access: UiPortalAccessCredentials;
+	edgeAccessEnabled: boolean;
 	fetchImplementation?: FetchImplementation;
 	retryOptions?: RetryOptions;
 	portalVersionId?: string;
@@ -413,6 +471,7 @@ export async function smokeDocsDeployment(input: {
 export async function smokePortalProductionDeployment(input: {
 	expected: BuildIdentity;
 	access: UiPortalAccessCredentials;
+	edgeAccessEnabled: boolean;
 	fetchImplementation?: FetchImplementation;
 	retryOptions?: RetryOptions;
 	portalVersionId?: string;
@@ -542,6 +601,7 @@ export async function smokePortalProductionDeployment(input: {
 	}
 
 	await smokePortalAdminBoundary({
+		edgeAccessEnabled: input.edgeAccessEnabled,
 		fetchImplementation,
 		retryOptions,
 		portalVersionId: input.portalVersionId,
@@ -549,6 +609,7 @@ export async function smokePortalProductionDeployment(input: {
 	});
 	await smokePortalServiceAccess({
 		credentials: input.access,
+		edgeAccessEnabled: input.edgeAccessEnabled,
 		expected,
 		fetchImplementation,
 		retryOptions,
@@ -579,6 +640,7 @@ async function main(): Promise<void> {
 	await smokeProductionDeployment({
 		expected: expected as BuildIdentity,
 		access: access as UiPortalAccessCredentials,
+		edgeAccessEnabled: await productionPortalEdgeAccessEnabled(),
 	});
 }
 

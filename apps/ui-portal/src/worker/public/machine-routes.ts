@@ -50,6 +50,18 @@ function catalogResponse(env: UiPortalEnv): Response {
 	});
 }
 
+function releaseResponse(env: UiPortalEnv): Response {
+	return withHeaders(
+		Response.json({
+			package: "@lemn-ltd/ui",
+			version: env.BUILD_VERSION ?? "0.0.0",
+			gitSha: env.BUILD_GIT_SHA ?? "local",
+			buildTime: env.BUILD_TIME ?? "local",
+		}),
+		{ "cache-control": "no-store" },
+	);
+}
+
 function llmsResponse(): Response {
 	return cachedText(
 		[
@@ -102,6 +114,7 @@ export function publicMachineResponse(
 ): Response | undefined {
 	if (
 		pathname !== "/catalog.json" &&
+		pathname !== "/release.json" &&
 		pathname !== "/provider-registry.json" &&
 		pathname !== "/blocks.json" &&
 		pathname !== "/llms.txt" &&
@@ -115,6 +128,9 @@ export function publicMachineResponse(
 
 	let response: Response;
 	switch (pathname) {
+		case "/release.json":
+			response = releaseResponse(env);
+			break;
 		case "/catalog.json":
 			response = catalogResponse(env);
 			break;
