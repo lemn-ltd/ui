@@ -149,18 +149,20 @@ async function packageExpectations(
 			manifest.name === definition.name,
 			`${definition.id} package name differs from the release package set`,
 		);
+		const version = manifest.version;
 		ensure(
-			exactVersion.test(manifest.version ?? ""),
+			typeof version === "string" && exactVersion.test(version),
 			`${definition.name} must declare an exact published version`,
 		);
+		const packageExports = manifest.exports;
 		ensure(
-			manifest.exports && Object.keys(manifest.exports).length > 0,
+			packageExports && Object.keys(packageExports).length > 0,
 			`${definition.name} must declare public exports`,
 		);
 		expectations.push({
 			name: definition.name,
-			version: manifest.version,
-			exports: manifest.exports,
+			version,
+			exports: packageExports,
 		});
 	}
 	return expectations;
@@ -335,7 +337,8 @@ export function publishedEntrypointConsumerSource(
 				key === "." ? expectation.name : `${expectation.name}${key.slice(1)}`;
 			const target = runtimeExportTarget(definition);
 			ensure(
-				target?.endsWith(".js") || target?.endsWith(".css"),
+				typeof target === "string" &&
+					(target.endsWith(".js") || target.endsWith(".css")),
 				`${specifier} must publish a JavaScript or CSS runtime target`,
 			);
 			if (target.endsWith(".css")) {
@@ -559,7 +562,10 @@ async function executeSafely(
 			readonly stderr?: unknown;
 		};
 		const diagnostic = [failure.message, failure.stdout, failure.stderr]
-			.filter((value): value is string => typeof value === "string" && value)
+			.filter(
+				(value): value is string =>
+					typeof value === "string" && value.length > 0,
+			)
 			.join("\n");
 		throw new Error(
 			redactSensitiveText(

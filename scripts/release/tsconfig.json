@@ -10,9 +10,5 @@
 		"noEmit": true,
 		"types": ["node"]
 	},
-	"include": [
-		"deployment-smoke.ts",
-		"ui-portal-production-rollout.ts",
-		"zero-trust-posture.ts"
-	]
+	"include": ["*.ts"]
 }
