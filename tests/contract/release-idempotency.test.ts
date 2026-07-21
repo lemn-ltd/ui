@@ -276,6 +276,33 @@ test("failure after publish is reentrant and does not republish on rerun", async
 	assert.equal(publishCalls, 1);
 });
 
+test("an already-published package retries transient registry failures without republishing", async () => {
+	let registryCalls = 0;
+	let waitCalls = 0;
+	const outcome = await ensurePackageRelease(artifact, {
+		async packageStatus() {
+			return "published";
+		},
+		async publishedArtifact() {
+			registryCalls += 1;
+			if (registryCalls === 1) {
+				throw new Error("GitHub Packages registry request failed");
+			}
+			return artifact;
+		},
+		async publish() {
+			throw new Error("must not republish immutable versions");
+		},
+		async wait() {
+			waitCalls += 1;
+		},
+	});
+
+	assert.equal(outcome, "verified");
+	assert.equal(registryCalls, 2);
+	assert.equal(waitCalls, 1);
+});
+
 test("an already-published mismatched tarball fails closed", async () => {
 	const mismatched = {
 		...artifact,

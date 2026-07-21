@@ -105,31 +105,25 @@ export function assertArtifactIdentity(
 	}
 }
 
-export async function ensurePackageRelease(
+async function verifyPublishedArtifact(
 	artifact: PackageArtifact,
 	dependencies: PublishReleaseDependencies,
-): Promise<"published" | "verified"> {
-	const initialStatus = await dependencies.packageStatus(artifact);
-	if (initialStatus === "published") {
-		assertArtifactIdentity(
-			artifact,
-			await dependencies.publishedArtifact(artifact),
-		);
-		return "verified";
-	}
-
-	await dependencies.publish(artifact);
+	visibilityAlreadyConfirmed: boolean,
+): Promise<void> {
 	let lastError: unknown;
 	for (let attempt = 1; attempt <= 10; attempt += 1) {
 		try {
-			if ((await dependencies.packageStatus(artifact)) !== "published") {
+			if (
+				!visibilityAlreadyConfirmed &&
+				(await dependencies.packageStatus(artifact)) !== "published"
+			) {
 				throw new Error("Published package version is not visible yet");
 			}
 			assertArtifactIdentity(
 				artifact,
 				await dependencies.publishedArtifact(artifact),
 			);
-			return "published";
+			return;
 		} catch (error) {
 			lastError = error;
 			if (attempt < 10) await dependencies.wait(attempt);
@@ -138,6 +132,21 @@ export async function ensurePackageRelease(
 	throw new Error(
 		`Published package could not be verified: ${lastError instanceof Error ? lastError.message : String(lastError)}`,
 	);
+}
+
+export async function ensurePackageRelease(
+	artifact: PackageArtifact,
+	dependencies: PublishReleaseDependencies,
+): Promise<"published" | "verified"> {
+	const initialStatus = await dependencies.packageStatus(artifact);
+	if (initialStatus === "published") {
+		await verifyPublishedArtifact(artifact, dependencies, true);
+		return "verified";
+	}
+
+	await dependencies.publish(artifact);
+	await verifyPublishedArtifact(artifact, dependencies, false);
+	return "published";
 }
 
 export async function ensurePackageSetRelease(
