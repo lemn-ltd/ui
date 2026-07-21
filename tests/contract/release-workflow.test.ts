@@ -27,6 +27,10 @@ const packageSetSource = await readFile(
 	resolve(root, "scripts/release/package-set.ts"),
 	"utf8",
 );
+const standardValidationSource = await readFile(
+	resolve(root, "tooling/src/validation/standard.ts"),
+	"utf8",
+);
 const rolloutSource = await readFile(
 	resolve(root, "scripts/release/ui-portal-production-rollout.ts"),
 	"utf8",
@@ -214,7 +218,12 @@ test("the exact prepared release SHA receives a frozen install and the full repo
 	const scripts = record(rootPackage.scripts, "root scripts");
 	assert.equal(
 		scripts["validate:release-contracts"],
-		"pnpm --filter @lemn-ltd/ui run build && node --test tests/contract/*.test.ts",
+		"node --test tests/contract/*.test.ts",
+	);
+	assert.equal(scripts.validate, "pnpm validate:standard");
+	assert.match(
+		standardValidationSource,
+		/pnpmCommand\("complete dry build", "build"\)[\s\S]*pnpmCommand\("release contracts", "validate:release-contracts"\)/u,
 	);
 	const install = step("Install exact prepared release revision");
 	const installRun = String(install.run);
@@ -628,11 +637,17 @@ test("workflow never invokes direct publisher, secret mutation, or Worker deploy
 test("CI and release smoke local portal assets before package publication", () => {
 	const validationSteps = record(jobs.validate, "validate job")
 		.steps as UnknownRecord[];
-	const localSmoke = validationSteps.find(
-		(candidate) => candidate.name === "Smoke UI Portal deployment locally",
+	const localValidation = validationSteps.find(
+		(candidate) =>
+			candidate.name ===
+			"Run the same standard validation profile used locally",
 	);
-	assert.ok(localSmoke);
-	assert.equal(localSmoke.run, "pnpm smoke:portal:local");
+	assert.ok(localValidation);
+	assert.equal(localValidation.run, "pnpm validate:standard");
+	assert.match(
+		standardValidationSource,
+		/pnpmCommand\("local Portal smoke", "smoke:portal:local"\)/u,
+	);
 	const releaseSmoke = step("Build and smoke UI Portal deployment locally");
 	assert.equal(releaseSmoke.run, "pnpm smoke:portal:local");
 	assert.ok(

@@ -1,6 +1,6 @@
 {
 	"formatVersion": 1,
-	"pattern": "PAT-CODE-SCRIPT-GOVERNANCE-001",
+	"pattern": "PAT-CODE-REPOSITORY-TOOLING-001",
 	"idFormat": "<manifest-id>:<package-script-name>",
 	"categories": [
 		"local",
@@ -11,14 +11,18 @@
 		"db",
 		"release",
 		"ops",
-		"bootstrap"
+		"bootstrap",
+		"build"
 	],
 	"manifests": [
 		{
 			"id": "workspace",
 			"path": "package.json",
 			"owner": "ui-platform",
-			"scope": { "kind": "workspace", "name": "lemn-ui-workspace" },
+			"scope": {
+				"kind": "workspace",
+				"name": "lemn-ui-workspace"
+			},
 			"lifecycle": {
 				"status": "permanent",
 				"replacement": null,
@@ -69,13 +73,14 @@
 					"command": "node scripts/test/update-linux-visual-snapshots.mjs",
 					"category": "test",
 					"mutation": "source",
-					"executionIntent": "explicit-command",
-					"ciUsage": [".github/workflows/refresh-linux-visual-baselines.yml"]
+					"executionIntent": "explicit-command"
 				},
 				"validate": {
-					"command": "pnpm validate:agentops && pnpm validate:script-catalog && pnpm check:zero-trust && pnpm check:release-scripts && pnpm test:zero-trust && pnpm validate:identity && pnpm validate:domains && pnpm validate:package-identity && pnpm validate:brand-neutrality && pnpm validate:branding-vnext && pnpm validate:boundaries && pnpm validate:bundles && pnpm validate:ui-portal-zero-legacy && pnpm validate:release && pnpm validate:release-contracts",
+					"command": "pnpm validate:standard",
 					"category": "check",
-					"ciUsage": [".github/workflows/ci-cd.yml"]
+					"ciUsage": [".github/workflows/ci-cd.yml"],
+					"mutation": "generated-output",
+					"executionIntent": "explicit-command"
 				},
 				"validate:agentops": {
 					"command": "node scripts/check-agentops-managed-files.mjs",
@@ -108,10 +113,10 @@
 					"ciUsage": [".github/workflows/ci-cd.yml"]
 				},
 				"validate:release-contracts": {
-					"command": "pnpm --filter @lemn-ltd/ui run build && node --test tests/contract/*.test.ts",
+					"command": "node --test tests/contract/*.test.ts",
 					"category": "test",
-					"mutation": "generated-output",
-					"executionIntent": "explicit-command",
+					"mutation": "none",
+					"executionIntent": "not-applicable",
 					"ciUsage": [".github/workflows/ci-cd.yml"]
 				},
 				"validate:release-hosts": {
@@ -144,10 +149,10 @@
 					"ciUsage": [".github/workflows/ci-cd.yml"]
 				},
 				"validate:ui-portal-zero-legacy": {
-					"command": "node scripts/check-ui-portal-zero-legacy.mjs && pnpm --filter @lemn-ltd/ui-portal run test && pnpm --filter @lemn-ltd/ui-portal run build",
+					"command": "node scripts/check-ui-portal-zero-legacy.mjs",
 					"category": "check",
-					"mutation": "generated-output",
-					"executionIntent": "explicit-command",
+					"mutation": "none",
+					"executionIntent": "not-applicable",
 					"ciUsage": [".github/workflows/ci-cd.yml"]
 				},
 				"sync:docs-changelog": {
@@ -433,6 +438,73 @@
 					"executionIntent": "guarded",
 					"guardScript": "workspace:guard:release:ref",
 					"requiredSecrets": ["GITHUB_TOKEN", "NODE_AUTH_TOKEN"]
+				},
+				"test:tooling": {
+					"category": "test",
+					"command": "node --test tooling/tests/unit/ops/*.test.ts tooling/tests/unit/validation/*.test.ts tooling/tests/unit/local/*.test.ts"
+				},
+				"test:portal:e2e": {
+					"category": "test",
+					"command": "pnpm --filter @lemn-ltd/ui-portal run test:e2e"
+				},
+				"validate:quick": {
+					"category": "check",
+					"command": "node tooling/src/validation/quick.ts"
+				},
+				"validate:quick:fix": {
+					"category": "check",
+					"mutation": "source",
+					"executionIntent": "explicit-command",
+					"command": "node tooling/src/validation/quick.ts --fix"
+				},
+				"validate:standard": {
+					"category": "check",
+					"mutation": "generated-output",
+					"executionIntent": "explicit-command",
+					"ciUsage": [".github/workflows/ci-cd.yml"],
+					"command": "node tooling/src/validation/standard.ts"
+				},
+				"validate:full": {
+					"category": "check",
+					"mutation": "generated-output",
+					"executionIntent": "explicit-command",
+					"command": "node tooling/src/validation/full.ts"
+				},
+				"validate:policy": {
+					"category": "check",
+					"command": "pnpm validate:agentops && pnpm validate:script-catalog && pnpm check:zero-trust && pnpm check:release-scripts && pnpm test:tooling && pnpm validate:identity && pnpm validate:domains && pnpm validate:package-identity && pnpm validate:brand-neutrality && pnpm validate:branding-vnext && pnpm validate:boundaries && pnpm validate:bundles && pnpm validate:ui-portal-zero-legacy && pnpm validate:release"
+				},
+				"pipeline:local": {
+					"category": "check",
+					"mutation": "generated-output",
+					"executionIntent": "explicit-command",
+					"command": "node tooling/src/validation/local-pipeline.ts"
+				},
+				"pipeline:visual:local": {
+					"category": "codegen",
+					"mutation": "source",
+					"executionIntent": "explicit-command",
+					"command": "pnpm visual:update:linux",
+					"ciUsage": [".github/workflows/refresh-linux-visual-baselines.yml"]
+				},
+				"hooks:install": {
+					"category": "bootstrap",
+					"environments": ["local"],
+					"mutation": "process",
+					"executionIntent": "explicit-command",
+					"command": "node tooling/src/local/install-git-hooks.ts"
+				},
+				"dry-run:portal": {
+					"category": "build",
+					"mutation": "generated-output",
+					"executionIntent": "explicit-command",
+					"command": "pnpm --filter @lemn-ltd/ui-portal run cf:dry-run"
+				},
+				"dry-run:docs": {
+					"category": "build",
+					"mutation": "generated-output",
+					"executionIntent": "explicit-command",
+					"command": "pnpm --filter @lemn-ltd/ui-docs run cf:dry-run"
 				}
 			}
 		},
@@ -440,7 +512,10 @@
 			"id": "docs",
 			"path": "apps/docs/package.json",
 			"owner": "ui-docs",
-			"scope": { "kind": "app", "name": "@lemn-ltd/ui-docs" },
+			"scope": {
+				"kind": "app",
+				"name": "@lemn-ltd/ui-docs"
+			},
 			"lifecycle": {
 				"status": "permanent",
 				"replacement": null,
@@ -509,7 +584,10 @@
 			"id": "portal",
 			"path": "apps/ui-portal/package.json",
 			"owner": "ui-portal",
-			"scope": { "kind": "app", "name": "@lemn-ltd/ui-portal" },
+			"scope": {
+				"kind": "app",
+				"name": "@lemn-ltd/ui-portal"
+			},
 			"lifecycle": {
 				"status": "permanent",
 				"replacement": null,
@@ -647,7 +725,10 @@
 			"id": "brand-contract",
 			"path": "packages/brand-contract/package.json",
 			"owner": "branding-contract",
-			"scope": { "kind": "package", "name": "@lemn-ltd/brand-contract" },
+			"scope": {
+				"kind": "package",
+				"name": "@lemn-ltd/brand-contract"
+			},
 			"lifecycle": {
 				"status": "permanent",
 				"replacement": null,
@@ -693,7 +774,10 @@
 			"id": "brand-runtime",
 			"path": "packages/brand-runtime/package.json",
 			"owner": "branding-runtime",
-			"scope": { "kind": "package", "name": "@lemn-ltd/brand-runtime" },
+			"scope": {
+				"kind": "package",
+				"name": "@lemn-ltd/brand-runtime"
+			},
 			"lifecycle": {
 				"status": "permanent",
 				"replacement": null,
@@ -739,7 +823,10 @@
 			"id": "brand-studio",
 			"path": "packages/brand-studio/package.json",
 			"owner": "branding-studio",
-			"scope": { "kind": "package", "name": "@lemn-ltd/brand-studio" },
+			"scope": {
+				"kind": "package",
+				"name": "@lemn-ltd/brand-studio"
+			},
 			"lifecycle": {
 				"status": "permanent",
 				"replacement": null,
@@ -848,7 +935,10 @@
 			"id": "ui",
 			"path": "packages/ui/package.json",
 			"owner": "ui-package",
-			"scope": { "kind": "package", "name": "@lemn-ltd/ui" },
+			"scope": {
+				"kind": "package",
+				"name": "@lemn-ltd/ui"
+			},
 			"lifecycle": {
 				"status": "permanent",
 				"replacement": null,

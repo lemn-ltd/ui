@@ -183,13 +183,26 @@ test("rejects dormant Agent source when an active Portal entrypoint imports it",
 	}
 });
 
-test("the zero-legacy release gate includes Worker authorization and built chunk boundaries", async () => {
+test("the standard profile composes zero-legacy, Portal tests, and built chunk boundaries", async () => {
 	const manifest = JSON.parse(
 		await readFile(resolve(repositoryRoot, "package.json"), "utf8"),
 	) as { readonly scripts?: Record<string, string> };
 	const gate = manifest.scripts?.["validate:ui-portal-zero-legacy"] ?? "";
+	const standardProfile = await readFile(
+		resolve(repositoryRoot, "tooling/src/validation/standard.ts"),
+		"utf8",
+	);
+	const quickProfile = await readFile(
+		resolve(repositoryRoot, "tooling/src/validation/quick.ts"),
+		"utf8",
+	);
 
 	assert.match(gate, /check-ui-portal-zero-legacy\.mjs/u);
-	assert.match(gate, /@lemn-ltd\/ui-portal run test/u);
-	assert.match(gate, /@lemn-ltd\/ui-portal run build/u);
+	assert.match(standardProfile, /await runQuick\(\{ all: true, root \}\)/u);
+	assert.match(
+		standardProfile,
+		/pnpmCommand\("complete dry build", "build"\)/u,
+	);
+	assert.match(quickProfile, /workspace\.scripts\.test/u);
+	assert.match(quickProfile, /"run",\s*"test"/u);
 });

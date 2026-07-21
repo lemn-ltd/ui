@@ -2,6 +2,10 @@ packages:
   - packages/*
   - apps/*
 
+# Keep local hooks and CI on the same pnpm linking model. pnpm 11 otherwise
+# changes this default between interactive and CI environments.
+enableGlobalVirtualStore: false
+
 onlyBuiltDependencies:
   - "@scarf/scarf"
   - "@swc/core"

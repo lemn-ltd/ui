@@ -2355,33 +2355,46 @@ packages/entitlement-policy
 ```
 
 ---
-id: PAT-CODE-SCRIPT-GOVERNANCE-001
+id: PAT-CODE-REPOSITORY-TOOLING-001
 domain: CODE
-category: SCRIPT_GOVERNANCE
-version: 1
-description: Use this pattern before adding, renaming, migrating, or deleting package scripts, repo scripts, selftests, smoke tests, release commands, package managers, or task runners.
+category: REPOSITORY_TOOLING
+version: 4
+description: Use this pattern before adding, renaming, migrating, or deleting repository tooling, package scripts, manifests, smoke tests, release commands, package managers, Make targets, or task runners.
 precedence_level: 1
 depends_on: []
 applies_when:
-  - "Adding, renaming, migrating, or deleting package scripts, repo scripts, selftests, smoke tests, release commands, package managers, or task runners."
+  - "Adding, renaming, migrating, or deleting repository tooling, package scripts, manifests, smoke tests, release commands, package managers, Make targets, or task runners."
 ---
 
 
 ## Strategy
 
-Scripts are a repository contract, not a scratchpad. Keep root `package.json` as a small set of human and CI entrypoints, keep package `package.json` scripts local to that package, and keep executable script implementation under categorized source folders with a catalog that records owner, safety, environment, and CI usage. Script names describe stable actions and domains, not product brands, project phases, codenames, or temporary agent wording.
+Repository tooling is a maintained capability, not a script scratchpad. Keep
+root `package.json` as a small set of human and CI orchestration entrypoints,
+keep workspace `package.json` commands local to their owner, and keep
+cross-workspace implementation under categorized `tooling/src/` folders.
+Machine-readable repository declarations consumed only by tooling live under
+`tooling/manifests/`, and their JSON Schemas live under `tooling/schemas/`;
+they are not product SPECs, runtime configuration, or documentation. Generated
+cross-workspace command output lives under ignored `tooling/artifacts/`.
+Command names describe stable actions and domains, not product brands, project
+phases, codenames, or temporary agent wording.
+
+`tooling/` is a TypeScript project but not an npm workspace package. A
+`tsconfig.json` and `src/` directory establish maintained source ownership; they
+do not justify moving tooling into `packages/*`.
 
 ## Package Manager And Task Runner Decision
 
 Use pnpm for workspace package management, but migrate to it only in a dedicated commit after script names, categories, and CI entrypoints are normalized. Until that migration commit lands, treat the current npm state as authoritative: `package-lock.json`, `npm ci`, npm workspaces, and `npm run -w`.
 
-A pnpm migration must change the package-manager surface together: add `pnpm-workspace.yaml`, pin `packageManager`, generate `pnpm-lock.yaml`, update CI to `pnpm install --frozen-lockfile`, update workspace commands to pnpm filters or recursive runs, and verify GitHub Packages auth for the Lemn UI package without committing tokens.
+A pnpm migration must change the package-manager surface together: add `pnpm-workspace.yaml`, pin `packageManager`, generate `pnpm-lock.yaml`, update CI to `pnpm install --frozen-lockfile`, update workspace commands to pnpm filters or recursive runs, and verify GitHub Packages auth for the LEMN UI package without committing tokens.
 
-Use Turborepo only after script governance is clean. Turbo orchestrates and caches deterministic tasks such as `build`, `check`, `test`, and `codegen`; it must not become the catalog for deploys, migrations, live smokes, canaries, or mutable operations. Do not put `turbo run` inside package-level scripts because package scripts are the tasks Turbo discovers; keep Turbo commands at the workspace root.
+Use Turborepo only after repository tooling governance is clean. Turbo orchestrates and caches deterministic tasks such as `build`, `check`, `test`, and `codegen`; it must not become the catalog for deploys, migrations, live smokes, canaries, or mutable operations. Do not put `turbo run` inside package-level scripts because package scripts are the tasks Turbo discovers; keep Turbo commands at the workspace root.
 
 ## Dependency Version Refresh
 
-Use script governance work as the moment to audit package versions. When touching package-manager configuration, script orchestration, CI install behavior, build tools, Worker tooling, test runners, or generated-code tooling, review the packages involved and move them to current stable versions where the upgrade is compatible with the repository.
+Use repository tooling governance work as the moment to audit package versions. When touching package-manager configuration, script orchestration, CI install behavior, build tools, Worker tooling, test runners, or generated-code tooling, review the packages involved and move them to current stable versions where the upgrade is compatible with the repository.
 
 Pinned versions are required. Do not leave dependency specs as `latest`, floating dist-tags, unbounded ranges, or implicit package-manager downloads. Use exact versions for tooling that controls installs, builds, deploys, formatting, linting, generated output, migrations, or CI reproducibility, including `pnpm`, `turbo`, `@biomejs/biome`, `typescript`, `vite`, `vitest`, `wrangler`, Cloudflare packages, generated-client tooling, and package-manager workspace dependencies. Runtime library ranges may remain only when the repo has an explicit policy for that package family and the lockfile preserves the resolved version.
 
@@ -2395,11 +2408,46 @@ Every repo script must belong to one category:
 - `check`: architecture, type, policy, registry, generated-output, and source-shape checks.
 - `codegen`: generated clients, DBML, manifests, and other reproducible outputs.
 - `test`: local unit, contract, integration, and backend-baseline verification.
-- `smoke`: browser, staging, production-safe, canary, and live boundary verification.
+- `smoke`: browser, preview, development, production-safe, canary, and live boundary verification.
 - `db`: migrations, schema application, import/export, and data backfills.
-- `release`: deploy, staging gates, production gates, runner bundle publish, and runtime rollout commands.
+- `release`: deploy, development gates, production gates, runner bundle publish, and runtime rollout commands.
 - `ops`: operator automation, audits, reconciliations, one-off repairs, and provider setup.
 - `bootstrap`: installation and machine/runtime bootstrap.
+- `build`: deterministic compilation and deployable dry-builds.
+
+Categories are stable lifecycle groups. Add domain folders beneath a category,
+for example `tooling/src/checks/architecture/workspace-boundaries.ts`; do not
+create a top-level category for each feature. The canonical layout is:
+
+```txt
+tooling/
+  catalog.json
+  tsconfig.json
+  manifests/
+    architecture/
+    data/
+    infrastructure/
+  schemas/
+    architecture/
+    data/
+    infrastructure/
+  artifacts/
+    checks/
+    smoke/
+    release/
+    deployment/
+  src/
+    checks/
+    codegen/
+    db/
+    validation/
+    local/
+    release/
+    smoke/
+    ops/
+    bootstrap/
+  tests/
+```
 
 ## Rules
 
@@ -2407,12 +2455,40 @@ Every repo script must belong to one category:
 
 - Keep root scripts limited to stable entrypoints that developers or CI run directly.
 - Keep package scripts package-local: `build`, `check`, `test`, `dev`, `preview`, `deploy:<target>`, or other commands owned by that package.
-- Put script implementation under categorized source paths such as `scripts/src/checks`, `scripts/src/codegen`, `scripts/src/db`, `scripts/src/local`, `scripts/src/release`, `scripts/src/smoke`, `scripts/src/ops`, and `scripts/src/bootstrap`.
-- Maintain a script catalog that records each command's id, category, owner, package or project scope, target environment, whether it mutates state, required secrets, dry-run/apply behavior, CI usage, and replacement/removal plan when temporary.
+- Put cross-workspace implementation under categorized source paths such as
+  `tooling/src/checks`, `tooling/src/codegen`, `tooling/src/db`,
+  `tooling/src/validation`, `tooling/src/local`, `tooling/src/release`,
+  `tooling/src/smoke`, `tooling/src/ops`, and `tooling/src/bootstrap`.
+- Put declarative inventories, exception registries, and migration-state
+  projections consumed only by repository tooling under
+  `tooling/manifests/<domain>/`; every manifest declares `schemaVersion`,
+  `owner`, and `kind`.
+- Put the real JSON Schema for every JSON manifest under
+  `tooling/schemas/<domain>/` and validate the document against that schema.
+- Permit non-JSON manifest companions only when a validated JSON manifest
+  references them; reject unreferenced companion files.
+- Keep transient cross-workspace check, smoke, release, and deployment output
+  under ignored `tooling/artifacts/<category>/`.
+- Keep tooling implementation tests under `tooling/tests/` and follow
+  `PAT-CODE-ARTIFACT-PLACEMENT-001` for every other artifact class.
+- Maintain `tooling/catalog.json` with each public root command's id, category,
+  owner, scope, exact invocation, target environment, mutation behavior,
+  required secrets, CI usage, and notes.
+- Keep root `package.json` limited to stable orchestration commands. Keep
+  deterministic owner-local commands in `<owner>/package.json`; root commands
+  aggregate them through workspaces instead of duplicating their implementation.
+- Keep the root `Makefile` as a thin human interface that delegates to cataloged
+  root package commands. It must not contain implementation, workspace lists,
+  environment logic, secrets, or direct source-file invocations.
 - Make mutable scripts dry-run by default or require an explicit `--apply`, `--execute`, or equivalent irreversible flag.
-- Make live scripts declare their target in the command name or catalog entry, such as `:staging`, `:production`, `:production:safe`, or `:local`.
-- Invoke scripts from CI through cataloged package scripts or a script runner, not direct `node scripts/...` file paths.
-- Move test-only scripts into the owning package or app `tests/` tree according to `PAT-TEST-PLACEMENT-001`; leave only thin CLI wrappers in `scripts/` when cross-package orchestration is required.
+- Make live scripts declare their target in the command name or catalog entry,
+  such as `:preview`, `:development`, `:production`, `:production:safe`, or
+  `:local`.
+- Invoke tooling from CI through cataloged package scripts, not direct
+  `node tooling/...` file paths.
+- Move test-only tooling into the owning package or app `tests/` tree according
+  to `PAT-TEST-PLACEMENT-001`; leave only cross-workspace orchestration in
+  root `tooling/`.
 - Follow `PAT-CODE-TYPESCRIPT-SOURCE-001`: maintained Node scripts are TypeScript source and `.mjs` is generated output or a documented exception.
 - Validate script references so docs, CI, specs, and package scripts do not point at deleted or renamed files.
 - When touching package-manager, script, CI, build, test, deploy, or generated-code tooling, audit the relevant package versions and pin compatible stable versions with a matching lockfile update.
@@ -2427,6 +2503,13 @@ Every repo script must belong to one category:
 - Do not cache live, mutable, credentialed, or environment-dependent operations through Turbo.
 - Do not leave orphaned operational scripts without an owner and removal or catalog plan.
 - Do not use a product rename or API modularization as a reason to preserve stale script names.
+- Do not store product SPECs, human documentation, runtime configuration, or
+  product data under `tooling/manifests/`.
+- Do not commit `tooling/artifacts/` or turn it into a receipt, lock, ledger, or
+  source-of-truth system.
+- Do not move owner-local runtime-generated source, `dist/`, service contracts,
+  or test fixtures into root tooling.
+- Do not duplicate npm orchestration logic in `Makefile`.
 
 ## Decision rules
 
@@ -2445,7 +2528,7 @@ Every repo script must belong to one category:
 
 - Vendor names such as `zendesk`, `neon`, `cloudflare`, `clickhouse`, or `lemn` may appear when the script is vendor-specific and the catalog declares the integration owner.
 - Historical production cloud resource names may remain until a versioned migration exists, but package scripts and repo script names still use neutral action/domain names.
-- One-off incident scripts may live under `scripts/src/ops` temporarily if the catalog records owner, incident context, and removal target.
+- One-off incident scripts may live under `tooling/src/ops` temporarily if the catalog records owner, incident context, and removal target.
 - Shell bootstrap scripts may remain shell when they must run before Node dependencies are installed.
 - Runtime library ranges may remain when a package-family policy permits ranges and the lockfile pins the resolved version; tooling versions still need exact pins.
 
@@ -2457,16 +2540,222 @@ check:api-modules
 check:design-system
 codegen:api-client
 migrate:db:production
-smoke:staging
+smoke:development
 smoke:production:safe
-deploy:dashboard:staging
+deploy:dashboard:development
 
 Avoid:
 bf:check
 product_smoke_staging.mjs
 phase8-dashboard-hardening
 codex-daytona-smoke
-node scripts/selftest_supervisor_api_artifact_queue.mjs in CI
+node tooling/selftest_supervisor_api_artifact_queue.mjs in CI
+```
+
+---
+id: PAT-CODE-ARTIFACT-PLACEMENT-001
+domain: CODE
+category: ARTIFACT_PLACEMENT
+version: 1
+description: Use this pattern when deciding where manifests, schemas, generated source, build output, tests, documentation, runtime file trees, or repository-tool output belongs.
+precedence_level: 2
+depends_on:
+  - PAT-CODE-REPOSITORY-TOOLING-001
+  - PAT-CODE-TYPESCRIPT-SOURCE-001
+  - PAT-ARCH-REPO-BOUNDARIES-001
+applies_when:
+  - "Deciding where manifests, schemas, generated source, build output, tests, documentation, runtime file trees, or repository-tool output belongs."
+---
+
+
+## Strategy
+
+Classify an artifact by authority, consumer, lifecycle, and mutability before
+choosing its path. Tracked inputs, maintained implementation, runtime-consumed
+generated source, build output, test support, human decisions, transient
+repository evidence, and agent runtime file trees are different artifact
+classes and must not share one catch-all directory.
+
+## Placement Contract
+
+| Artifact class | Canonical placement | Tracked |
+| --- | --- | --- |
+| Declarative cross-workspace tooling input | `tooling/manifests/<domain>/` | Yes |
+| JSON Schema for a tooling manifest | `tooling/schemas/<domain>/` | Yes |
+| Maintained cross-workspace tooling implementation | `tooling/src/<category>/` | Yes |
+| Repository-tool implementation tests | `tooling/tests/<level>/` | Yes |
+| Transient cross-workspace command output | `tooling/artifacts/<category>/` | No |
+| Runtime-consumed generated source | `<owner>/src/generated/` or an established owner-local generated path | Yes |
+| Build output | `<owner>/dist/` | No |
+| Test fixtures, snapshots, fakes, and helpers | `<owner>/tests/` | Yes unless intentionally generated |
+| Human documentation and decisions | `docs/`, owner-local docs, SPEC, or ADR | Yes |
+| Agent or sandbox runtime file tree | Cloudflare Artifacts through an approved adapter | External runtime state |
+
+## Rules
+
+### Must
+
+- Give every JSON manifest `schemaVersion`, `owner`, and `kind`, and validate it
+  against the real schema under `tooling/schemas/`.
+- Reference every non-JSON companion under `tooling/manifests/` from a validated
+  JSON manifest.
+- Ignore `tooling/artifacts/` and separate outputs by `checks`, `smoke`,
+  `release`, or `deployment` as applicable.
+- Keep runtime-generated source beside its consumer and verify checked-in output
+  against its declared generator.
+- Keep build output and transient deployment renderings out of source review.
+- Keep test-only artifacts under the owning `tests/` tree according to
+  `PAT-TEST-PLACEMENT-001`.
+- Keep agent runtime workspaces in Cloudflare Artifacts when
+  `PAT-DATA-ARTIFACTS-001` applies; repository tooling is not their storage
+  backend.
+
+### Must not
+
+- Do not commit cross-workspace transient output under `tooling/artifacts/`.
+- Do not turn `tooling/artifacts/` into a receipt, lock, ledger, approval gate,
+  or source of truth.
+- Do not put SPECs, ADRs, runbooks, provider IDs, secrets, or product runtime
+  configuration under `tooling/manifests/`.
+- Do not move owner-local generated clients, Worker types, `dist/`, service
+  infrastructure contracts, fixtures, or snapshots into root tooling.
+- Do not store agent runtime file trees in Git or repository tooling output.
+
+## Decision rules
+
+- If humans maintain it as executable repository automation, use `tooling/src/`.
+- If tooling reads it as a declared cross-workspace authority, use
+  `tooling/manifests/` and pair JSON with `tooling/schemas/`.
+- If production imports it, keep generated source with the owning runtime.
+- If it exists only for one command execution or CI upload, use ignored
+  `tooling/artifacts/`.
+- If it explains a decision or operation to humans, use docs, a SPEC, or an ADR.
+- If an agent needs a versioned mutable tree at runtime, use Cloudflare
+  Artifacts, not the repository artifact directory.
+
+## Allowed exceptions
+
+- Framework-required generated paths may differ when the owning workspace
+  documents the generator and keeps the output beside its consumer.
+- Tool-required snapshots may use a required owner-local path when test and
+  production packaging exclude it explicitly.
+
+## Example
+
+```txt
+tooling/manifests/infrastructure/deployment-targets.json
+tooling/schemas/infrastructure/deployment-targets.schema.json
+tooling/src/release/plan-deployment.ts
+tooling/tests/unit/release/plan-deployment.test.ts
+tooling/artifacts/deployment/development/control-plane/wrangler.jsonc  # ignored
+apps/admin/src/react/api/generated/admin-api.ts                        # tracked
+services/control-plane/dist/                                          # ignored
+services/control-plane/tests/fixtures/                                 # tracked
+docs/architecture/deployment.md                                        # tracked
+```
+
+---
+id: PAT-CODE-VALIDATION-PROFILES-001
+domain: CODE
+category: VALIDATION_PROFILES
+version: 3
+description: Use this pattern when defining local, CI, merge, or release-candidate validation commands.
+precedence_level: 2
+depends_on:
+  - PAT-CODE-REPOSITORY-TOOLING-001
+  - PAT-CODE-TYPESCRIPT-SOURCE-001
+  - PAT-CODE-ARTIFACT-PLACEMENT-001
+  - PAT-TEST-PLACEMENT-001
+  - PAT-TEST-MEANINGFUL-001
+applies_when:
+  - "Defining local, CI, merge, or release-candidate validation commands."
+---
+
+## Strategy
+
+Expose three cumulative, deterministic validation profiles with explicit cost
+and guarantees. `validate:quick` validates the uncommitted delta before each
+commit. At delivery, run exactly one final profile: `validate:standard` for a
+normal change or `validate:full` for a high-risk or cross-deployable change.
+`validate` aliases `validate:standard`.
+
+Validation never deploys production or performs hidden remote mutations. Live
+verification uses separately named `smoke:<environment>` commands with declared
+credentials and target.
+
+## Profiles
+
+### `validate:quick`
+
+- Checks formatting/lint for changed code and Markdown without mutating files.
+- Selects TypeScript, architecture, boundaries, tooling, generated-output, API,
+  database, migration, and UI checks from the uncommitted delta.
+- Runs unit tests for owning workspaces and their transitive consumers.
+- Falls back to repository-wide quick validation for root authority or unknown
+  paths; `validate:standard` may request this mode explicitly.
+- No builds, remote credentials, production mutations, or live smokes.
+- `validate:quick:fix` is the explicit mutating companion for formatting and
+  safe fixes on changed code and Markdown.
+
+### `validate:standard`
+
+- Repository-wide `validate:quick` exactly once.
+- Integration, contract, and deterministic behavior/e2e tests.
+- Dry-build every package and deployable without remote deployment.
+- Local deterministic dependencies are allowed; remote credentials are not.
+- Use once at delivery for normal changes.
+
+### `validate:full`
+
+- Everything in `validate:standard` exactly once.
+- All owner smoke suites, migration replay from zero in a disposable database,
+  production-composition checks, and complete workspace coverage.
+- No production deployment. Environment smokes remain explicit commands.
+- Use once at delivery for database, security, infrastructure, Workers, Queues,
+  or composition changes between deployables.
+
+## Rules
+
+### Must
+
+- Keep profiles cumulative and fail fast with the failing command visible.
+- Catalog all five public entrypoints: `validate`, `validate:quick`,
+  `validate:quick:fix`, `validate:standard`, and `validate:full`.
+- Keep `Makefile` aliases one line deep and delegate to npm commands.
+- Use directed tests during implementation and run `validate:quick` before each
+  commit.
+- Do not run `validate:standard` or `validate:full` during the implementation
+  loop. At delivery, select and run one of them exactly once based on risk.
+- Ensure each profile is reproducible from the checked-out repository and does
+  not depend on untracked credentials.
+- Write transient cross-workspace reports to ignored
+  `tooling/artifacts/checks/` when CI needs to upload them.
+
+### Must not
+
+- Do not make `validate` ambiguous; it always aliases `validate:standard`.
+- Do not mutate files from `validate:quick`; formatting writes require the
+  explicit `validate:quick:fix` command.
+- Do not run every workspace unit suite for an ordinary scoped delta; include
+  only owners and transitive consumers unless global authority changed.
+- Do not repeatedly run standard or full while editing.
+- Do not repeat quick or standard commands later in the same profile.
+- Do not hide deploys, migrations against shared databases, or live provider
+  calls inside a validation profile.
+- Do not weaken a profile to make it faster; optimize implementation or split
+  an explicit environment smoke instead.
+
+## Example
+
+```make
+.PHONY: validate validate-quick validate-standard validate-full
+validate: validate-standard
+validate-quick:
+	npm run validate:quick
+validate-standard:
+	npm run validate:standard
+validate-full:
+	npm run validate:full
 ```
 
 ---
@@ -2477,7 +2766,7 @@ version: 1
 description: Use this pattern when creating, migrating, or maintaining source files, scripts, runner code, tests, and operational tools.
 precedence_level: 1
 depends_on:
-  - PAT-CODE-SCRIPT-GOVERNANCE-001
+  - PAT-CODE-REPOSITORY-TOOLING-001
 applies_when:
   - "Creating, migrating, or maintaining source files, scripts, runner code, tests, and operational tools."
 ---
@@ -2997,7 +3286,7 @@ version: 1
 description: Use this pattern when introducing, configuring, running, or enforcing Biome formatting, import organization, or lint checks.
 precedence_level: 4
 depends_on:
-  - PAT-CODE-SCRIPT-GOVERNANCE-001
+  - PAT-CODE-REPOSITORY-TOOLING-001
 applies_when:
   - "Introducing, configuring, running, or enforcing Biome formatting, import organization, or lint checks."
 ---
@@ -3015,7 +3304,7 @@ For staged zero-legacy or structural migrations, Biome belongs at the final clea
 
 - Add `@biomejs/biome` as an exact pinned root dev dependency.
 - Create a root `biome.jsonc` only when the rollout phase is approved for formatter/linter enforcement.
-- Add scripts through `PAT-CODE-SCRIPT-GOVERNANCE-001`, typically `format`, `format:check`, and `check:biome`.
+- Add scripts through `PAT-CODE-REPOSITORY-TOOLING-001`, typically `format`, `format:check`, and `check:biome`.
 - Run report mode first, such as `npx biome ci` or `npm run check:biome`, before running write mode.
 - Review the report before applying `npx biome check --write` or equivalent write commands.
 - Keep broad formatting/import-organization diffs separate from behavior changes when the diff is large.
@@ -4047,7 +4336,7 @@ precedence_level: 4
 depends_on:
   - PAT-CLOUDFLARE-WRANGLER-CONFIG-001
   - PAT-INFRA-RESOURCE-CONTRACT-001
-  - PAT-CODE-SCRIPT-GOVERNANCE-001
+  - PAT-CODE-REPOSITORY-TOOLING-001
   - PAT-SEC-RISK-001
   - PAT-OPS-LEAST-PRIVILEGE-001
   - PAT-TEST-MEANINGFUL-001
@@ -4406,6 +4695,115 @@ const run = await sandboxPort.startCodeRun({
 })
 
 await runsRepo.markStarted({ runId: run.id })
+```
+
+---
+id: PAT-INFRA-DEPLOYMENT-TOPOLOGY-001
+domain: INFRA
+category: DEPLOYMENT_TOPOLOGY
+version: 1
+description: Use this pattern when declaring deployables, resource dependencies, environment surfaces, deployment order, or manifest-driven provisioning.
+precedence_level: 2
+depends_on:
+  - PAT-INFRA-RESOURCE-NAMING-001
+  - PAT-ARCH-RELEASE-001
+  - PAT-ARCH-REPO-BOUNDARIES-001
+  - PAT-CLOUDFLARE-WRANGLER-CONFIG-001
+  - PAT-CODE-ARTIFACT-PLACEMENT-001
+applies_when:
+  - "Declaring deployables, resource dependencies, environment surfaces, deployment order, or manifest-driven provisioning."
+---
+
+
+## Strategy
+
+Declare deployment topology once in validated infrastructure manifests. Keep
+logical deployables and resources free of provider IDs, topologically derive
+deployment order, and let CI/CD consume the generated plan rather than copy a
+hand-written service matrix into each workflow.
+
+Canonical authorities:
+
+```txt
+tooling/manifests/infrastructure/deployment-targets.json
+tooling/manifests/infrastructure/resources.json
+tooling/schemas/infrastructure/deployment-targets.schema.json
+tooling/schemas/infrastructure/resources.schema.json
+```
+
+## Rules
+
+### Must
+
+- Declare every deployable once with component id, workspace path, runtime type,
+  component/resource dependencies, supported environments, exposure class,
+  hostname template or `null`, Worker-name template, command IDs, rollback
+  capability, and migration prerequisites.
+- Declare logical resources, ownership, bindings, lifecycle, and dependency
+  edges in `resources.json`.
+- Validate both manifests against their real JSON Schemas before planning.
+- Topologically sort dependencies and fail with a useful error for a missing
+  dependency or cycle.
+- Model exposure explicitly as public, internal Service Binding, queue consumer,
+  or private daemon; internal/queue/daemon targets have no public hostname.
+- Derive preview, development, and production plans from the same manifests.
+- Keep provider IDs, account IDs, credentials, and environment-specific secret
+  values outside committed manifests.
+- Make adding a compatible deployable require a manifest declaration and an
+  owning workspace, not edits to multiple workflow matrices.
+
+### Must not
+
+- Do not duplicate deployable lists, dependency order, hostnames, or resource
+  ownership in GitHub workflow YAML.
+- Do not expose an internal service, queue consumer, or private daemon merely to
+  simplify deployment.
+- Do not hardcode provider resource IDs in manifests, runtime source, or owner
+  Wrangler contracts.
+- Do not infer dependency order from directory names or incidental workflow
+  step order.
+- Do not provision or deploy when manifest/schema validation, cycle detection,
+  or required dependency resolution fails.
+
+## Decision rules
+
+- If a deployable imports shared packages only, build packages before the
+  deployable but do not create false runtime edges.
+- If a consumer requires an internal service or queue, deploy the dependency
+  before the consumer/producer according to the declared edge.
+- If runtime mechanics differ, select a typed component adapter such as Worker,
+  queue consumer, assets Worker, or private daemon; do not fork one script per
+  service.
+- If Wrangler needs concrete resource IDs, render them only into ignored
+  deployment artifacts after resolving environment values.
+- If a new runtime cannot fit an existing adapter, add one adapter and declare
+  the runtime type in the schema before using it.
+
+## Allowed exceptions
+
+- A provider limitation may require one explicit manual operation when the
+  manifest records the owner, reason, affected environment, and automation
+  follow-up; it must not create a second topology authority.
+
+## Example
+
+```json
+{
+  "componentId": "orders-api",
+  "workspacePath": "services/orders-api",
+  "runtimeType": "cloudflare-worker",
+  "dependsOnComponents": ["orders-events-consumer"],
+  "dependsOnResources": ["orders-primary-postgres"],
+  "environments": ["preview", "development", "production"],
+  "exposure": "public",
+  "hostnameTemplate": "{environmentPrefix}api.example.com",
+  "workerNameTemplate": "{environmentPrefix}orders-api",
+  "buildCommandId": "build:orders-api",
+  "deployCommandId": "deploy:orders-api",
+  "smokeCommandId": "smoke:orders-api",
+  "rollback": "worker-version",
+  "migrationPrerequisites": ["orders-primary"]
+}
 ```
 
 ---
@@ -4835,7 +5233,7 @@ precedence_level: 2
 depends_on:
   - PAT-API-SURFACE-BOUNDARIES-001
   - PAT-DOMAIN-SCHEMA-API-NAMING-001
-  - PAT-CODE-SCRIPT-GOVERNANCE-001
+  - PAT-CODE-REPOSITORY-TOOLING-001
   - PAT-CLOUDFLARE-WRANGLER-CONFIG-001
   - PAT-TEST-PLACEMENT-001
 applies_when:
@@ -4854,7 +5252,7 @@ target API surface.
 
 ## Repository Tooling Precondition
 
-This pattern is project-wide before it is package-local. Before claiming API modular-slice compliance, agents must apply `PAT-CODE-SCRIPT-GOVERNANCE-001` across the repository so package scripts, operational scripts, selftests, smoke tests, generated tooling, and CI entrypoints do not keep product-branded names, direct file invocations, or mixed package-manager behavior around the API migration.
+This pattern is project-wide before it is package-local. Before claiming API modular-slice compliance, agents must apply `PAT-CODE-REPOSITORY-TOOLING-001` across the repository so package scripts, operational scripts, selftests, smoke tests, generated tooling, and CI entrypoints do not keep product-branded names, direct file invocations, or mixed package-manager behavior around the API migration.
 
 For this repository, npm-to-pnpm migration is allowed only as a separate commit after script normalization. The current npm state must be treated as the migration source of truth until then: `package-lock.json`, `npm ci`, npm workspaces, and `npm run -w` remain active until replaced together by `pnpm-workspace.yaml`, `packageManager`, `pnpm-lock.yaml`, `pnpm install --frozen-lockfile` in CI, and verified GitHub Packages auth for the Lemn UI package. Turborepo may be introduced only after script names and categories are clean; use it for deterministic `build`, `check`, `test`, and `codegen` tasks, not for deploys, migrations, live smokes, or mutable operations.
 
@@ -4885,7 +5283,7 @@ Before marking an API slice, Worker deploy package, or related dashboard/API sur
 ### Must
 
 - Satisfy `PAT-CLOUDFLARE-WRANGLER-CONFIG-001` first for any Cloudflare Worker API package: deploy configuration must be `wrangler.jsonc`, and `wrangler.toml` must not exist.
-- Satisfy the Repository Tooling Precondition and `PAT-CODE-SCRIPT-GOVERNANCE-001` for the whole project before claiming modular-slice completion.
+- Satisfy the Repository Tooling Precondition and `PAT-CODE-REPOSITORY-TOOLING-001` for the whole project before claiming modular-slice completion.
 - Satisfy the Product Naming Precondition before claiming a module, slice, Worker deploy package, or API-facing surface is complete.
 - Satisfy `PAT-DOMAIN-SCHEMA-API-NAMING-001` for durable DB schema, API module, public URL, OpenAPI, generated-client, frontend-module, and test ownership names.
 - Organize non-trivial API behavior under `<api-surface-root>/modules/<domain>/<resources>/<use-case>/` for durable resource-backed domains; pure platform or bootstrap modules may use `<api-surface-root>/modules/<module>/<slice>/` only when no durable domain/resource owner exists.
@@ -7235,7 +7633,7 @@ version: 1
 description: Use this pattern when deciding where test files and test-only support artifacts should live.
 precedence_level: 2
 depends_on:
-  - PAT-CODE-SCRIPT-GOVERNANCE-001
+  - PAT-CODE-REPOSITORY-TOOLING-001
 applies_when:
   - "Deciding where test files and test-only support artifacts should live."
 ---
@@ -8182,6 +8580,121 @@ permissions:
   contents: read
   deployments: write
   id-token: write
+```
+
+---
+id: PAT-OPS-CI-CD-001
+domain: OPS
+category: CI_CD
+version: 1
+description: Use this pattern when implementing CI, preview infrastructure, environment deployment, production promotion, cleanup, or rollback automation.
+precedence_level: 4
+depends_on:
+  - PAT-OPS-LEAST-PRIVILEGE-001
+  - PAT-INFRA-DEPLOYMENT-TOPOLOGY-001
+  - PAT-ARCH-RELEASE-001
+  - PAT-CODE-VALIDATION-PROFILES-001
+  - PAT-TEST-EVIDENCE-001
+applies_when:
+  - "Implementing CI, preview infrastructure, environment deployment, production promotion, cleanup, or rollback automation."
+---
+
+
+## Strategy
+
+Use manifest-driven CI/CD with three GitHub Environments: `preview`,
+`development`, and `production`. CI validates an exact commit without deploy
+permissions. Preview creates isolated ephemeral resources per pull request,
+development deploys the exact successful `main` commit, and production manually
+promotes a commit already proven by CI and development. Cleanup and rollback
+are explicit, idempotent operations.
+
+Canonical workflow surface:
+
+```txt
+.github/workflows/ci.yml
+.github/workflows/preview.yml
+.github/workflows/cleanup-preview.yml
+.github/workflows/deploy-development.yml
+.github/workflows/deploy-production.yml
+```
+
+## Rules
+
+### Must
+
+- Checkout and report the exact commit used by every workflow.
+- Install reproducibly from the committed lockfile; create private package auth
+  in temporary configuration and delete it after installation.
+- Validate manifests/schemas, generated-output drift, the selected validation
+  profile, and every declared deployable dry build in CI.
+- Give CI no deployment credentials or write permissions it does not need.
+- Generate workflow deployment matrices from
+  `tooling/manifests/infrastructure/deployment-targets.json`.
+- Use the `preview`, `development`, and `production` GitHub Environments and
+  keep their variables, secrets, protections, and URLs separate.
+- Provision preview resources with ownership derived from the pull-request id;
+  clean only matching resources and make cleanup idempotent.
+- Deploy dependencies in topological order and apply compatible migrations
+  before code that requires them.
+- Deploy development only after successful CI for the exact `main` commit.
+- Require manual production dispatch, environment approval, and an exact commit
+  already green in CI and development.
+- Promote the same source/artifact state to production rather than rebuilding a
+  moving branch head.
+- Configure runtime secrets without printing values and run authenticated,
+  environment-specific smokes after deployment.
+- Record deployed commit and provider versions in transient release/deployment
+  artifacts.
+- Support Worker-version rollback independently from database forward-fix and
+  expand/contract migration handling.
+
+### Must not
+
+- Do not maintain hard-coded service lists or dependency order in multiple
+  workflows.
+- Do not expose internal Service Binding targets, queue consumers, or private
+  daemons through public routes.
+- Do not deploy production automatically from push or reuse preview/development
+  credentials as production credentials.
+- Do not silently rebuild from another commit during promotion.
+- Do not make cleanup broad enough to delete resources without matching preview
+  ownership.
+- Do not hide deploys, provisioning, migrations, provider mutations, or live
+  smokes inside `validate:*`.
+- Do not claim GitHub, provider, deployment, or smoke success from repository
+  configuration alone.
+
+## Decision rules
+
+- If a new compatible deployable is declared, let the planner add it to CI/CD;
+  do not edit every workflow.
+- If a runtime requires different mechanics, add a typed deployment adapter
+  rather than a service-specific script.
+- If a preview does not require database changes, reuse only the explicitly
+  allowed non-production dependency; otherwise create an isolated branch.
+- If production approval or verified production credentials are unavailable,
+  create the environment without deploy credentials and report one operator
+  action.
+- If a production code rollback conflicts with a contracted schema, keep the
+  database forward-compatible and forward-fix instead of reversing destructive
+  migrations.
+
+## Allowed exceptions
+
+- A repository/account plan may prevent deterministic reviewer configuration.
+  Production may remain intentionally blocked while the required operator
+  action is documented; automatic or unprotected promotion is not an exception.
+- A provider may lack gradual rollout support. Deterministic full deployment is
+  allowed when the same commit and rollback target remain explicit.
+
+## Example
+
+```txt
+pull request -> ci -> preview deploy + smoke -> preview cleanup on close
+main commit  -> ci -> development deploy + smoke
+verified SHA -> manual production approval -> production deploy + safe smoke
+rollback     -> previous Worker version; database remains forward-compatible
 ```
 
 ---

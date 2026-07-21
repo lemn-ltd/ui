@@ -11,6 +11,14 @@ export const expectedManagedFilePaths = [
 	"patterns/patterns.md",
 ];
 
+const expectedStrategies = new Map([
+	["AGENTS.md", "combine"],
+	["patterns/pattern-audit.md", "combine"],
+	["patterns/pattern-profile.md", "combine"],
+	["patterns/pattern-system.md", "replace"],
+	["patterns/patterns.md", "replace"],
+]);
+
 function fail(message) {
 	throw new Error(`AgentOps managed-file lock: ${message}`);
 }
@@ -63,8 +71,11 @@ export async function validateAgentOpsManagedFiles(root = process.cwd()) {
 
 	for (const entry of files) {
 		const targetPath = String(entry.targetPath);
-		if (entry.strategy !== "combine" || entry.gitIgnored !== false) {
-			fail(`${targetPath} must use combine strategy and remain tracked`);
+		const expectedStrategy = expectedStrategies.get(targetPath);
+		if (entry.strategy !== expectedStrategy || entry.gitIgnored !== false) {
+			fail(
+				`${targetPath} must use ${String(expectedStrategy)} strategy and remain tracked`,
+			);
 		}
 		const expectedCacheFile = `.agentops/cache/prompt-files/files/${targetPath}`;
 		if (entry.cacheFile !== expectedCacheFile) {

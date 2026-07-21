@@ -15,12 +15,6 @@
       "level": "explore"
     }
   },
-  "local": {
-    "pathFingerprint": "sha256:453e57058b1124b9420d684ced255cba463502f87a01aeef36d7f27b47a79700",
-    "git": {
-      "remote": "https://github.com/lemn-ltd/ui"
-    }
-  },
   "workspaceEnvironments": {
     "default": "development",
     "items": [
@@ -59,9 +53,9 @@
       },
       {
         "targetPath": "patterns/pattern-audit.md",
-      "checksum": "sha256:de90f0cc1c1909cc31d371c9ec07cd5c211da6cc90175576c7aad5800b76f540",
+        "checksum": "sha256:363647a85a919e31396160e1ae70036cff22f883d4f229d1ca23a42dd9448ba2",
         "revisions": {
-        "project": 23
+          "project": 25
         },
         "strategy": "combine",
         "gitIgnored": false,
@@ -69,9 +63,9 @@
       },
       {
         "targetPath": "patterns/pattern-profile.md",
-        "checksum": "sha256:57bb3566cf223668b3009906f0a19e7a8bdd4a40c07042f672d3e6c60598e63b",
+        "checksum": "sha256:eb94a1f9a203543850e4a0e83b4d2cf86353fd958e8f8a66fe0da46512fda031",
         "revisions": {
-          "project": 9
+          "project": 10
         },
         "strategy": "combine",
         "gitIgnored": false,
@@ -82,20 +76,20 @@
         "checksum": "sha256:9e9b238a3cd1ea40ff787a905d9159ffa11df389219ee6ad1875fe75f2c72052",
         "revisions": {
           "organization": 2,
-          "project": 1
+          "project": 4
         },
-        "strategy": "combine",
+        "strategy": "replace",
         "gitIgnored": false,
         "cacheFile": ".agentops/cache/prompt-files/files/patterns/pattern-system.md"
       },
       {
         "targetPath": "patterns/patterns.md",
-        "checksum": "sha256:478c50922eda057e3b4b9276dd8f8bf0905781561e1ed70ff99c25f455b84f74",
+        "checksum": "sha256:8762d51fc4c89c727c02dfef12fd622b3eafe9865e496db9845d1de3813f705d",
         "revisions": {
           "organization": 13,
-          "project": 10
+          "project": 12
         },
-        "strategy": "combine",
+        "strategy": "replace",
         "gitIgnored": false,
         "cacheFile": ".agentops/cache/prompt-files/files/patterns/patterns.md"
       }

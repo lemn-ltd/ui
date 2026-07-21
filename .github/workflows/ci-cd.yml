@@ -84,26 +84,10 @@ jobs:
 
           node scripts/release/check-unpublished-package-version.ts
 
-      - name: Validate repo policy and release metadata
-        run: pnpm validate
-
-      - name: Check
-        run: pnpm check
-
-      - name: Test
-        run: pnpm test
-
-      - name: Build
-        run: pnpm build
-
-      - name: Smoke UI Portal deployment locally
-        run: pnpm smoke:portal:local
-
-      - name: Pack and install package-set smoke
-        run: pnpm pack:packages
-
-      - name: Verify generated files are committed
-        run: git diff --exit-code
+      - name: Run the same standard validation profile used locally
+        run: pnpm validate:standard
+        env:
+          VALIDATION_BASE: ${{ github.event.pull_request.base.sha || github.event.before || '' }}
 
   ui-portal-e2e:
     name: UI Portal E2E (${{ matrix.shard }}/3)
@@ -310,7 +294,7 @@ jobs:
   release-and-deploy:
     name: Release And Deploy
     needs: [validate, ui-portal-e2e, ui-portal-accessibility]
-    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.package == 'package-set'))
+    if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && inputs.package == 'package-set'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     environment: production

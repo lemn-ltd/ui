@@ -3,21 +3,19 @@ SHELL := /bin/bash
 
 PNPM ?= pnpm
 
-.PHONY: help install dev dev-docs validate-agentops validate-identity validate-package-identity validate-brand-neutrality validate-boundaries validate-ui-portal-zero-legacy validate-release-preconditions validate check test test-e2e-ui-portal test-e2e-ui-portal-shard build pack-packages release-preflight clean
+.PHONY: help install dev dev-docs validate validate-quick validate-quick-fix validate-standard validate-full pipeline-local pipeline-visual-local hooks-install check test test-e2e-ui-portal test-e2e-ui-portal-shard build pack-packages release-preflight clean
 
 help:
 	@printf 'Useful targets:\n'
 	@printf '  make install                  Install workspace dependencies with the lockfile frozen.\n'
 	@printf '  make dev                      Restart the local UI Portal at http://localhost:6500.\n'
 	@printf '  make dev-docs                 Start the local docs site at http://localhost:6600.\n'
-	@printf '  make validate-agentops        Verify the managed-file lock and local checksums.\n'
-	@printf '  make validate-identity        Verify workspace scopes, docs identity, and legacy-name removal.\n'
-	@printf '  make validate-package-identity Verify the canonical package and registry contract.\n'
-	@printf '  make validate-brand-neutrality Scan shared UI and portal source for product-specific names.\n'
-	@printf '  make validate-boundaries      Scan @lemn-ltd/ui runtime imports for boundary violations.\n'
-	@printf '  make validate-ui-portal-zero-legacy Reject retired app, Worker, domain, route, and credential identities.\n'
-	@printf '  make validate-release-preconditions Validate static release contracts before a rollout.\n'
-	@printf '  make validate                 Run all repository validation scripts, including release metadata.\n'
+	@printf '  make validate-quick           Validate only the uncommitted delta (pre-commit).\n'
+	@printf '  make validate-standard        Run the deterministic local CI profile.\n'
+	@printf '  make validate-full            Add complete browser and Worker dry-run coverage.\n'
+	@printf '  make pipeline-local           Simulate every non-mutating GitHub release gate locally.\n'
+	@printf '  make pipeline-visual-local    Regenerate governed Linux visual baselines explicitly.\n'
+	@printf '  make hooks-install            Install the tracked pre-commit and pre-push hooks.\n'
 	@printf '  make check                    Typecheck all workspace packages.\n'
 	@printf '  make test                     Run all workspace test suites.\n'
 	@printf '  make test-e2e-ui-portal      Run the complete isolated Playwright Portal suite.\n'
@@ -36,29 +34,29 @@ dev:
 dev-docs:
 	$(PNPM) dev:docs
 
-validate-agentops:
-	$(PNPM) validate:agentops
-
-validate-identity:
-	$(PNPM) validate:identity
-
-validate-package-identity:
-	$(PNPM) validate:package-identity
-
-validate-brand-neutrality:
-	$(PNPM) validate:brand-neutrality
-
-validate-boundaries:
-	$(PNPM) validate:boundaries
-
-validate-ui-portal-zero-legacy:
-	$(PNPM) validate:ui-portal-zero-legacy
-
-validate-release-preconditions:
-	$(PNPM) validate:release-preconditions
-
 validate:
-	$(PNPM) validate
+	$(PNPM) validate:standard
+
+validate-quick:
+	$(PNPM) validate:quick
+
+validate-quick-fix:
+	$(PNPM) validate:quick:fix
+
+validate-standard:
+	$(PNPM) validate:standard
+
+validate-full:
+	$(PNPM) validate:full
+
+pipeline-local:
+	$(PNPM) pipeline:local
+
+pipeline-visual-local:
+	$(PNPM) pipeline:visual:local
+
+hooks-install:
+	$(PNPM) hooks:install
 
 check:
 	$(PNPM) check

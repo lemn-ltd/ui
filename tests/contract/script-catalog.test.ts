@@ -58,7 +58,7 @@ interface ResolvedScript extends CatalogScript {
 }
 
 const root = resolve(import.meta.dirname, "../..");
-const catalogPath = resolve(root, "scripts/catalog.json");
+const catalogPath = resolve(root, "tooling/catalog.json");
 const catalog = JSON.parse(
 	await readFile(catalogPath, "utf8"),
 ) as ScriptCatalog;
@@ -73,6 +73,7 @@ const expectedCategories = [
 	"release",
 	"ops",
 	"bootstrap",
+	"build",
 ] as const;
 const allowedEnvironments = new Set(["local", "ci", "production"]);
 const allowedMutations = new Set([
@@ -158,7 +159,7 @@ async function collectTextFiles(directory: string): Promise<string[]> {
 
 test("the catalog is the exact contract for every active package script", async () => {
 	assert.equal(catalog.formatVersion, 1);
-	assert.equal(catalog.pattern, "PAT-CODE-SCRIPT-GOVERNANCE-001");
+	assert.equal(catalog.pattern, "PAT-CODE-REPOSITORY-TOOLING-001");
 	assert.equal(catalog.idFormat, "<manifest-id>:<package-script-name>");
 	assert.deepEqual(catalog.categories, expectedCategories);
 
@@ -167,7 +168,7 @@ test("the catalog is the exact contract for every active package script", async 
 	assert.deepEqual(
 		catalogPaths,
 		actualPaths,
-		"adding or removing a workspace manifest requires updating scripts/catalog.json",
+		"adding or removing a workspace manifest requires updating tooling/catalog.json",
 	);
 
 	for (const manifest of catalog.manifests) {

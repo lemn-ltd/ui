@@ -99,6 +99,7 @@ pattern_profile:
       - The maintained inventory is TypeScript, TSX, CSS, JSON, Astro configuration, and Node tooling.
       - pnpm, Turborepo, TypeScript, Vite, Vitest, Playwright, Wrangler, and Biome are repository contracts and must remain pinned and reproducible.
       - Components, catalogs, build scripts, validation scripts, and test helpers require file-scope, readability, type, placeholder, suppression, and dependency discipline.
+      - Local quick, standard, and full profiles plus tracked Git hooks must reproduce hosted CI gates before commits and pushes reach GitHub.
 
   DATA:
     target_level: 5
@@ -180,10 +181,11 @@ pattern_profile:
       - Branding Runtime already crosses HTTPS or Service Binding boundaries, so requestId/traceId propagation is a current transport-contract obligation rather than a future trigger.
 
   OPS:
-    target_level: 1
+    target_level: 4
     reason:
       - Package publishing, GitHub Actions, registry access, Cloudflare deploys, custom domains, and AgentOps managed files all require explicit least-privilege permissions.
       - Production mutations and token usage must remain environment-scoped, reviewable, and absent from generated artifacts or logs.
+      - CI validates exact revisions without deployment credentials; production release remains a manual, approved promotion after the same deterministic gates pass locally and in CI.
 
   DOCS:
     target_level: 4

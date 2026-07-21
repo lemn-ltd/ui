@@ -44,7 +44,7 @@ jobs:
         run: docker pull mcr.microsoft.com/playwright:v1.60.0-noble
 
       - name: Generate Linux snapshots from the immutable Git tree
-        run: pnpm visual:update:linux
+        run: pnpm pipeline:visual:local
 
       - name: Verify only Linux PNG baselines changed
         run: |

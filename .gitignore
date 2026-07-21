@@ -18,3 +18,4 @@ codedb.*
 .codedb/
 .agentops/state.json
 .agentops/diffs/
+tooling/artifacts/

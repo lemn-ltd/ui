@@ -210,7 +210,7 @@ the release preflight confirms the same account ownership with
 | Bootstrap, candidate upload, switch, smoke, and rollback | [`scripts/release/ui-portal-production-rollout.ts`](../../../../scripts/release/ui-portal-production-rollout.ts) |
 | Cloudflare account/zone preflight | [`scripts/release/cloudflare-preflight.ts`](../../../../scripts/release/cloudflare-preflight.ts) |
 | Public and service-identity production assertions | [`scripts/release/deployment-smoke.ts`](../../../../scripts/release/deployment-smoke.ts) |
-| Command ownership and mutation/secrets contract | [`scripts/catalog.json`](../../../../scripts/catalog.json) |
+| Command ownership and mutation/secrets contract | [`tooling/catalog.json`](../../../../tooling/catalog.json) |
 | Product topology and completion boundary | [Portal documentation](../../../../apps/docs/src/content/docs/portal/index.mdx) |
 
 Cloudflare is authoritative for allocated provider ids, active deployment

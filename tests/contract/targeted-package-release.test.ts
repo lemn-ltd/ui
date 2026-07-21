@@ -99,24 +99,18 @@ test("the directed release builds validated main before publishing one exact pac
 
 	const validateJob = record(jobs.validate, "validate job");
 	const validateSteps = validateJob.steps as UnknownRecord[];
-	assert.equal(
-		validateSteps.find(
-			(candidate) =>
-				candidate.name === "Validate repo policy and release metadata",
-		)?.run,
-		"pnpm validate",
+	const localProfileStep = validateSteps.find(
+		(candidate) =>
+			candidate.name ===
+			"Run the same standard validation profile used locally",
 	);
+	assert.equal(localProfileStep?.run, "pnpm validate:standard");
 	assert.equal(
-		validateSteps.find((candidate) => candidate.name === "Check")?.run,
-		"pnpm check",
-	);
-	assert.equal(
-		validateSteps.find((candidate) => candidate.name === "Test")?.run,
-		"pnpm test",
-	);
-	assert.equal(
-		validateSteps.find((candidate) => candidate.name === "Build")?.run,
-		"pnpm build",
+		record(localProfileStep?.env, "local validation environment")
+			.VALIDATION_BASE,
+		expression(
+			"github.event.pull_request.base.sha || github.event.before || ''",
+		),
 	);
 
 	const build = step("Build release packages in dependency order");
@@ -165,4 +159,9 @@ test("the full package-set publisher remains the no-argument default", async () 
 	const jobs = record(workflow.jobs, "workflow jobs");
 	const fullRelease = record(jobs["release-and-deploy"], "full release job");
 	assert.match(String(fullRelease.if), /inputs\.package == 'package-set'/u);
+	assert.match(
+		String(fullRelease.if),
+		/github\.event_name == 'workflow_dispatch'/u,
+	);
+	assert.doesNotMatch(String(fullRelease.if), /github\.event_name == 'push'/u);
 });
