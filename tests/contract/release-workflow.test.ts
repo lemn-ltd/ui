@@ -221,6 +221,12 @@ test("the exact prepared release SHA receives a frozen install and the full repo
 		"node --test tests/contract/*.test.ts",
 	);
 	assert.equal(scripts.validate, "pnpm validate:standard");
+	assert.ok(
+		standardValidationSource.indexOf(
+			'pnpmCommand("complete dry build", "build")',
+		) < standardValidationSource.indexOf("await runQuick({ all: true, root })"),
+		"standard validation must build workspace dependencies before checking consumers in a clean checkout",
+	);
 	assert.match(
 		standardValidationSource,
 		/pnpmCommand\("complete dry build", "build"\)[\s\S]*pnpmCommand\("release contracts", "validate:release-contracts"\)/u,
