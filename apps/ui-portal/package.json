@@ -24,7 +24,7 @@
 	},
 	"dependencies": {
 		"@lemn-ltd/brand-contract": "workspace:1.0.0",
-		"@lemn-ltd/brand-studio": "workspace:2.1.0",
+		"@lemn-ltd/brand-studio": "workspace:2.2.0",
 		"@lemn-ltd/provider-registry": "workspace:0.1.0",
 		"@lemn-ltd/ui": "workspace:0.4.1",
 		"jose": "6.2.3",
