@@ -44,6 +44,37 @@ export const releasePackages = [
 	},
 ] as const satisfies readonly ReleasePackageDefinition[];
 
+const targetedReleaseUsage =
+	"Targeted package release usage: --package <allowed release package>";
+
+/**
+ * Selects either the complete immutable release set (the existing no-argument
+ * behavior) or one exact package from that set. The deliberately narrow CLI
+ * grammar prevents a workflow input from becoming an arbitrary pnpm filter.
+ */
+export function selectReleasePackages(
+	arguments_: readonly string[],
+): readonly ReleasePackageDefinition[] {
+	if (arguments_.length === 0) return releasePackages;
+	if (arguments_.length !== 2 || arguments_[0] !== "--package") {
+		throw new Error(targetedReleaseUsage);
+	}
+
+	const requestedPackage = arguments_[1];
+	const selectedPackage = releasePackages.find(
+		(definition) => definition.name === requestedPackage,
+	);
+	if (!selectedPackage) {
+		throw new Error(
+			`${requestedPackage || "Missing package name"} is not an allowed release package; allowed packages: ${releasePackages
+				.map(({ name }) => name)
+				.join(", ")}`,
+		);
+	}
+
+	return Object.freeze([selectedPackage]);
+}
+
 export interface ReleasePackageManifest {
 	readonly name?: string;
 	readonly version?: string;

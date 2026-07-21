@@ -15,7 +15,7 @@ import {
 import {
 	type ReleasePackageDefinition,
 	readReleasePackageManifest,
-	releasePackages,
+	selectReleasePackages,
 } from "./package-set.ts";
 
 const execFileAsync = promisify(execFile);
@@ -303,8 +303,9 @@ const defaultDependencies: PublishReleaseDependencies = {
 };
 
 async function main(): Promise<void> {
+	const selectedPackages = selectReleasePackages(process.argv.slice(2));
 	const artifacts = await Promise.all(
-		releasePackages.map(localPackageArtifact),
+		selectedPackages.map(localPackageArtifact),
 	);
 	for (const { artifact, outcome } of await ensurePackageSetRelease(
 		artifacts,

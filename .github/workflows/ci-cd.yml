@@ -5,6 +5,18 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      package:
+        description: Release the complete package set or one exact package
+        required: true
+        default: package-set
+        type: choice
+        options:
+          - package-set
+          - "@lemn-ltd/brand-contract"
+          - "@lemn-ltd/ui"
+          - "@lemn-ltd/brand-runtime"
+          - "@lemn-ltd/brand-studio"
 
 permissions:
   contents: read
@@ -224,10 +236,81 @@ jobs:
       - name: Run UI Portal accessibility crawl
         run: pnpm --filter @lemn-ltd/ui-portal exec playwright test --project=accessibility --shard=${{ matrix.shard }}/4
 
+  publish-package:
+    name: Publish ${{ inputs.package }}
+    needs: validate
+    if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && inputs.package != 'package-set'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: production
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://npm.pkg.github.com
+          scope: "@lemn-ltd"
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare "$(node -p "require('./package.json').packageManager")" --activate
+
+      - name: Resolve pnpm store
+        run: echo "PNPM_STORE_PATH=$(pnpm store path --silent)" >> "$GITHUB_ENV"
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.PNPM_STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Rebuild approved dependencies without registry credentials
+        run: env -u NODE_AUTH_TOKEN -u GITHUB_TOKEN pnpm rebuild --pending
+
+      - name: Require a clean release revision
+        run: |
+          git diff --exit-code
+          git diff --cached --exit-code
+          test -z "$(git status --porcelain --untracked-files=normal)"
+
+      - name: Build release packages in dependency order
+        run: pnpm build:packages:release
+
+      - name: Verify generated release revision remains clean
+        run: |
+          git diff --exit-code
+          git diff --cached --exit-code
+          test -z "$(git status --porcelain --untracked-files=normal)"
+
+      - name: Publish or verify selected immutable package
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_PACKAGE: ${{ inputs.package }}
+        run: pnpm publish:packages:release --package "${RELEASE_PACKAGE}"
+
+      - name: Smoke exact releases in a clean consumer
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: pnpm smoke:packages:github-packages
+
   release-and-deploy:
     name: Release And Deploy
     needs: [validate, ui-portal-e2e, ui-portal-accessibility]
-    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.package == 'package-set'))
     runs-on: ubuntu-latest
     timeout-minutes: 60
     environment: production
