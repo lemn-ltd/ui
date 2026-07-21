@@ -85,3 +85,9 @@ return (
 controlled `BrandingDefinition` and mode, compiles locally without persistence
 or network ownership, and renders the same visual specimen used by inline
 Studio.
+
+The standalone preview is full-bleed by design: its host owns padding, resizing,
+and vertical scrolling. It renders a responsive application specimen composed
+only from public `@lemn-ltd/ui` components so color, typography, shape,
+elevation, charts, forms, tables, and interaction states can be evaluated
+together.

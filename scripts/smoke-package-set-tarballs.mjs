@@ -670,18 +670,44 @@ try {
 	import { systemBrandingTemplates } from '@lemn-ltd/brand-contract/system-brandings';
 	import { resolveBranding } from '@lemn-ltd/brand-runtime';
 	import { createBrandingSsrParts } from '@lemn-ltd/brand-runtime/server';
-	import { BrandStudio } from '@lemn-ltd/brand-studio';
-import '@lemn-ltd/brand-studio/styles.css';
-import { Button, type IconName } from '@lemn-ltd/ui';
+		import {
+		  BrandStudio,
+		  BrandStudioPreview,
+		  type BrandStudioPreviewProps,
+		} from '@lemn-ltd/brand-studio';
+	import '@lemn-ltd/brand-studio/styles.css';
+	import {
+	  Button,
+	  DockPanel,
+	  type DockTab,
+	  type IconName,
+	  ScreenShell,
+	} from '@lemn-ltd/ui';
 import { DashboardOverviewBlock } from '@lemn-ltd/ui/blocks';
 import { componentCatalog } from '@lemn-ltd/ui/catalog';
 import '@lemn-ltd/ui/styles.css';
 import { tokens } from '@lemn-ltd/ui/tokens';
 import { createRoot } from 'react-dom/client';
 
-	const iconName: IconName = 'check';
-	void compileBrandingDefinition;
-	void systemBrandingTemplates;
+		const iconName: IconName = 'check';
+		const previewDefinition = systemBrandingTemplates.find(
+		  (template) => template.id === 'aster-vault',
+		)?.definition;
+		if (!previewDefinition) throw new Error('Missing aster-vault branding fixture');
+		const previewProps: BrandStudioPreviewProps = {
+		  value: previewDefinition,
+		  modeId: previewDefinition.defaultModeId,
+		};
+		const dockTabs: readonly DockTab[] = [
+		  {
+		    id: 'brand-preview',
+		    label: 'Brand preview',
+		    icon: 'eye',
+		    content: <BrandStudioPreview {...previewProps} />,
+		  },
+		];
+		void compileBrandingDefinition;
+		void systemBrandingTemplates;
 	void resolveBranding;
 	void createBrandingSsrParts;
 void BrandStudio;
@@ -689,13 +715,19 @@ void DashboardOverviewBlock;
 const rootElement = document.getElementById('root');
 if (!rootElement) throw new Error('Missing #root');
 
-createRoot(rootElement).render(
-  <main data-icon={iconName}>
-    <Button>Package smoke</Button>
-    <output>{componentCatalog.length}:{tokens.spacing[2]}</output>
-  </main>,
-);
-`,
+	createRoot(rootElement).render(
+	  <ScreenShell
+	    defaultDockMode="partial"
+	    rightPanel={<DockPanel tabs={dockTabs} />}
+	    sidebar={<nav aria-label="Package smoke navigation">Brand Studio</nav>}
+	  >
+	    <main data-icon={iconName}>
+	      <Button>Package smoke</Button>
+	      <output>{componentCatalog.length}:{tokens.spacing[2]}</output>
+	    </main>
+	  </ScreenShell>,
+	);
+	`,
 	);
 	await writeFile(
 		join(consumerDirectory, "index.html"),

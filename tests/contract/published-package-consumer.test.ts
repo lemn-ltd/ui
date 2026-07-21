@@ -585,6 +585,11 @@ test("the release implementation uses argv-based execution and verifies JS plus 
 	assert.match(source, /bundledCss\.includes\("--lemn-color-accent:"\)/u);
 	assert.match(source, /bundledCss\.includes\("\.lemn-brand-studio"\)/u);
 	assert.match(source, /all-entrypoints\.ts/u);
+	assert.match(source, /BrandStudioPreview,/u);
+	assert.match(source, /type BrandStudioPreviewProps,/u);
+	assert.match(source, /<ScreenShell/u);
+	assert.match(source, /rightPanel=\{<DockPanel tabs=\{dockTabs\} \/>\}/u);
+	assert.match(source, /<BrandStudioPreview \{\.\.\.previewProps\} \/>/u);
 
 	const rootPackage = JSON.parse(
 		await readFile(resolve(root, "package.json"), "utf8"),

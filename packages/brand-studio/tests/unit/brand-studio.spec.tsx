@@ -54,9 +54,9 @@ describe("BrandStudio", () => {
 			screen.getByRole("heading", { name: "Primary visual direction" }),
 		).toBeTruthy();
 		expect(
-			screen.getByLabelText("Typography specimen").querySelector("code")
-				?.textContent,
-		).toContain("appointment.status");
+			screen.getByRole("heading", { name: "Good morning, Maya" }),
+		).toBeTruthy();
+		expect(screen.getByLabelText("Today at a glance")).toBeTruthy();
 		expect(fetchSpy).not.toHaveBeenCalled();
 	});
 
@@ -122,10 +122,8 @@ describe("BrandStudio", () => {
 
 		expect(screen.queryByLabelText("Live branding preview")).toBeNull();
 		expect(
-			view.container.querySelector(
-				".lemn-brand-studio__layout--external-preview",
-			),
-		).not.toBeNull();
+			screen.getByRole("navigation", { name: "Brand configuration steps" }),
+		).toBeTruthy();
 
 		view.rerender(<BrandStudioPreview modeId="dark" value={definition} />);
 		await waitFor(() =>
@@ -136,7 +134,12 @@ describe("BrandStudio", () => {
 			).not.toBeNull(),
 		);
 		expect(screen.getByLabelText("Live branding preview")).toBeTruthy();
-		expect(screen.getByLabelText("Typography specimen")).toBeTruthy();
+		expect(
+			screen.getByRole("navigation", { name: "Preview sections" }),
+		).toBeTruthy();
+		expect(
+			screen.getByRole("heading", { name: "Good morning, Maya" }),
+		).toBeTruthy();
 		expect(
 			view.container.querySelector("style[data-lemn-brand-critical='true']"),
 		).not.toBeNull();

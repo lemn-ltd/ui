@@ -356,9 +356,19 @@ import { compileBrandingDefinition } from '@lemn-ltd/brand-contract';
 import { systemBrandingTemplates } from '@lemn-ltd/brand-contract/system-brandings';
 import { resolveBranding } from '@lemn-ltd/brand-runtime';
 import { createBrandingSsrParts } from '@lemn-ltd/brand-runtime/server';
-import { BrandStudio } from '@lemn-ltd/brand-studio';
+import {
+  BrandStudio,
+  BrandStudioPreview,
+  type BrandStudioPreviewProps,
+} from '@lemn-ltd/brand-studio';
 import '@lemn-ltd/brand-studio/styles.css';
-import { Button, type IconName } from '@lemn-ltd/ui';
+import {
+  Button,
+  DockPanel,
+  type DockTab,
+  type IconName,
+  ScreenShell,
+} from '@lemn-ltd/ui';
 import { DashboardOverviewBlock } from '@lemn-ltd/ui/blocks';
 import { AppointmentScheduleBlock, coreBlockCatalog } from '@lemn-ltd/ui/blocks/core';
 import { coreBlockCatalog as coreBlockCatalogMetadata } from '@lemn-ltd/ui/blocks/core/catalog';
@@ -369,6 +379,22 @@ import { tokens } from '@lemn-ltd/ui/tokens';
 import { createRoot } from 'react-dom/client';
 
 const iconName: IconName = 'check';
+const previewDefinition = systemBrandingTemplates.find(
+  (template) => template.id === 'aster-vault',
+)?.definition;
+if (!previewDefinition) throw new Error('Missing aster-vault branding fixture');
+const previewProps: BrandStudioPreviewProps = {
+  value: previewDefinition,
+  modeId: previewDefinition.defaultModeId,
+};
+const dockTabs: readonly DockTab[] = [
+  {
+    id: 'brand-preview',
+    label: 'Brand preview',
+    icon: 'eye',
+    content: <BrandStudioPreview {...previewProps} />,
+  },
+];
 void compileBrandingDefinition;
 void systemBrandingTemplates;
 void resolveBranding;
@@ -380,14 +406,20 @@ const rootElement = document.getElementById('root');
 if (!rootElement) throw new Error('Missing #root');
 
 createRoot(rootElement).render(
-  <main data-icon={iconName}>
-    <Button>Published package consumer</Button>
-    <output>
-      {componentCatalog.length}:{coreComponentCatalog.length}:{coreBlockCatalog.length}:
-      {coreBlockCatalogMetadata.length}:{coreComponentExportsFromSlug('button').length}:
-      {tokens.spacing[2]}
-    </output>
-  </main>,
+  <ScreenShell
+    defaultDockMode="partial"
+    rightPanel={<DockPanel tabs={dockTabs} />}
+    sidebar={<nav aria-label="Published package navigation">Brand Studio</nav>}
+  >
+    <main data-icon={iconName}>
+      <Button>Published package consumer</Button>
+      <output>
+        {componentCatalog.length}:{coreComponentCatalog.length}:{coreBlockCatalog.length}:
+        {coreBlockCatalogMetadata.length}:{coreComponentExportsFromSlug('button').length}:
+        {tokens.spacing[2]}
+      </output>
+    </main>
+  </ScreenShell>,
 );
 `;
 

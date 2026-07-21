@@ -320,22 +320,35 @@
 }
 
 .lemn-brand-studio__preview {
-	background: var(--lemn-color-surface-muted, #f6f8fa);
+	background: var(--lemn-color-canvas, #fff);
 	border-inline-start: 1px solid var(--studio-border);
 	min-inline-size: 0;
-	padding: 20px;
+	padding: 0;
 }
 .lemn-brand-studio__preview-sticky {
-	inset-block-start: 16px;
-	max-block-size: calc(100dvh - 32px);
+	min-block-size: 100%;
+}
+.lemn-brand-studio__preview--inline .lemn-brand-studio__preview-sticky {
+	inset-block-start: 0;
+	max-block-size: 100dvh;
 	overflow: auto;
 	position: sticky;
+}
+.lemn-brand-studio__preview--external {
+	block-size: 100%;
+	border: 0;
+	min-block-size: 100%;
+}
+.lemn-brand-studio__preview--external .lemn-brand-studio__preview-sticky {
+	block-size: 100%;
 }
 .lemn-brand-studio__preview-scope {
 	background: var(--lemn-color-canvas);
 	color: var(--lemn-color-text);
+	container-name: brand-preview;
+	container-type: inline-size;
 	font-family: var(--lemn-font-body);
-	padding: 12px;
+	min-block-size: 100%;
 }
 .lemn-brand-studio__preview-scope .ui-card {
 	background: var(--lemn-color-surface);
@@ -347,63 +360,368 @@
 	background: var(--lemn-color-accent);
 	color: var(--lemn-color-accent-foreground);
 }
-.lemn-brand-studio__type-specimen {
-	border: 0;
-	border-block-end: 1px solid var(--lemn-color-border);
+.lemn-brand-studio__preview-fallback {
+	padding: 20px;
+}
+
+.lemn-brand-preview__app {
+	background: var(--lemn-color-canvas);
 	display: grid;
-	gap: 8px;
-	margin-block-end: 16px;
-	margin-inline: 0;
-	min-inline-size: 0;
-	padding-block-end: 16px;
-	padding-inline: 0;
+	grid-template-columns: 216px minmax(0, 1fr);
+	min-block-size: 100%;
 }
-.lemn-brand-studio__type-specimen > span {
-	color: var(--lemn-color-text-muted);
-	font-family: var(--lemn-font-label);
-	font-size: 11px;
-	font-weight: var(--lemn-font-weight-medium);
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-}
-.lemn-brand-studio__type-specimen h2 {
-	font-family: var(--lemn-font-heading);
-	font-size: var(--lemn-font-size-title);
-	font-weight: var(--lemn-font-weight-semibold);
-	letter-spacing: var(--lemn-letter-spacing);
-	line-height: var(--lemn-line-height-title);
-	margin: 0;
-}
-.lemn-brand-studio__type-specimen p {
-	font-family: var(--lemn-font-body);
-	line-height: var(--lemn-line-height-body);
-	margin: 0;
-}
-.lemn-brand-studio__type-specimen code {
-	background: var(--lemn-color-surface-muted);
-	border-radius: var(--lemn-radius-small);
-	color: var(--lemn-color-text);
-	font-family: var(--lemn-font-code);
-	font-size: var(--lemn-font-size-mono);
-	overflow-wrap: anywhere;
-	padding: 8px 10px;
-}
-.lemn-brand-studio__preview-actions {
+.lemn-brand-preview__sidebar {
+	background: var(--lemn-color-surface);
+	border-inline-end: 1px solid var(--lemn-color-border);
 	display: flex;
-	flex-wrap: wrap;
-	gap: 8px;
-	margin-block: 16px;
+	flex-direction: column;
+	gap: 24px;
+	min-inline-size: 0;
+	padding: 22px 14px;
 }
-.lemn-brand-studio__check {
+.lemn-brand-preview__brand,
+.lemn-brand-preview__mobile-brand {
+	align-items: center;
+	display: flex;
+	gap: 10px;
+	min-inline-size: 0;
+}
+.lemn-brand-preview__brand-mark {
+	align-items: center;
+	background: var(--lemn-color-accent);
+	border-radius: var(--lemn-radius-medium);
+	color: var(--lemn-color-accent-foreground);
+	display: inline-flex;
+	flex: 0 0 34px;
+	font-family: var(--lemn-font-heading);
+	font-weight: var(--lemn-font-weight-semibold);
+	inline-size: 34px;
+	justify-content: center;
+	min-block-size: 34px;
+}
+.lemn-brand-preview__brand > span:last-child,
+.lemn-brand-preview__mobile-brand > span:last-child,
+.lemn-brand-preview__sidebar-note > span,
+.lemn-brand-preview__patient > span,
+.lemn-brand-preview__waitlist > span > span,
+.lemn-brand-preview__booking-options > span > span,
+.lemn-brand-preview__signal-card > .ui-card__body > div > span:first-child {
+	display: grid;
+	min-inline-size: 0;
+}
+.lemn-brand-preview__brand strong {
+	font-family: var(--lemn-font-heading);
+	font-size: var(--lemn-font-size-base);
+}
+.lemn-brand-preview__brand small,
+.lemn-brand-preview__sidebar-note small,
+.lemn-brand-preview__patient small,
+.lemn-brand-preview__waitlist small,
+.lemn-brand-preview__booking-options small,
+.lemn-brand-preview__signal-card small,
+.lemn-brand-preview__card-heading small {
+	color: var(--lemn-color-text-muted);
+	font-size: var(--lemn-font-size-caption);
+	line-height: var(--lemn-line-height-caption);
+}
+.lemn-brand-preview__nav {
+	display: grid;
+	gap: 4px;
+}
+.lemn-brand-preview__nav button {
+	align-items: center;
+	background: transparent;
+	border: 0;
+	border-radius: var(--lemn-radius-control);
+	color: var(--lemn-color-text-muted);
+	cursor: pointer;
+	display: flex;
+	font: inherit;
+	gap: 10px;
+	inline-size: 100%;
+	padding: 10px 12px;
+	text-align: start;
+}
+.lemn-brand-preview__nav button:hover {
+	background: var(--lemn-color-surface-muted);
+	color: var(--lemn-color-text);
+}
+.lemn-brand-preview__nav button[aria-current="page"] {
+	background: var(--lemn-color-accent-soft);
+	color: var(--lemn-color-accent);
+	font-weight: var(--lemn-font-weight-semibold);
+}
+.lemn-brand-preview__nav button:focus-visible {
+	outline: 2px solid var(--lemn-color-focus);
+	outline-offset: 2px;
+}
+.lemn-brand-preview__sidebar-note {
+	align-items: center;
+	background: var(--lemn-color-success-surface);
+	border-radius: var(--lemn-radius-card);
+	color: var(--lemn-color-success-foreground);
+	display: flex;
+	gap: 9px;
+	margin-block-start: auto;
+	padding: 12px;
+}
+.lemn-brand-preview__sidebar-note small {
+	color: currentColor;
+	opacity: 0.72;
+}
+.lemn-brand-preview__workspace {
+	display: flex;
+	flex-direction: column;
+	min-inline-size: 0;
+}
+.lemn-brand-preview__topbar {
+	align-items: center;
+	background: var(--lemn-color-surface);
+	border-block-end: 1px solid var(--lemn-color-border);
+	display: flex;
+	justify-content: flex-end;
+	min-block-size: 62px;
+	padding: 10px 24px;
+}
+.lemn-brand-preview__mobile-brand {
+	display: none;
+}
+.lemn-brand-preview__topbar-actions {
 	align-items: center;
 	display: flex;
 	gap: 8px;
-	margin-block: 14px;
 }
-.lemn-brand-studio__preview-scope .ui-chart-frame {
-	block-size: 220px;
-	contain: layout paint;
-	min-block-size: 220px;
+.lemn-brand-preview__content {
+	display: grid;
+	gap: 20px;
+	min-inline-size: 0;
+	padding: clamp(18px, 2.5cqi, 32px);
+}
+.lemn-brand-preview__content .ui-page-header__title {
+	font-family: var(--lemn-font-heading);
+}
+.lemn-brand-preview__content > .ui-alert {
+	margin: 0;
+}
+.lemn-brand-preview__content .ui-stats-strip {
+	border-radius: var(--lemn-radius-card);
+	box-shadow: var(--lemn-shadow-raised);
+}
+.lemn-brand-preview__content .ui-stats-strip .ui-stat-card {
+	inline-size: auto;
+	padding: 0;
+}
+.lemn-brand-preview__analytics-grid,
+.lemn-brand-preview__operations-grid {
+	display: grid;
+	gap: 20px;
+	min-inline-size: 0;
+}
+.lemn-brand-preview__analytics-grid {
+	grid-template-columns: minmax(0, 2fr) minmax(250px, 0.8fr);
+}
+.lemn-brand-preview__operations-grid {
+	align-items: start;
+	grid-template-columns: minmax(0, 1.65fr) minmax(300px, 0.75fr);
+}
+.lemn-brand-preview__chart-card,
+.lemn-brand-preview__capacity-card,
+.lemn-brand-preview__schedule-card,
+.lemn-brand-preview__booking-card {
+	min-inline-size: 0;
+}
+.lemn-brand-preview__chart-card > .ui-card__title {
+	padding-block-end: 8px;
+}
+.lemn-brand-preview__card-heading {
+	align-items: center;
+	display: flex;
+	gap: 16px;
+	justify-content: space-between;
+	min-inline-size: 0;
+	width: 100%;
+}
+.lemn-brand-preview__card-heading > span {
+	display: grid;
+	gap: 3px;
+}
+.lemn-brand-preview__capacity-card > .ui-card__body {
+	display: grid;
+	gap: 12px;
+}
+.lemn-brand-preview__capacity-details {
+	display: grid;
+	gap: 16px;
+}
+.lemn-brand-preview__capacity-details > div:first-child {
+	display: grid;
+	gap: 8px;
+}
+.lemn-brand-preview__capacity-details > div:first-child > span,
+.lemn-brand-preview__team-row {
+	align-items: center;
+	display: flex;
+	gap: 12px;
+	justify-content: space-between;
+}
+.lemn-brand-preview__schedule-card > .ui-card__body {
+	padding: 0;
+}
+.lemn-brand-preview__schedule-card .ui-tabs {
+	padding-inline: 16px;
+}
+.lemn-brand-preview__schedule-card .ui-tabs__panel {
+	margin: 0;
+}
+.lemn-brand-preview__schedule-card .ui-data-table {
+	border-block-start: 1px solid var(--lemn-color-border);
+}
+.lemn-brand-preview__patient {
+	align-items: center;
+	display: flex;
+	gap: 10px;
+}
+.lemn-brand-preview__waitlist {
+	align-items: center;
+	display: flex;
+	gap: 16px;
+	justify-content: space-between;
+	padding: 18px;
+}
+.lemn-brand-preview__waitlist > span {
+	align-items: center;
+	display: flex;
+	gap: 10px;
+}
+.lemn-brand-preview__booking-card form {
+	display: grid;
+	gap: 14px;
+}
+.lemn-brand-preview__booking-options {
+	border-block: 1px solid var(--lemn-color-border);
+	display: grid;
+	gap: 12px;
+	padding-block: 14px;
+}
+.lemn-brand-preview__booking-options > span {
+	align-items: center;
+	display: flex;
+	gap: 12px;
+	justify-content: space-between;
+}
+.lemn-brand-preview__check {
+	justify-content: flex-start;
+}
+.lemn-brand-preview__form-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+.lemn-brand-preview__signal-card > .ui-card__body {
+	align-items: center;
+	display: grid;
+	gap: 20px;
+	grid-template-columns: minmax(0, 1fr) minmax(160px, 240px);
+}
+.lemn-brand-preview__signal-card > .ui-card__body > div {
+	align-items: center;
+	display: flex;
+	gap: 16px;
+	justify-content: space-between;
+}
+
+@container brand-preview (max-width: 980px) {
+	.lemn-brand-preview__app {
+		grid-template-columns: 68px minmax(0, 1fr);
+	}
+	.lemn-brand-preview__sidebar {
+		align-items: center;
+		padding-inline: 10px;
+	}
+	.lemn-brand-preview__brand > span:last-child,
+	.lemn-brand-preview__sidebar-note > span {
+		display: none;
+	}
+	.lemn-brand-preview__nav button {
+		font-size: 0;
+		justify-content: center;
+		padding-inline: 10px;
+	}
+	.lemn-brand-preview__nav button .ui-icon {
+		font-size: initial;
+	}
+	.lemn-brand-preview__sidebar-note {
+		justify-content: center;
+		padding: 10px;
+	}
+	.lemn-brand-preview__analytics-grid,
+	.lemn-brand-preview__operations-grid {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+@container brand-preview (max-width: 680px) {
+	.lemn-brand-preview__app {
+		display: block;
+	}
+	.lemn-brand-preview__sidebar {
+		display: none;
+	}
+	.lemn-brand-preview__topbar {
+		justify-content: space-between;
+		padding-inline: 14px;
+	}
+	.lemn-brand-preview__mobile-brand {
+		display: flex;
+	}
+	.lemn-brand-preview__mobile-brand .lemn-brand-preview__brand-mark {
+		flex-basis: 30px;
+		inline-size: 30px;
+		min-block-size: 30px;
+	}
+	.lemn-brand-preview__content {
+		gap: 14px;
+		padding: 14px;
+	}
+	.lemn-brand-preview__content .ui-page-header {
+		align-items: stretch;
+		flex-direction: column;
+	}
+	.lemn-brand-preview__content .ui-page-header__actions,
+	.lemn-brand-preview__content .ui-page-header__actions .ui-button {
+		inline-size: 100%;
+	}
+	.lemn-brand-preview__card-heading {
+		align-items: stretch;
+		flex-direction: column;
+	}
+	.lemn-brand-preview__card-heading .ui-segmented-control {
+		inline-size: 100%;
+	}
+	.lemn-brand-preview__signal-card > .ui-card__body {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+@container brand-preview (max-width: 460px) {
+	.lemn-brand-preview__topbar-actions > .ui-badge,
+	.lemn-brand-preview__topbar-actions > .ui-icon-button {
+		display: none;
+	}
+	.lemn-brand-preview__content .ui-stats-strip__cell {
+		flex-basis: 50%;
+	}
+	.lemn-brand-preview__content .ui-stats-strip__cell:nth-child(3)::before {
+		display: none;
+	}
+	.lemn-brand-preview__form-actions .ui-button,
+	.lemn-brand-preview__waitlist .ui-button {
+		inline-size: 100%;
+	}
+	.lemn-brand-preview__waitlist {
+		align-items: stretch;
+		flex-direction: column;
+	}
 }
 
 @media (max-width: 1120px) {
