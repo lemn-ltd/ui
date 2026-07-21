@@ -1,0 +1,18 @@
+{
+	"extends": "../../tsconfig.base.json",
+	"compilerOptions": {
+		"allowImportingTsExtensions": true,
+		"declaration": false,
+		"declarationMap": false,
+		"lib": ["ES2023", "DOM", "DOM.Iterable"],
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
+		"noEmit": true,
+		"types": ["node"]
+	},
+	"include": [
+		"deployment-smoke.ts",
+		"ui-portal-production-rollout.ts",
+		"zero-trust-posture.ts"
+	]
+}

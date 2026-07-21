@@ -3002,6 +3002,7 @@ async function settlePriorBootstrapIfRequired(
 			expected: priorState.expected,
 			access: input.access,
 			accessAudiences: input.accessAudiences,
+			edgeAccessEnabled: input.edgeAccessEnabled,
 		},
 		priorVersion,
 		priorState,

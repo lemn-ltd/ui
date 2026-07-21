@@ -17,22 +17,42 @@ test("the production smoke posture accepts only the exact project contract", asy
 	);
 	const manifest = JSON.parse(source) as Record<string, unknown>;
 	const enabled = structuredClone(manifest) as {
-		environments: { production: { enabled: boolean } };
+		environments: {
+			production: {
+				enabled: boolean;
+				applications: Array<{ id: string; enabled?: boolean }>;
+			};
+		};
 	};
 	enabled.environments.production.enabled = true;
 	assert.equal(
 		parseProductionPortalEdgeAccessEnabled(JSON.stringify(enabled)),
 		true,
 	);
+	const disabledPortal = structuredClone(enabled);
+	disabledPortal.environments.production.applications[0] = {
+		...disabledPortal.environments.production.applications[0],
+		enabled: false,
+	};
+	assert.equal(
+		parseProductionPortalEdgeAccessEnabled(JSON.stringify(disabledPortal)),
+		false,
+	);
+	const missingPortal = structuredClone(enabled);
+	missingPortal.environments.production.applications[0] = {
+		...missingPortal.environments.production.applications[0],
+		id: "another-application",
+	};
 
 	for (const invalid of [
 		{},
 		{ ...manifest, version: 2 },
 		{ ...manifest, projectId: "another-project" },
+		missingPortal,
 	]) {
 		assert.throws(
 			() => parseProductionPortalEdgeAccessEnabled(JSON.stringify(invalid)),
-			/valid production posture/u,
+			/valid production posture|configuration\./u,
 		);
 	}
 });

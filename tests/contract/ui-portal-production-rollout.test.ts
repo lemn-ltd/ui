@@ -466,8 +466,10 @@ function fakePlatform(
 			},
 			async smokeProtected(smokeInput: {
 				credentials: typeof input.access;
+				edgeAccessEnabled: boolean;
 				expected?: typeof expected;
 			}) {
+				assert.equal(smokeInput.edgeAccessEnabled, input.edgeAccessEnabled);
 				events.push(
 					`protected:${smokeInput.credentials.clientId}:${smokeInput.expected?.gitSha ?? "capture"}`,
 				);
@@ -482,8 +484,10 @@ function fakePlatform(
 			},
 			async smokeProduction(smokeInput: {
 				access: typeof input.access;
+				edgeAccessEnabled: boolean;
 				portalVersionId?: string;
 			}) {
+				assert.equal(smokeInput.edgeAccessEnabled, input.edgeAccessEnabled);
 				events.push(
 					`production:${smokeInput.access.clientId}:${smokeInput.portalVersionId ?? "active"}`,
 				);
@@ -803,13 +807,18 @@ function fakeBootstrapPlatform(
 			if (spec === cloudflareMappingSmokeCommand) return "";
 			throw new Error(`Unexpected bootstrap command: ${commandLabel(spec)}`);
 		},
-		async smokeProtected() {
+		async smokeProtected(smokeInput: { edgeAccessEnabled: boolean }) {
+			assert.equal(smokeInput.edgeAccessEnabled, input.edgeAccessEnabled);
 			if (options.stopAfterRecovery) throw options.stopAfterRecovery;
 			throw new Error(
 				"Bootstrap must not capture a nonexistent protected baseline",
 			);
 		},
-		async smokeProduction(smokeInput: { portalVersionId?: string }) {
+		async smokeProduction(smokeInput: {
+			edgeAccessEnabled: boolean;
+			portalVersionId?: string;
+		}) {
+			assert.equal(smokeInput.edgeAccessEnabled, input.edgeAccessEnabled);
 			events.push(
 				smokeInput.portalVersionId ? "smoke:candidate" : "smoke:active",
 			);

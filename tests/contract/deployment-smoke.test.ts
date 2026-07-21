@@ -47,6 +47,7 @@ test("build identity rejects stale release fields and wrong packages", () => {
 function fixture(
 	options: {
 		anonymousHealthStatus?: 200 | 302 | 401 | 403;
+		disabledBoundaryStatus?: 302 | 401 | 403;
 		edgeAccessEnabled?: boolean;
 		staleDeepIdentity?: boolean;
 		staleDocsIdentity?: boolean;
@@ -71,6 +72,13 @@ function fixture(
 			versionOverride: headers.get("cloudflare-workers-version-overrides"),
 			redirect: init?.redirect,
 		});
+		const disabledBoundaryResponse = () => {
+			const status = options.disabledBoundaryStatus ?? 401;
+			return new Response(null, {
+				status,
+				headers: status === 302 ? { location: accessLogin } : undefined,
+			});
+		};
 
 		if (url === "https://ui.le-mn.com/") {
 			return new Response("<title>UI</title>");
@@ -140,7 +148,7 @@ function fixture(
 				"https://portal.ui.le-mn.com/admin-assets/access-boundary-probe.js"
 		) {
 			if (options.edgeAccessEnabled === false) {
-				return new Response(null, { status: 401 });
+				return disabledBoundaryResponse();
 			}
 			return new Response(null, {
 				status: 302,
@@ -149,7 +157,7 @@ function fixture(
 		}
 		if (url === "https://portal.ui.le-mn.com/api/admin/session") {
 			if (options.edgeAccessEnabled === false) {
-				return new Response(null, { status: 401 });
+				return disabledBoundaryResponse();
 			}
 			if (
 				headers.get("cf-access-client-id") === access.clientId &&
@@ -171,7 +179,7 @@ function fixture(
 		}
 		if (url === "https://portal.ui.le-mn.com/health/deep") {
 			if (options.edgeAccessEnabled === false) {
-				return new Response(null, { status: 401 });
+				return disabledBoundaryResponse();
 			}
 			if (
 				headers.get("cf-access-client-id") !== access.clientId ||
@@ -292,6 +300,20 @@ test("disabled edge Access preserves origin denial and verifies the public immut
 			retryOptions: { attempts: 1, delayMs: 0 },
 		}),
 		/stale version/u,
+	);
+
+	await assert.rejects(
+		smokePortalProductionDeployment({
+			expected,
+			access,
+			edgeAccessEnabled: false,
+			fetchImplementation: fixture({
+				disabledBoundaryStatus: 302,
+				edgeAccessEnabled: false,
+			}).fetchImplementation,
+			retryOptions: { attempts: 1, delayMs: 0 },
+		}),
+		/expected a direct origin denial/u,
 	);
 });
 

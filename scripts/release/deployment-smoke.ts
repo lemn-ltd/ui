@@ -186,6 +186,13 @@ function assertServiceAccessBoundary(
 	);
 }
 
+function assertOriginDenied(response: Response, endpoint: string): void {
+	assert(
+		response.status === 401 || response.status === 403,
+		`${endpoint} returned HTTP ${response.status}; expected a direct origin denial while edge Access is disabled`,
+	);
+}
+
 function assertServiceAdminDenied(response: Response, endpoint: string): void {
 	if (response.status === 302) {
 		assertAccessRedirect(response, endpoint);
@@ -272,7 +279,11 @@ export async function smokePortalServiceAccess(input: {
 				redirect: "manual",
 				signal: requestSignal(input.signal),
 			});
-			assertServiceAccessBoundary(response, endpoint);
+			if (input.edgeAccessEnabled) {
+				assertServiceAccessBoundary(response, endpoint);
+			} else {
+				assertOriginDenied(response, endpoint);
+			}
 		},
 		retryOptions,
 		input.signal,
@@ -321,7 +332,7 @@ export async function smokePortalServiceAccess(input: {
 				});
 				const body = await responseBody(response);
 				assertNoCredentialExposure(response, body, credentials, endpoint);
-				assertServiceAccessBoundary(response, endpoint);
+				assertOriginDenied(response, endpoint);
 			},
 			retryOptions,
 			input.signal,
@@ -372,7 +383,11 @@ export async function smokePortalServiceAccess(input: {
 			});
 			const body = await responseBody(response);
 			assertNoCredentialExposure(response, body, credentials, adminEndpoint);
-			assertServiceAdminDenied(response, adminEndpoint);
+			if (input.edgeAccessEnabled) {
+				assertServiceAdminDenied(response, adminEndpoint);
+			} else {
+				assertOriginDenied(response, adminEndpoint);
+			}
 		},
 		retryOptions,
 		input.signal,
@@ -402,7 +417,7 @@ export async function smokePortalAdminBoundary(input: {
 				if (input.edgeAccessEnabled) {
 					assertAccessRedirect(response, endpoint);
 				} else {
-					assertServiceAccessBoundary(response, endpoint);
+					assertOriginDenied(response, endpoint);
 				}
 			},
 			retryOptions,

@@ -179,29 +179,32 @@ describe("Lemn UI Portal Worker public contracts", () => {
 	});
 
 	it.each([
-		["/catalog.json", "application/json"],
-		["/provider-registry.json", "application/json"],
-		["/blocks.json", "application/json"],
-		["/llms.txt", "text/plain"],
-		["/llms-full.txt", "text/plain"],
-	])("serves the exact machine contract %s with GET and HEAD", async (path, type) => {
+		["/release.json", "application/json", "no-store"],
+		["/catalog.json", "application/json", "max-age=300"],
+		["/provider-registry.json", "application/json", "max-age=300"],
+		["/blocks.json", "application/json", "max-age=300"],
+		["/llms.txt", "text/plain", "max-age=300"],
+		["/llms-full.txt", "text/plain", "max-age=300"],
+	])("serves the exact machine contract %s with GET and HEAD", async (path, type, cacheControl) => {
 		const worker = createWorker();
 		const response = await worker.fetch(request(path));
 		const head = await worker.fetch(request(path, { method: "HEAD" }));
 
 		expect(response.status).toBe(200);
 		expect(response.headers.get("content-type")).toContain(type);
-		expect(response.headers.get("cache-control")).toContain("max-age=300");
+		expect(response.headers.get("cache-control")).toContain(cacheControl);
 		expect(head.status).toBe(200);
 		expect(head.headers.get("content-type")).toContain(type);
+		expect(head.headers.get("cache-control")).toContain(cacheControl);
 		expect(await head.text()).toBe("");
 	});
 
-	it("returns Problem Details and an Allow contract for invalid machine methods", async () => {
+	it.each([
+		"/catalog.json",
+		"/release.json",
+	])("returns Problem Details and an Allow contract for invalid methods on %s", async (path) => {
 		const worker = createWorker();
-		const response = await worker.fetch(
-			request("/catalog.json", { method: "POST" }),
-		);
+		const response = await worker.fetch(request(path, { method: "POST" }));
 
 		expect(response.status).toBe(405);
 		expect(response.headers.get("allow")).toBe("GET, HEAD");

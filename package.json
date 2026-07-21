@@ -9,11 +9,12 @@
 	"scripts": {
 		"build": "turbo run build",
 		"check": "turbo run check",
+		"check:release-scripts": "tsc --noEmit -p scripts/release/tsconfig.json",
 		"check:zero-trust": "tsc --noEmit -p tooling/tsconfig.json",
 		"test": "turbo run test",
 		"test:zero-trust": "node --test tooling/tests/unit/ops/reconcile-zero-trust.test.ts",
 		"visual:update:linux": "node scripts/test/update-linux-visual-snapshots.mjs",
-		"validate": "pnpm validate:agentops && pnpm validate:script-catalog && pnpm check:zero-trust && pnpm test:zero-trust && pnpm validate:identity && pnpm validate:domains && pnpm validate:package-identity && pnpm validate:brand-neutrality && pnpm validate:branding-vnext && pnpm validate:boundaries && pnpm validate:bundles && pnpm validate:ui-portal-zero-legacy && pnpm validate:release && pnpm validate:release-contracts",
+		"validate": "pnpm validate:agentops && pnpm validate:script-catalog && pnpm check:zero-trust && pnpm check:release-scripts && pnpm test:zero-trust && pnpm validate:identity && pnpm validate:domains && pnpm validate:package-identity && pnpm validate:brand-neutrality && pnpm validate:branding-vnext && pnpm validate:boundaries && pnpm validate:bundles && pnpm validate:ui-portal-zero-legacy && pnpm validate:release && pnpm validate:release-contracts",
 		"validate:agentops": "node scripts/check-agentops-managed-files.mjs",
 		"validate:script-catalog": "node --test tests/contract/script-catalog.test.ts",
 		"validate:identity": "node scripts/check-repository-identity.mjs",

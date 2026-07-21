@@ -45,6 +45,11 @@
 					"category": "check",
 					"ciUsage": [".github/workflows/ci-cd.yml"]
 				},
+				"check:release-scripts": {
+					"command": "tsc --noEmit -p scripts/release/tsconfig.json",
+					"category": "check",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
 				"check:zero-trust": {
 					"command": "tsc --noEmit -p tooling/tsconfig.json",
 					"category": "check",
@@ -68,7 +73,7 @@
 					"ciUsage": [".github/workflows/refresh-linux-visual-baselines.yml"]
 				},
 				"validate": {
-					"command": "pnpm validate:agentops && pnpm validate:script-catalog && pnpm check:zero-trust && pnpm test:zero-trust && pnpm validate:identity && pnpm validate:domains && pnpm validate:package-identity && pnpm validate:brand-neutrality && pnpm validate:branding-vnext && pnpm validate:boundaries && pnpm validate:bundles && pnpm validate:ui-portal-zero-legacy && pnpm validate:release && pnpm validate:release-contracts",
+					"command": "pnpm validate:agentops && pnpm validate:script-catalog && pnpm check:zero-trust && pnpm check:release-scripts && pnpm test:zero-trust && pnpm validate:identity && pnpm validate:domains && pnpm validate:package-identity && pnpm validate:brand-neutrality && pnpm validate:branding-vnext && pnpm validate:boundaries && pnpm validate:bundles && pnpm validate:ui-portal-zero-legacy && pnpm validate:release && pnpm validate:release-contracts",
 					"category": "check",
 					"ciUsage": [".github/workflows/ci-cd.yml"]
 				},
