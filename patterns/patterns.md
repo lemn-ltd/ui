@@ -4038,6 +4038,192 @@ Before adding dependency:
 ```
 
 ---
+id: PAT-CLOUDFLARE-ACCESS-PER-PROJECT-001
+domain: CLOUDFLARE
+category: ACCESS_RECONCILIATION
+version: 1
+description: Use this pattern when a project owns Cloudflare Access applications or needs Zero Trust to vary by environment.
+precedence_level: 4
+depends_on:
+  - PAT-CLOUDFLARE-WRANGLER-CONFIG-001
+  - PAT-INFRA-RESOURCE-CONTRACT-001
+  - PAT-CODE-SCRIPT-GOVERNANCE-001
+  - PAT-SEC-RISK-001
+  - PAT-OPS-LEAST-PRIVILEGE-001
+  - PAT-TEST-MEANINGFUL-001
+  - PAT-TEST-EVIDENCE-001
+applies_when:
+  - "A project owns Cloudflare Access applications, path boundaries, human policies, or service policies."
+  - "Zero Trust must be enabled or disabled independently per project and environment."
+---
+
+
+## Strategy
+
+Keep Zero Trust declarative, project-owned, and independent. Each repository
+stores one strict versioned manifest and one reconciler under `tooling/`.
+The manifest describes environments, source branches, applications, protected
+path boundaries, identity policies, anonymous probes, and the expected
+disabled behavior. Cloudflare-generated ids and audiences remain provider
+state.
+
+The reconciler is an idempotent Access control-plane adapter. Existing Worker
+release tooling remains the only deploy authority and consumes the
+reconciler's origin-variable projection; the Access reconciler must not
+silently redeploy Workers.
+
+## Contract
+
+The manifest hierarchy is:
+
+```text
+Project
+  environments.<environment>
+    sourceBranch
+    enabled
+    cloudflare account/team environment-variable references
+    reusable policies
+    applications[]
+      optional enabled override
+      hostname
+      optional origin projection
+      optional public probes
+      boundaries[]
+        paths
+        anonymous probe and optional GET/POST method
+        policy references
+        optional audience variable
+        behavior while disabled
+```
+
+A project may declare any number of environments and applications. Enabling is
+resolved as `environment.enabled && application.enabled !== false`. An
+application boundary becomes one self-hosted Access application so different
+path families may have different audiences and policy types.
+
+## Rules
+
+### Must
+
+- Keep the manifest in `tooling/manifests/infrastructure/zero-trust.json` and
+  the reconciler in `tooling/src/ops/`.
+- Use a strict versioned parser that rejects unknown keys, invalid identifiers,
+  malformed hostnames, wildcard probes, unsupported probe methods, duplicate destinations, unknown policy
+  references, and overlapping boundaries.
+- Map each declared environment to one exact source branch. Allow read-only
+  plans from any branch, but reject an apply when the CI ref or local Git branch
+  does not match.
+- Resolve account ids, team domains, emails, Access groups, and service-token
+  ids through named environment variables; never commit provider ids or
+  credentials that are environment state.
+- Model human policies as exact emails, approved email domains, or exact Access
+  group ids. Model automation as Service Auth with exact service-token ids.
+- Use stable owned names:
+  `lemn-zt:<projectId>:<environment>:<applicationId>:<boundaryId>`.
+- Plan before mutation, mutate only owned names, re-plan after apply, and claim
+  success only when the second plan is empty.
+- Refuse to mutate a managed application that contains foreign policies, a
+  duplicate managed name, or a destination already owned by a foreign
+  application.
+- When disabled, remove only project-owned Access applications and require each
+  declared probe either to fail closed at the origin with 401/403 or to remain
+  explicitly public.
+- When enabled, prove that anonymous traffic is denied at every protected
+  boundary and that declared public probes remain reachable.
+- Return a sanitized origin projection for enabled flags, issuer, and allocated
+  audiences. Apply that projection through the existing protected Worker
+  release path before production is considered enabled.
+- Keep exactly two operator entry points: a read-only `access:plan` and an
+  explicit `access:apply` guarded by the exact project id.
+- Cover create, update, delete, partial disable, idempotency, branch mismatch,
+  selector resolution, ownership conflicts, invalid manifests, provider
+  failures, and probe verdicts with deterministic tests.
+
+### Must not
+
+- Do not use Bypass policies.
+- Do not use “any valid service token”; name exact service-token ids.
+- Do not store API credentials, service-token secrets, account ids, generated
+  audiences, or personal identities in the repository.
+- Do not provide a broad teardown command. Disabling the manifest and applying
+  it is the teardown.
+- Do not delete applications outside the project's managed prefix.
+- Do not treat absence of Access as authorization. Protected origins must
+  continue to verify authorization or deny anonymously.
+- Do not make the Access reconciler a second Worker deploy system.
+- Do not claim enabled production proof from anonymous probes alone; human,
+  exact service-token, wrong-audience, and wrong-identity smokes belong to the
+  protected release evidence.
+
+## Decision rules
+
+- If an environment is disabled, identity selector variables are not required;
+  provider credentials are still required to inspect and remove owned edge
+  state.
+- If only one application is disabled inside an enabled environment, delete
+  only that application's owned boundaries.
+- If one hostname needs different identity semantics or audiences, use separate
+  boundaries rather than one broad policy.
+- If a route must stay public while Access is disabled, declare
+  `whenDisabled: public` and add a public probe; otherwise prefer
+  `origin-deny`.
+- If Worker variables need to change, feed the returned origin projection into
+  the repository's existing release command and verify the Worker before
+  applying or announcing the edge state.
+- If legacy unowned Access applications overlap the desired destinations,
+  inventory them and perform one explicit, reviewed migration; never adopt or
+  delete them heuristically.
+
+## Allowed exceptions
+
+- A one-time legacy migration may delete an exact inventoried Access
+  application after its destination, policies, consumers, and rollback path
+  are recorded. The normal reconciler remains prefix-scoped.
+- A public-only application may omit an origin projection when it has an
+  independent, documented origin authorization model.
+
+## Example
+
+```json
+{
+  "version": 1,
+  "projectId": "example-project",
+  "environments": {
+    "production": {
+      "sourceBranch": "main",
+      "enabled": false,
+      "cloudflare": {
+        "accountIdEnv": "CLOUDFLARE_ACCOUNT_ID",
+        "teamDomainEnv": "CLOUDFLARE_ACCESS_TEAM_DOMAIN"
+      },
+      "policies": {
+        "operators": {
+          "type": "human",
+          "emailsEnv": "ACCESS_ALLOWED_EMAILS"
+        }
+      },
+      "applications": [
+        {
+          "id": "dashboard",
+          "hostname": "dashboard.example.com",
+          "boundaries": [
+            {
+              "id": "admin",
+              "paths": ["/admin", "/admin/*"],
+              "probePath": "/admin/session",
+              "policyIds": ["operators"],
+              "whenDisabled": "origin-deny"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+```
+
+
+---
 id: PAT-CLOUDFLARE-DURABLE-OBJECTS-001
 domain: CLOUDFLARE
 category: DURABLE_OBJECTS

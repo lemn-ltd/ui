@@ -1,0 +1,63 @@
+{
+	"version": 1,
+	"projectId": "lemn-ui",
+	"environments": {
+		"production": {
+			"sourceBranch": "main",
+			"enabled": false,
+			"cloudflare": {
+				"accountIdEnv": "CLOUDFLARE_ACCOUNT_ID",
+				"teamDomainEnv": "CLOUDFLARE_ACCESS_TEAM_DOMAIN"
+			},
+			"policies": {
+				"portal-admin-human": {
+					"type": "human",
+					"emailsEnv": "UI_PORTAL_ACCESS_ALLOWED_EMAILS"
+				},
+				"portal-health-service": {
+					"type": "service",
+					"serviceTokenIdsEnv": "UI_PORTAL_HEALTH_ACCESS_SERVICE_TOKEN_IDS",
+					"requireServiceAuth401": true
+				}
+			},
+			"applications": [
+				{
+					"id": "portal",
+					"hostname": "portal.ui.le-mn.com",
+					"sessionDuration": "24h",
+					"origin": {
+						"workerName": "lemn-ui-portal",
+						"enabledVariable": "EDGE_ACCESS_ENABLED",
+						"issuerVariable": "ACCESS_ISSUER"
+					},
+					"publicProbePaths": ["/", "/health"],
+					"boundaries": [
+						{
+							"id": "admin",
+							"paths": [
+								"/admin",
+								"/admin/*",
+								"/api/admin",
+								"/api/admin/*",
+								"/admin-assets",
+								"/admin-assets/*"
+							],
+							"probePath": "/api/admin/session",
+							"policyIds": ["portal-admin-human"],
+							"audienceVariable": "ACCESS_AUDIENCE",
+							"whenDisabled": "origin-deny"
+						},
+						{
+							"id": "deep-health",
+							"paths": ["/health/deep"],
+							"probePath": "/health/deep",
+							"policyIds": ["portal-health-service"],
+							"audienceVariable": "ACCESS_HEALTH_AUDIENCE",
+							"whenDisabled": "origin-deny"
+						}
+					]
+				}
+			]
+		}
+	}
+}

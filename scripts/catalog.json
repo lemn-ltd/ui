@@ -45,8 +45,18 @@
 					"category": "check",
 					"ciUsage": [".github/workflows/ci-cd.yml"]
 				},
+				"check:zero-trust": {
+					"command": "tsc --noEmit -p tooling/tsconfig.json",
+					"category": "check",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
 				"test": {
 					"command": "turbo run test",
+					"category": "test",
+					"ciUsage": [".github/workflows/ci-cd.yml"]
+				},
+				"test:zero-trust": {
+					"command": "node --test tooling/tests/unit/ops/reconcile-zero-trust.test.ts",
 					"category": "test",
 					"ciUsage": [".github/workflows/ci-cd.yml"]
 				},
@@ -58,7 +68,7 @@
 					"ciUsage": [".github/workflows/refresh-linux-visual-baselines.yml"]
 				},
 				"validate": {
-					"command": "pnpm validate:agentops && pnpm validate:script-catalog && pnpm validate:identity && pnpm validate:domains && pnpm validate:package-identity && pnpm validate:brand-neutrality && pnpm validate:branding-vnext && pnpm validate:boundaries && pnpm validate:bundles && pnpm validate:ui-portal-zero-legacy && pnpm validate:release && pnpm validate:release-contracts",
+					"command": "pnpm validate:agentops && pnpm validate:script-catalog && pnpm check:zero-trust && pnpm test:zero-trust && pnpm validate:identity && pnpm validate:domains && pnpm validate:package-identity && pnpm validate:brand-neutrality && pnpm validate:branding-vnext && pnpm validate:boundaries && pnpm validate:bundles && pnpm validate:ui-portal-zero-legacy && pnpm validate:release && pnpm validate:release-contracts",
 					"category": "check",
 					"ciUsage": [".github/workflows/ci-cd.yml"]
 				},
@@ -299,6 +309,23 @@
 					"command": "node scripts/release/release-ref-guard.ts",
 					"category": "release",
 					"environments": ["local", "ci", "production"]
+				},
+				"access:plan": {
+					"command": "node tooling/src/ops/reconcile-zero-trust.ts plan --environment production",
+					"category": "ops",
+					"environments": ["local", "ci", "production"],
+					"requiredSecrets": ["CLOUDFLARE_API_TOKEN"],
+					"requiredVariables": ["CLOUDFLARE_ACCOUNT_ID"]
+				},
+				"access:apply": {
+					"command": "pnpm guard:release:ref && node tooling/src/ops/reconcile-zero-trust.ts apply --environment production --confirm-project lemn-ui",
+					"category": "release",
+					"environments": ["production"],
+					"mutation": "remote",
+					"executionIntent": "guarded",
+					"guardScript": "workspace:guard:release:ref",
+					"requiredSecrets": ["CLOUDFLARE_API_TOKEN"],
+					"requiredVariables": ["CLOUDFLARE_ACCOUNT_ID"]
 				},
 				"release:preflight": {
 					"command": "pnpm guard:release:ref && pnpm validate:release-preconditions",

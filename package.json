@@ -9,9 +9,11 @@
 	"scripts": {
 		"build": "turbo run build",
 		"check": "turbo run check",
+		"check:zero-trust": "tsc --noEmit -p tooling/tsconfig.json",
 		"test": "turbo run test",
+		"test:zero-trust": "node --test tooling/tests/unit/ops/reconcile-zero-trust.test.ts",
 		"visual:update:linux": "node scripts/test/update-linux-visual-snapshots.mjs",
-		"validate": "pnpm validate:agentops && pnpm validate:script-catalog && pnpm validate:identity && pnpm validate:domains && pnpm validate:package-identity && pnpm validate:brand-neutrality && pnpm validate:branding-vnext && pnpm validate:boundaries && pnpm validate:bundles && pnpm validate:ui-portal-zero-legacy && pnpm validate:release && pnpm validate:release-contracts",
+		"validate": "pnpm validate:agentops && pnpm validate:script-catalog && pnpm check:zero-trust && pnpm test:zero-trust && pnpm validate:identity && pnpm validate:domains && pnpm validate:package-identity && pnpm validate:brand-neutrality && pnpm validate:branding-vnext && pnpm validate:boundaries && pnpm validate:bundles && pnpm validate:ui-portal-zero-legacy && pnpm validate:release && pnpm validate:release-contracts",
 		"validate:agentops": "node scripts/check-agentops-managed-files.mjs",
 		"validate:script-catalog": "node --test tests/contract/script-catalog.test.ts",
 		"validate:identity": "node scripts/check-repository-identity.mjs",
@@ -42,6 +44,8 @@
 		"preflight:cloudflare:release": "node scripts/release/cloudflare-preflight.ts",
 		"guard:release:ref": "node scripts/release/release-ref-guard.ts",
 		"guard:release:mutation": "node scripts/release/release-mutation-guard.ts",
+		"access:plan": "node tooling/src/ops/reconcile-zero-trust.ts plan --environment production",
+		"access:apply": "pnpm guard:release:ref && node tooling/src/ops/reconcile-zero-trust.ts apply --environment production --confirm-project lemn-ui",
 		"release:preflight": "pnpm guard:release:ref && pnpm validate:release-preconditions",
 		"publish:packages:verify": "pnpm guard:release:ref && node scripts/release/verify-package-dists.ts && pnpm pack:packages",
 		"publish:packages:release": "pnpm guard:release:ref && node scripts/release/publish-package-release.ts",
@@ -57,6 +61,7 @@
 		"release": "pnpm release:preflight && pnpm check && pnpm test && pnpm build:packages:release && pnpm publish:packages:release"
 	},
 	"devDependencies": {
+		"@types/node": "catalog:",
 		"@changesets/cli": "2.29.7",
 		"@biomejs/biome": "catalog:",
 		"@playwright/test": "catalog:",

@@ -288,3 +288,16 @@ The temporary Global API Key use is separately recorded under
 `PAT-OPS-LEAST-PRIVILEGE-001`. This focused result does not calculate or change
 any domain `current_level`; all remain `unassessed` until a full precedence
 audit.
+
+### Project Zero Trust disabled state — 2026-07-21
+
+`PAT-CLOUDFLARE-ACCESS-PER-PROJECT-001` is implemented through the strict
+project manifest, Cloudflare Access adapter, exactly two operator commands,
+and 39 deterministic checks. The live `main -> production` plan and apply both
+converged with zero actions while Admin and deep health returned origin 401 and
+the public Portal routes returned 200. The focused receipt is
+`docs/evidence/zero-trust-disabled-2026-07-21.md`.
+
+This records only the requested disabled state. It does not claim the human,
+service-token, wrong-identity, or wrong-audience production matrix required
+when Access is enabled, and it does not change any domain `current_level`.

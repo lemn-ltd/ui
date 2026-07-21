@@ -27,6 +27,12 @@ const portalRoot = resolve(root, "apps/ui-portal");
 const playwrightCli = resolve(root, "node_modules/@playwright/test/cli.js");
 const accessibilityShardTotal = 4;
 const componentTitlePrefix = "component accessibility: ";
+const brandStudioAccessibilityTitles = [
+	"has no serious accessibility violations and remains operable in desktop dark",
+	"has no serious accessibility violations and remains operable in desktop light",
+	"has no serious accessibility violations and remains operable in mobile dark",
+	"has no serious accessibility violations and remains operable in mobile light",
+] as const;
 
 function array(value: unknown, description: string): unknown[] {
 	assert.ok(Array.isArray(value), `${description} must be an array`);
@@ -180,9 +186,15 @@ test("native accessibility shards are complete, disjoint, bounded, and fail clos
 	assert.equal(accessibilityProject.fullyParallel, true);
 
 	const allSpecs = listAccessibilitySpecs();
-	assert.equal(allSpecs.length, COMPONENT_ACCESSIBILITY_CASE_COUNT + 4);
+	assert.equal(allSpecs.length, COMPONENT_ACCESSIBILITY_CASE_COUNT + 8);
 	assert.equal(new Set(allSpecs.map((spec) => spec.id)).size, allSpecs.length);
-	assert.ok(allSpecs.every((spec) => spec.file === "accessibility.e2e.ts"));
+	assert.ok(
+		allSpecs.every(
+			(spec) =>
+				spec.file === "accessibility.e2e.ts" ||
+				spec.file === "brand-studio-accessibility.e2e.ts",
+		),
+	);
 
 	const expectedComponentTitles = componentAccessibilityCases
 		.map(componentAccessibilityTestTitle)
@@ -206,6 +218,14 @@ test("native accessibility shards are complete, disjoint, bounded, and fail clos
 	assert.equal(nonComponentSpec.timeout, 180_000);
 	assert.deepEqual(
 		allSpecs
+			.filter((spec) => spec.file === "brand-studio-accessibility.e2e.ts")
+			.map((spec) => spec.title)
+			.sort(),
+		brandStudioAccessibilityTitles,
+	);
+	assert.deepEqual(
+		allSpecs
+			.filter((spec) => spec.file === "accessibility.e2e.ts")
 			.filter((spec) => !spec.title.startsWith(componentTitlePrefix))
 			.map((spec) => spec.title)
 			.sort(),

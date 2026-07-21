@@ -33,6 +33,15 @@ marker, and positive and negative proof for anonymous, human, and service
 identities. Exact affected Worker and deployment ids and the complete closure
 checklist live in the Phase 2 receipt.
 
+The disabled edge state is now explicit in
+`tooling/manifests/infrastructure/zero-trust.json`: `main` maps to the single
+logical `production` environment and `enabled` is `false`. `pnpm access:plan`
+reads provider drift; `pnpm access:apply` removes only the
+`lemn-zt:lemn-ui:production:*` resources and verifies that Admin and deep
+health still fail closed at origin. It never creates a Bypass policy or changes
+origin authorization. Enabling later is a manifest change followed by the same
+plan/apply gate and the complete identity matrix described below.
+
 ## Service boundary
 
 | Field | Contract |
@@ -61,10 +70,10 @@ staging Worker.
 | `ui-portal-client-assets` | Workers Static Assets | Serves Vite output while the Worker executes first for authorization and host routing | `ASSETS` -> `dist/client` | UI Portal | `wrangler.jsonc`, Vite build |
 | `ui-portal-public-domain` | Cloudflare custom domain / `portal.ui.le-mn.com` | Canonical public Portal and protected path families | Worker custom-domain route | UI Platform | `wrangler.jsonc` |
 | `ui-portal-schema-domain` | Cloudflare custom domain / `schemas.ui.le-mn.com` | Canonical immutable BrandingDefinition JSON Schema only | Worker custom-domain route | Branding Contract + UI Platform operations | `wrangler.jsonc`, schema handler |
-| `ui-portal-admin-access-app` | Cloudflare Access self-hosted application | Human authentication for Admin HTML, API, and exclusive chunks | `portal.ui.le-mn.com` path families `/admin`, `/api/admin`, `/admin-assets` and descendants | UI Platform security | Cloudflare Access configuration; audience projected through the protected GitHub Environment |
-| `ui-portal-admin-allow-policy` | Cloudflare Access Allow policy | Grants the single normalized `portal-admin` capability to approved human identities | Human Access application | UI Platform security | Cloudflare Access configuration |
-| `ui-portal-health-access-app` | Cloudflare Access self-hosted application | Isolates deep operational health from human Admin access | `portal.ui.le-mn.com/health/deep` | UI Platform security | Cloudflare Access configuration; dedicated audience projected through the protected GitHub Environment |
-| `ui-portal-health-service-policy` | Cloudflare Access Service Auth policy | Allows only the release health identity to reach deep health | Health Access application | UI Platform security | Cloudflare Access configuration |
+| `ui-portal-admin-access-app` | Cloudflare Access self-hosted application | Human authentication for Admin HTML, API, and exclusive chunks | `portal.ui.le-mn.com` path families `/admin`, `/api/admin`, `/admin-assets` and descendants | UI Platform security | Zero Trust manifest and reconciler; allocated audience is provider state projected through the protected GitHub Environment |
+| `ui-portal-admin-allow-policy` | Cloudflare Access Allow policy | Grants the single normalized `portal-admin` capability to approved human identities | Human Access application | UI Platform security | Zero Trust manifest plus exact selector environment input |
+| `ui-portal-health-access-app` | Cloudflare Access self-hosted application | Isolates deep operational health from human Admin access | `portal.ui.le-mn.com/health/deep` | UI Platform security | Zero Trust manifest and reconciler; allocated audience is provider state projected through the protected GitHub Environment |
+| `ui-portal-health-service-policy` | Cloudflare Access Service Auth policy | Allows only the release health identity to reach deep health | Health Access application | UI Platform security | Zero Trust manifest plus exact service-token-id environment input |
 | `ui-portal-release-health-service-token` | Cloudflare Access service token | Production release smoke identity; never a browser identity | `CF-Access-Client-Id` and `CF-Access-Client-Secret` at the CI boundary | UI Platform release operations | Cloudflare Access plus protected GitHub Environment secrets |
 
 No consumer may create another name for one of these resources. Provider ids,
@@ -196,6 +205,8 @@ the release preflight confirms the same account ownership with
 | Access JWT verification and normalized identities | [`src/worker/access.ts`](../../src/worker/access.ts) |
 | Admin and deep-health capabilities | [`src/worker/admin/routes.ts`](../../src/worker/admin/routes.ts) |
 | Release permissions and environment projection | [`.github/workflows/ci-cd.yml`](../../../../.github/workflows/ci-cd.yml) |
+| Access desired state, boundaries, policy references, branch mapping, and disabled behavior | [`tooling/manifests/infrastructure/zero-trust.json`](../../../../tooling/manifests/infrastructure/zero-trust.json) |
+| Access validation, provider reconciliation, sanitized audience projection, and probes | [`tooling/src/ops/reconcile-zero-trust.ts`](../../../../tooling/src/ops/reconcile-zero-trust.ts) |
 | Bootstrap, candidate upload, switch, smoke, and rollback | [`scripts/release/ui-portal-production-rollout.ts`](../../../../scripts/release/ui-portal-production-rollout.ts) |
 | Cloudflare account/zone preflight | [`scripts/release/cloudflare-preflight.ts`](../../../../scripts/release/cloudflare-preflight.ts) |
 | Public and service-identity production assertions | [`scripts/release/deployment-smoke.ts`](../../../../scripts/release/deployment-smoke.ts) |

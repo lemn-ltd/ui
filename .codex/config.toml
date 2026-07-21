@@ -4,3 +4,9 @@
 url = "https://agentops.le-mn.com/mcp"
 bearer_token_env_var = "AGENTOPS_MCP_TOKEN"
 http_headers = { "MCP-Protocol-Version" = "2025-11-25" }
+
+[mcp_servers.ui_branding]
+url = "https://branding-mcp.agentops.le-mn.com/mcp"
+bearer_token_env_var = "BRANDING_MCP_ACCESS_TOKEN"
+http_headers = { "MCP-Protocol-Version" = "2025-11-25" }
+env_http_headers = { "CF-Access-Client-Id" = "CODEX_LOCAL_ACCESS_CLIENT_ID", "CF-Access-Client-Secret" = "CODEX_LOCAL_ACCESS_CLIENT_SECRET" }
