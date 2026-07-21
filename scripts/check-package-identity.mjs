@@ -214,7 +214,7 @@ assert(
 	".npmrc must map the @lemn-ltd scope to GitHub Packages",
 );
 assert(
-	workflow.match(/scope: "@lemn-ltd"/gu)?.length === 4,
+	workflow.match(/scope: "@lemn-ltd"/gu)?.length === 5,
 	"All CI jobs must configure setup-node for the @lemn-ltd registry scope",
 );
 assert(
