@@ -285,9 +285,11 @@ function beginDiagnosticWindow(diagnostics: PageDiagnostics): DiagnosticWindow {
 		throw new Error("cannot navigate a closed deterministic page");
 	}
 	if (diagnostics.activeWindow) {
-		throw new Error("gotoStable already owns this page diagnostics lifecycle");
+		throw new Error(
+			"deterministic navigation already owns this page diagnostics lifecycle",
+		);
 	}
-	const token = Symbol("gotoStable diagnostics");
+	const token = Symbol("deterministic route diagnostics");
 	diagnostics.activeWindow = token;
 	return { token };
 }
@@ -470,16 +472,11 @@ async function captureGotoStableFailure(
 	}
 }
 
-/**
- * Navigate and wait for a lazily-loaded operational route, fonts, render
- * frames, and a bounded post-ready diagnostics quiet period. Page listeners
- * remain installed until close so delayed work cannot escape between routes.
- * Internal not-found routes require an explicit typed opt-in.
- */
-export async function gotoStable(
+async function gotoPortalRoute(
 	page: Page,
-	path = "/",
-	options: GotoStableOptions = {},
+	path: string,
+	options: GotoStableOptions,
+	waitForPostReadyDiagnostics: boolean,
 ): Promise<void> {
 	const expectedSurface = options.expectedSurface ?? "operational";
 	const expectedSelector =
@@ -544,7 +541,9 @@ export async function gotoStable(
 				requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
 			});
 		});
-		await waitForPostReadyDiagnosticQuiet(diagnostics);
+		if (waitForPostReadyDiagnostics) {
+			await waitForPostReadyDiagnosticQuiet(diagnostics);
+		}
 		if (diagnostics.disposed) return;
 		if (hasDiagnosticFailures(observedDiagnostics(diagnostics))) {
 			throw new Error("browser diagnostics reported route failures");
@@ -562,4 +561,36 @@ export async function gotoStable(
 		diagnostics.navigationInProgress = false;
 		finishDiagnosticWindow(diagnostics, diagnosticWindow);
 	}
+}
+
+/**
+ * Navigate and wait for a lazily-loaded operational route, fonts, render
+ * frames, and a bounded post-ready diagnostics quiet period. Page listeners
+ * remain installed until close so delayed work cannot escape between routes.
+ * Internal not-found routes require an explicit typed opt-in.
+ *
+ * Use this strict boundary once per public route. Focused suites that perform
+ * substantial assertions after readiness can use `gotoReady` to avoid paying
+ * the same 750 ms diagnostic window repeatedly for the same route.
+ */
+export async function gotoStable(
+	page: Page,
+	path = "/",
+	options: GotoStableOptions = {},
+): Promise<void> {
+	return gotoPortalRoute(page, path, options, true);
+}
+
+/**
+ * Navigate through the same operational/readiness and immediate-diagnostics
+ * contract as `gotoStable`, without duplicating its post-ready quiet period.
+ * This is reserved for focused suites after the route has strict crawl
+ * coverage elsewhere.
+ */
+export async function gotoReady(
+	page: Page,
+	path = "/",
+	options: GotoStableOptions = {},
+): Promise<void> {
+	return gotoPortalRoute(page, path, options, false);
 }

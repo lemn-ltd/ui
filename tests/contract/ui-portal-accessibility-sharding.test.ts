@@ -3,7 +3,9 @@ import { execFileSync, spawnSync } from "node:child_process";
 import { readdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import test from "node:test";
-import playwrightConfig from "../../apps/ui-portal/playwright.config.ts";
+import playwrightConfig, {
+	portalE2eWorkerCount,
+} from "../../apps/ui-portal/playwright.config.ts";
 import {
 	COMPONENT_ACCESSIBILITY_CASE_COUNT,
 	COMPONENT_ACCESSIBILITY_THEMES,
@@ -25,7 +27,7 @@ interface ListedSpec {
 const root = resolve(import.meta.dirname, "../..");
 const portalRoot = resolve(root, "apps/ui-portal");
 const playwrightCli = resolve(root, "node_modules/@playwright/test/cli.js");
-const accessibilityShardTotal = 4;
+const accessibilityShardTotal = 2;
 const componentTitlePrefix = "component accessibility: ";
 const brandStudioAccessibilityTitles = [
 	"has no serious accessibility violations and remains operable in desktop dark",
@@ -144,7 +146,9 @@ test("component accessibility cases exactly cover every catalog route and theme"
 	assert.equal(new Set(catalogRoutes).size, COMPONENT_CATALOG_ROUTE_COUNT);
 	assert.ok(
 		catalogRoutes.every((route) =>
-			/^\/(?:components|visualizations)\/[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(route),
+			/^\/(?:components|visualizations)\/[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(
+				route,
+			),
 		),
 	);
 	assert.deepEqual(
@@ -174,8 +178,10 @@ test("component accessibility cases exactly cover every catalog route and theme"
 });
 
 test("native accessibility shards are complete, disjoint, bounded, and fail closed", () => {
-	assert.equal(playwrightConfig.fullyParallel, false);
-	assert.equal(playwrightConfig.workers, 1);
+	assert.equal(playwrightConfig.fullyParallel, true);
+	assert.equal(portalE2eWorkerCount({}), 4);
+	assert.equal(portalE2eWorkerCount({ CI: "true" }), 2);
+	assert.equal(playwrightConfig.workers, portalE2eWorkerCount(process.env));
 	const accessibilityProject = array(
 		playwrightConfig.projects,
 		"Playwright projects",

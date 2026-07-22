@@ -105,7 +105,7 @@ test("Linux E2E frees disk and runs visual shards in the pinned Playwright image
 
 	assert.equal(e2e["runs-on"], "ubuntu-24.04");
 	assert.equal(e2e.container, undefined);
-	assert.deepEqual(matrix.shard, [1, 2, 3]);
+	assert.deepEqual(matrix.shard, [1, 2]);
 	assert.match(
 		String(step("Free runner disk for pinned Playwright image").run),
 		/docker system prune --all --force/u,
@@ -146,7 +146,8 @@ test("Linux E2E frees disk and runs visual shards in the pinned Playwright image
 	]) {
 		assert.match(run, new RegExp(`--project=${project}(?:\\s|$)`, "u"));
 	}
-	assert.match(run, /--shard=\$\{\{ matrix\.shard \}\}\/3/u);
+	assert.match(run, /--workers=2/u);
+	assert.match(run, /--shard=\$\{\{ matrix\.shard \}\}\/2/u);
 	assert.throws(
 		() => assertE2eRunnerCapacity(0n),
 		/E2E runner disk preflight failed: 0\.00 GiB available; 24\.00 GiB required/u,
@@ -507,7 +508,7 @@ test("Linux snapshot CLI preserves aggregate baselines when Git archive fails", 
 	}
 });
 
-test("test architecture keeps pages isolated, timeouts fixed, and package tests canonical", async () => {
+test("test architecture keeps route cases shardable, pages isolated, and package tests canonical", async () => {
 	const [
 		accessibility,
 		capabilityExpansion,
@@ -548,15 +549,20 @@ test("test architecture keeps pages isolated, timeouts fixed, and package tests 
 		readFile(resolve(root, "apps/ui-portal/tests/e2e/visual.e2e.ts"), "utf8"),
 		readFile(resolve(root, "apps/ui-portal/vitest.config.ts"), "utf8"),
 	]);
-	for (const source of [
+	assert.match(capabilityExpansion, /newDeterministicPage/u);
+	assert.match(
 		capabilityExpansion,
-		documentation,
-		navigation,
-		visual,
-	]) {
-		assert.match(source, /newDeterministicPage/u);
-		assert.match(source, /finally\s*\{[\s\S]*await page\.close\(\)/u);
+		/finally\s*\{[\s\S]*await page\.close\(\)/u,
+	);
+	for (const source of [documentation, navigation, visual]) {
+		assert.match(source, /for \(const entry of catalogComponentRoutes\)/u);
+		assert.doesNotMatch(source, /test\.setTimeout\(900_000\)/u);
 	}
+	assert.match(documentation, /gotoReady\(page, entry\.route\)/u);
+	assert.match(navigation, /strict route health/u);
+	assert.match(navigation, /gotoStable\(page, entry\.route\)/u);
+	assert.match(visual, /responsive contract/u);
+	assert.match(visual, /gotoReady\(/u);
 	assert.match(accessibility, /newIsolatedDeterministicPage/u);
 	assert.doesNotMatch(accessibility, /newDeterministicPage/u);
 	assert.match(
@@ -590,9 +596,6 @@ test("test architecture keeps pages isolated, timeouts fixed, and package tests 
 	assert.match(navigation, /const delay = 500/u);
 	assert.match(navigation, /synthetic failure between stable windows/u);
 	assert.doesNotMatch(capabilityExpansion, /test\.setTimeout\(/u);
-	assert.match(documentation, /test\.setTimeout\(900_000\)/u);
-	assert.match(navigation, /test\.setTimeout\(900_000\)/u);
-	assert.match(visual, /test\.setTimeout\(900_000\)/u);
 
 	const portalKitRoot = resolve(
 		root,

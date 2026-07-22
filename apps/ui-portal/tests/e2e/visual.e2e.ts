@@ -5,11 +5,14 @@ import {
 	gotoReadyAdminBrandStudio,
 	selectPreviewMode,
 } from "../helpers/admin";
-import { componentRoutesFromCatalog } from "../helpers/component-catalog";
+import {
+	catalogComponentRoutes,
+	componentRoutesFromCatalog,
+} from "../helpers/component-catalog";
 import {
 	expect,
+	gotoReady,
 	gotoStable,
-	newDeterministicPage,
 	type Theme,
 	test,
 } from "../helpers/deterministic";
@@ -273,42 +276,31 @@ test("visual: brand studio preview", async ({ page }, testInfo) => {
 	});
 });
 
-test("visual contract: every component is responsive in the active viewport and theme", async ({
-	page: catalogPage,
-	context,
-}, testInfo) => {
-	test.setTimeout(900_000);
-	const routes = await componentRoutesFromCatalog(catalogPage);
-	await catalogPage.close();
-	const expectedTheme = testInfo.project.name.includes("dark")
-		? "dark"
-		: "light";
-
-	for (const entry of routes) {
-		await test.step(entry.route, async () => {
-			const page = await newDeterministicPage(context, testInfo.project.name);
-			try {
-				await gotoStable(
-					page,
-					routeForBrandMode(entry.route, testInfo.project.name),
-				);
-				await expect(page.locator(".portal-brand-scope")).toHaveAttribute(
-					"data-lemn-mode",
-					expectedTheme,
-				);
-				await expect(page.locator(".portal-docs-page")).toBeVisible();
-				const overflow = await page.evaluate(
-					() =>
-						document.documentElement.scrollWidth -
-						document.documentElement.clientWidth,
-				);
-				expect(
-					overflow,
-					`${entry.route} horizontal overflow`,
-				).toBeLessThanOrEqual(1);
-			} finally {
-				await page.close();
-			}
-		});
-	}
+test("responsive inventory matches the runtime catalog", async ({ page }) => {
+	await componentRoutesFromCatalog(page);
 });
+
+for (const entry of catalogComponentRoutes) {
+	test(`responsive contract: ${entry.route}`, async ({ page }, testInfo) => {
+		const expectedTheme = testInfo.project.name.includes("dark")
+			? "dark"
+			: "light";
+		await gotoReady(
+			page,
+			routeForBrandMode(entry.route, testInfo.project.name),
+		);
+		await expect(page.locator(".portal-brand-scope")).toHaveAttribute(
+			"data-lemn-mode",
+			expectedTheme,
+		);
+		await expect(page.locator(".portal-docs-page")).toBeVisible();
+		const overflow = await page.evaluate(
+			() =>
+				document.documentElement.scrollWidth -
+				document.documentElement.clientWidth,
+		);
+		expect(overflow, `${entry.route} horizontal overflow`).toBeLessThanOrEqual(
+			1,
+		);
+	});
+}

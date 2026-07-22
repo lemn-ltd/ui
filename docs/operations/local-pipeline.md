@@ -31,10 +31,25 @@ The pre-push pipeline requires a clean revision. Its transient receipt is
 written to ignored `tooling/artifacts/checks/local-pipeline.json` and contains
 the exact commit that passed.
 
+## Portal browser execution
+
+The complete Playwright profile remains part of `validate:full` and
+`pipeline:local`. It defaults to four bounded workers locally and two workers
+under `CI`; `PLAYWRIGHT_WORKERS=<positive integer>` is the explicit override for
+constrained or diagnostic environments.
+
+Every one of the 102 catalog routes retains one strict navigation health check,
+including the bounded delayed-browser-error window. Documentation,
+accessibility, and responsive contracts reuse the same readiness and immediate
+diagnostics boundary without repeating that fixed quiet period. Route-scale
+contracts are collected as independent tests so Playwright can distribute them
+without hiding failures inside one long loop.
+
 ## GitHub boundary
 
-The validation job calls `pnpm validate:standard`; browser and accessibility
-jobs retain their shard orchestration but are reproduced by `validate:full`.
-The visual-baseline workflow delegates to `pipeline:visual:local`. A push to
-`main` validates only: production release requires manual workflow dispatch and
-the protected `production` environment.
+The validation job calls `pnpm validate:standard`. Validation, two browser
+shards, and two accessibility shards fan out immediately; each browser shard
+uses two bounded workers. The same complete browser and accessibility coverage
+is reproduced by `validate:full`. The visual-baseline workflow delegates to
+`pipeline:visual:local`. A push to `main` validates only: production release
+requires manual workflow dispatch and the protected `production` environment.

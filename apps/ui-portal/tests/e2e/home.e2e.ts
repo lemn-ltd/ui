@@ -160,6 +160,17 @@ test("the branded screen shell follows a viewport resize without exposing the do
 	await page.setViewportSize({ width: 1280, height: 420 });
 	await gotoStable(page, "/");
 	await page.setViewportSize({ width: 1280, height: 900 });
+	await expect
+		.poll(
+			async () => {
+				const shellBottom = await page
+					.locator(".ui-screen-shell")
+					.evaluate((shell) => shell.getBoundingClientRect().bottom);
+				return Math.abs(shellBottom - 900);
+			},
+			{ message: "ScreenShell should track the resized dynamic viewport" },
+		)
+		.toBeLessThanOrEqual(1);
 
 	const geometry = await page.locator(".ui-screen-shell").evaluate((shell) => {
 		const shellRect = shell.getBoundingClientRect();

@@ -90,8 +90,7 @@ jobs:
           VALIDATION_BASE: ${{ github.event.pull_request.base.sha || github.event.before || '' }}
 
   ui-portal-e2e:
-    name: UI Portal E2E (${{ matrix.shard }}/3)
-    needs: validate
+    name: UI Portal E2E (${{ matrix.shard }}/2)
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     permissions:
@@ -100,7 +99,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3]
+        shard: [1, 2]
     steps:
       - uses: actions/checkout@v4
 
@@ -164,15 +163,15 @@ jobs:
               --project=visual-dark-mobile \
               --project=visual-dark-tablet \
               --project=visual-dark-desktop \
-              --shard=${{ matrix.shard }}/3' || status=$?
+              --workers=2 \
+              --shard=${{ matrix.shard }}/2' || status=$?
           sudo chown -R "$(id -u):$(id -g)" \
             apps/ui-portal/test-results \
             apps/ui-portal/playwright-report 2>/dev/null || true
           exit "$status"
 
   ui-portal-accessibility:
-    name: UI Portal Accessibility (${{ matrix.shard }}/4)
-    needs: validate
+    name: UI Portal Accessibility (${{ matrix.shard }}/2)
     runs-on: ubuntu-latest
     timeout-minutes: 25
     permissions:
@@ -181,7 +180,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4]
+        shard: [1, 2]
     steps:
       - uses: actions/checkout@v4
 
@@ -218,7 +217,7 @@ jobs:
         run: pnpm --filter @lemn-ltd/ui-portal exec playwright install --with-deps chromium
 
       - name: Run UI Portal accessibility crawl
-        run: pnpm --filter @lemn-ltd/ui-portal exec playwright test --project=accessibility --shard=${{ matrix.shard }}/4
+        run: pnpm --filter @lemn-ltd/ui-portal exec playwright test --project=accessibility --workers=2 --shard=${{ matrix.shard }}/2
 
   publish-package:
     name: Publish ${{ inputs.package }}

@@ -662,7 +662,7 @@ test("CI and release smoke local portal assets before package publication", () =
 	);
 });
 
-test("the validation gate isolates complete E2E and accessibility shard matrices", () => {
+test("the validation gate fans out complete E2E and accessibility shard matrices", () => {
 	const e2eJob = record(jobs["ui-portal-e2e"], "UI Portal E2E job");
 	const strategy = record(e2eJob.strategy, "portal E2E strategy");
 	const matrix = record(strategy.matrix, "portal E2E matrix");
@@ -675,7 +675,7 @@ test("the validation gate isolates complete E2E and accessibility shard matrices
 	);
 	assert.ok(e2eImagePull);
 	assert.ok(shard);
-	assert.equal(e2eJob.needs, "validate");
+	assert.equal(e2eJob.needs, undefined);
 	assert.equal(e2eJob["runs-on"], "ubuntu-24.04");
 	assert.equal(e2eJob.container, undefined);
 	assert.equal(
@@ -683,7 +683,7 @@ test("the validation gate isolates complete E2E and accessibility shard matrices
 		"docker pull mcr.microsoft.com/playwright:v1.60.0-noble",
 	);
 	assert.equal(strategy["fail-fast"], false);
-	assert.deepEqual(matrix.shard, [1, 2, 3]);
+	assert.deepEqual(matrix.shard, [1, 2]);
 	assert.match(String(shard.run), /docker run --rm --ipc=host/u);
 	assert.match(
 		String(shard.run),
@@ -691,6 +691,8 @@ test("the validation gate isolates complete E2E and accessibility shard matrices
 	);
 	assert.doesNotMatch(String(shard.run), /--grep|visual\.e2e/u);
 	assert.match(String(shard.run), /--project=behavior/u);
+	assert.match(String(shard.run), /--workers=2/u);
+	assert.match(String(shard.run), /--shard=\$\{\{ matrix\.shard \}\}\/2/u);
 	for (const project of [
 		"visual-light-mobile",
 		"visual-light-tablet",
@@ -721,13 +723,13 @@ test("the validation gate isolates complete E2E and accessibility shard matrices
 	);
 	assert.equal(
 		accessibilityJob.name,
-		`UI Portal Accessibility (${expression("matrix.shard")}/4)`,
+		`UI Portal Accessibility (${expression("matrix.shard")}/2)`,
 	);
-	assert.equal(accessibilityJob.needs, "validate");
+	assert.equal(accessibilityJob.needs, undefined);
 	assert.equal(accessibilityJob.container, undefined);
 	assert.equal(accessibilityJob["timeout-minutes"], 25);
 	assert.equal(accessibilityStrategy["fail-fast"], false);
-	assert.deepEqual(accessibilityMatrix.shard, [1, 2, 3, 4]);
+	assert.deepEqual(accessibilityMatrix.shard, [1, 2]);
 	assert.deepEqual(accessibilityPermissions, {
 		contents: "read",
 		packages: "read",
@@ -743,7 +745,8 @@ test("the validation gate isolates complete E2E and accessibility shard matrices
 	assert.ok(crawl);
 	assert.match(String(browserInstall.run), /install --with-deps chromium/u);
 	assert.match(String(crawl.run), /--project=accessibility/u);
-	assert.match(String(crawl.run), /--shard=\$\{\{ matrix\.shard \}\}\/4/u);
+	assert.match(String(crawl.run), /--workers=2/u);
+	assert.match(String(crawl.run), /--shard=\$\{\{ matrix\.shard \}\}\/2/u);
 	assert.doesNotMatch(String(crawl.run), /--grep/u);
 	assert.deepEqual(releaseJob.needs, [
 		"validate",

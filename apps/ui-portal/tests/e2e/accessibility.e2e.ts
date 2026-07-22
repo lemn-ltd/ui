@@ -7,7 +7,7 @@ import {
 } from "../helpers/component-catalog";
 import {
 	expect,
-	gotoStable,
+	gotoReady,
 	newIsolatedDeterministicPage,
 	type Theme,
 	test,
@@ -47,7 +47,7 @@ test.describe("non-component registry accessibility", () => {
 			await newAccessibilityPage(browser, testInfo, "light");
 		let hrefs: string[];
 		try {
-			await gotoStable(catalogPage, "/");
+			await gotoReady(catalogPage, "/");
 			hrefs = await catalogPage
 				.locator('.portal-home a[href^="/"]')
 				.evaluateAll((els) => [
@@ -80,7 +80,7 @@ test.describe("non-component registry accessibility", () => {
 					"light",
 				);
 				try {
-					await gotoStable(page, route);
+					await gotoReady(page, route);
 					const critical = await criticalAxeViolations(page);
 					if (critical.length > 0) {
 						offenders.push(
@@ -127,7 +127,7 @@ test.describe("component catalog accessibility", () => {
 					theme,
 				);
 				try {
-					await gotoStable(page, route);
+					await gotoReady(page, route);
 					await expect(page.locator("html")).toHaveAttribute(
 						"data-theme",
 						theme,
@@ -156,7 +156,7 @@ test("accessibility contexts do not inherit route or theme state", async ({
 	const marker = "portal-accessibility-isolation-probe";
 	const first = await newAccessibilityPage(browser, testInfo, "dark");
 	try {
-		await gotoStable(first.page, "/");
+		await gotoReady(first.page, "/");
 		await first.page.evaluate((key) => {
 			window.localStorage.setItem(key, "leaked");
 		}, marker);
@@ -169,7 +169,7 @@ test("accessibility contexts do not inherit route or theme state", async ({
 
 	const second = await newAccessibilityPage(browser, testInfo, "light");
 	try {
-		await gotoStable(second.page, "/");
+		await gotoReady(second.page, "/");
 		await expect(second.page.locator("html")).toHaveAttribute(
 			"data-theme",
 			"light",
@@ -195,7 +195,7 @@ test("the homepage dialog preserves accessible modal behavior", async ({
 		"light",
 	);
 	try {
-		await gotoStable(page, "/");
+		await gotoReady(page, "/");
 		await page
 			.locator('[data-home-feature="overlays"]')
 			.getByRole("button", { name: "Open dialog" })

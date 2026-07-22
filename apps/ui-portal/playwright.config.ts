@@ -28,6 +28,22 @@ const THEMES = ["light", "dark"] as const;
 const VISUAL_MATCH = /visual\.e2e\.ts/;
 const ACCESSIBILITY_MATCH = /accessibility\.e2e\.ts/;
 
+export function portalE2eWorkerCount(
+	environment: Readonly<Record<string, string | undefined>> = process.env,
+): number {
+	const configured = environment.PLAYWRIGHT_WORKERS;
+	if (configured !== undefined) {
+		const parsed = Number(configured);
+		if (!Number.isSafeInteger(parsed) || parsed < 1) {
+			throw new Error(
+				`PLAYWRIGHT_WORKERS must be a positive integer, received ${JSON.stringify(configured)}`,
+			);
+		}
+		return parsed;
+	}
+	return environment.CI ? 2 : 4;
+}
+
 // Light/Dark x {375,768,1280} = 6 deterministic visual projects; the theme is
 // applied per project by the deterministic test base (keyed off the name).
 const visualProjects = THEMES.flatMap((theme) =>
@@ -48,10 +64,10 @@ export default defineConfig({
 	testMatch: ["**/*.e2e.ts"],
 	snapshotPathTemplate:
 		"{testDir}/{testFilePath}-snapshots/{arg}-{projectName}-{platform}{ext}",
-	fullyParallel: false,
+	fullyParallel: true,
 	forbidOnly: !!process.env.CI,
 	retries: process.env.CI ? 2 : 0,
-	workers: 1,
+	workers: portalE2eWorkerCount(),
 	reporter: process.env.CI ? "github" : [["html", { open: "never" }]],
 	timeout: 120_000,
 	expect: {

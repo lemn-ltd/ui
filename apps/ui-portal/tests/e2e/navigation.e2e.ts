@@ -1,4 +1,7 @@
-import { componentRoutesFromCatalog } from "../helpers/component-catalog";
+import {
+	catalogComponentRoutes,
+	componentRoutesFromCatalog,
+} from "../helpers/component-catalog";
 import {
 	expect,
 	gotoStable,
@@ -7,14 +10,15 @@ import {
 	test,
 } from "../helpers/deterministic";
 
-test("every catalog and homepage documentation link resolves to a rendered page", async ({
-	page: homePage,
-	context,
-}, testInfo) => {
-	test.setTimeout(900_000);
-	await gotoStable(homePage, "/");
+test("navigation inventory matches the runtime catalog", async ({ page }) => {
+	await componentRoutesFromCatalog(page);
+});
 
-	const homepageHrefs = await homePage
+test("every homepage documentation link resolves to a rendered page", async ({
+	page,
+}) => {
+	await gotoStable(page, "/");
+	const homepageHrefs = await page
 		.locator('.portal-home a[href^="/"]')
 		.evaluateAll((els) => [
 			...new Set(
@@ -25,48 +29,32 @@ test("every catalog and homepage documentation link resolves to a rendered page"
 		]);
 	expect(homepageHrefs.length).toBeGreaterThanOrEqual(12);
 
-	const catalogRoutes = await componentRoutesFromCatalog(homePage);
-	const hrefs = [
-		...new Set([
-			...homepageHrefs,
-			...catalogRoutes.map((entry) => entry.route),
-		]),
-	];
-	await homePage.close();
-
-	const broken: string[] = [];
-	for (const href of hrefs) {
+	for (const href of homepageHrefs) {
 		await test.step(href, async () => {
-			const page = await newDeterministicPage(context, testInfo.project.name);
-			const errors: string[] = [];
-			const onError = (error: Error): void => {
-				errors.push(error.message);
-			};
-			page.on("pageerror", onError);
-			try {
-				await gotoStable(page, href);
-				const notFound = await page.locator(".portal-not-found").count();
-				const content = await page.locator(".ui-content-layout").count();
-
-				if (notFound > 0 || content === 0 || errors.length > 0) {
-					const reasons = [
-						notFound > 0 ? "not-found" : "",
-						content === 0 ? "no content-layout" : "",
-						errors.length > 0 ? `error: ${errors[0]}` : "",
-					]
-						.filter(Boolean)
-						.join(", ");
-					broken.push(`${href} (${reasons})`);
-				}
-			} finally {
-				page.off("pageerror", onError);
-				await page.close();
-			}
+			await gotoStable(page, href);
+			await expect(page.locator(".portal-not-found")).toHaveCount(0);
+			await expect(page.locator(".ui-content-layout").first()).toBeVisible();
 		});
 	}
-
-	expect(broken, `failed routes: ${broken.join(" | ")}`).toEqual([]);
 });
+
+for (const entry of catalogComponentRoutes) {
+	test(`strict route health: ${entry.route}`, async ({ page }) => {
+		const errors: string[] = [];
+		const onError = (error: Error): void => {
+			errors.push(error.message);
+		};
+		page.on("pageerror", onError);
+		try {
+			await gotoStable(page, entry.route);
+			await expect(page.locator(".portal-not-found")).toHaveCount(0);
+			await expect(page.locator(".ui-content-layout").first()).toBeVisible();
+			expect(errors, `${entry.route} page errors`).toEqual([]);
+		} finally {
+			page.off("pageerror", onError);
+		}
+	});
+}
 
 test("canonical index and detail deep links restore every public catalog family", async ({
 	page,
@@ -97,7 +85,9 @@ test("canonical index and detail deep links restore every public catalog family"
 	}
 });
 
-test("the single catalog shell exposes only enabled Core navigation", async ({ page }) => {
+test("the single catalog shell exposes only enabled Core navigation", async ({
+	page,
+}) => {
 	await gotoStable(page, "/components/button");
 	const sidebar = page.locator(".ui-sidebar");
 	await expect(sidebar.getByText("Button", { exact: true })).toBeVisible();
@@ -210,11 +200,14 @@ test("route readiness rejects false operational surfaces", async ({ page }) => {
 	await page.unroute("**/synthetic-browser-errors");
 
 	let successfulChunkReleasedAt = 0;
-	await page.route(/\/assets\/button\.page-[^/]+\.js(?:\?.*)?$/u, async (route) => {
-		await new Promise<void>((resolve) => setTimeout(resolve, 500));
-		successfulChunkReleasedAt = Date.now();
-		await route.continue();
-	});
+	await page.route(
+		/\/assets\/button\.page-[^/]+\.js(?:\?.*)?$/u,
+		async (route) => {
+			await new Promise<void>((resolve) => setTimeout(resolve, 500));
+			successfulChunkReleasedAt = Date.now();
+			await route.continue();
+		},
+	);
 	const successfulNavigation = gotoStable(
 		page,
 		"/components/button?embed=playground",
@@ -234,11 +227,14 @@ test("route readiness rejects false operational surfaces", async ({ page }) => {
 	await page.unroute(/\/assets\/button\.page-[^/]+\.js(?:\?.*)?$/u);
 
 	let failedChunkReleasedAt = 0;
-	await page.route(/\/assets\/badge\.page-[^/]+\.js(?:\?.*)?$/u, async (route) => {
-		await new Promise<void>((resolve) => setTimeout(resolve, 500));
-		failedChunkReleasedAt = Date.now();
-		await route.abort("failed");
-	});
+	await page.route(
+		/\/assets\/badge\.page-[^/]+\.js(?:\?.*)?$/u,
+		async (route) => {
+			await new Promise<void>((resolve) => setTimeout(resolve, 500));
+			failedChunkReleasedAt = Date.now();
+			await route.abort("failed");
+		},
+	);
 	const failedNavigation = gotoStable(
 		page,
 		"/components/badge?embed=playground",
