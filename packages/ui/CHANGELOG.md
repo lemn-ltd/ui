@@ -1,5 +1,11 @@
 # @lemn-ltd/ui
 
+## 0.4.2
+
+### Patch Changes
+
+- 84e643e: Keep `ScreenShell` aligned with the live visual viewport after browser chrome or an embedding webview changes height, while retaining the legacy viewport fallback.
+
 ## 0.4.1
 
 ### Patch Changes

@@ -139,7 +139,7 @@ importers:
         specifier: 0.41.3
         version: 0.41.3(astro@7.1.3(@emnapi/core@1.10.0)(@emnapi/runtime@1.11.1)(@types/node@26.0.0)(yaml@2.9.0))(typescript@5.9.3)
       '@lemn-ltd/ui':
-        specifier: workspace:0.4.1
+        specifier: workspace:0.4.2
         version: link:../../packages/ui
       astro:
         specifier: 7.1.3
@@ -161,13 +161,13 @@ importers:
         specifier: workspace:1.0.0
         version: link:../../packages/brand-contract
       '@lemn-ltd/brand-studio':
-        specifier: workspace:2.2.1
+        specifier: workspace:2.2.2
         version: link:../../packages/brand-studio
       '@lemn-ltd/provider-registry':
         specifier: workspace:0.1.0
         version: link:../../packages/provider-registry
       '@lemn-ltd/ui':
-        specifier: workspace:0.4.1
+        specifier: workspace:0.4.2
         version: link:../../packages/ui
       jose:
         specifier: 6.2.3
@@ -264,7 +264,7 @@ importers:
         version: link:../brand-contract
     devDependencies:
       '@lemn-ltd/ui':
-        specifier: workspace:0.4.1
+        specifier: workspace:0.4.2
         version: link:../ui
       '@testing-library/react':
         specifier: 16.3.2

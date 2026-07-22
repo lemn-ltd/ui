@@ -1,5 +1,12 @@
 # @lemn-ltd/brand-studio
 
+## 2.2.2
+
+### Patch Changes
+
+- Updated dependencies [84e643e]
+  - @lemn-ltd/ui@0.4.2
+
 ## 2.2.1
 
 ### Patch Changes
