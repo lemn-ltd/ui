@@ -221,7 +221,8 @@ test("Playwright always owns an isolated explicit-port Portal Worker", async () 
 	assert.equal(serverUrl.protocol, "http:");
 	assert.equal(serverUrl.hostname, "127.0.0.1");
 	assert.notEqual(serverUrl.port, "");
-	assert.match(command, /^pnpm run build && pnpm exec wrangler dev /u);
+	assert.match(command, /^pnpm exec vite build && pnpm exec wrangler dev /u);
+	assert.doesNotMatch(command, /test:dist-boundaries|pnpm run build/u);
 	assert.match(command, / --local(?:\s|$)/u);
 	assert.match(command, / --ip 127\.0\.0\.1(?:\s|$)/u);
 	assert.match(command, new RegExp(` --port ${serverUrl.port}(?:\\s|$)`, "u"));
