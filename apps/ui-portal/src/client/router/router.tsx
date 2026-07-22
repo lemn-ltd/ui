@@ -17,6 +17,7 @@ import { NotFoundPage } from "../shell/not-found-page.js";
 import { PortalShell } from "../shell/portal-shell.js";
 
 const AdminPortal = lazy(() => import("../modules/admin/admin-portal.js"));
+const OrbitaNovaPage = lazy(() => import("../pages/demos/orbita-nova.page.js"));
 
 export function PortalPageFallback(): ReactElement {
 	return (
@@ -79,6 +80,11 @@ const entryRoutes: RouteObject[] = CATALOG_REGISTRY.map((entry) => ({
 }));
 
 export const portalRouter = createBrowserRouter([
+	{
+		path: "/demos/orbita-nova",
+		errorElement: <PortalRouteError />,
+		element: suspense(<OrbitaNovaPage />),
+	},
 	{
 		path: "/admin/*",
 		errorElement: <PortalRouteError />,

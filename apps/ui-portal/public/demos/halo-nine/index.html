@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="es" data-branding="solar-ink-light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="HALO/9 es una demo conceptual de un resort de experiencias sobre las nubes de un gigante gaseoso."
+    />
+    <meta name="theme-color" content="#f7f0d7" />
+    <link rel="icon" href="./assets/halo-nine-mark.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+    <title>HALO/9 — Donde empieza lo imposible</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Saltar al contenido</a>
+
+    <aside class="branding-preview" aria-label="Selector de identidad visual">
+      <label for="branding-preview-select">Branding Lab</label>
+      <select id="branding-preview-select" data-branding-select>
+        <option value="original">HALO/9 Original</option>
+        <option value="solar-ink-light" selected>Solar Ink · claro</option>
+        <option value="solar-ink-dark">Solar Ink · oscuro</option>
+      </select>
+      <span aria-live="polite" data-branding-status>Borrador Solar Ink · validado</span>
+    </aside>
+
+    <header class="site-header" data-header>
+      <a class="wordmark" href="#top" aria-label="HALO/9, inicio">
+        <img src="./assets/halo-nine-mark.svg" alt="" width="42" height="42" />
+        <span>HALO/9</span>
+      </a>
+
+      <button
+        class="menu-toggle"
+        type="button"
+        aria-expanded="false"
+        aria-controls="main-navigation"
+        data-menu-toggle
+      >
+        <span class="sr-only">Abrir menú</span>
+        <span></span><span></span>
+      </button>
+
+      <nav class="main-nav" id="main-navigation" aria-label="Navegación principal" data-menu>
+        <a href="#experiencias">Experiencias</a>
+        <a href="#filosofia">El resort</a>
+        <a href="#visita">Tu visita</a>
+      </nav>
+
+      <button class="button button--ink header-ticket" type="button" data-open-booking>
+        Reservar pase
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 6l4 4-4 4"/></svg>
+      </button>
+    </header>
+
+    <main id="main">
+      <section class="hero" id="top" aria-labelledby="hero-title">
+        <img
+          class="hero__image"
+          src="./assets/hero.jpg"
+          alt="Un resort espacial luminoso con montañas rusas coral sobre las nubes de un planeta"
+          width="1920"
+          height="840"
+          fetchpriority="high"
+        />
+        <div class="hero__glow" aria-hidden="true"></div>
+        <div class="hero__copy">
+          <p class="eyebrow"><span></span> Resort orbital · Nivel 9</p>
+          <h1 id="hero-title">Donde empieza<br />lo <em>imposible.</em></h1>
+          <p class="hero__lede">
+            Un día suspendido sobre las nubes. Velocidad solar, jardines líquidos
+            y espectáculos que cambian tu escala del universo.
+          </p>
+          <div class="hero__actions">
+            <a class="button button--coral" href="#experiencias">
+              Descubrir experiencias
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 6l4 4-4 4"/></svg>
+            </a>
+            <button class="text-button" type="button" data-open-booking>
+              Planear mi día <span aria-hidden="true">↗</span>
+            </button>
+          </div>
+        </div>
+        <div class="hero__index" aria-label="Datos del resort">
+          <p><strong>09</strong><span>mundos conectados</span></p>
+          <p><strong>36 h</strong><span>de luz solar</span></p>
+          <p><strong>∞</strong><span>formas de explorar</span></p>
+        </div>
+        <p class="hero__caption">Órbita de Helios · 48.211 km</p>
+      </section>
+
+      <div class="ticker" aria-hidden="true">
+        <div class="ticker__track">
+          <span>ABIERTO 365 CICLOS</span><i></i><span>GRAVEDAD AJUSTABLE</span><i></i>
+          <span>VISTAS SIN LÍMITE</span><i></i><span>ABIERTO 365 CICLOS</span><i></i>
+          <span>GRAVEDAD AJUSTABLE</span><i></i><span>VISTAS SIN LÍMITE</span><i></i>
+        </div>
+      </div>
+
+      <section class="intro section-shell reveal" id="filosofia">
+        <div class="section-label"><span>01</span> La nueva idea de escapar</div>
+        <div class="intro__statement">
+          <h2>No venimos a mirar el futuro.<br /><em>Venimos a jugar en él.</em></h2>
+          <p>
+            HALO/9 combina arquitectura orbital, naturaleza viva y atracciones
+            de nueva generación en un resort construido para despertar la curiosidad.
+          </p>
+        </div>
+        <div class="intro__seal" aria-label="A 18 minutos de la terminal orbital">
+          <svg viewBox="0 0 120 120" aria-hidden="true">
+            <circle cx="60" cy="60" r="54" />
+            <path d="M30 60h60M60 30v60" />
+            <circle cx="60" cy="60" r="8" />
+          </svg>
+          <span>18 MIN<br />DESDE TERMINAL</span>
+        </div>
+      </section>
+
+      <section class="experiences" id="experiencias" aria-labelledby="experiences-title">
+        <div class="section-shell experiences__header reveal">
+          <div class="section-label section-label--light"><span>02</span> Experiencias</div>
+          <h2 id="experiences-title">Tres formas de perder<br />la noción de arriba.</h2>
+        </div>
+
+        <div class="experience-stage section-shell reveal">
+          <div class="experience-stage__rail" role="tablist" aria-label="Elige una experiencia">
+            <button
+              id="experience-tab-glide"
+              type="button"
+              role="tab"
+              aria-selected="true"
+              aria-controls="experience-panel"
+              data-experience="glide"
+            >
+              <span>01</span><strong>Solar Glide</strong><small>Impulso</small>
+            </button>
+            <button
+              id="experience-tab-gardens"
+              type="button"
+              role="tab"
+              aria-selected="false"
+              aria-controls="experience-panel"
+              tabindex="-1"
+              data-experience="gardens"
+            >
+              <span>02</span><strong>Cloud Gardens</strong><small>Calma</small>
+            </button>
+            <button
+              id="experience-tab-eclipse"
+              type="button"
+              role="tab"
+              aria-selected="false"
+              aria-controls="experience-panel"
+              tabindex="-1"
+              data-experience="eclipse"
+            >
+              <span>03</span><strong>Eclipse Chamber</strong><small>Asombro</small>
+            </button>
+          </div>
+
+          <article
+            class="experience-card"
+            id="experience-panel"
+            role="tabpanel"
+            aria-labelledby="experience-tab-glide"
+            aria-live="polite"
+            data-experience-card
+          >
+            <div class="experience-card__media">
+              <img
+                src="./assets/solar-glide.jpg"
+                alt="Dos visitantes recorren una cinta magnética coral sobre las nubes"
+                width="1400"
+                height="934"
+                data-experience-image
+              />
+              <span data-experience-number>01 / 03</span>
+            </div>
+            <div class="experience-card__copy">
+              <p class="eyebrow" data-experience-kicker>Velocidad solar</p>
+              <h3 data-experience-title>Solar Glide</h3>
+              <p data-experience-description>
+                Conduce tu propia cápsula por una cinta magnética abierta al horizonte.
+                Elige el ritmo; la órbita pone las vistas.
+              </p>
+              <dl data-experience-facts>
+                <div><dt>Altura</dt><dd>2.400 m</dd></div>
+                <div><dt>Duración</dt><dd>7 min</dd></div>
+                <div><dt>Intensidad</dt><dd>Alta</dd></div>
+              </dl>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="story section-shell reveal">
+        <div class="story__image-wrap">
+          <img
+            src="./assets/cloud-gardens.jpg"
+            alt="Una familia recorre jardines luminosos con vistas a un planeta azul"
+            width="1400"
+            height="934"
+            loading="lazy"
+          />
+          <span>Jardines de nubes · Hábitat 04</span>
+        </div>
+        <div class="story__copy">
+          <div class="section-label"><span>03</span> A tu propio ritmo</div>
+          <h2>La aventura también sabe <em>detenerse.</em></h2>
+          <p>
+            Entre una descarga de adrenalina y la siguiente, nuestros hábitats
+            regenerativos bajan el volumen. Agua, vegetación y horizonte para volver a empezar.
+          </p>
+          <ul>
+            <li><span>01</span>Rutas accesibles sin escalones</li>
+            <li><span>02</span>Zonas de baja estimulación</li>
+            <li><span>03</span>Gastronomía cultivada en órbita</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="visit" id="visita" aria-labelledby="visit-title">
+        <div class="visit__orb" aria-hidden="true"></div>
+        <div class="section-shell visit__inner reveal">
+          <div>
+            <div class="section-label section-label--light"><span>04</span> Tu visita</div>
+            <h2 id="visit-title">De la Tierra a<br />tu mejor día.</h2>
+          </div>
+          <ol class="visit__steps">
+            <li><span>01</span><div><strong>Elige tu ventana</strong><p>Selecciona fecha, duración y nivel de aventura.</p></div></li>
+            <li><span>02</span><div><strong>Llega a la Terminal H</strong><p>Tu traslado orbital está incluido en el pase.</p></div></li>
+            <li><span>03</span><div><strong>Deja que HALO/9 fluya</strong><p>Reservas y rutas se ajustan durante el día.</p></div></li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="booking section-shell reveal">
+        <div class="booking__mark" aria-hidden="true">
+          <img src="./assets/halo-nine-mark.svg" alt="" width="150" height="150" />
+        </div>
+        <div>
+          <p class="eyebrow">Próxima ventana · 2086</p>
+          <h2>Lo imposible tiene<br />fecha de salida.</h2>
+        </div>
+        <button class="button button--ink button--large" type="button" data-open-booking>
+          Reservar pase
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 6l4 4-4 4"/></svg>
+        </button>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wordmark wordmark--footer">
+        <img src="./assets/halo-nine-mark.svg" alt="" width="42" height="42" />
+        <span>HALO/9</span>
+      </div>
+      <p>Demo conceptual · Resort orbital independiente</p>
+      <nav aria-label="Navegación secundaria">
+        <a href="#experiencias">Experiencias</a>
+        <a href="#visita">Visita</a>
+        <a href="#top">Arriba ↑</a>
+      </nav>
+    </footer>
+
+    <dialog class="booking-dialog" aria-labelledby="booking-title" data-booking-dialog>
+      <div class="booking-dialog__top">
+        <div>
+          <p class="eyebrow">Reserva anticipada</p>
+          <h2 id="booking-title">Diseña tu salida.</h2>
+        </div>
+        <button class="dialog-close" type="button" aria-label="Cerrar reserva" data-close-booking>×</button>
+      </div>
+      <form class="booking-form" data-booking-form>
+        <label>
+          Fecha de llegada
+          <input type="date" name="date" required data-booking-date />
+        </label>
+        <label>
+          Tripulación
+          <select name="guests" required>
+            <option value="2">2 viajeros</option>
+            <option value="3">3 viajeros</option>
+            <option value="4">4 viajeros</option>
+            <option value="5">5 viajeros</option>
+            <option value="6">6 viajeros</option>
+          </select>
+        </label>
+        <fieldset>
+          <legend>Ritmo preferido</legend>
+          <label><input type="radio" name="pace" value="balanced" checked /> Equilibrado</label>
+          <label><input type="radio" name="pace" value="intense" /> Intenso</label>
+          <label><input type="radio" name="pace" value="calm" /> Tranquilo</label>
+        </fieldset>
+        <button class="button button--coral button--large" type="submit">
+          Consultar disponibilidad
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 6l4 4-4 4"/></svg>
+        </button>
+        <small>Demo sin transacción real. No se guardará ningún dato.</small>
+      </form>
+      <div class="booking-success" hidden data-booking-success>
+        <span aria-hidden="true">✓</span>
+        <h3>Ventana preparada.</h3>
+        <p>En una experiencia real, aquí conectaríamos el inventario y el pago seguro.</p>
+        <button class="button button--ink" type="button" data-close-booking>Entendido</button>
+      </div>
+    </dialog>
+
+    <script src="./app.js" defer></script>
+  </body>
+</html>

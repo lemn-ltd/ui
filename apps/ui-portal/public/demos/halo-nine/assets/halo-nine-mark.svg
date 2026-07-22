@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">HALO/9</title>
+  <circle cx="32" cy="32" r="17" fill="none" stroke="#101828" stroke-width="5"/>
+  <ellipse cx="32" cy="32" rx="28" ry="10" fill="none" stroke="#f5533d" stroke-width="5" transform="rotate(-18 32 32)"/>
+  <circle cx="51" cy="20" r="4" fill="#d8ff3e" stroke="#101828" stroke-width="2"/>
+</svg>

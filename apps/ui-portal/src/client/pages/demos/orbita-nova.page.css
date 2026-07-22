@@ -1,0 +1,652 @@
+.orbita-site {
+	min-height: 100vh;
+	background: var(--lemn-color-canvas);
+	color: var(--lemn-color-text);
+	scroll-behavior: smooth;
+}
+
+.orbita-site *,
+.orbita-site *::before,
+.orbita-site *::after {
+	box-sizing: border-box;
+}
+
+.orbita-skip-link {
+	position: fixed;
+	top: var(--lemn-space-3);
+	left: var(--lemn-space-3);
+	z-index: 100;
+	padding: var(--lemn-space-2) var(--lemn-space-3);
+	transform: translateY(-160%);
+	border-radius: var(--lemn-radius-medium);
+	background: var(--lemn-color-accent);
+	color: var(--lemn-color-accent-foreground);
+}
+
+.orbita-skip-link:focus {
+	transform: translateY(0);
+}
+
+.orbita-header {
+	position: absolute;
+	top: 0;
+	right: 0;
+	left: 0;
+	z-index: 20;
+	border-bottom: 1px solid rgb(255 255 255 / 14%);
+	background: linear-gradient(180deg, rgb(3 7 18 / 72%), transparent);
+	color: #fff;
+}
+
+.orbita-header__inner {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: min(100% - 40px, 1240px);
+	height: 76px;
+	margin: 0 auto;
+}
+
+.orbita-brand,
+.orbita-footer__brand {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--lemn-space-3);
+	color: inherit;
+	font-weight: var(--lemn-font-weight-semibold);
+	text-decoration: none;
+}
+
+.orbita-brand__orbit {
+	position: relative;
+	display: inline-grid;
+	width: 27px;
+	height: 27px;
+	place-items: center;
+	border: 1.5px solid currentcolor;
+	border-radius: 50%;
+}
+
+.orbita-brand__orbit::before {
+	position: absolute;
+	width: 36px;
+	height: 12px;
+	transform: rotate(-20deg);
+	border: 1.5px solid currentcolor;
+	border-radius: 50%;
+	content: "";
+}
+
+.orbita-brand__orbit::after {
+	width: 5px;
+	height: 5px;
+	border-radius: 50%;
+	background: currentcolor;
+	content: "";
+}
+
+.orbita-nav {
+	display: flex;
+	align-items: center;
+	gap: clamp(var(--lemn-space-4), 4vw, var(--lemn-space-8));
+}
+
+.orbita-nav a,
+.orbita-footer__links a {
+	color: inherit;
+	font-size: var(--lemn-font-size-small);
+	font-weight: var(--lemn-font-weight-medium);
+	text-decoration: none;
+}
+
+.orbita-nav a:hover,
+.orbita-footer__links a:hover {
+	text-decoration: underline;
+	text-underline-offset: 5px;
+}
+
+.orbita-header__actions {
+	display: flex;
+	align-items: center;
+}
+
+.orbita-hero {
+	position: relative;
+	display: grid;
+	min-height: min(860px, 96vh);
+	overflow: hidden;
+	background: #071026;
+	color: #fff;
+	isolation: isolate;
+}
+
+.orbita-hero__image,
+.orbita-hero__shade {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+}
+
+.orbita-hero__image {
+	z-index: -2;
+	object-fit: cover;
+	object-position: center;
+}
+
+.orbita-hero__shade {
+	z-index: -1;
+	background:
+		linear-gradient(
+			90deg,
+			rgb(4 9 24 / 94%) 0%,
+			rgb(5 10 27 / 76%) 34%,
+			rgb(5 10 27 / 17%) 69%
+		),
+		linear-gradient(0deg, rgb(4 8 20 / 70%) 0%, transparent 42%);
+}
+
+.orbita-hero__content {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	justify-content: center;
+	gap: var(--lemn-space-5);
+	width: 100%;
+	padding-top: 138px;
+	padding-bottom: 76px;
+}
+
+.orbita-kicker,
+.orbita-section-kicker {
+	margin: 0;
+	color: var(--lemn-color-accent);
+	font-size: var(--lemn-font-size-caption);
+	font-weight: var(--lemn-font-weight-semibold);
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+}
+
+.orbita-hero .orbita-kicker {
+	color: #b8c7ff;
+}
+
+.orbita-hero h1,
+.orbita-section__header h2,
+.orbita-brand-lab h2,
+.orbita-experience h2,
+.orbita-visit h2,
+.orbita-cta h2 {
+	margin: 0;
+	font-family: var(--lemn-font-heading);
+	font-weight: var(--lemn-font-weight-semibold);
+	letter-spacing: -0.04em;
+}
+
+.orbita-hero h1 {
+	max-width: 760px;
+	font-size: clamp(3.4rem, 7.3vw, 7rem);
+	line-height: 0.94;
+}
+
+.orbita-hero__lede {
+	max-width: 620px;
+	margin: 0;
+	color: rgb(255 255 255 / 78%);
+	font-size: clamp(1rem, 1.7vw, 1.25rem);
+	line-height: 1.7;
+}
+
+.orbita-hero__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--lemn-space-3);
+}
+
+.orbita-hero__actions .ui-button[data-variant="outline"] {
+	border-color: rgb(255 255 255 / 46%);
+	background: rgb(7 16 38 / 36%);
+	color: #fff;
+	backdrop-filter: blur(12px);
+}
+
+.orbita-hero__facts {
+	display: flex;
+	gap: clamp(var(--lemn-space-6), 5vw, var(--lemn-space-12));
+	padding-top: var(--lemn-space-5);
+	margin: 0;
+	border-top: 1px solid rgb(255 255 255 / 18%);
+}
+
+.orbita-hero__facts > div {
+	display: flex;
+	flex-direction: column;
+	gap: var(--lemn-space-1);
+}
+
+.orbita-hero__facts dd {
+	margin: 0;
+	font-size: var(--lemn-font-size-title);
+	font-weight: var(--lemn-font-weight-semibold);
+}
+
+.orbita-hero__facts dt {
+	color: rgb(255 255 255 / 62%);
+	font-size: var(--lemn-font-size-small);
+}
+
+.orbita-brand-lab {
+	position: relative;
+	z-index: 4;
+	border-bottom: 1px solid var(--lemn-color-border);
+	background: var(--lemn-color-surface);
+}
+
+.orbita-brand-lab__inner {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(360px, 0.7fr);
+	gap: var(--lemn-space-10);
+	padding-top: var(--lemn-space-8);
+	padding-bottom: var(--lemn-space-8);
+}
+
+.orbita-brand-lab__copy h2 {
+	margin-top: var(--lemn-space-2);
+	font-size: var(--lemn-font-size-title);
+}
+
+.orbita-brand-lab__copy p,
+.orbita-brand-lab__controls p {
+	margin: var(--lemn-space-2) 0 0;
+	color: var(--lemn-color-text-muted);
+	line-height: 1.6;
+}
+
+.orbita-brand-lab__controls {
+	display: grid;
+	grid-template-columns: auto minmax(210px, 1fr) auto;
+	align-items: center;
+	gap: var(--lemn-space-3);
+	padding: var(--lemn-space-4);
+	border: 1px solid var(--lemn-color-border);
+	border-radius: var(--lemn-radius-large);
+	background: var(--lemn-color-surface-muted);
+}
+
+.orbita-brand-lab__controls label {
+	font-size: var(--lemn-font-size-small);
+	font-weight: var(--lemn-font-weight-semibold);
+}
+
+.orbita-brand-lab__controls p {
+	grid-column: 2 / -1;
+	margin: 0;
+	font-size: var(--lemn-font-size-caption);
+}
+
+.orbita-section {
+	display: flex;
+	flex-direction: column;
+	gap: var(--lemn-space-10);
+	padding-top: clamp(72px, 9vw, 128px);
+	padding-bottom: clamp(72px, 9vw, 128px);
+}
+
+.orbita-section__header {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(300px, 0.7fr);
+	align-items: end;
+	gap: var(--lemn-space-10);
+}
+
+.orbita-section__header h2,
+.orbita-experience h2,
+.orbita-visit h2,
+.orbita-cta h2 {
+	margin-top: var(--lemn-space-3);
+	font-size: clamp(2.2rem, 4.5vw, 4rem);
+	line-height: 1.03;
+}
+
+.orbita-section__header > p,
+.orbita-experience__copy > p,
+.orbita-cta p {
+	margin: 0;
+	color: var(--lemn-color-text-muted);
+	font-size: var(--lemn-font-size-body);
+	line-height: 1.75;
+}
+
+.orbita-attractions-grid .ui-section-grid__inner {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: var(--lemn-space-5);
+}
+
+.orbita-attraction-card {
+	overflow: hidden;
+	border-radius: var(--lemn-radius-large);
+}
+
+.orbita-attraction-card > .ui-card__body {
+	display: flex;
+	flex-direction: column;
+	padding: 0;
+}
+
+.orbita-attraction-card img {
+	width: 100%;
+	aspect-ratio: 4 / 3;
+	object-fit: cover;
+}
+
+.orbita-attraction-card__content {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: var(--lemn-space-3);
+	padding: var(--lemn-space-5);
+}
+
+.orbita-attraction-card h3,
+.orbita-attraction-card p,
+.orbita-attraction-card span,
+.orbita-feature-row p,
+.orbita-schedule-grid p {
+	margin: 0;
+}
+
+.orbita-attraction-card h3 {
+	font-family: var(--lemn-font-heading);
+	font-size: var(--lemn-font-size-title);
+	line-height: 1.1;
+}
+
+.orbita-attraction-card p {
+	color: var(--lemn-color-text-muted);
+	line-height: 1.65;
+}
+
+.orbita-attraction-card__content > span:last-child {
+	margin-top: auto;
+	padding-top: var(--lemn-space-3);
+	color: var(--lemn-color-text-muted);
+	font-size: var(--lemn-font-size-caption);
+}
+
+.orbita-experience {
+	border-block: 1px solid var(--lemn-color-border);
+	background:
+		radial-gradient(
+			circle at 84% 16%,
+			var(--lemn-color-accent-soft),
+			transparent 30%
+		),
+		var(--lemn-color-surface-muted);
+}
+
+.orbita-experience__inner {
+	display: grid;
+	grid-template-columns: minmax(0, 1.05fr) minmax(340px, 0.75fr);
+	align-items: center;
+	gap: clamp(var(--lemn-space-10), 8vw, 120px);
+	padding-top: clamp(72px, 9vw, 120px);
+	padding-bottom: clamp(72px, 9vw, 120px);
+}
+
+.orbita-experience__copy {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: var(--lemn-space-5);
+}
+
+.orbita-experience__cards {
+	display: grid;
+	gap: var(--lemn-space-4);
+}
+
+.orbita-feature-row {
+	display: flex;
+	align-items: flex-start;
+	gap: var(--lemn-space-4);
+}
+
+.orbita-feature-row > .ui-icon {
+	flex: none;
+	color: var(--lemn-color-accent);
+}
+
+.orbita-feature-row div {
+	display: grid;
+	gap: var(--lemn-space-2);
+}
+
+.orbita-feature-row p,
+.orbita-schedule-grid p {
+	color: var(--lemn-color-text-muted);
+	line-height: 1.55;
+}
+
+.orbita-visit {
+	display: grid;
+	grid-template-columns: minmax(0, 1.2fr) minmax(340px, 0.8fr);
+	gap: clamp(var(--lemn-space-10), 8vw, 110px);
+	padding-top: clamp(72px, 9vw, 128px);
+	padding-bottom: clamp(72px, 9vw, 128px);
+}
+
+.orbita-schedule-grid {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: var(--lemn-space-3);
+	margin-top: var(--lemn-space-8);
+}
+
+.orbita-schedule-grid .ui-card__body {
+	display: grid;
+	gap: var(--lemn-space-2);
+}
+
+.orbita-faq h2 {
+	margin: 0 0 var(--lemn-space-5);
+	font-size: var(--lemn-font-size-title);
+	letter-spacing: -0.02em;
+}
+
+.orbita-cta {
+	margin: 0 var(--lemn-space-5) var(--lemn-space-5);
+	overflow: hidden;
+	border-radius: var(--lemn-radius-large);
+	background:
+		radial-gradient(
+			circle at 86% 30%,
+			var(--lemn-color-accent-soft),
+			transparent 28%
+		),
+		linear-gradient(
+			135deg,
+			var(--lemn-color-surface) 0%,
+			var(--lemn-color-surface-muted) 100%
+		);
+	box-shadow: inset 0 0 0 1px var(--lemn-color-border);
+}
+
+.orbita-cta__inner {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--lemn-space-10);
+	padding-top: clamp(56px, 7vw, 96px);
+	padding-bottom: clamp(56px, 7vw, 96px);
+}
+
+.orbita-cta__inner > div {
+	display: flex;
+	max-width: 760px;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: var(--lemn-space-4);
+}
+
+.orbita-footer {
+	border-top: 1px solid var(--lemn-color-border);
+	background: var(--lemn-color-surface-muted);
+}
+
+.orbita-footer__inner {
+	display: grid;
+	grid-template-columns: 1fr auto 1fr;
+	align-items: center;
+	gap: var(--lemn-space-8);
+	padding-top: var(--lemn-space-8);
+	padding-bottom: var(--lemn-space-8);
+}
+
+.orbita-footer p {
+	margin: 0;
+	color: var(--lemn-color-text-muted);
+	font-size: var(--lemn-font-size-caption);
+	text-align: center;
+}
+
+.orbita-footer__links {
+	display: flex;
+	justify-content: flex-end;
+	gap: var(--lemn-space-5);
+}
+
+@media (width <= 980px) {
+	.orbita-nav {
+		display: none;
+	}
+
+	.orbita-brand-lab__inner,
+	.orbita-section__header,
+	.orbita-experience__inner,
+	.orbita-visit {
+		grid-template-columns: 1fr;
+	}
+
+	.orbita-attractions-grid .ui-section-grid__inner {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.orbita-schedule-grid {
+		grid-template-columns: repeat(3, minmax(180px, 1fr));
+		overflow-x: auto;
+	}
+
+	.orbita-footer__inner {
+		grid-template-columns: 1fr auto;
+	}
+
+	.orbita-footer p {
+		order: 3;
+		grid-column: 1 / -1;
+		text-align: left;
+	}
+}
+
+@media (width <= 680px) {
+	.orbita-header__inner {
+		width: min(100% - 28px, 1240px);
+		height: 68px;
+	}
+
+	.orbita-header__actions .ui-button {
+		padding-inline: var(--lemn-space-3);
+	}
+
+	.orbita-hero {
+		min-height: 840px;
+	}
+
+	.orbita-hero__image {
+		object-position: 64% center;
+	}
+
+	.orbita-hero__shade {
+		background:
+			linear-gradient(90deg, rgb(4 9 24 / 88%), rgb(5 10 27 / 24%)),
+			linear-gradient(
+				0deg,
+				rgb(4 8 20 / 91%) 0%,
+				rgb(4 8 20 / 48%) 55%,
+				transparent 100%
+			);
+	}
+
+	.orbita-hero__content {
+		justify-content: flex-end;
+		padding-top: 110px;
+		padding-bottom: var(--lemn-space-10);
+	}
+
+	.orbita-hero h1 {
+		font-size: clamp(3rem, 16vw, 4.7rem);
+	}
+
+	.orbita-hero__facts {
+		width: 100%;
+		justify-content: space-between;
+		gap: var(--lemn-space-3);
+	}
+
+	.orbita-brand-lab__inner {
+		gap: var(--lemn-space-5);
+	}
+
+	.orbita-brand-lab__controls {
+		grid-template-columns: 1fr auto;
+	}
+
+	.orbita-brand-lab__controls label {
+		grid-column: 1 / -1;
+	}
+
+	.orbita-brand-lab__controls p {
+		grid-column: 1 / -1;
+	}
+
+	.orbita-attractions-grid .ui-section-grid__inner {
+		grid-template-columns: 1fr;
+	}
+
+	.orbita-attraction-card img {
+		aspect-ratio: 16 / 10;
+	}
+
+	.orbita-schedule-grid {
+		grid-template-columns: 1fr;
+		overflow: visible;
+	}
+
+	.orbita-cta {
+		margin: 0 var(--lemn-space-3) var(--lemn-space-3);
+	}
+
+	.orbita-cta__inner,
+	.orbita-footer__inner {
+		align-items: flex-start;
+		flex-direction: column;
+		grid-template-columns: 1fr;
+	}
+
+	.orbita-cta__inner {
+		display: flex;
+	}
+
+	.orbita-footer p,
+	.orbita-footer__links {
+		grid-column: auto;
+		justify-content: flex-start;
+		text-align: left;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.orbita-site {
+		scroll-behavior: auto;
+	}
+}
