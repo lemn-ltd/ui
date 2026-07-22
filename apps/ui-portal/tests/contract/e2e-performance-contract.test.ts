@@ -24,6 +24,14 @@ test("Playwright uses bounded parallel workers locally and in CI", () => {
 		/positive integer/u,
 	);
 	assert.equal(playwrightConfig.fullyParallel, true);
+	assert.ok(
+		playwrightConfig.webServer && !Array.isArray(playwrightConfig.webServer),
+	);
+	assert.match(playwrightConfig.webServer.command, /^pnpm exec vite build &&/u);
+	assert.doesNotMatch(
+		playwrightConfig.webServer.command,
+		/test:dist-boundaries|pnpm run build/u,
+	);
 });
 
 test("route-scale contracts are collected as independently shardable cases", () => {

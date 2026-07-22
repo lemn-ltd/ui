@@ -68,6 +68,9 @@ for the 6m44s validation job before starting.
   sharding, and precise failure ownership.
 - Playwright uses four workers locally and two per CI runner, with an explicit
   environment override.
+- The Playwright web server performs only its required production Vite build;
+  distribution-boundary contracts stay in the parallel `Validate` gate instead
+  of recursively launching Playwright while Playwright is starting.
 - CI fans validation and browser gates out together, using two E2E shards and
   two accessibility shards instead of seven one-worker jobs.
 - Contract tests fail if worker bounds, fan-out, shard counts, or the 102/204/612

@@ -74,7 +74,7 @@ export default defineConfig({
 		toHaveScreenshot: { maxDiffPixelRatio: 0.01, animations: "disabled" },
 	},
 	webServer: {
-		command: `pnpm run build && pnpm exec wrangler dev --local --ip 127.0.0.1 --port ${E2E_PORT} --log-level warn --show-interactive-dev-session=false --var DEPLOYMENT_ENVIRONMENT:test --var ACCESS_ISSUER:https://lemn-dev.cloudflareaccess.com --var ACCESS_AUDIENCE:${E2E_ADMIN_AUDIENCE} --var ACCESS_HEALTH_AUDIENCE:${E2E_HEALTH_AUDIENCE} --var BUILD_VERSION:0.0.0-e2e --var BUILD_GIT_SHA:${E2E_BUILD_SHA} --var BUILD_TIME:2026-07-18T00:00:00Z`,
+		command: `pnpm exec vite build && pnpm exec wrangler dev --local --ip 127.0.0.1 --port ${E2E_PORT} --log-level warn --show-interactive-dev-session=false --var DEPLOYMENT_ENVIRONMENT:test --var ACCESS_ISSUER:https://lemn-dev.cloudflareaccess.com --var ACCESS_AUDIENCE:${E2E_ADMIN_AUDIENCE} --var ACCESS_HEALTH_AUDIENCE:${E2E_HEALTH_AUDIENCE} --var BUILD_VERSION:0.0.0-e2e --var BUILD_GIT_SHA:${E2E_BUILD_SHA} --var BUILD_TIME:2026-07-18T00:00:00Z`,
 		cwd: PORTAL_ROOT,
 		url: BASE_URL,
 		reuseExistingServer: false,

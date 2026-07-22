@@ -43,7 +43,10 @@ including the bounded delayed-browser-error window. Documentation,
 accessibility, and responsive contracts reuse the same readiness and immediate
 diagnostics boundary without repeating that fixed quiet period. Route-scale
 contracts are collected as independent tests so Playwright can distribute them
-without hiding failures inside one long loop.
+without hiding failures inside one long loop. Its web server performs the
+production Vite build directly; repository and distribution-boundary contracts
+remain owned by `validate:standard`, avoiding a recursive Playwright process
+during browser startup while preserving the complete pipeline gate.
 
 ## GitHub boundary
 
