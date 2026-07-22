@@ -153,3 +153,37 @@ test("the bento reflows at desktop, tablet, and mobile without page overflow", a
 			expect(receipt.columns).toBeGreaterThanOrEqual(viewport.minimumColumns);
 	}
 });
+
+test("the branded screen shell follows a viewport resize without exposing the document", async ({
+	page,
+}) => {
+	await page.setViewportSize({ width: 1280, height: 420 });
+	await gotoStable(page, "/");
+	await page.setViewportSize({ width: 1280, height: 900 });
+
+	const geometry = await page.locator(".ui-screen-shell").evaluate((shell) => {
+		const shellRect = shell.getBoundingClientRect();
+		const scope = shell.closest<HTMLElement>(".portal-brand-scope");
+		const scopeRect = scope?.getBoundingClientRect();
+		const bottomElement = document.elementFromPoint(
+			Math.floor(window.innerWidth / 2),
+			window.innerHeight - 1,
+		);
+		return {
+			bottomInsideBrandScope: Boolean(
+				bottomElement?.closest(".portal-brand-scope"),
+			),
+			scopeBottom: scopeRect?.bottom ?? 0,
+			shellBottom: shellRect.bottom,
+			viewportHeight: window.innerHeight,
+		};
+	});
+
+	expect(
+		Math.abs(geometry.shellBottom - geometry.viewportHeight),
+	).toBeLessThanOrEqual(1);
+	expect(geometry.scopeBottom).toBeGreaterThanOrEqual(
+		geometry.viewportHeight - 1,
+	);
+	expect(geometry.bottomInsideBrandScope).toBe(true);
+});

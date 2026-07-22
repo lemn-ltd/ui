@@ -14,6 +14,13 @@
 	font-family: var(--lemn-font-body);
 }
 
+@supports (min-height: 100dvh) {
+	#root,
+	.portal-brand-scope {
+		min-height: 100dvh;
+	}
+}
+
 /* Sidebar brand mark. */
 .portal-brand-home {
 	display: inline-flex;
@@ -174,6 +181,7 @@
 
 /* Documentation navigation: quiet section headings and indented text rows. */
 #root
+	> .portal-brand-scope
 	> .ui-screen-shell
 	> .ui-screen-shell__sidebar
 	> .ui-sidebar
@@ -183,6 +191,7 @@
 }
 
 #root
+	> .portal-brand-scope
 	> .ui-screen-shell
 	> .ui-screen-shell__sidebar
 	> .ui-sidebar
@@ -191,6 +200,7 @@
 }
 
 #root
+	> .portal-brand-scope
 	> .ui-screen-shell
 	> .ui-screen-shell__sidebar
 	> .ui-sidebar
@@ -204,6 +214,7 @@
 }
 
 #root
+	> .portal-brand-scope
 	> .ui-screen-shell
 	> .ui-screen-shell__sidebar
 	> .ui-sidebar
@@ -215,6 +226,7 @@
 }
 
 #root
+	> .portal-brand-scope
 	> .ui-screen-shell
 	> .ui-screen-shell__sidebar
 	> .ui-sidebar
@@ -703,9 +715,7 @@
 		flex-basis: 100%;
 	}
 
-	.portal-home-reporting
-		.ui-stats-strip__cell
-		+ .ui-stats-strip__cell::before {
+	.portal-home-reporting .ui-stats-strip__cell + .ui-stats-strip__cell::before {
 		top: 0;
 		left: var(--lemn-space-4);
 		width: calc(100% - var(--lemn-space-8));

@@ -2274,7 +2274,7 @@ The app frame: a fixed sidebar beside a main column with an optional top bar ove
 
 **Use when**
 
-- Building the top-level app frame: fixed-width sidebar rail beside a main column that fills 100vh.
+- Building the top-level app frame: fixed-width sidebar rail beside a main column that follows the dynamic viewport height, with a `100vh` fallback.
 - You need an optional top bar pinned above a content region where only the content scrolls.
 - Establishing the outermost layout wrapper of a product screen, one per screen.
 
